@@ -1,6 +1,6 @@
 <HTML><HEAD><TITLE>Anti-Grain Geometry - Introduction</TITLE>
 <META http-equiv="Content-Type" content="text/html"/>
-<LINK rel="stylesheet" type="text/css" href="../../agg.styles.css"/>
+<LINK rel="stylesheet" type="text/css" href="../agg.styles.css"/>
 </HEAD>
 <A name="PAGE_INTRODUCTION"><B></B></A>
 
@@ -26,7 +26,7 @@
 <TD width="450px" valign="top" style="text-align:right">
 <TABLE border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
 <TR>
-<TD><IMG src="../../agg_logo.gif" border="0"/></TD>
+<TD><IMG src="../agg_logo.gif" border="0"/></TD>
 </TR>
 <TR>
 <TD>
@@ -116,7 +116,7 @@ syndrome of giantism. Most of the functionality is never
 used, but some simple things are impossible to achieve. Herein, the 
 graphical engines (or libraries) typically weigh tons of 
 mega-bytes. If you take the most advanced SVG viewer, 
-<A href="http://www.adobe.com/svg/main.html"><IMG src="../../link.gif" border="0"/>Adobe SVG</A>, it works well only with 
+<A href="http://www.adobe.com/svg/main.html"><IMG src="../link.gif" border="0"/>Adobe SVG</A>, it works well only with 
 simplest primitives. As soon as you try to use some advanced things, 
 like interactive SVG with different graphical filters, you will have 
 memory leaks, or even crashes. It&#039;s not because it has bad design,
@@ -306,7 +306,7 @@ class like <B>&#147;color&#148;</B>, instead, <B>AGG</B> always operates with co
 There are plenty of color spaces in the world, like RGB, HSV, CMYK, etc., and 
 all of them have certain restrictions. For example, the RGB color space is just a
 poor subset of colors that a human eye can recognize. If you look at the 
-full <A href="http://www.efg2.com/Lab/Graphics/Colors/Chromaticity.htm"><IMG src="../../link.gif" border="0"/><B>CIE Chromaticity Diagram</B></A>, you will see that 
+full <A href="http://www.efg2.com/Lab/Graphics/Colors/Chromaticity.htm"><IMG src="../link.gif" border="0"/><B>CIE Chromaticity Diagram</B></A>, you will see that 
 the RGB triangle is just a little part of it. 
 </P></TD></TR></TABLE><A name="CIE_1931"><B></B></A><TABLE width="640px"><TR><TD><CENTER><IMG src="cie_1931.jpg" title="CIE Chromaticity Diagram and the RGB Gamut" border="0"/><BR/><I>CIE Chromaticity Diagram and the RGB Gamut</I></CENTER></TD></TR></TABLE>
 <TABLE width="640px"><TR><TD style="text-align:justify"><P>In other words there are plenty 
@@ -371,8 +371,8 @@ and debug the algorithms. It also advantages stability of the library, because a
 the algorithms suffer very deep testing in the conditions near to operational.
 </P></TD></TR></TABLE><TABLE class="note" width="640px"><TR><TD><B>NOTE</B><BR/>
 If you want to use <B>AGG</B> in Windows Visual C++ environment, please note that 
-there&#039;s no <B>&#147;stdafx.h&#148;</B> file used. It&#039;s <A href="http://www.microsoft.com"><IMG src="../../link.gif" border="0"/><B>Microsoft</B></A> specific and not
-a part of C/C++ standard libraries, but <A href="http://www.microsoft.com"><IMG src="../../link.gif" border="0"/><B>Microsoft</B></A> just enforces to use it.
+there&#039;s no <B>&#147;stdafx.h&#148;</B> file used. It&#039;s <A href="http://www.microsoft.com"><IMG src="../link.gif" border="0"/><B>Microsoft</B></A> specific and not
+a part of C/C++ standard libraries, but <A href="http://www.microsoft.com"><IMG src="../link.gif" border="0"/><B>Microsoft</B></A> just enforces to use it.
 To successfully use <B>AGG</B> in Visual C++ projects don&#039;t forget to turn off the
 <B>&#147;Precompiled Headers&#148;</B> option for all <B>AGG</B> source files. Besides, if you
 link <B>AGG</B> with static <B>MFC</B> you will probably have duplicating <CODE>new</CODE> and <CODE>delete</CODE>
@@ -380,7 +380,7 @@ operators when linking. It&#039;s not because of <B>AGG</B>, it&#039;s because o
 You will have the very same problem when you try to use any other <B>C++</B>
 code that calls <CODE>new/delete</CODE> and doesn&#039;t include <B><NOBR>stdafx.h</NOBR></B>.
 To resolve this situation follow the 
-<A href="http://support.microsoft.com/default.aspx?scid=kb;en-us;q148652"><IMG src="../../link.gif" border="0"/><B>Microsoft recommendations</B></A> or just search in <A href="http://www.google.com"><IMG src="../../link.gif" border="0"/><B>Google</B></A> for <B>&#147;<NOBR>148652 LNK2005</NOBR>&#148;</B>.
+<A href="http://support.microsoft.com/default.aspx?scid=kb;en-us;q148652"><IMG src="../link.gif" border="0"/><B>Microsoft recommendations</B></A> or just search in <A href="http://www.google.com"><IMG src="../link.gif" border="0"/><B>Google</B></A> for <B>&#147;<NOBR>148652 LNK2005</NOBR>&#148;</B>.
 </TD></TR></TABLE>
 
 <TABLE width="640px"><TR><TD style="text-align:justify"><P>As it was mentioned above, <B>AGG</B> uses <B>C++</B> template mechanism very actively. 

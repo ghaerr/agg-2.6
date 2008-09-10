@@ -1,0 +1,240 @@
+BODY
+{
+    font-family:Verdana, Arial, Tahoma;
+    font-size:12px;
+    color:#160801;
+    background-color:#ffffff;
+    text-align:justify;
+    padding:5px;
+}
+
+P, UL, OL, DL
+{
+    font-family:Verdana, Arial, Tahoma;
+    font-size:12px;
+    color:#160801;
+    margin-bottom:0px;
+    margin-top:0px;
+}
+
+
+.larger
+{
+    font-size:14px;
+}
+
+LI
+{
+    padding:3px;
+}
+
+HR
+{
+    color:#583927;
+    height:1px;
+}
+
+H1
+{
+    font-family:Verdana, Arial, Tahoma;
+    font-size:28px;
+    font-weight:bolder;
+    text-align:center;
+    color:#583927; 
+    margin:0px;
+}
+
+H1 SPAN.subtitle
+{ 
+    font-family:Verdana, Arial, Tahoma;
+    font-size:18px;
+    font-weight:lighter; 
+}
+
+
+H2
+{
+    font-family:Verdana, Arial, Tahoma;
+    font-size:26px;
+    font-weight:normal;
+    text-align:left;
+    color:#583927;
+}
+
+H3
+{
+    font-family:Verdana, Arial, Tahoma;
+    font-size:20px;
+    font-weight:normal;
+    text-align:left;
+    color:#583927; 
+}
+
+H4
+{
+    font-family:Verdana, Arial, Tahoma;
+    font-size:16px;
+    font-weight:bold;
+    text-align:left;
+    color:#583927; 
+}
+
+H5
+{ 
+    font-family:Verdana, Arial, Tahoma;
+    font-size:14px;
+    font-weight:bold;
+    text-align:left;
+    color:#583927;
+}
+
+TABLE
+{
+    margin:5px;
+}
+
+TD
+{
+    font-family:Verdana, Arial, Tahoma;
+    font-size:12px;
+}
+
+TH
+{
+    font-family:Verdana, Arial, Tahoma;
+    background-color:#d4d4d4;
+    font-size:12px;
+}
+
+
+PRE
+{
+    padding: 5px;
+    border: gray 1px solid;
+    background-color:#f4f4f4;
+    color:#130f00;
+    font-family:"courier new", courier,mono;
+    font-size:12px;
+    margin:0px;
+}
+
+TT, CODE
+{
+    font-family:"courier new", courier,mono;
+    font-size:14px;
+    color:#000070;
+}
+
+.warning, .warning TD
+{
+    background-color:#fcf6f6;
+    color:#793131;
+    padding:0.5em;
+    font-family:Verdana, Arial, Tahoma;
+    font-size:12px;
+    text-align:justify;
+}
+
+.note, .note TD
+{
+    background-color:#f0fafa;
+    color:#506580;
+    padding:0.5em;
+    font-family:Verdana, Arial, Tahoma;
+    font-size:12px;
+    text-align:justify;
+}
+
+.quote, .quote TD
+{
+    background-color:#f0fafa;
+    color:#000540;
+    padding:0.5em;
+    font-family:Verdana, Arial, Tahoma;
+    font-size:12px;
+    text-align:justify;
+}
+
+.tip, .tip TD
+{
+    background-color:#fbfff6;
+    color:#68771e;
+    padding:0.5em;
+    font-family:Verdana, Arial, Tahoma;
+    font-size:12px;
+    text-align:justify;
+}
+
+.tbl TD
+{
+    background-color:#f4f4f4;
+    font-family:Verdana, Arial, Tahoma;
+    font-size:12px;
+    text-align:left;
+    padding:3px;
+}
+
+.toc TD
+{
+    font-family:Verdana, Arial, Tahoma;
+    text-align:left;
+    padding:3px;
+}
+
+.title {font-family:Verdana, Arial, Tahoma;}
+
+.warning P,
+.warning PRE,
+.note P,
+.note PRE,
+.tip P,
+.tip PRE {margin:0.3em 0em 0.1em 0em;}
+
+.warning .code {background-color:#fcf6f6;}
+.note .code    {background-color:#f0fafa;}
+.tip .code     {background-color:#fbfff6;}
+
+A         {text-decoration:none; color:#700000;}
+A:visited {text-decoration:none; color:#85585d;}
+A:link    {text-decoration:none;}
+A:hover   {text-decoration:underline;}
+
+.topmenu,a.topmenu:visited,a.topmenu:hover,a.topmenu:active,a.topmenu:link 
+{
+  font-family: Arial, Tahoma, Helvetica, sans-serif;
+  font-size: 11px;
+  font-weight: bold;
+  text-decoration: none;
+  color: #582218;
+}
+
+.mpmenu,a.mpmenu:visited,a.mpmenu:hover,a.mpmenu:active,a.mpmenu:link 
+{
+  font-family: Arial, Tahoma, Helvetica, sans-serif;
+  font-size: 12px;
+  font-weight: bold;
+  text-decoration: none;
+  color: #582218;
+}
+
+.tah
+{
+  font-family: Tahoma, Arial, Helvetica, sans-serif;
+  font-size: 12px;
+  color: #582218;
+}
+
+.authors
+{
+    font-size:10px;
+}
+
+span.rem  {color:#4c8d00;}
+span.kw1  {color:#000d8e;}
+span.kw2  {color:#0075ca;}
+span.kw3  {color:#004645;}
+span.kw4  {color:#673517;}
+span.op   {color:#4a006d;}
+span.str  {color:#ab2500;}
+span.num  {color:#a74c3f;}
+
