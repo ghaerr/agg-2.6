@@ -1,0 +1,1328 @@
+<HTML><HEAD><TITLE>Anti-Grain Geometry - AGG Reference Manual</TITLE>
+<META http-equiv="Content-Type" content="text/html"/>
+<LINK rel="stylesheet" type="text/css" href="../agg.styles.css"/>
+</HEAD>
+<A name="PAGE_DOCS"><B></B></A>
+
+
+<TABLE width="640px" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR>
+<TD bgcolor="#583927"></TD>
+</TR>
+</TABLE>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR>
+<TD>
+<TABLE width="170px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR><TD><A href="../index.html" class="mpmenu">Home/</A></TD></TR>
+<TR><TD><A href="" class="mpmenu"></A></TD></TR>
+<TR><TD><A href="" class="mpmenu"></A></TD></TR>
+<TR><TD><A href="" class="mpmenu"></A></TD></TR>
+<TR><TD><A href="" class="mpmenu"></A></TD></TR>
+<TR><TD><A href="" class="mpmenu"></A></TD></TR>
+</TABLE>
+</TD>
+<TD width="1px" bgcolor="#583927"></TD>
+<TD width="450px" valign="top" style="text-align:right">
+<TABLE border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR>
+<TD><IMG src="../agg_logo.gif" border="0"/></TD>
+</TR>
+<TR>
+<TD>
+<TABLE border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR height="15px">
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../news/index.html">News</A>&nbsp;&nbsp;</TD>
+<TD width="1px" bgcolor="#8e521d"></TD>
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../doc/index.html">Docs</A>&nbsp;&nbsp;</TD>
+<TD width="1px" bgcolor="#8e521d"></TD>
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../download/index.html">Download</A>&nbsp;&nbsp;</TD>
+<TD width="1px" bgcolor="#8e521d"></TD>
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../maillist/index.html">Mailing List</A>&nbsp;&nbsp;</TD>
+<TD width="1px" bgcolor="#8e521d"></TD>
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../cvs/index.html">CVS</A>&nbsp;&nbsp;</TD>
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+<TABLE width="640px" height="1px" bgcolor="#583927" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD><H1>AGG Reference Manual<SPAN class="subtitle"><BR/>Table of Contents</SPAN></H1></TD></TR></TABLE>
+
+
+<TABLE class="toc" width="640px"><TR><TD>
+<DIV style="margin-left:2em; padding:3px; font-size:17px;"><A href="introduction/introduction.agdoc.html"><B>Introduction</B></A>
+
+    <DIV style="margin-left:2em; padding:3px; font-size:14px;"><A href="introduction/introduction.agdoc.html#toc0001"><B>Brief Overview</B></A>
+        <DIV style="margin-left:2em; font-size:12px;"><A href="introduction/introduction.agdoc.html#toc0002">Yet Another Invention of the Wheel</A></DIV>
+        <DIV style="margin-left:2em; font-size:12px;"><A href="introduction/introduction.agdoc.html#toc0003">Gentle Criticism</A></DIV>
+        <DIV style="margin-left:2em; font-size:12px;"><A href="introduction/introduction.agdoc.html#toc0004">The Proposal</A></DIV>
+        <DIV style="margin-left:2em; font-size:12px;"><A href="introduction/introduction.agdoc.html#toc0005">Anti-Aliasing and Subpixel Accuracy</A></DIV></DIV>
+    <DIV style="margin-left:2em; padding:3px; font-size:14px;"><A href="introduction/introduction.agdoc.html#toc0006"><B>Basic Concepts</B></A>
+        <DIV style="margin-left:2em; font-size:12px;"><A href="introduction/introduction.agdoc.html#toc0007">Design of the Library</A></DIV>
+        <DIV style="margin-left:2em; font-size:12px;"><A href="introduction/introduction.agdoc.html#toc0008">Colors, Color Spaces, and Pixel Formats</A></DIV>
+        <DIV style="margin-left:2em; font-size:12px;"><A href="introduction/introduction.agdoc.html#toc0009">Coordinate Units</A></DIV>
+        <DIV style="margin-left:2em; font-size:12px;"><A href="introduction/introduction.agdoc.html#toc0010">AGG Building and Coding Notes</A></DIV></DIV>
+    <DIV style="margin-left:2em; padding:3px; font-size:14px;"><A href="introduction/introduction.agdoc.html#toc0011"><B>About this Manual</B></A></DIV>
+
+</DIV></TD></TR></TABLE>
+<TABLE class="toc" width="640px"><TR><TD>
+<DIV style="margin-left:2em; padding:3px; font-size:17px;"><A href="basic_renderers/basic_renderers.agdoc.html"><B>Basic Renderers</B></A>
+
+    <DIV style="margin-left:2em; padding:3px; font-size:14px;"><A href="basic_renderers/basic_renderers.agdoc.html#toc0001"><B>Rendering Buffer</B></A>
+        <DIV style="margin-left:2em; font-size:12px;"><A href="basic_renderers/basic_renderers.agdoc.html#toc0002">The First and the Simplest Example</A></DIV>
+        <DIV style="margin-left:2em; font-size:12px;"><A href="basic_renderers/basic_renderers.agdoc.html#toc0003">Class rendering_buffer</A></DIV>
+        <DIV style="margin-left:2em; font-size:12px;"><A href="basic_renderers/basic_renderers.agdoc.html#toc0004">Two Modifications of the Example</A></DIV></DIV>
+    <DIV style="margin-left:2em; padding:3px; font-size:14px;"><A href="basic_renderers/basic_renderers.agdoc.html#toc0005"><B>Pixel Format Renderers</B></A>
+        <DIV style="margin-left:2em; font-size:12px;"><A href="basic_renderers/basic_renderers.agdoc.html#toc0006">Creation</A></DIV>
+        <DIV style="margin-left:2em; font-size:12px;"><A href="basic_renderers/basic_renderers.agdoc.html#toc0007">Member Functions</A></DIV>
+        <DIV style="margin-left:2em; font-size:12px;"><A href="basic_renderers/basic_renderers.agdoc.html#toc0008">Alpha-Mask Adaptor</A></DIV></DIV>
+    <DIV style="margin-left:2em; padding:3px; font-size:14px;"><A href="basic_renderers/basic_renderers.agdoc.html#toc0009"><B>Basic Renderers</B></A>
+        <DIV style="margin-left:2em; font-size:12px;"><A href="basic_renderers/basic_renderers.agdoc.html#toc0010">Creation</A></DIV>
+        <DIV style="margin-left:2em; font-size:12px;"><A href="basic_renderers/basic_renderers.agdoc.html#toc0011">Member Functions</A></DIV>
+        <DIV style="margin-left:2em; font-size:12px;"><A href="basic_renderers/basic_renderers.agdoc.html#toc0012">A common example</A></DIV></DIV>
+    <DIV style="margin-left:2em; padding:3px; font-size:14px;"><A href="basic_renderers/basic_renderers.agdoc.html#toc0013"><B>Primitives and Markers Renderers</B></A>
+        <DIV style="margin-left:2em; font-size:12px;"><A href="basic_renderers/basic_renderers.agdoc.html#toc0014">Primitives Renderer</A>
+            <DIV style="margin-left:2em; font-size:12px;"><A href="basic_renderers/basic_renderers.agdoc.html#toc0015">Declaration</A></DIV>
+            <DIV style="margin-left:2em; font-size:12px;"><A href="basic_renderers/basic_renderers.agdoc.html#toc0016">Creation</A></DIV>
+            <DIV style="margin-left:2em; font-size:12px;"><A href="basic_renderers/basic_renderers.agdoc.html#toc0017">Member functions</A></DIV></DIV>
+        <DIV style="margin-left:2em; font-size:12px;"><A href="basic_renderers/basic_renderers.agdoc.html#toc0018">Marker Renderer</A>
+            <DIV style="margin-left:2em; font-size:12px;"><A href="basic_renderers/basic_renderers.agdoc.html#toc0019">Declaration</A></DIV>
+            <DIV style="margin-left:2em; font-size:12px;"><A href="basic_renderers/basic_renderers.agdoc.html#toc0020">Creation</A></DIV>
+            <DIV style="margin-left:2em; font-size:12px;"><A href="basic_renderers/basic_renderers.agdoc.html#toc0021">Member Functions</A></DIV></DIV></DIV>
+
+</DIV></TD></TR></TABLE>
+<TABLE class="toc" width="640px"><TR><TD>
+<DIV style="margin-left:2em; padding:3px; font-size:17px;"><A href="scanlines/scanlines.agdoc.html"><B>Scanlines and Scanline Renderers</B></A>
+
+    <DIV style="margin-left:2em; padding:3px; font-size:14px;"><A href="scanlines/scanlines.agdoc.html#toc0001"><B>Scanline Containers</B></A>
+        <DIV style="margin-left:2em; font-size:12px;"><A href="scanlines/scanlines.agdoc.html#toc0002">Introduction</A></DIV>
+        <DIV style="margin-left:2em; font-size:12px;"><A href="scanlines/scanlines.agdoc.html#toc0003">Interfaces</A>
+            <DIV style="margin-left:2em; font-size:12px;"><A href="scanlines/scanlines.agdoc.html#toc0004">Filling Interface (put)</A></DIV>
+            <DIV style="margin-left:2em; font-size:12px;"><A href="scanlines/scanlines.agdoc.html#toc0005">Iterating Interface (get)</A></DIV></DIV></DIV>
+    <DIV style="margin-left:2em; padding:3px; font-size:14px;"><A href="scanlines/scanlines.agdoc.html#toc0006"><B>Scanline Renderers</B></A></DIV>
+
+</DIV></TD></TR></TABLE>
+
+<TABLE class="toc" width="640px"><TR><TD>
+    <DIV style="margin-left:2em; padding:3px; font-size:14px;"><A href="#toc0001"><B>Alphabetical Index</B></A>
+        <DIV style="margin-left:2em; font-size:12px;"><A href="#toc0002">Keywords</A></DIV>
+        <DIV style="margin-left:2em; font-size:12px;"><A href="#toc0003">Tables</A></DIV>
+        <DIV style="margin-left:2em; font-size:12px;"><A href="#toc0004">Figures</A></DIV>
+        <DIV style="margin-left:2em; font-size:12px;"><A href="#toc0005">Listings</A></DIV>
+        <DIV style="margin-left:2em; font-size:12px;"><A href="#toc0006">Files</A></DIV></DIV>
+    <DIV style="margin-left:2em; padding:3px; font-size:14px;"><A href="#toc0007"><B>TO BE CONTINUED...</B></A></DIV>
+
+</TD></TR></TABLE>
+
+<H2>Alphabetical Index<A name="toc0001"></A></H2>
+
+<H3>Keywords<A name="toc0002"></A></H3>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><A href="../research/flash_rasterizer/index.html#FLASH_RASTERIZER">Perfect Rasterization of Flash Compound Shapes</A><BR/>
+<A href="../research/font_rasterization/index.html#FONT_RASTERIZATION">Texts Rasterization Exposures</A><BR/>
+<A href="../about/index.html#PAGE_ABOUT">About</A><BR/>
+<A href="../research/adaptive_bezier/index.html#PAGE_ADAPTIVE_BEZIER">Adaptive Subdivision of Bezier Curves</A><BR/>
+<A href="../agdoc/index.html#PAGE_AGDOC">AGDoc Formatter</A><BR/>
+<A href="introduction/introduction.agdoc.html#PAGE_ANTI_ALIASING">Anti-Aliasing and Subpixel Accuracy</A><BR/>
+<A href="basic_renderers/basic_renderers.agdoc.html#PAGE_BASIC_RENDERERS">Basic Renderers</A><BR/>
+<A href="../research/bezier_interpolation/index.html#PAGE_BEZIER_INTERPOLATION">Interpolation with Bezier Curves</A><BR/>
+<A href="../customers/index.html#PAGE_CUSTOMERS">Users and Customers</A><BR/>
+<A href="../cvs/index.html#PAGE_CVS">CVS Repository</A><BR/>
+<A href="../demo/index.html#PAGE_DEMO">Demo</A><BR/>
+<A href="../demo/index.html#PAGE_DEMO_aa_demo">Demo aa_demo.cpp</A><BR/>
+<A href="../demo/index.html#PAGE_DEMO_aa_test">Demo aa_test.cpp</A><BR/>
+<A href="../demo/index.html#PAGE_DEMO_alpha_gradient">Demo alpha_gradient.cpp</A><BR/>
+<A href="../demo/index.html#PAGE_DEMO_alpha_mask">Demo alpha_mask.cpp</A><BR/>
+<A href="../demo/index.html#PAGE_DEMO_alpha_mask2">Demo alpha_mask2.cpp</A><BR/>
+<A href="../demo/index.html#PAGE_DEMO_alpha_mask3">Demo alpha_mask3.cpp</A><BR/>
+<A href="../demo/index.html#PAGE_DEMO_bezier_div">Demo bezier_div.cpp</A><BR/>
+<A href="../demo/index.html#PAGE_DEMO_blur">Demo blur.cpp</A><BR/>
+<A href="../demo/index.html#PAGE_DEMO_circles">Demo circles.cpp</A><BR/>
+<A href="../demo/index.html#PAGE_DEMO_component_rendering">Demo component_rendering.cpp</A><BR/>
+<A href="../demo/index.html#PAGE_DEMO_compositing">Demo compositing.cpp</A><BR/>
+<A href="../demo/index.html#PAGE_DEMO_compositing2">Demo compositing2.cpp</A><BR/>
+<A href="../demo/index.html#PAGE_DEMO_conv_contour">Demo conv_contour.cpp</A><BR/>
+<A href="../demo/index.html#PAGE_DEMO_conv_dash_marker">Demo conv_dash_marker.cpp</A><BR/>
+<A href="../demo/index.html#PAGE_DEMO_conv_stroke">Demo conv_stroke.cpp</A><BR/>
+<A href="../demo/index.html#PAGE_DEMO_distortions">Demo distortions.cpp</A><BR/>
+<A href="../demo/index.html#PAGE_DEMO_flash_rasterizer">Demo flash_rasterizer.cpp</A><BR/>
+<A href="../demo/index.html#PAGE_DEMO_flash_rasterizer2">Demo flash_rasterizer2.cpp</A><BR/>
+<A href="../demo/index.html#PAGE_DEMO_freetype_test">Demo freetype_test.cpp</A><BR/>
+<A href="../demo/index.html#PAGE_DEMO_gamma_correction">Demo gamma_correction.cpp</A><BR/>
+<A href="../demo/index.html#PAGE_DEMO_gamma_ctrl">Demo gamma_ctrl.cpp</A><BR/>
+<A href="../demo/index.html#PAGE_DEMO_gamma_tuner">Demo gamma_tuner.cpp</A><BR/>
+<A href="../demo/index.html#PAGE_DEMO_gouraud">Demo gouraud.cpp</A><BR/>
+<A href="../demo/index.html#PAGE_DEMO_gouraud_mesh">Demo gouraud_mesh.cpp</A><BR/>
+<A href="../demo/index.html#PAGE_DEMO_gpc_test">Demo gpc_test.cpp</A><BR/>
+<A href="../demo/index.html#PAGE_DEMO_gradients">Demo gradients.cpp</A><BR/>
+<A href="../demo/index.html#PAGE_DEMO_gradient_focal">Demo gradient_focal.cpp</A><BR/>
+<A href="../demo/index.html#PAGE_DEMO_graph_test">Demo graph_test.cpp</A><BR/>
+<A href="../demo/index.html#PAGE_DEMO_idea">Demo idea.cpp</A><BR/>
+<A href="../demo/index.html#PAGE_DEMO_image1">Demo image1.cpp</A><BR/>
+<A href="../demo/index.html#PAGE_DEMO_image_alpha">Demo image_alpha.cpp</A><BR/>
+<A href="../demo/index.html#PAGE_DEMO_image_filters">Demo image_filters.cpp</A><BR/>
+<A href="../demo/index.html#PAGE_DEMO_image_filters2">Demo image_filters2.cpp</A><BR/>
+<A href="../demo/index.html#PAGE_DEMO_image_fltr_graph">Demo image_fltr_graph.cpp</A><BR/>
+<A href="../demo/index.html#PAGE_DEMO_image_perspective">Demo image_perspective.cpp</A><BR/>
+<A href="../demo/index.html#PAGE_DEMO_image_resample">Demo image_resample.cpp</A><BR/>
+<A href="../demo/index.html#PAGE_DEMO_image_transforms">Demo image_transforms.cpp</A><BR/>
+<A href="../demo/index.html#PAGE_DEMO_line_patterns">Demo line_patterns.cpp</A><BR/>
+<A href="../demo/index.html#PAGE_DEMO_line_patterns_clip">Demo line_patterns_clip.cpp</A><BR/>
+<A href="../demo/index.html#PAGE_DEMO_lion">Demo lion.cpp</A><BR/>
+<A href="../demo/index.html#PAGE_DEMO_lion_lens">Demo lion_lens.cpp</A><BR/>
+<A href="../demo/index.html#PAGE_DEMO_lion_outline">Demo lion_outline.cpp</A><BR/>
+<A href="../demo/index.html#PAGE_DEMO_mol_view">Demo mol_view.cpp</A><BR/>
+<A href="../demo/index.html#PAGE_DEMO_multi_clip">Demo multi_clip.cpp</A><BR/>
+<A href="../demo/index.html#PAGE_DEMO_pattern_fill">Demo pattern_fill.cpp</A><BR/>
+<A href="../demo/index.html#PAGE_DEMO_pattern_perspective">Demo pattern_perspective.cpp</A><BR/>
+<A href="../demo/index.html#PAGE_DEMO_pattern_resample">Demo pattern_resample.cpp</A><BR/>
+<A href="../demo/index.html#PAGE_DEMO_perspective">Demo perspective.cpp</A><BR/>
+<A href="../demo/index.html#PAGE_DEMO_polymorphic_renderer">Demo polymorphic_renderer.cpp</A><BR/>
+<A href="../demo/index.html#PAGE_DEMO_rasterizers">Demo rasterizers.cpp</A><BR/>
+<A href="../demo/index.html#PAGE_DEMO_rasterizers2">Demo rasterizers2.cpp</A><BR/>
+<A href="../demo/index.html#PAGE_DEMO_rasterizer_compound">Demo rasterizer_compound.cpp</A><BR/>
+<A href="../demo/index.html#PAGE_DEMO_raster_text">Demo raster_text.cpp</A><BR/>
+<A href="../demo/index.html#PAGE_DEMO_rounded_rect">Demo rounded_rect.cpp</A><BR/>
+<A href="../demo/index.html#PAGE_DEMO_scanline_boolean">Demo scanline_boolean.cpp</A><BR/>
+<A href="../demo/index.html#PAGE_DEMO_scanline_boolean2">Demo scanline_boolean2.cpp</A><BR/>
+<A href="../demo/index.html#PAGE_DEMO_simple_blur">Demo simple_blur.cpp</A><BR/>
+<A href="../demo/index.html#PAGE_DEMO_trans_curve1">Demo trans_curve1.cpp</A><BR/>
+<A href="../demo/index.html#PAGE_DEMO_trans_curve2">Demo trans_curve2.cpp</A><BR/>
+<A href="../demo/index.html#PAGE_DEMO_trans_polar">Demo trans_polar.cpp</A><BR/>
+<A href="../demo/index.html#PAGE_DEMO_truetype_test">Demo truetype_test.cpp</A><BR/>
+<A href="index.html#PAGE_DOCS">Documentation</A><BR/>
+<A href="../download/index.html#PAGE_DOWNLOAD">Download</A><BR/>
+<A href="../faq/index.html#PAGE_FAQ">Frequently Asked Questions</A><BR/>
+<A href="../forum/index.html#PAGE_FORUM">Forum</A><BR/>
+<A href="../research/gamma_correction/index.html#PAGE_GAMMA_CORRECTION">Gamma Correction</A><BR/>
+<A href="../tips/gradients_tutorial/gradients_tutorial.agdoc.html#PAGE_GRADIENTS_TUTORIAL">Working with Gradients</A><BR/>
+<A href="../tips/image_plg/image_plg.agdoc.html#PAGE_IMAGE_PLG">Image Parallelogram Transformations</A><BR/>
+<A href="introduction/introduction.agdoc.html#PAGE_INTRODUCTION">Introduction</A><BR/>
+<A href="../license/index.html#PAGE_LICENSE">The License</A><BR/>
+<A href="../tips/line_alignment/line_alignment.agdoc.html#PAGE_LINE_ALIGNMENT">The Problem of Line Alignment</A><BR/>
+<A href="../links/index.html#PAGE_LINKS">Links and Friends</A><BR/>
+<A href="../maillist/index.html#PAGE_MAILLIST">Mailing List</A><BR/>
+<A href="../index.html#PAGE_MAIN">Main Page</A><BR/>
+<A href="../mcseem/index.html#PAGE_MCSEEM">Maxim Shemanarev</A><BR/>
+<A href="../news/index.html#PAGE_NEWS">News</A><BR/>
+<A href="../news/release_notes/v21.agdoc.html#PAGE_RELEASE_V21">AGG Version 2.1 Release Notes</A><BR/>
+<A href="../news/release_notes/v22.agdoc.html#PAGE_RELEASE_V22">AGG Version 2.2 Release Notes</A><BR/>
+<A href="../news/release_notes/v23.agdoc.html#PAGE_RELEASE_V23">AGG Version 2.3 Release Notes</A><BR/>
+<A href="../news/release_notes/v24.agdoc.html#PAGE_RELEASE_V24">AGG Version 2.4 Release Notes</A><BR/>
+<A href="../research/index.html#PAGE_RESEARCH">AGG Research</A><BR/>
+<A href="scanlines/scanlines.agdoc.html#PAGE_SCANLINES">Scanlines and Scanline Renderers</A><BR/>
+<A href="../screenshots/index.html#PAGE_SCREENSHOTS">Screenshots</A><BR/>
+<A href="../sponsors/index.html#PAGE_SPONSORS">AGG Sponsors</A><BR/>
+<A href="../tips/square_color_interpolation/square_color_interpolation.agdoc.html#PAGE_SQUARE_COLOR_INTERPOLATION">Simple Color Interpolation in a Square</A><BR/>
+<A href="../svg/index.html#PAGE_SVG">SVG Viewer</A><BR/>
+<A href="../tips/index.html#PAGE_TIPS">Tips and Tricks</A><BR/>
+<A href="../tips/win_ce/win_ce.agdoc.html#PAGE_WIN_CE">Compiling AGG under Microsoft eMbedded VC 4.0</A><BR/>
+<A href="../tips/win_glyph/win_glyph.agdoc.html#PAGE_WIN_GLYPH">Using WinAPI to Render Text</A><BR/>
+<A href="basic_renderers/basic_renderers.agdoc.html#pixfmt">pixfmt</A><BR/>
+<A href="basic_renderers/basic_renderers.agdoc.html#pixfmt_amask_adaptor">pixfmt_amask_adaptor</A><BR/>
+<A href="basic_renderers/basic_renderers.agdoc.html#renderer_base">renderer_base</A><BR/>
+<A href="basic_renderers/basic_renderers.agdoc.html#renderer_markers">renderer_markers</A><BR/>
+<A href="basic_renderers/basic_renderers.agdoc.html#renderer_mclip">renderer_mclip</A><BR/>
+<A href="basic_renderers/basic_renderers.agdoc.html#renderer_primitives">renderer_primitives</A><BR/>
+<A href="basic_renderers/basic_renderers.agdoc.html#rendering_buffer">rendering_buffer</A><BR/>
+<A href="basic_renderers/basic_renderers.agdoc.html#row_ptr_cache">row_ptr_cache</A><BR/>
+</P></TD></TR></TABLE>
+
+<H3>Tables<A name="toc0003"></A></H3>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><A href="../download/index.html#DOWNLOAD">Download</A><BR/>
+</P></TD></TR></TABLE>
+
+<H3>Figures<A name="toc0004"></A></H3>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><A href="../svg/index.html#ADOBE_VS_AGG">Comparison of the quality of the Adobe SVG Viewer and AGG</A><BR/>
+<A href="introduction/introduction.agdoc.html#CIE_1931">CIE Chromaticity Diagram and the RGB Gamut</A><BR/>
+<A href="introduction/introduction.agdoc.html#GDIP_AGG_QUALITY">Quality of Rendering</A><BR/>
+<A href="introduction/introduction.agdoc.html#LINE_THICKNESS">Lines Rendered with Anti-Aliasing and Subpixel Accuracy</A><BR/>
+<A href="introduction/introduction.agdoc.html#SUBPIXEL_ACCURACY1">Circles Rendered with Anti-Aliasing and Subpixel Accuracy</A><BR/>
+<A href="introduction/introduction.agdoc.html#SUBPIXEL_ACCURACY2">Cute Lions</A><BR/>
+<A href="introduction/introduction.agdoc.html#SUBPIXEL_BRESENHAM">A Bresenham Line Rendered with Subpixel Accuracy</A><BR/>
+<A href="introduction/introduction.agdoc.html#TYPICAL_SCHEME">Typical Scheme of the Rendering Pipeline</A><BR/>
+</P></TD></TR></TABLE>
+
+<H3>Listings<A name="toc0005"></A></H3>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><A href="../__code/include/agg_basics.h.html#AGG_CUSTOM_ALLOCATOR">AGG_CUSTOM_ALLOCATOR</A><BR/>
+<A href="../__code/include/agg_alpha_mask_u8.h.html#alpha_mask_abgr32a">alpha_mask_abgr32a</A><BR/>
+<A href="../__code/include/agg_alpha_mask_u8.h.html#alpha_mask_abgr32b">alpha_mask_abgr32b</A><BR/>
+<A href="../__code/include/agg_alpha_mask_u8.h.html#alpha_mask_abgr32g">alpha_mask_abgr32g</A><BR/>
+<A href="../__code/include/agg_alpha_mask_u8.h.html#alpha_mask_abgr32gray">alpha_mask_abgr32gray</A><BR/>
+<A href="../__code/include/agg_alpha_mask_u8.h.html#alpha_mask_abgr32r">alpha_mask_abgr32r</A><BR/>
+<A href="../__code/include/agg_alpha_mask_u8.h.html#alpha_mask_argb32a">alpha_mask_argb32a</A><BR/>
+<A href="../__code/include/agg_alpha_mask_u8.h.html#alpha_mask_argb32b">alpha_mask_argb32b</A><BR/>
+<A href="../__code/include/agg_alpha_mask_u8.h.html#alpha_mask_argb32g">alpha_mask_argb32g</A><BR/>
+<A href="../__code/include/agg_alpha_mask_u8.h.html#alpha_mask_argb32gray">alpha_mask_argb32gray</A><BR/>
+<A href="../__code/include/agg_alpha_mask_u8.h.html#alpha_mask_argb32r">alpha_mask_argb32r</A><BR/>
+<A href="../__code/include/agg_alpha_mask_u8.h.html#alpha_mask_bgr24b">alpha_mask_bgr24b</A><BR/>
+<A href="../__code/include/agg_alpha_mask_u8.h.html#alpha_mask_bgr24g">alpha_mask_bgr24g</A><BR/>
+<A href="../__code/include/agg_alpha_mask_u8.h.html#alpha_mask_bgr24gray">alpha_mask_bgr24gray</A><BR/>
+<A href="../__code/include/agg_alpha_mask_u8.h.html#alpha_mask_bgr24r">alpha_mask_bgr24r</A><BR/>
+<A href="../__code/include/agg_alpha_mask_u8.h.html#alpha_mask_bgra32a">alpha_mask_bgra32a</A><BR/>
+<A href="../__code/include/agg_alpha_mask_u8.h.html#alpha_mask_bgra32b">alpha_mask_bgra32b</A><BR/>
+<A href="../__code/include/agg_alpha_mask_u8.h.html#alpha_mask_bgra32g">alpha_mask_bgra32g</A><BR/>
+<A href="../__code/include/agg_alpha_mask_u8.h.html#alpha_mask_bgra32gray">alpha_mask_bgra32gray</A><BR/>
+<A href="../__code/include/agg_alpha_mask_u8.h.html#alpha_mask_bgra32r">alpha_mask_bgra32r</A><BR/>
+<A href="../__code/include/agg_alpha_mask_u8.h.html#alpha_mask_gray8">alpha_mask_gray8</A><BR/>
+<A href="../__code/include/agg_alpha_mask_u8.h.html#alpha_mask_rgb24b">alpha_mask_rgb24b</A><BR/>
+<A href="../__code/include/agg_alpha_mask_u8.h.html#alpha_mask_rgb24g">alpha_mask_rgb24g</A><BR/>
+<A href="../__code/include/agg_alpha_mask_u8.h.html#alpha_mask_rgb24gray">alpha_mask_rgb24gray</A><BR/>
+<A href="../__code/include/agg_alpha_mask_u8.h.html#alpha_mask_rgb24r">alpha_mask_rgb24r</A><BR/>
+<A href="../__code/include/agg_alpha_mask_u8.h.html#alpha_mask_rgba32a">alpha_mask_rgba32a</A><BR/>
+<A href="../__code/include/agg_alpha_mask_u8.h.html#alpha_mask_rgba32b">alpha_mask_rgba32b</A><BR/>
+<A href="../__code/include/agg_alpha_mask_u8.h.html#alpha_mask_rgba32g">alpha_mask_rgba32g</A><BR/>
+<A href="../__code/include/agg_alpha_mask_u8.h.html#alpha_mask_rgba32gray">alpha_mask_rgba32gray</A><BR/>
+<A href="../__code/include/agg_alpha_mask_u8.h.html#alpha_mask_rgba32r">alpha_mask_rgba32r</A><BR/>
+<A href="../__code/include/agg_alpha_mask_u8.h.html#alpha_mask_u8">alpha_mask_u8</A><BR/>
+<A href="../__code/include/agg_alpha_mask_u8.h.html#amask_no_clip_abgr32a">amask_no_clip_abgr32a</A><BR/>
+<A href="../__code/include/agg_alpha_mask_u8.h.html#amask_no_clip_abgr32b">amask_no_clip_abgr32b</A><BR/>
+<A href="../__code/include/agg_alpha_mask_u8.h.html#amask_no_clip_abgr32g">amask_no_clip_abgr32g</A><BR/>
+<A href="../__code/include/agg_alpha_mask_u8.h.html#amask_no_clip_abgr32gray">amask_no_clip_abgr32gray</A><BR/>
+<A href="../__code/include/agg_alpha_mask_u8.h.html#amask_no_clip_abgr32r">amask_no_clip_abgr32r</A><BR/>
+<A href="../__code/include/agg_alpha_mask_u8.h.html#amask_no_clip_argb32a">amask_no_clip_argb32a</A><BR/>
+<A href="../__code/include/agg_alpha_mask_u8.h.html#amask_no_clip_argb32b">amask_no_clip_argb32b</A><BR/>
+<A href="../__code/include/agg_alpha_mask_u8.h.html#amask_no_clip_argb32g">amask_no_clip_argb32g</A><BR/>
+<A href="../__code/include/agg_alpha_mask_u8.h.html#amask_no_clip_argb32gray">amask_no_clip_argb32gray</A><BR/>
+<A href="../__code/include/agg_alpha_mask_u8.h.html#amask_no_clip_argb32r">amask_no_clip_argb32r</A><BR/>
+<A href="../__code/include/agg_alpha_mask_u8.h.html#amask_no_clip_bgr24b">amask_no_clip_bgr24b</A><BR/>
+<A href="../__code/include/agg_alpha_mask_u8.h.html#amask_no_clip_bgr24g">amask_no_clip_bgr24g</A><BR/>
+<A href="../__code/include/agg_alpha_mask_u8.h.html#amask_no_clip_bgr24gray">amask_no_clip_bgr24gray</A><BR/>
+<A href="../__code/include/agg_alpha_mask_u8.h.html#amask_no_clip_bgr24r">amask_no_clip_bgr24r</A><BR/>
+<A href="../__code/include/agg_alpha_mask_u8.h.html#amask_no_clip_bgra32a">amask_no_clip_bgra32a</A><BR/>
+<A href="../__code/include/agg_alpha_mask_u8.h.html#amask_no_clip_bgra32b">amask_no_clip_bgra32b</A><BR/>
+<A href="../__code/include/agg_alpha_mask_u8.h.html#amask_no_clip_bgra32g">amask_no_clip_bgra32g</A><BR/>
+<A href="../__code/include/agg_alpha_mask_u8.h.html#amask_no_clip_bgra32gray">amask_no_clip_bgra32gray</A><BR/>
+<A href="../__code/include/agg_alpha_mask_u8.h.html#amask_no_clip_bgra32r">amask_no_clip_bgra32r</A><BR/>
+<A href="../__code/include/agg_alpha_mask_u8.h.html#amask_no_clip_gray8">amask_no_clip_gray8</A><BR/>
+<A href="../__code/include/agg_alpha_mask_u8.h.html#amask_no_clip_rgb24b">amask_no_clip_rgb24b</A><BR/>
+<A href="../__code/include/agg_alpha_mask_u8.h.html#amask_no_clip_rgb24g">amask_no_clip_rgb24g</A><BR/>
+<A href="../__code/include/agg_alpha_mask_u8.h.html#amask_no_clip_rgb24gray">amask_no_clip_rgb24gray</A><BR/>
+<A href="../__code/include/agg_alpha_mask_u8.h.html#amask_no_clip_rgb24r">amask_no_clip_rgb24r</A><BR/>
+<A href="../__code/include/agg_alpha_mask_u8.h.html#amask_no_clip_rgba32a">amask_no_clip_rgba32a</A><BR/>
+<A href="../__code/include/agg_alpha_mask_u8.h.html#amask_no_clip_rgba32b">amask_no_clip_rgba32b</A><BR/>
+<A href="../__code/include/agg_alpha_mask_u8.h.html#amask_no_clip_rgba32g">amask_no_clip_rgba32g</A><BR/>
+<A href="../__code/include/agg_alpha_mask_u8.h.html#amask_no_clip_rgba32gray">amask_no_clip_rgba32gray</A><BR/>
+<A href="../__code/include/agg_alpha_mask_u8.h.html#amask_no_clip_rgba32r">amask_no_clip_rgba32r</A><BR/>
+<A href="../__code/include/agg_alpha_mask_u8.h.html#amask_no_clip_u8">amask_no_clip_u8</A><BR/>
+<A href="../__code/include/agg_pixfmt_gray.h.html#apply_gamma_dir_gray">apply_gamma_dir_gray</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgb.h.html#apply_gamma_dir_rgb">apply_gamma_dir_rgb</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#apply_gamma_dir_rgba">apply_gamma_dir_rgba</A><BR/>
+<A href="../__code/include/agg_pixfmt_gray.h.html#apply_gamma_inv_gray">apply_gamma_inv_gray</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgb.h.html#apply_gamma_inv_rgb">apply_gamma_inv_rgb</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#apply_gamma_inv_rgba">apply_gamma_inv_rgba</A><BR/>
+<A href="../__code/include/agg_arc.h.html#arc">arc</A><BR/>
+<A href="../__code/src/agg_bezier_arc.cpp.html#arc_to_bezier">arc_to_bezier</A><BR/>
+<A href="../__code/include/agg_color_rgba.h.html#argb8_packed">argb8_packed</A><BR/>
+<A href="../__code/include/agg_arrowhead.h.html#arrowhead">arrowhead</A><BR/>
+<A href="../__code/include/agg_math.h.html#besj">besj</A><BR/>
+<A href="../__code/include/agg_bezier_arc.h.html#bezier_arc">bezier_arc</A><BR/>
+<A href="../__code/src/agg_bezier_arc.cpp.html#bezier_arc_angle_epsilon">bezier_arc_angle_epsilon</A><BR/>
+<A href="../__code/include/agg_bezier_arc.h.html#bezier_arc_svg">bezier_arc_svg</A><BR/>
+<A href="../__code/include/agg_color_rgba.h.html#bgr8_packed">bgr8_packed</A><BR/>
+<A href="../__code/include/agg_array.h.html#binary_search_pos">binary_search_pos</A><BR/>
+<A href="../__code/include/agg_line_aa_basics.h.html#bisectrix">bisectrix</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#blender_abgr32">blender_abgr32</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#blender_abgr32_plain">blender_abgr32_plain</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#blender_abgr32_pre">blender_abgr32_pre</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#blender_abgr64">blender_abgr64</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#blender_abgr64_pre">blender_abgr64_pre</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#blender_argb32">blender_argb32</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#blender_argb32_plain">blender_argb32_plain</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#blender_argb32_pre">blender_argb32_pre</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#blender_argb64">blender_argb64</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#blender_argb64_pre">blender_argb64_pre</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#blender_bgra32">blender_bgra32</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#blender_bgra32_plain">blender_bgra32_plain</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#blender_bgra32_pre">blender_bgra32_pre</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#blender_bgra64">blender_bgra64</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#blender_bgra64_pre">blender_bgra64_pre</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgb_packed.h.html#blender_bgrAAA">blender_bgrAAA</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgb_packed.h.html#blender_bgrAAA_gamma">blender_bgrAAA_gamma</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgb_packed.h.html#blender_bgrAAA_pre">blender_bgrAAA_pre</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgb_packed.h.html#blender_bgrABB">blender_bgrABB</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgb_packed.h.html#blender_bgrABB_gamma">blender_bgrABB_gamma</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgb_packed.h.html#blender_bgrABB_pre">blender_bgrABB_pre</A><BR/>
+<A href="../__code/include/agg_pixfmt_gray.h.html#blender_gray">blender_gray</A><BR/>
+<A href="../__code/include/agg_pixfmt_gray.h.html#blender_gray_pre">blender_gray_pre</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgb.h.html#blender_rgb">blender_rgb</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgb_packed.h.html#blender_rgb555">blender_rgb555</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgb_packed.h.html#blender_rgb555_gamma">blender_rgb555_gamma</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgb_packed.h.html#blender_rgb555_pre">blender_rgb555_pre</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgb_packed.h.html#blender_rgb565">blender_rgb565</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgb_packed.h.html#blender_rgb565_gamma">blender_rgb565_gamma</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgb_packed.h.html#blender_rgb565_pre">blender_rgb565_pre</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#blender_rgba">blender_rgba</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#blender_rgba32">blender_rgba32</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#blender_rgba32_plain">blender_rgba32_plain</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#blender_rgba32_pre">blender_rgba32_pre</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#blender_rgba64">blender_rgba64</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#blender_rgba64_pre">blender_rgba64_pre</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgb_packed.h.html#blender_rgbAAA">blender_rgbAAA</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgb_packed.h.html#blender_rgbAAA_gamma">blender_rgbAAA_gamma</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgb_packed.h.html#blender_rgbAAA_pre">blender_rgbAAA_pre</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#blender_rgba_plain">blender_rgba_plain</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#blender_rgba_pre">blender_rgba_pre</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgb_packed.h.html#blender_rgbBBA">blender_rgbBBA</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgb_packed.h.html#blender_rgbBBA_gamma">blender_rgbBBA_gamma</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgb_packed.h.html#blender_rgbBBA_pre">blender_rgbBBA_pre</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgb.h.html#blender_rgb_gamma">blender_rgb_gamma</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgb.h.html#blender_rgb_pre">blender_rgb_pre</A><BR/>
+<A href="../__code/include/agg_array.h.html#block_allocator">block_allocator</A><BR/>
+<A href="../__code/include/agg_bounding_rect.h.html#bounding_rect">bounding_rect</A><BR/>
+<A href="../__code/include/agg_bounding_rect.h.html#bounding_rect_single">bounding_rect_single</A><BR/>
+<A href="../__code/include/agg_bspline.h.html#bspline">bspline</A><BR/>
+<A href="../__code/include/agg_math.h.html#calc_distance">calc_distance</A><BR/>
+<A href="../__code/include/agg_math.h.html#calc_intersection">calc_intersection</A><BR/>
+<A href="../__code/include/agg_math.h.html#calc_line_point_distance">calc_line_point_distance</A><BR/>
+<A href="../__code/include/agg_math.h.html#calc_line_point_sq_distance">calc_line_point_sq_distance</A><BR/>
+<A href="../__code/include/agg_math.h.html#calc_line_point_sq_distance">calc_line_point_sq_distance</A><BR/>
+<A href="../__code/include/agg_math.h.html#calc_line_point_u">calc_line_point_u</A><BR/>
+<A href="../__code/include/agg_math.h.html#calc_orthogonal">calc_orthogonal</A><BR/>
+<A href="../__code/include/agg_math.h.html#calc_polygon_area">calc_polygon_area</A><BR/>
+<A href="../__code/include/agg_math.h.html#calc_sq_distance">calc_sq_distance</A><BR/>
+<A href="../__code/include/agg_math.h.html#calc_triangle_area">calc_triangle_area</A><BR/>
+<A href="../__code/include/agg_curves.h.html#catrom_to_bezier">catrom_to_bezier</A><BR/>
+<A href="../__code/include/agg_rasterizer_scanline_aa.h.html#cell_aa">cell_aa</A><BR/>
+<A href="../__code/include/agg_rasterizer_compound_aa.h.html#cell_style_aa">cell_style_aa</A><BR/>
+<A href="../__code/include/agg_basics.h.html#clear_orientation">clear_orientation</A><BR/>
+<A href="../__code/include/agg_clip_liang_barsky.h.html#clipping_flags">clipping_flags</A><BR/>
+<A href="../__code/include/agg_clip_liang_barsky.h.html#clipping_flags_x">clipping_flags_x</A><BR/>
+<A href="../__code/include/agg_clip_liang_barsky.h.html#clipping_flags_y">clipping_flags_y</A><BR/>
+<A href="../__code/include/agg_clip_liang_barsky.h.html#clip_liang_barsky">clip_liang_barsky</A><BR/>
+<A href="../__code/include/agg_clip_liang_barsky.h.html#clip_line_segment">clip_line_segment</A><BR/>
+<A href="../__code/include/agg_gradient_lut.h.html#color_interpolator">color_interpolator</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#comp_adaptor_clip_to_dst_rgba">comp_adaptor_clip_to_dst_rgba</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#comp_adaptor_clip_to_dst_rgba_pre">comp_adaptor_clip_to_dst_rgba_pre</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#comp_adaptor_rgba">comp_adaptor_rgba</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#comp_op_adaptor_clip_to_dst_rgba">comp_op_adaptor_clip_to_dst_rgba</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#comp_op_adaptor_clip_to_dst_rgba_pre">comp_op_adaptor_clip_to_dst_rgba_pre</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#comp_op_adaptor_rgba">comp_op_adaptor_rgba</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#comp_op_adaptor_rgba_pre">comp_op_adaptor_rgba_pre</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#comp_op_clear">comp_op_clear</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#comp_op_color_burn">comp_op_color_burn</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#comp_op_color_dodge">comp_op_color_dodge</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#comp_op_contrast">comp_op_contrast</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#comp_op_darken">comp_op_darken</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#comp_op_difference">comp_op_difference</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#comp_op_dst">comp_op_dst</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#comp_op_dst_atop">comp_op_dst_atop</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#comp_op_dst_in">comp_op_dst_in</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#comp_op_dst_out">comp_op_dst_out</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#comp_op_dst_over">comp_op_dst_over</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#comp_op_e">comp_op_e</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#comp_op_exclusion">comp_op_exclusion</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#comp_op_hard_light">comp_op_hard_light</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#comp_op_invert">comp_op_invert</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#comp_op_invert_rgb">comp_op_invert_rgb</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#comp_op_lighten">comp_op_lighten</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#comp_op_minus">comp_op_minus</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#comp_op_multiply">comp_op_multiply</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#comp_op_overlay">comp_op_overlay</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#comp_op_plus">comp_op_plus</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#comp_op_rgba_clear">comp_op_rgba_clear</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#comp_op_rgba_color_burn">comp_op_rgba_color_burn</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#comp_op_rgba_color_dodge">comp_op_rgba_color_dodge</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#comp_op_rgba_contrast">comp_op_rgba_contrast</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#comp_op_rgba_darken">comp_op_rgba_darken</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#comp_op_rgba_difference">comp_op_rgba_difference</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#comp_op_rgba_dst">comp_op_rgba_dst</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#comp_op_rgba_dst_atop">comp_op_rgba_dst_atop</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#comp_op_rgba_dst_in">comp_op_rgba_dst_in</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#comp_op_rgba_dst_out">comp_op_rgba_dst_out</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#comp_op_rgba_dst_over">comp_op_rgba_dst_over</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#comp_op_rgba_exclusion">comp_op_rgba_exclusion</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#comp_op_rgba_hard_light">comp_op_rgba_hard_light</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#comp_op_rgba_invert">comp_op_rgba_invert</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#comp_op_rgba_invert_rgb">comp_op_rgba_invert_rgb</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#comp_op_rgba_lighten">comp_op_rgba_lighten</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#comp_op_rgba_minus">comp_op_rgba_minus</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#comp_op_rgba_multiply">comp_op_rgba_multiply</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#comp_op_rgba_overlay">comp_op_rgba_overlay</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#comp_op_rgba_plus">comp_op_rgba_plus</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#comp_op_rgba_screen">comp_op_rgba_screen</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#comp_op_rgba_soft_light">comp_op_rgba_soft_light</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#comp_op_rgba_src">comp_op_rgba_src</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#comp_op_rgba_src_atop">comp_op_rgba_src_atop</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#comp_op_rgba_src_in">comp_op_rgba_src_in</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#comp_op_rgba_src_out">comp_op_rgba_src_out</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#comp_op_rgba_src_over">comp_op_rgba_src_over</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#comp_op_rgba_xor">comp_op_rgba_xor</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#comp_op_screen">comp_op_screen</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#comp_op_soft_light">comp_op_soft_light</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#comp_op_src">comp_op_src</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#comp_op_src_atop">comp_op_src_atop</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#comp_op_src_in">comp_op_src_in</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#comp_op_src_out">comp_op_src_out</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#comp_op_src_over">comp_op_src_over</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#comp_op_table_rgba">comp_op_table_rgba</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#comp_op_xor">comp_op_xor</A><BR/>
+<A href="../__code/include/agg_basics.h.html#const_row_info">const_row_info</A><BR/>
+<A href="../__code/include/agg_conv_adaptor_vcgen.h.html#conv_adaptor_vcgen">conv_adaptor_vcgen</A><BR/>
+<A href="../__code/include/agg_conv_adaptor_vpgen.h.html#conv_adaptor_vpgen">conv_adaptor_vpgen</A><BR/>
+<A href="../__code/include/agg_conv_bspline.h.html#conv_bspline">conv_bspline</A><BR/>
+<A href="../__code/include/agg_conv_clip_polygon.h.html#conv_clip_polygon">conv_clip_polygon</A><BR/>
+<A href="../__code/include/agg_conv_clip_polyline.h.html#conv_clip_polyline">conv_clip_polyline</A><BR/>
+<A href="../__code/include/agg_conv_close_polygon.h.html#conv_close_polygon">conv_close_polygon</A><BR/>
+<A href="../__code/include/agg_conv_concat.h.html#conv_concat">conv_concat</A><BR/>
+<A href="../__code/include/agg_conv_contour.h.html#conv_contour">conv_contour</A><BR/>
+<A href="../__code/include/agg_conv_curve.h.html#conv_curve">conv_curve</A><BR/>
+<A href="../__code/include/agg_conv_dash.h.html#conv_dash">conv_dash</A><BR/>
+<A href="../__code/include/agg_conv_gpc.h.html#conv_gpc">conv_gpc</A><BR/>
+<A href="../__code/include/agg_conv_marker.h.html#conv_marker">conv_marker</A><BR/>
+<A href="../__code/include/agg_conv_marker_adaptor.h.html#conv_marker_adaptor">conv_marker_adaptor</A><BR/>
+<A href="../__code/include/agg_conv_segmentator.h.html#conv_segmentator">conv_segmentator</A><BR/>
+<A href="../__code/include/agg_conv_shorten_path.h.html#conv_shorten_path">conv_shorten_path</A><BR/>
+<A href="../__code/include/agg_conv_smooth_poly1.h.html#conv_smooth_poly1">conv_smooth_poly1</A><BR/>
+<A href="../__code/include/agg_conv_smooth_poly1.h.html#conv_smooth_poly1_curve">conv_smooth_poly1_curve</A><BR/>
+<A href="../__code/include/agg_conv_stroke.h.html#conv_stroke">conv_stroke</A><BR/>
+<A href="../__code/include/agg_conv_transform.h.html#conv_transform">conv_transform</A><BR/>
+<A href="../__code/include/agg_conv_unclose_polygon.h.html#conv_unclose_polygon">conv_unclose_polygon</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#copy_or_blend_rgba_wrapper">copy_or_blend_rgba_wrapper</A><BR/>
+<A href="../__code/include/agg_basics.h.html#cover_full">cover_full</A><BR/>
+<A href="../__code/include/agg_basics.h.html#cover_mask">cover_mask</A><BR/>
+<A href="../__code/include/agg_basics.h.html#cover_none">cover_none</A><BR/>
+<A href="../__code/include/agg_basics.h.html#cover_shift">cover_shift</A><BR/>
+<A href="../__code/include/agg_basics.h.html#cover_size">cover_size</A><BR/>
+<A href="../__code/include/agg_basics.h.html#cover_type">cover_type</A><BR/>
+<A href="../__code/include/agg_math.h.html#cross_product">cross_product</A><BR/>
+<A href="../__code/include/agg_curves.h.html#curve3">curve3</A><BR/>
+<A href="../__code/include/agg_curves.h.html#curve3_div">curve3_div</A><BR/>
+<A href="../__code/include/agg_curves.h.html#curve3_inc">curve3_inc</A><BR/>
+<A href="../__code/include/agg_curves.h.html#curve4">curve4</A><BR/>
+<A href="../__code/include/agg_curves.h.html#curve4_div">curve4_div</A><BR/>
+<A href="../__code/include/agg_curves.h.html#curve4_inc">curve4_inc</A><BR/>
+<A href="../__code/include/agg_curves.h.html#curve4_points">curve4_points</A><BR/>
+<A href="../__code/include/agg_curves.h.html#curve_approximation_method_e">curve_approximation_method_e</A><BR/>
+<A href="../__code/include/agg_dda_line.h.html#dda2_line_interpolator">dda2_line_interpolator</A><BR/>
+<A href="../__code/include/agg_dda_line.h.html#dda_line_interpolator">dda_line_interpolator</A><BR/>
+<A href="../__code/include/agg_basics.h.html#deg2rad">deg2rad</A><BR/>
+<A href="../__code/include/agg_math.h.html#dilate_triangle">dilate_triangle</A><BR/>
+<A href="../__code/include/agg_renderer_outline_aa.h.html#distance_interpolator0">distance_interpolator0</A><BR/>
+<A href="../__code/include/agg_renderer_outline_aa.h.html#distance_interpolator00">distance_interpolator00</A><BR/>
+<A href="../__code/include/agg_renderer_outline_aa.h.html#distance_interpolator1">distance_interpolator1</A><BR/>
+<A href="../__code/include/agg_renderer_outline_aa.h.html#distance_interpolator2">distance_interpolator2</A><BR/>
+<A href="../__code/include/agg_renderer_outline_aa.h.html#distance_interpolator3">distance_interpolator3</A><BR/>
+<A href="../__code/include/agg_renderer_outline_image.h.html#distance_interpolator4">distance_interpolator4</A><BR/>
+<A href="../__code/include/agg_ellipse.h.html#ellipse">ellipse</A><BR/>
+<A href="../__code/include/agg_ellipse_bresenham.h.html#ellipse_bresenham_interpolator">ellipse_bresenham_interpolator</A><BR/>
+<A href="../__code/include/agg_math.h.html#fast_sqrt">fast_sqrt</A><BR/>
+<A href="../__code/include/agg_basics.h.html#filling_rule_e">filling_rule_e</A><BR/>
+<A href="../__code/include/agg_line_aa_basics.h.html#fix_degenerate_bisectrix_end">fix_degenerate_bisectrix_end</A><BR/>
+<A href="../__code/include/agg_line_aa_basics.h.html#fix_degenerate_bisectrix_start">fix_degenerate_bisectrix_start</A><BR/>
+<A href="../__code/include/agg_font_cache_manager.h.html#font_cache">font_cache</A><BR/>
+<A href="../__code/include/agg_font_cache_manager.h.html#font_cache_manager">font_cache_manager</A><BR/>
+<A href="../__code/include/agg_font_cache_manager.h.html#font_cache_pool">font_cache_pool</A><BR/>
+<A href="../__code/font_freetype/agg_font_freetype.h.html#font_engine_freetype_base">font_engine_freetype_base</A><BR/>
+<A href="../__code/font_freetype/agg_font_freetype.h.html#font_engine_freetype_int16">font_engine_freetype_int16</A><BR/>
+<A href="../__code/font_freetype/agg_font_freetype.h.html#font_engine_freetype_int32">font_engine_freetype_int32</A><BR/>
+<A href="../__code/font_win32_tt/agg_font_win32_tt.h.html#font_engine_win32_tt_base">font_engine_win32_tt_base</A><BR/>
+<A href="../__code/font_win32_tt/agg_font_win32_tt.h.html#font_engine_win32_tt_int16">font_engine_win32_tt_int16</A><BR/>
+<A href="../__code/font_win32_tt/agg_font_win32_tt.h.html#font_engine_win32_tt_int32">font_engine_win32_tt_int32</A><BR/>
+<A href="../__code/include/agg_gamma_functions.h.html#gamma_linear">gamma_linear</A><BR/>
+<A href="../__code/include/agg_gamma_functions.h.html#gamma_multiply">gamma_multiply</A><BR/>
+<A href="../__code/include/agg_gamma_functions.h.html#gamma_none">gamma_none</A><BR/>
+<A href="../__code/include/agg_gamma_functions.h.html#gamma_power">gamma_power</A><BR/>
+<A href="../__code/include/agg_gamma_functions.h.html#gamma_threshold">gamma_threshold</A><BR/>
+<A href="../__code/include/agg_basics.h.html#get_close_flag">get_close_flag</A><BR/>
+<A href="../__code/include/agg_basics.h.html#get_orientation">get_orientation</A><BR/>
+<A href="../__code/include/agg_font_cache_manager.h.html#glyph_cache">glyph_cache</A><BR/>
+<A href="../__code/include/agg_font_cache_manager.h.html#glyph_data_type">glyph_data_type</A><BR/>
+<A href="../__code/include/agg_glyph_raster_bin.h.html#glyph_raster_bin">glyph_raster_bin</A><BR/>
+<A href="../__code/include/agg_span_gradient_alpha.h.html#gradient_alpha_one_munus_x_u8">gradient_alpha_one_munus_x_u8</A><BR/>
+<A href="../__code/include/agg_span_gradient_alpha.h.html#gradient_alpha_x">gradient_alpha_x</A><BR/>
+<A href="../__code/include/agg_span_gradient_alpha.h.html#gradient_alpha_x_u8">gradient_alpha_x_u8</A><BR/>
+<A href="../__code/include/agg_span_gradient.h.html#gradient_circle">gradient_circle</A><BR/>
+<A href="../__code/include/agg_span_gradient.h.html#gradient_conic">gradient_conic</A><BR/>
+<A href="../__code/include/agg_span_gradient.h.html#gradient_diamond">gradient_diamond</A><BR/>
+<A href="../__code/include/agg_span_gradient.h.html#gradient_linear_color">gradient_linear_color</A><BR/>
+<A href="../__code/include/agg_gradient_lut.h.html#gradient_lut">gradient_lut</A><BR/>
+<A href="../__code/include/agg_span_gradient.h.html#gradient_radial">gradient_radial</A><BR/>
+<A href="../__code/include/agg_span_gradient.h.html#gradient_radial_d">gradient_radial_d</A><BR/>
+<A href="../__code/include/agg_span_gradient.h.html#gradient_radial_focus">gradient_radial_focus</A><BR/>
+<A href="../__code/include/agg_span_gradient.h.html#gradient_reflect_adaptor">gradient_reflect_adaptor</A><BR/>
+<A href="../__code/include/agg_span_gradient.h.html#gradient_repeat_adaptor">gradient_repeat_adaptor</A><BR/>
+<A href="../__code/include/agg_span_gradient.h.html#gradient_sqrt_xy">gradient_sqrt_xy</A><BR/>
+<A href="../__code/include/agg_span_gradient.h.html#gradient_subpixel_mask">gradient_subpixel_mask</A><BR/>
+<A href="../__code/include/agg_span_gradient.h.html#gradient_subpixel_scale">gradient_subpixel_scale</A><BR/>
+<A href="../__code/include/agg_span_gradient.h.html#gradient_subpixel_shift">gradient_subpixel_shift</A><BR/>
+<A href="../__code/include/agg_span_gradient.h.html#gradient_x">gradient_x</A><BR/>
+<A href="../__code/include/agg_span_gradient.h.html#gradient_xy">gradient_xy</A><BR/>
+<A href="../__code/include/agg_span_gradient.h.html#gradient_y">gradient_y</A><BR/>
+<A href="../__code/include/agg_color_gray.h.html#gray16">gray16</A><BR/>
+<A href="../__code/include/agg_color_gray.h.html#gray16_pre">gray16_pre</A><BR/>
+<A href="../__code/include/agg_color_gray.h.html#gray8">gray8</A><BR/>
+<A href="../__code/include/agg_color_gray.h.html#gray8_pre">gray8_pre</A><BR/>
+<A href="../__code/include/agg_gsv_text.h.html#gsv_text">gsv_text</A><BR/>
+<A href="../__code/include/agg_gsv_text.h.html#gsv_text_outline">gsv_text_outline</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#g_comp_op_func">g_comp_op_func</A><BR/>
+<A href="../__code/src/agg_sqrt_tables.cpp.html#g_elder_bit_table">g_elder_bit_table</A><BR/>
+<A href="../__code/src/agg_sqrt_tables.cpp.html#g_sqrt_table">g_sqrt_table</A><BR/>
+<A href="../__code/include/agg_curves.h.html#hermite_to_bezier">hermite_to_bezier</A><BR/>
+<A href="../__code/include/agg_image_accessors.h.html#image_accessor_clip">image_accessor_clip</A><BR/>
+<A href="../__code/include/agg_image_accessors.h.html#image_accessor_clone">image_accessor_clone</A><BR/>
+<A href="../__code/include/agg_image_accessors.h.html#image_accessor_no_clip">image_accessor_no_clip</A><BR/>
+<A href="../__code/include/agg_image_accessors.h.html#image_accessor_wrap">image_accessor_wrap</A><BR/>
+<A href="../__code/include/agg_image_filters.h.html#image_filter">image_filter</A><BR/>
+<A href="../__code/include/agg_image_filters.h.html#image_filter_bessel">image_filter_bessel</A><BR/>
+<A href="../__code/include/agg_image_filters.h.html#image_filter_bicubic">image_filter_bicubic</A><BR/>
+<A href="../__code/include/agg_image_filters.h.html#image_filter_bilinear">image_filter_bilinear</A><BR/>
+<A href="../__code/include/agg_image_filters.h.html#image_filter_blackman">image_filter_blackman</A><BR/>
+<A href="../__code/include/agg_image_filters.h.html#image_filter_blackman100">image_filter_blackman100</A><BR/>
+<A href="../__code/include/agg_image_filters.h.html#image_filter_blackman144">image_filter_blackman144</A><BR/>
+<A href="../__code/include/agg_image_filters.h.html#image_filter_blackman196">image_filter_blackman196</A><BR/>
+<A href="../__code/include/agg_image_filters.h.html#image_filter_blackman256">image_filter_blackman256</A><BR/>
+<A href="../__code/include/agg_image_filters.h.html#image_filter_blackman36">image_filter_blackman36</A><BR/>
+<A href="../__code/include/agg_image_filters.h.html#image_filter_blackman64">image_filter_blackman64</A><BR/>
+<A href="../__code/include/agg_image_filters.h.html#image_filter_catrom">image_filter_catrom</A><BR/>
+<A href="../__code/include/agg_image_filters.h.html#image_filter_gaussian">image_filter_gaussian</A><BR/>
+<A href="../__code/include/agg_image_filters.h.html#image_filter_hamming">image_filter_hamming</A><BR/>
+<A href="../__code/include/agg_image_filters.h.html#image_filter_hanning">image_filter_hanning</A><BR/>
+<A href="../__code/include/agg_image_filters.h.html#image_filter_hermite">image_filter_hermite</A><BR/>
+<A href="../__code/include/agg_image_filters.h.html#image_filter_kaiser">image_filter_kaiser</A><BR/>
+<A href="../__code/include/agg_image_filters.h.html#image_filter_lanczos">image_filter_lanczos</A><BR/>
+<A href="../__code/include/agg_image_filters.h.html#image_filter_lanczos100">image_filter_lanczos100</A><BR/>
+<A href="../__code/include/agg_image_filters.h.html#image_filter_lanczos144">image_filter_lanczos144</A><BR/>
+<A href="../__code/include/agg_image_filters.h.html#image_filter_lanczos196">image_filter_lanczos196</A><BR/>
+<A href="../__code/include/agg_image_filters.h.html#image_filter_lanczos256">image_filter_lanczos256</A><BR/>
+<A href="../__code/include/agg_image_filters.h.html#image_filter_lanczos36">image_filter_lanczos36</A><BR/>
+<A href="../__code/include/agg_image_filters.h.html#image_filter_lanczos64">image_filter_lanczos64</A><BR/>
+<A href="../__code/include/agg_image_filters.h.html#image_filter_lut">image_filter_lut</A><BR/>
+<A href="../__code/include/agg_image_filters.h.html#image_filter_mask">image_filter_mask</A><BR/>
+<A href="../__code/include/agg_image_filters.h.html#image_filter_mitchell">image_filter_mitchell</A><BR/>
+<A href="../__code/include/agg_image_filters.h.html#image_filter_quadric">image_filter_quadric</A><BR/>
+<A href="../__code/include/agg_image_filters.h.html#image_filter_scale">image_filter_scale</A><BR/>
+<A href="../__code/include/agg_image_filters.h.html#image_filter_shift">image_filter_shift</A><BR/>
+<A href="../__code/include/agg_image_filters.h.html#image_filter_sinc">image_filter_sinc</A><BR/>
+<A href="../__code/include/agg_image_filters.h.html#image_filter_sinc100">image_filter_sinc100</A><BR/>
+<A href="../__code/include/agg_image_filters.h.html#image_filter_sinc144">image_filter_sinc144</A><BR/>
+<A href="../__code/include/agg_image_filters.h.html#image_filter_sinc196">image_filter_sinc196</A><BR/>
+<A href="../__code/include/agg_image_filters.h.html#image_filter_sinc256">image_filter_sinc256</A><BR/>
+<A href="../__code/include/agg_image_filters.h.html#image_filter_sinc36">image_filter_sinc36</A><BR/>
+<A href="../__code/include/agg_image_filters.h.html#image_filter_sinc64">image_filter_sinc64</A><BR/>
+<A href="../__code/include/agg_image_filters.h.html#image_filter_spline16">image_filter_spline16</A><BR/>
+<A href="../__code/include/agg_image_filters.h.html#image_filter_spline36">image_filter_spline36</A><BR/>
+<A href="../__code/include/agg_image_filters.h.html#image_subpixel_mask">image_subpixel_mask</A><BR/>
+<A href="../__code/include/agg_image_filters.h.html#image_subpixel_scale">image_subpixel_scale</A><BR/>
+<A href="../__code/include/agg_image_filters.h.html#image_subpixel_shift">image_subpixel_shift</A><BR/>
+<A href="../__code/include/agg_math_stroke.h.html#inner_join_e">inner_join_e</A><BR/>
+<A href="../__code/include/agg_basics.h.html#int16">int16</A><BR/>
+<A href="../__code/include/agg_basics.h.html#int16u">int16u</A><BR/>
+<A href="../__code/include/agg_basics.h.html#int32">int32</A><BR/>
+<A href="../__code/include/agg_basics.h.html#int32u">int32u</A><BR/>
+<A href="../__code/include/agg_basics.h.html#int64">int64</A><BR/>
+<A href="../__code/include/agg_basics.h.html#int64u">int64u</A><BR/>
+<A href="../__code/include/agg_basics.h.html#int8">int8</A><BR/>
+<A href="../__code/include/agg_basics.h.html#int8u">int8u</A><BR/>
+<A href="../__code/include/agg_math.h.html#intersection_epsilon">intersection_epsilon</A><BR/>
+<A href="../__code/include/agg_math.h.html#intersection_exists">intersection_exists</A><BR/>
+<A href="../__code/include/agg_basics.h.html#intersect_rectangles">intersect_rectangles</A><BR/>
+<A href="../__code/include/agg_array.h.html#int_greater">int_greater</A><BR/>
+<A href="../__code/include/agg_array.h.html#int_less">int_less</A><BR/>
+<A href="../__code/include/agg_array.h.html#invert_container">invert_container</A><BR/>
+<A href="../__code/include/agg_basics.h.html#iround">iround</A><BR/>
+<A href="../__code/include/agg_basics.h.html#is_ccw">is_ccw</A><BR/>
+<A href="../__code/include/agg_basics.h.html#is_close">is_close</A><BR/>
+<A href="../__code/include/agg_basics.h.html#is_closed">is_closed</A><BR/>
+<A href="../__code/include/agg_basics.h.html#is_curve">is_curve</A><BR/>
+<A href="../__code/include/agg_basics.h.html#is_curve3">is_curve3</A><BR/>
+<A href="../__code/include/agg_basics.h.html#is_curve4">is_curve4</A><BR/>
+<A href="../__code/include/agg_basics.h.html#is_cw">is_cw</A><BR/>
+<A href="../__code/include/agg_basics.h.html#is_drawing">is_drawing</A><BR/>
+<A href="../__code/include/agg_basics.h.html#is_end_poly">is_end_poly</A><BR/>
+<A href="../__code/include/agg_basics.h.html#is_equal_eps">is_equal_eps</A><BR/>
+<A href="../__code/include/agg_basics.h.html#is_line_to">is_line_to</A><BR/>
+<A href="../__code/include/agg_basics.h.html#is_move_to">is_move_to</A><BR/>
+<A href="../__code/include/agg_basics.h.html#is_next_poly">is_next_poly</A><BR/>
+<A href="../__code/include/agg_basics.h.html#is_oriented">is_oriented</A><BR/>
+<A href="../__code/include/agg_basics.h.html#is_stop">is_stop</A><BR/>
+<A href="../__code/include/agg_basics.h.html#is_vertex">is_vertex</A><BR/>
+<A href="../__code/include/agg_rasterizer_compound_aa.h.html#layer_direct">layer_direct</A><BR/>
+<A href="../__code/include/agg_rasterizer_compound_aa.h.html#layer_inverse">layer_inverse</A><BR/>
+<A href="../__code/include/agg_rasterizer_compound_aa.h.html#layer_order_e">layer_order_e</A><BR/>
+<A href="../__code/include/agg_rasterizer_compound_aa.h.html#layer_unsorted">layer_unsorted</A><BR/>
+<A href="../__code/include/agg_rasterizer_outline_aa.h.html#line_aa_vertex">line_aa_vertex</A><BR/>
+<A href="../__code/include/agg_path_storage.h.html#line_adaptor">line_adaptor</A><BR/>
+<A href="../__code/include/agg_dda_line.h.html#line_bresenham_interpolator">line_bresenham_interpolator</A><BR/>
+<A href="../__code/include/agg_math_stroke.h.html#line_cap_e">line_cap_e</A><BR/>
+<A href="../__code/include/agg_line_aa_basics.h.html#line_coord">line_coord</A><BR/>
+<A href="../__code/include/agg_line_aa_basics.h.html#line_coord_sat">line_coord_sat</A><BR/>
+<A href="../__code/include/agg_line_aa_basics.h.html#line_dbl_hr">line_dbl_hr</A><BR/>
+<A href="../__code/include/agg_line_aa_basics.h.html#line_hr">line_hr</A><BR/>
+<A href="../__code/include/agg_renderer_outline_image.h.html#line_image_pattern">line_image_pattern</A><BR/>
+<A href="../__code/include/agg_renderer_outline_image.h.html#line_image_pattern_pow2">line_image_pattern_pow2</A><BR/>
+<A href="../__code/include/agg_renderer_outline_image.h.html#line_image_scale">line_image_scale</A><BR/>
+<A href="../__code/include/agg_renderer_outline_aa.h.html#line_interpolator_aa0">line_interpolator_aa0</A><BR/>
+<A href="../__code/include/agg_renderer_outline_aa.h.html#line_interpolator_aa1">line_interpolator_aa1</A><BR/>
+<A href="../__code/include/agg_renderer_outline_aa.h.html#line_interpolator_aa2">line_interpolator_aa2</A><BR/>
+<A href="../__code/include/agg_renderer_outline_aa.h.html#line_interpolator_aa3">line_interpolator_aa3</A><BR/>
+<A href="../__code/include/agg_renderer_outline_aa.h.html#line_interpolator_aa_base">line_interpolator_aa_base</A><BR/>
+<A href="../__code/include/agg_renderer_outline_image.h.html#line_interpolator_image">line_interpolator_image</A><BR/>
+<A href="../__code/include/agg_math_stroke.h.html#line_join_e">line_join_e</A><BR/>
+<A href="../__code/include/agg_line_aa_basics.h.html#line_max_coord">line_max_coord</A><BR/>
+<A href="../__code/include/agg_line_aa_basics.h.html#line_max_length">line_max_length</A><BR/>
+<A href="../__code/include/agg_line_aa_basics.h.html#line_mr">line_mr</A><BR/>
+<A href="../__code/include/agg_line_aa_basics.h.html#line_mr_subpixel_mask">line_mr_subpixel_mask</A><BR/>
+<A href="../__code/include/agg_line_aa_basics.h.html#line_mr_subpixel_scale">line_mr_subpixel_scale</A><BR/>
+<A href="../__code/include/agg_line_aa_basics.h.html#line_mr_subpixel_shift">line_mr_subpixel_shift</A><BR/>
+<A href="../__code/include/agg_line_aa_basics.h.html#line_parameters">line_parameters</A><BR/>
+<A href="../__code/include/agg_renderer_outline_aa.h.html#line_profile_aa">line_profile_aa</A><BR/>
+<A href="../__code/include/agg_line_aa_basics.h.html#line_subpixel_mask">line_subpixel_mask</A><BR/>
+<A href="../__code/include/agg_line_aa_basics.h.html#line_subpixel_scale">line_subpixel_scale</A><BR/>
+<A href="../__code/include/agg_line_aa_basics.h.html#line_subpixel_shift">line_subpixel_shift</A><BR/>
+<A href="../__code/include/agg_renderer_markers.h.html#marker_e">marker_e</A><BR/>
+<A href="../__code/include/agg_math_stroke.h.html#math_stroke">math_stroke</A><BR/>
+<A href="../__code/include/agg_simul_eq.h.html#matrix_pivot">matrix_pivot</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#multiplier_rgba">multiplier_rgba</A><BR/>
+<A href="../__code/include/agg_basics.h.html#mul_one">mul_one</A><BR/>
+<A href="../__code/include/agg_conv_adaptor_vcgen.h.html#null_markers">null_markers</A><BR/>
+<A href="../__code/include/agg_basics.h.html#obj_allocator">obj_allocator</A><BR/>
+<A href="../__code/include/agg_alpha_mask_u8.h.html#one_component_mask_u8">one_component_mask_u8</A><BR/>
+<A href="../__code/include/agg_color_rgba.h.html#order_abgr">order_abgr</A><BR/>
+<A href="../__code/include/agg_color_rgba.h.html#order_argb">order_argb</A><BR/>
+<A href="../__code/include/agg_color_rgba.h.html#order_bgr">order_bgr</A><BR/>
+<A href="../__code/include/agg_color_rgba.h.html#order_bgra">order_bgra</A><BR/>
+<A href="../__code/include/agg_color_rgba.h.html#order_rgb">order_rgb</A><BR/>
+<A href="../__code/include/agg_color_rgba.h.html#order_rgba">order_rgba</A><BR/>
+<A href="../__code/include/agg_rasterizer_outline_aa.h.html#outline_aa_join_e">outline_aa_join_e</A><BR/>
+<A href="../__code/include/agg_rasterizer_outline_aa.h.html#outline_accurate_join">outline_accurate_join</A><BR/>
+<A href="../__code/include/agg_rasterizer_outline_aa.h.html#outline_miter_join">outline_miter_join</A><BR/>
+<A href="../__code/include/agg_rasterizer_outline_aa.h.html#outline_no_join">outline_no_join</A><BR/>
+<A href="../__code/include/agg_rasterizer_outline_aa.h.html#outline_round_join">outline_round_join</A><BR/>
+<A href="../__code/include/agg_path_storage.h.html#path_base">path_base</A><BR/>
+<A href="../__code/include/agg_basics.h.html#path_cmd_catrom">path_cmd_catrom</A><BR/>
+<A href="../__code/include/agg_basics.h.html#path_cmd_curve3">path_cmd_curve3</A><BR/>
+<A href="../__code/include/agg_basics.h.html#path_cmd_curve4">path_cmd_curve4</A><BR/>
+<A href="../__code/include/agg_basics.h.html#path_cmd_curveN">path_cmd_curveN</A><BR/>
+<A href="../__code/include/agg_basics.h.html#path_cmd_end_poly">path_cmd_end_poly</A><BR/>
+<A href="../__code/include/agg_basics.h.html#path_cmd_line_to">path_cmd_line_to</A><BR/>
+<A href="../__code/include/agg_basics.h.html#path_cmd_mask">path_cmd_mask</A><BR/>
+<A href="../__code/include/agg_basics.h.html#path_cmd_move_to">path_cmd_move_to</A><BR/>
+<A href="../__code/include/agg_basics.h.html#path_cmd_stop">path_cmd_stop</A><BR/>
+<A href="../__code/include/agg_basics.h.html#path_cmd_ubspline">path_cmd_ubspline</A><BR/>
+<A href="../__code/include/agg_basics.h.html#path_commands_e">path_commands_e</A><BR/>
+<A href="../__code/include/agg_basics.h.html#path_flags_ccw">path_flags_ccw</A><BR/>
+<A href="../__code/include/agg_basics.h.html#path_flags_close">path_flags_close</A><BR/>
+<A href="../__code/include/agg_basics.h.html#path_flags_cw">path_flags_cw</A><BR/>
+<A href="../__code/include/agg_basics.h.html#path_flags_e">path_flags_e</A><BR/>
+<A href="../__code/include/agg_basics.h.html#path_flags_mask">path_flags_mask</A><BR/>
+<A href="../__code/include/agg_basics.h.html#path_flags_none">path_flags_none</A><BR/>
+<A href="../__code/include/agg_path_storage.h.html#path_storage">path_storage</A><BR/>
+<A href="../__code/include/agg_path_storage_integer.h.html#path_storage_integer">path_storage_integer</A><BR/>
+<A href="../__code/include/agg_pattern_filters_rgba.h.html#pattern_filter_bilinear_rgba">pattern_filter_bilinear_rgba</A><BR/>
+<A href="../__code/include/agg_pattern_filters_rgba.h.html#pattern_filter_nn">pattern_filter_nn</A><BR/>
+<A href="../__code/include/agg_basics.h.html#pi">pi</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#pixfmt_abgr32">pixfmt_abgr32</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#pixfmt_abgr32_plain">pixfmt_abgr32_plain</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#pixfmt_abgr32_pre">pixfmt_abgr32_pre</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#pixfmt_abgr64">pixfmt_abgr64</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#pixfmt_abgr64_pre">pixfmt_abgr64_pre</A><BR/>
+<A href="../__code/include/agg_pixfmt_gray.h.html#pixfmt_alpha_blend_gray">pixfmt_alpha_blend_gray</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgb.h.html#pixfmt_alpha_blend_rgb">pixfmt_alpha_blend_rgb</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#pixfmt_alpha_blend_rgba">pixfmt_alpha_blend_rgba</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgb_packed.h.html#pixfmt_alpha_blend_rgb_packed">pixfmt_alpha_blend_rgb_packed</A><BR/>
+<A href="../__code/include/agg_pixfmt_amask_adaptor.h.html#pixfmt_amask_adaptor">pixfmt_amask_adaptor</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#pixfmt_argb32">pixfmt_argb32</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#pixfmt_argb32_plain">pixfmt_argb32_plain</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#pixfmt_argb32_pre">pixfmt_argb32_pre</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#pixfmt_argb64">pixfmt_argb64</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#pixfmt_argb64_pre">pixfmt_argb64_pre</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgb.h.html#pixfmt_bgr24">pixfmt_bgr24</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgb.h.html#pixfmt_bgr24_gamma">pixfmt_bgr24_gamma</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgb.h.html#pixfmt_bgr24_pre">pixfmt_bgr24_pre</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgb.h.html#pixfmt_bgr48">pixfmt_bgr48</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgb.h.html#pixfmt_bgr48_gamma">pixfmt_bgr48_gamma</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgb.h.html#pixfmt_bgr48_pre">pixfmt_bgr48_pre</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#pixfmt_bgra32">pixfmt_bgra32</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#pixfmt_bgra32_plain">pixfmt_bgra32_plain</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#pixfmt_bgra32_pre">pixfmt_bgra32_pre</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#pixfmt_bgra64">pixfmt_bgra64</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#pixfmt_bgra64_pre">pixfmt_bgra64_pre</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgb_packed.h.html#pixfmt_bgrAAA">pixfmt_bgrAAA</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgb_packed.h.html#pixfmt_bgrAAA_gamma">pixfmt_bgrAAA_gamma</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgb_packed.h.html#pixfmt_bgrAAA_pre">pixfmt_bgrAAA_pre</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgb_packed.h.html#pixfmt_bgrABB">pixfmt_bgrABB</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgb_packed.h.html#pixfmt_bgrABB_gamma">pixfmt_bgrABB_gamma</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgb_packed.h.html#pixfmt_bgrABB_pre">pixfmt_bgrABB_pre</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#pixfmt_custom_blend_rgba">pixfmt_custom_blend_rgba</A><BR/>
+<A href="../__code/include/agg_pixfmt_gray.h.html#pixfmt_gray16">pixfmt_gray16</A><BR/>
+<A href="../__code/include/agg_pixfmt_gray.h.html#pixfmt_gray16_pre">pixfmt_gray16_pre</A><BR/>
+<A href="../__code/include/agg_pixfmt_gray.h.html#pixfmt_gray8">pixfmt_gray8</A><BR/>
+<A href="../__code/include/agg_pixfmt_gray.h.html#pixfmt_gray8_pre">pixfmt_gray8_pre</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgb.h.html#pixfmt_rgb24">pixfmt_rgb24</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgb.h.html#pixfmt_rgb24_gamma">pixfmt_rgb24_gamma</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgb.h.html#pixfmt_rgb24_pre">pixfmt_rgb24_pre</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgb.h.html#pixfmt_rgb48">pixfmt_rgb48</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgb.h.html#pixfmt_rgb48_gamma">pixfmt_rgb48_gamma</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgb.h.html#pixfmt_rgb48_pre">pixfmt_rgb48_pre</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgb_packed.h.html#pixfmt_rgb555">pixfmt_rgb555</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgb_packed.h.html#pixfmt_rgb555_gamma">pixfmt_rgb555_gamma</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgb_packed.h.html#pixfmt_rgb555_pre">pixfmt_rgb555_pre</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgb_packed.h.html#pixfmt_rgb565">pixfmt_rgb565</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgb_packed.h.html#pixfmt_rgb565_gamma">pixfmt_rgb565_gamma</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgb_packed.h.html#pixfmt_rgb565_pre">pixfmt_rgb565_pre</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#pixfmt_rgba32">pixfmt_rgba32</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#pixfmt_rgba32_plain">pixfmt_rgba32_plain</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#pixfmt_rgba32_pre">pixfmt_rgba32_pre</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#pixfmt_rgba64">pixfmt_rgba64</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html#pixfmt_rgba64_pre">pixfmt_rgba64_pre</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgb_packed.h.html#pixfmt_rgbAAA">pixfmt_rgbAAA</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgb_packed.h.html#pixfmt_rgbAAA_gamma">pixfmt_rgbAAA_gamma</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgb_packed.h.html#pixfmt_rgbAAA_pre">pixfmt_rgbAAA_pre</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgb_packed.h.html#pixfmt_rgbBBA">pixfmt_rgbBBA</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgb_packed.h.html#pixfmt_rgbBBA_gamma">pixfmt_rgbBBA_gamma</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgb_packed.h.html#pixfmt_rgbBBA_pre">pixfmt_rgbBBA_pre</A><BR/>
+<A href="../__code/include/agg_pixfmt_transposer.h.html#pixfmt_transposer">pixfmt_transposer</A><BR/>
+<A href="../__code/include/agg_basics.h.html#pod_allocator">pod_allocator</A><BR/>
+<A href="../__code/include/agg_array.h.html#pod_array">pod_array</A><BR/>
+<A href="../__code/include/agg_array.h.html#pod_array_adaptor">pod_array_adaptor</A><BR/>
+<A href="../__code/include/agg_array.h.html#pod_auto_array">pod_auto_array</A><BR/>
+<A href="../__code/include/agg_array.h.html#pod_auto_vector">pod_auto_vector</A><BR/>
+<A href="../__code/include/agg_array.h.html#pod_bvector">pod_bvector</A><BR/>
+<A href="../__code/include/agg_array.h.html#pod_vector">pod_vector</A><BR/>
+<A href="../__code/include/agg_basics.h.html#point_base">point_base</A><BR/>
+<A href="../__code/include/agg_basics.h.html#point_d">point_d</A><BR/>
+<A href="../__code/include/agg_basics.h.html#point_f">point_f</A><BR/>
+<A href="../__code/include/agg_basics.h.html#point_i">point_i</A><BR/>
+<A href="../__code/include/agg_math.h.html#point_in_triangle">point_in_triangle</A><BR/>
+<A href="../__code/include/agg_path_storage.h.html#poly_container_adaptor">poly_container_adaptor</A><BR/>
+<A href="../__code/include/agg_path_storage.h.html#poly_container_reverse_adaptor">poly_container_reverse_adaptor</A><BR/>
+<A href="../__code/include/agg_rasterizer_sl_clip.h.html#poly_max_coord">poly_max_coord</A><BR/>
+<A href="../__code/include/agg_rasterizer_sl_clip.h.html#poly_max_coord_e">poly_max_coord_e</A><BR/>
+<A href="../__code/include/agg_path_storage.h.html#poly_plain_adaptor">poly_plain_adaptor</A><BR/>
+<A href="../__code/include/agg_basics.h.html#poly_subpixel_mask">poly_subpixel_mask</A><BR/>
+<A href="../__code/include/agg_basics.h.html#poly_subpixel_scale">poly_subpixel_scale</A><BR/>
+<A href="../__code/include/agg_basics.h.html#poly_subpixel_scale_e">poly_subpixel_scale_e</A><BR/>
+<A href="../__code/include/agg_basics.h.html#poly_subpixel_shift">poly_subpixel_shift</A><BR/>
+<A href="../__code/include/agg_array.h.html#quick_sort">quick_sort</A><BR/>
+<A href="../__code/include/agg_basics.h.html#rad2deg">rad2deg</A><BR/>
+<A href="../__code/include/agg_array.h.html#range_adaptor">range_adaptor</A><BR/>
+<A href="../__code/include/agg_rasterizer_cells_aa.h.html#rasterizer_cells_aa">rasterizer_cells_aa</A><BR/>
+<A href="../__code/include/agg_rasterizer_compound_aa.h.html#rasterizer_compound_aa">rasterizer_compound_aa</A><BR/>
+<A href="../__code/include/agg_rasterizer_outline.h.html#rasterizer_outline">rasterizer_outline</A><BR/>
+<A href="../__code/include/agg_rasterizer_outline_aa.h.html#rasterizer_outline_aa">rasterizer_outline_aa</A><BR/>
+<A href="../__code/include/agg_rasterizer_scanline_aa.h.html#rasterizer_scanline_aa">rasterizer_scanline_aa</A><BR/>
+<A href="../__code/include/agg_rasterizer_sl_clip.h.html#rasterizer_sl_clip">rasterizer_sl_clip</A><BR/>
+<A href="../__code/include/agg_rasterizer_sl_clip.h.html#rasterizer_sl_clip_dbl">rasterizer_sl_clip_dbl</A><BR/>
+<A href="../__code/include/agg_rasterizer_sl_clip.h.html#rasterizer_sl_clip_dbl_3x">rasterizer_sl_clip_dbl_3x</A><BR/>
+<A href="../__code/include/agg_rasterizer_sl_clip.h.html#rasterizer_sl_clip_int">rasterizer_sl_clip_int</A><BR/>
+<A href="../__code/include/agg_rasterizer_sl_clip.h.html#rasterizer_sl_clip_int_3x">rasterizer_sl_clip_int_3x</A><BR/>
+<A href="../__code/include/agg_rasterizer_sl_clip.h.html#rasterizer_sl_clip_int_sat">rasterizer_sl_clip_int_sat</A><BR/>
+<A href="../__code/include/agg_rasterizer_sl_clip.h.html#rasterizer_sl_no_clip">rasterizer_sl_no_clip</A><BR/>
+<A href="../__code/include/agg_rasterizer_sl_clip.h.html#ras_conv_dbl">ras_conv_dbl</A><BR/>
+<A href="../__code/include/agg_rasterizer_sl_clip.h.html#ras_conv_dbl_3x">ras_conv_dbl_3x</A><BR/>
+<A href="../__code/include/agg_rasterizer_sl_clip.h.html#ras_conv_int">ras_conv_int</A><BR/>
+<A href="../__code/include/agg_rasterizer_sl_clip.h.html#ras_conv_int_3x">ras_conv_int_3x</A><BR/>
+<A href="../__code/include/agg_rasterizer_sl_clip.h.html#ras_conv_int_sat">ras_conv_int_sat</A><BR/>
+<A href="../__code/include/agg_basics.h.html#rect_base">rect_base</A><BR/>
+<A href="../__code/include/agg_basics.h.html#rect_d">rect_d</A><BR/>
+<A href="../__code/include/agg_basics.h.html#rect_f">rect_f</A><BR/>
+<A href="../__code/include/agg_basics.h.html#rect_i">rect_i</A><BR/>
+<A href="../__code/include/agg_blur.h.html#recursive_blur">recursive_blur</A><BR/>
+<A href="../__code/include/agg_blur.h.html#recursive_blur_calc_gray">recursive_blur_calc_gray</A><BR/>
+<A href="../__code/include/agg_blur.h.html#recursive_blur_calc_rgb">recursive_blur_calc_rgb</A><BR/>
+<A href="../__code/include/agg_blur.h.html#recursive_blur_calc_rgba">recursive_blur_calc_rgba</A><BR/>
+<A href="../__code/include/agg_array.h.html#remove_duplicates">remove_duplicates</A><BR/>
+<A href="../__code/include/agg_renderer_base.h.html#renderer_base">renderer_base</A><BR/>
+<A href="../__code/include/agg_renderer_markers.h.html#renderer_markers">renderer_markers</A><BR/>
+<A href="../__code/include/agg_renderer_mclip.h.html#renderer_mclip">renderer_mclip</A><BR/>
+<A href="../__code/include/agg_renderer_outline_aa.h.html#renderer_outline_aa">renderer_outline_aa</A><BR/>
+<A href="../__code/include/agg_renderer_outline_image.h.html#renderer_outline_image">renderer_outline_image</A><BR/>
+<A href="../__code/include/agg_renderer_primitives.h.html#renderer_primitives">renderer_primitives</A><BR/>
+<A href="../__code/include/agg_renderer_raster_text.h.html#renderer_raster_htext">renderer_raster_htext</A><BR/>
+<A href="../__code/include/agg_renderer_raster_text.h.html#renderer_raster_htext_solid">renderer_raster_htext_solid</A><BR/>
+<A href="../__code/include/agg_renderer_raster_text.h.html#renderer_raster_vtext_solid">renderer_raster_vtext_solid</A><BR/>
+<A href="../__code/include/agg_renderer_scanline.h.html#renderer_scanline_aa">renderer_scanline_aa</A><BR/>
+<A href="../__code/include/agg_renderer_scanline.h.html#renderer_scanline_aa_solid">renderer_scanline_aa_solid</A><BR/>
+<A href="../__code/include/agg_renderer_scanline.h.html#renderer_scanline_bin">renderer_scanline_bin</A><BR/>
+<A href="../__code/include/agg_renderer_scanline.h.html#renderer_scanline_bin_solid">renderer_scanline_bin_solid</A><BR/>
+<A href="../__code/include/agg_rendering_buffer.h.html#rendering_buffer">rendering_buffer</A><BR/>
+<A href="../__code/include/agg_rendering_buffer_dynarow.h.html#rendering_buffer_dynarow">rendering_buffer_dynarow</A><BR/>
+<A href="../__code/include/agg_renderer_scanline.h.html#render_all_paths">render_all_paths</A><BR/>
+<A href="../__code/include/agg_renderer_scanline.h.html#render_scanlines">render_scanlines</A><BR/>
+<A href="../__code/include/agg_renderer_scanline.h.html#render_scanlines_aa">render_scanlines_aa</A><BR/>
+<A href="../__code/include/agg_renderer_scanline.h.html#render_scanlines_aa_solid">render_scanlines_aa_solid</A><BR/>
+<A href="../__code/include/agg_renderer_scanline.h.html#render_scanlines_bin">render_scanlines_bin</A><BR/>
+<A href="../__code/include/agg_renderer_scanline.h.html#render_scanlines_bin_solid">render_scanlines_bin_solid</A><BR/>
+<A href="../__code/include/agg_renderer_scanline.h.html#render_scanlines_compound">render_scanlines_compound</A><BR/>
+<A href="../__code/include/agg_renderer_scanline.h.html#render_scanlines_compound_layered">render_scanlines_compound_layered</A><BR/>
+<A href="../__code/include/agg_renderer_scanline.h.html#render_scanline_aa">render_scanline_aa</A><BR/>
+<A href="../__code/include/agg_renderer_scanline.h.html#render_scanline_aa_solid">render_scanline_aa_solid</A><BR/>
+<A href="../__code/include/agg_renderer_scanline.h.html#render_scanline_bin">render_scanline_bin</A><BR/>
+<A href="../__code/include/agg_renderer_scanline.h.html#render_scanline_bin_solid">render_scanline_bin_solid</A><BR/>
+<A href="../__code/include/agg_color_rgba.h.html#rgb8_packed">rgb8_packed</A><BR/>
+<A href="../__code/include/agg_color_rgba.h.html#rgba">rgba</A><BR/>
+<A href="../__code/include/agg_color_rgba.h.html#rgba16">rgba16</A><BR/>
+<A href="../__code/include/agg_color_rgba.h.html#rgba16_gamma_dir">rgba16_gamma_dir</A><BR/>
+<A href="../__code/include/agg_color_rgba.h.html#rgba16_gamma_inv">rgba16_gamma_inv</A><BR/>
+<A href="../__code/include/agg_color_rgba.h.html#rgba16_pre">rgba16_pre</A><BR/>
+<A href="../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A><BR/>
+<A href="../__code/include/agg_color_rgba.h.html#rgba8_gamma_dir">rgba8_gamma_dir</A><BR/>
+<A href="../__code/include/agg_color_rgba.h.html#rgba8_gamma_inv">rgba8_gamma_inv</A><BR/>
+<A href="../__code/include/agg_color_rgba.h.html#rgba8_pre">rgba8_pre</A><BR/>
+<A href="../__code/include/agg_color_rgba.h.html#rgba_pre">rgba_pre</A><BR/>
+<A href="../__code/include/agg_alpha_mask_u8.h.html#rgb_to_gray_mask_u8">rgb_to_gray_mask_u8</A><BR/>
+<A href="../__code/include/agg_rounded_rect.h.html#rounded_rect">rounded_rect</A><BR/>
+<A href="../__code/include/agg_rendering_buffer.h.html#row_accessor">row_accessor</A><BR/>
+<A href="../__code/include/agg_basics.h.html#row_info">row_info</A><BR/>
+<A href="../__code/include/agg_rendering_buffer.h.html#row_ptr_cache">row_ptr_cache</A><BR/>
+<A href="../__code/include/agg_basics.h.html#saturation">saturation</A><BR/>
+<A href="../__code/include/agg_scanline_boolean_algebra.h.html#sbool_add_spans_and_render">sbool_add_spans_and_render</A><BR/>
+<A href="../__code/include/agg_scanline_boolean_algebra.h.html#sbool_add_span_aa">sbool_add_span_aa</A><BR/>
+<A href="../__code/include/agg_scanline_boolean_algebra.h.html#sbool_add_span_bin">sbool_add_span_bin</A><BR/>
+<A href="../__code/include/agg_scanline_boolean_algebra.h.html#sbool_add_span_empty">sbool_add_span_empty</A><BR/>
+<A href="../__code/include/agg_scanline_boolean_algebra.h.html#sbool_and">sbool_and</A><BR/>
+<A href="../__code/include/agg_scanline_boolean_algebra.h.html#sbool_a_minus_b">sbool_a_minus_b</A><BR/>
+<A href="../__code/include/agg_scanline_boolean_algebra.h.html#sbool_b_minus_a">sbool_b_minus_a</A><BR/>
+<A href="../__code/include/agg_scanline_boolean_algebra.h.html#sbool_combine_shapes_aa">sbool_combine_shapes_aa</A><BR/>
+<A href="../__code/include/agg_scanline_boolean_algebra.h.html#sbool_combine_shapes_bin">sbool_combine_shapes_bin</A><BR/>
+<A href="../__code/include/agg_scanline_boolean_algebra.h.html#sbool_combine_spans_bin">sbool_combine_spans_bin</A><BR/>
+<A href="../__code/include/agg_scanline_boolean_algebra.h.html#sbool_combine_spans_empty">sbool_combine_spans_empty</A><BR/>
+<A href="../__code/include/agg_scanline_boolean_algebra.h.html#sbool_intersect_scanlines">sbool_intersect_scanlines</A><BR/>
+<A href="../__code/include/agg_scanline_boolean_algebra.h.html#sbool_intersect_shapes">sbool_intersect_shapes</A><BR/>
+<A href="../__code/include/agg_scanline_boolean_algebra.h.html#sbool_intersect_shapes_aa">sbool_intersect_shapes_aa</A><BR/>
+<A href="../__code/include/agg_scanline_boolean_algebra.h.html#sbool_intersect_shapes_bin">sbool_intersect_shapes_bin</A><BR/>
+<A href="../__code/include/agg_scanline_boolean_algebra.h.html#sbool_intersect_spans_aa">sbool_intersect_spans_aa</A><BR/>
+<A href="../__code/include/agg_scanline_boolean_algebra.h.html#sbool_op_e">sbool_op_e</A><BR/>
+<A href="../__code/include/agg_scanline_boolean_algebra.h.html#sbool_or">sbool_or</A><BR/>
+<A href="../__code/include/agg_scanline_boolean_algebra.h.html#sbool_subtract_shapes">sbool_subtract_shapes</A><BR/>
+<A href="../__code/include/agg_scanline_boolean_algebra.h.html#sbool_subtract_shapes_aa">sbool_subtract_shapes_aa</A><BR/>
+<A href="../__code/include/agg_scanline_boolean_algebra.h.html#sbool_subtract_shapes_bin">sbool_subtract_shapes_bin</A><BR/>
+<A href="../__code/include/agg_scanline_boolean_algebra.h.html#sbool_subtract_spans_aa">sbool_subtract_spans_aa</A><BR/>
+<A href="../__code/include/agg_scanline_boolean_algebra.h.html#sbool_unite_scanlines">sbool_unite_scanlines</A><BR/>
+<A href="../__code/include/agg_scanline_boolean_algebra.h.html#sbool_unite_shapes">sbool_unite_shapes</A><BR/>
+<A href="../__code/include/agg_scanline_boolean_algebra.h.html#sbool_unite_shapes_aa">sbool_unite_shapes_aa</A><BR/>
+<A href="../__code/include/agg_scanline_boolean_algebra.h.html#sbool_unite_shapes_bin">sbool_unite_shapes_bin</A><BR/>
+<A href="../__code/include/agg_scanline_boolean_algebra.h.html#sbool_unite_spans_aa">sbool_unite_spans_aa</A><BR/>
+<A href="../__code/include/agg_scanline_boolean_algebra.h.html#sbool_xor">sbool_xor</A><BR/>
+<A href="../__code/include/agg_scanline_boolean_algebra.h.html#sbool_xor_abs_diff">sbool_xor_abs_diff</A><BR/>
+<A href="../__code/include/agg_scanline_boolean_algebra.h.html#sbool_xor_formula_abs_diff">sbool_xor_formula_abs_diff</A><BR/>
+<A href="../__code/include/agg_scanline_boolean_algebra.h.html#sbool_xor_formula_linear">sbool_xor_formula_linear</A><BR/>
+<A href="../__code/include/agg_scanline_boolean_algebra.h.html#sbool_xor_formula_saddle">sbool_xor_formula_saddle</A><BR/>
+<A href="../__code/include/agg_scanline_boolean_algebra.h.html#sbool_xor_saddle">sbool_xor_saddle</A><BR/>
+<A href="../__code/include/agg_scanline_boolean_algebra.h.html#sbool_xor_shapes_aa">sbool_xor_shapes_aa</A><BR/>
+<A href="../__code/include/agg_scanline_boolean_algebra.h.html#sbool_xor_shapes_abs_diff_aa">sbool_xor_shapes_abs_diff_aa</A><BR/>
+<A href="../__code/include/agg_scanline_boolean_algebra.h.html#sbool_xor_shapes_bin">sbool_xor_shapes_bin</A><BR/>
+<A href="../__code/include/agg_scanline_boolean_algebra.h.html#sbool_xor_shapes_saddle_aa">sbool_xor_shapes_saddle_aa</A><BR/>
+<A href="../__code/include/agg_scanline_boolean_algebra.h.html#sbool_xor_spans_aa">sbool_xor_spans_aa</A><BR/>
+<A href="../__code/include/agg_scanline_bin.h.html#scanline32_bin">scanline32_bin</A><BR/>
+<A href="../__code/include/agg_scanline_p.h.html#scanline32_p8">scanline32_p8</A><BR/>
+<A href="../__code/include/agg_scanline_u.h.html#scanline32_u8">scanline32_u8</A><BR/>
+<A href="../__code/include/agg_scanline_u.h.html#scanline32_u8_am">scanline32_u8_am</A><BR/>
+<A href="../__code/include/agg_scanline_bin.h.html#scanline_bin">scanline_bin</A><BR/>
+<A href="../__code/include/agg_scanline_storage_aa.h.html#scanline_cell_storage">scanline_cell_storage</A><BR/>
+<A href="../__code/include/agg_rasterizer_cells_aa.h.html#scanline_hit_test">scanline_hit_test</A><BR/>
+<A href="../__code/include/agg_scanline_p.h.html#scanline_p8">scanline_p8</A><BR/>
+<A href="../__code/include/agg_scanline_storage_aa.h.html#scanline_storage_aa">scanline_storage_aa</A><BR/>
+<A href="../__code/include/agg_scanline_storage_aa.h.html#scanline_storage_aa16">scanline_storage_aa16</A><BR/>
+<A href="../__code/include/agg_scanline_storage_aa.h.html#scanline_storage_aa32">scanline_storage_aa32</A><BR/>
+<A href="../__code/include/agg_scanline_storage_aa.h.html#scanline_storage_aa8">scanline_storage_aa8</A><BR/>
+<A href="../__code/include/agg_scanline_storage_bin.h.html#scanline_storage_bin">scanline_storage_bin</A><BR/>
+<A href="../__code/include/agg_scanline_u.h.html#scanline_u8">scanline_u8</A><BR/>
+<A href="../__code/include/agg_scanline_u.h.html#scanline_u8_am">scanline_u8_am</A><BR/>
+<A href="../__code/include/agg_path_storage_integer.h.html#serialized_integer_path_adaptor">serialized_integer_path_adaptor</A><BR/>
+<A href="../__code/include/agg_scanline_storage_aa.h.html#serialized_scanlines_adaptor_aa">serialized_scanlines_adaptor_aa</A><BR/>
+<A href="../__code/include/agg_scanline_storage_aa.h.html#serialized_scanlines_adaptor_aa16">serialized_scanlines_adaptor_aa16</A><BR/>
+<A href="../__code/include/agg_scanline_storage_aa.h.html#serialized_scanlines_adaptor_aa32">serialized_scanlines_adaptor_aa32</A><BR/>
+<A href="../__code/include/agg_scanline_storage_aa.h.html#serialized_scanlines_adaptor_aa8">serialized_scanlines_adaptor_aa8</A><BR/>
+<A href="../__code/include/agg_scanline_storage_bin.h.html#serialized_scanlines_adaptor_bin">serialized_scanlines_adaptor_bin</A><BR/>
+<A href="../__code/include/agg_basics.h.html#set_orientation">set_orientation</A><BR/>
+<A href="../__code/include/agg_shorten_path.h.html#shorten_path">shorten_path</A><BR/>
+<A href="../__code/include/agg_simul_eq.h.html#simul_eq">simul_eq</A><BR/>
+<A href="../__code/include/agg_span_allocator.h.html#span_allocator">span_allocator</A><BR/>
+<A href="../__code/include/agg_span_converter.h.html#span_converter">span_converter</A><BR/>
+<A href="../__code/include/agg_span_gouraud.h.html#span_gouraud">span_gouraud</A><BR/>
+<A href="../__code/include/agg_span_gouraud_gray.h.html#span_gouraud_gray">span_gouraud_gray</A><BR/>
+<A href="../__code/include/agg_span_gouraud_rgba.h.html#span_gouraud_rgba">span_gouraud_rgba</A><BR/>
+<A href="../__code/include/agg_span_gradient.h.html#span_gradient">span_gradient</A><BR/>
+<A href="../__code/include/agg_span_gradient_alpha.h.html#span_gradient_alpha">span_gradient_alpha</A><BR/>
+<A href="../__code/include/agg_span_image_filter.h.html#span_image_filter">span_image_filter</A><BR/>
+<A href="../__code/include/agg_span_image_filter_gray.h.html#span_image_filter_gray">span_image_filter_gray</A><BR/>
+<A href="../__code/include/agg_span_image_filter_gray.h.html#span_image_filter_gray_2x2">span_image_filter_gray_2x2</A><BR/>
+<A href="../__code/include/agg_span_image_filter_gray.h.html#span_image_filter_gray_bilinear">span_image_filter_gray_bilinear</A><BR/>
+<A href="../__code/include/agg_span_image_filter_gray.h.html#span_image_filter_gray_bilinear_clip">span_image_filter_gray_bilinear_clip</A><BR/>
+<A href="../__code/include/agg_span_image_filter_gray.h.html#span_image_filter_gray_nn">span_image_filter_gray_nn</A><BR/>
+<A href="../__code/include/agg_span_image_filter_rgb.h.html#span_image_filter_rgb">span_image_filter_rgb</A><BR/>
+<A href="../__code/include/agg_span_image_filter_rgba.h.html#span_image_filter_rgba">span_image_filter_rgba</A><BR/>
+<A href="../__code/include/agg_span_image_filter_rgba.h.html#span_image_filter_rgba_2x2">span_image_filter_rgba_2x2</A><BR/>
+<A href="../__code/include/agg_span_image_filter_rgba.h.html#span_image_filter_rgba_bilinear">span_image_filter_rgba_bilinear</A><BR/>
+<A href="../__code/include/agg_span_image_filter_rgba.h.html#span_image_filter_rgba_bilinear_clip">span_image_filter_rgba_bilinear_clip</A><BR/>
+<A href="../__code/include/agg_span_image_filter_rgba.h.html#span_image_filter_rgba_nn">span_image_filter_rgba_nn</A><BR/>
+<A href="../__code/include/agg_span_image_filter_rgb.h.html#span_image_filter_rgb_2x2">span_image_filter_rgb_2x2</A><BR/>
+<A href="../__code/include/agg_span_image_filter_rgb.h.html#span_image_filter_rgb_bilinear">span_image_filter_rgb_bilinear</A><BR/>
+<A href="../__code/include/agg_span_image_filter_rgb.h.html#span_image_filter_rgb_bilinear_clip">span_image_filter_rgb_bilinear_clip</A><BR/>
+<A href="../__code/include/agg_span_image_filter_rgb.h.html#span_image_filter_rgb_nn">span_image_filter_rgb_nn</A><BR/>
+<A href="../__code/include/agg_span_image_filter.h.html#span_image_resample">span_image_resample</A><BR/>
+<A href="../__code/include/agg_span_image_filter.h.html#span_image_resample_affine">span_image_resample_affine</A><BR/>
+<A href="../__code/include/agg_span_image_filter_gray.h.html#span_image_resample_gray">span_image_resample_gray</A><BR/>
+<A href="../__code/include/agg_span_image_filter_gray.h.html#span_image_resample_gray_affine">span_image_resample_gray_affine</A><BR/>
+<A href="../__code/include/agg_span_image_filter_rgb.h.html#span_image_resample_rgb">span_image_resample_rgb</A><BR/>
+<A href="../__code/include/agg_span_image_filter_rgba.h.html#span_image_resample_rgba">span_image_resample_rgba</A><BR/>
+<A href="../__code/include/agg_span_image_filter_rgba.h.html#span_image_resample_rgba_affine">span_image_resample_rgba_affine</A><BR/>
+<A href="../__code/include/agg_span_image_filter_rgb.h.html#span_image_resample_rgb_affine">span_image_resample_rgb_affine</A><BR/>
+<A href="../__code/include/agg_span_interpolator_adaptor.h.html#span_interpolator_adaptor">span_interpolator_adaptor</A><BR/>
+<A href="../__code/include/agg_span_interpolator_linear.h.html#span_interpolator_linear">span_interpolator_linear</A><BR/>
+<A href="../__code/include/agg_span_interpolator_linear.h.html#span_interpolator_linear_subdiv">span_interpolator_linear_subdiv</A><BR/>
+<A href="../__code/include/agg_span_interpolator_persp.h.html#span_interpolator_persp_exact">span_interpolator_persp_exact</A><BR/>
+<A href="../__code/include/agg_span_interpolator_persp.h.html#span_interpolator_persp_lerp">span_interpolator_persp_lerp</A><BR/>
+<A href="../__code/include/agg_span_interpolator_trans.h.html#span_interpolator_trans">span_interpolator_trans</A><BR/>
+<A href="../__code/include/agg_span_pattern_gray.h.html#span_pattern_gray">span_pattern_gray</A><BR/>
+<A href="../__code/include/agg_span_pattern_rgb.h.html#span_pattern_rgb">span_pattern_rgb</A><BR/>
+<A href="../__code/include/agg_span_pattern_rgba.h.html#span_pattern_rgba">span_pattern_rgba</A><BR/>
+<A href="../__code/include/agg_span_solid.h.html#span_solid">span_solid</A><BR/>
+<A href="../__code/include/agg_span_subdiv_adaptor.h.html#span_subdiv_adaptor">span_subdiv_adaptor</A><BR/>
+<A href="../__code/include/agg_blur.h.html#stack_blur">stack_blur</A><BR/>
+<A href="../__code/include/agg_blur.h.html#stack_blur_calc_gray">stack_blur_calc_gray</A><BR/>
+<A href="../__code/include/agg_blur.h.html#stack_blur_calc_rgb">stack_blur_calc_rgb</A><BR/>
+<A href="../__code/include/agg_blur.h.html#stack_blur_calc_rgba">stack_blur_calc_rgba</A><BR/>
+<A href="../__code/include/agg_blur.h.html#stack_blur_gray8">stack_blur_gray8</A><BR/>
+<A href="../__code/include/agg_blur.h.html#stack_blur_rgb24">stack_blur_rgb24</A><BR/>
+<A href="../__code/include/agg_blur.h.html#stack_blur_rgba32">stack_blur_rgba32</A><BR/>
+<A href="../__code/include/agg_math_stroke.h.html#stroke_calc_cap">stroke_calc_cap</A><BR/>
+<A href="../__code/include/agg_simul_eq.h.html#swap_arrays">swap_arrays</A><BR/>
+<A href="../__code/include/agg_array.h.html#swap_elements">swap_elements</A><BR/>
+<A href="../__code/include/agg_trans_affine.h.html#trans_affine">trans_affine</A><BR/>
+<A href="../__code/include/agg_trans_affine.h.html#trans_affine_line_segment">trans_affine_line_segment</A><BR/>
+<A href="../__code/include/agg_trans_affine.h.html#trans_affine_reflection">trans_affine_reflection</A><BR/>
+<A href="../__code/include/agg_trans_affine.h.html#trans_affine_reflection_unit">trans_affine_reflection_unit</A><BR/>
+<A href="../__code/include/agg_trans_affine.h.html#trans_affine_rotation">trans_affine_rotation</A><BR/>
+<A href="../__code/include/agg_trans_affine.h.html#trans_affine_scaling">trans_affine_scaling</A><BR/>
+<A href="../__code/include/agg_trans_affine.h.html#trans_affine_skewing">trans_affine_skewing</A><BR/>
+<A href="../__code/include/agg_trans_affine.h.html#trans_affine_translation">trans_affine_translation</A><BR/>
+<A href="../__code/include/agg_trans_bilinear.h.html#trans_bilinear">trans_bilinear</A><BR/>
+<A href="../__code/include/agg_trans_double_path.h.html#trans_double_path">trans_double_path</A><BR/>
+<A href="../__code/include/agg_trans_perspective.h.html#trans_perspective">trans_perspective</A><BR/>
+<A href="../__code/include/agg_trans_single_path.h.html#trans_single_path">trans_single_path</A><BR/>
+<A href="../__code/include/agg_trans_viewport.h.html#trans_viewport">trans_viewport</A><BR/>
+<A href="../__code/include/agg_trans_warp_magnifier.h.html#trans_warp_magnifier">trans_warp_magnifier</A><BR/>
+<A href="../__code/include/agg_curves.h.html#ubspline_to_bezier">ubspline_to_bezier</A><BR/>
+<A href="../__code/include/agg_basics.h.html#uceil">uceil</A><BR/>
+<A href="../__code/include/agg_basics.h.html#ufloor">ufloor</A><BR/>
+<A href="../__code/include/agg_basics.h.html#unite_rectangles">unite_rectangles</A><BR/>
+<A href="../__code/include/agg_array.h.html#unsigned_greater">unsigned_greater</A><BR/>
+<A href="../__code/include/agg_array.h.html#unsigned_less">unsigned_less</A><BR/>
+<A href="../__code/include/agg_basics.h.html#uround">uround</A><BR/>
+<A href="../__code/include/agg_vcgen_bspline.h.html#vcgen_bspline">vcgen_bspline</A><BR/>
+<A href="../__code/include/agg_vcgen_contour.h.html#vcgen_contour">vcgen_contour</A><BR/>
+<A href="../__code/include/agg_vcgen_dash.h.html#vcgen_dash">vcgen_dash</A><BR/>
+<A href="../__code/include/agg_vcgen_markers_term.h.html#vcgen_markers_term">vcgen_markers_term</A><BR/>
+<A href="../__code/include/agg_vcgen_smooth_poly1.h.html#vcgen_smooth_poly1">vcgen_smooth_poly1</A><BR/>
+<A href="../__code/include/agg_vcgen_stroke.h.html#vcgen_stroke">vcgen_stroke</A><BR/>
+<A href="../__code/include/agg_vcgen_vertex_sequence.h.html#vcgen_vertex_sequence">vcgen_vertex_sequence</A><BR/>
+<A href="../__code/include/agg_basics.h.html#vertex_base">vertex_base</A><BR/>
+<A href="../__code/include/agg_path_storage.h.html#vertex_block_storage">vertex_block_storage</A><BR/>
+<A href="../__code/include/agg_basics.h.html#vertex_d">vertex_d</A><BR/>
+<A href="../__code/include/agg_vertex_sequence.h.html#vertex_dist">vertex_dist</A><BR/>
+<A href="../__code/include/agg_vertex_sequence.h.html#vertex_dist_cmd">vertex_dist_cmd</A><BR/>
+<A href="../__code/include/agg_math.h.html#vertex_dist_epsilon">vertex_dist_epsilon</A><BR/>
+<A href="../__code/include/agg_basics.h.html#vertex_f">vertex_f</A><BR/>
+<A href="../__code/include/agg_basics.h.html#vertex_i">vertex_i</A><BR/>
+<A href="../__code/include/agg_path_storage_integer.h.html#vertex_integer">vertex_integer</A><BR/>
+<A href="../__code/include/agg_vertex_sequence.h.html#vertex_sequence">vertex_sequence</A><BR/>
+<A href="../__code/include/agg_path_storage.h.html#vertex_stl_storage">vertex_stl_storage</A><BR/>
+<A href="../__code/include/agg_vpgen_clip_polygon.h.html#vpgen_clip_polygon">vpgen_clip_polygon</A><BR/>
+<A href="../__code/include/agg_vpgen_clip_polyline.h.html#vpgen_clip_polyline">vpgen_clip_polyline</A><BR/>
+<A href="../__code/include/agg_vpgen_segmentator.h.html#vpgen_segmentator">vpgen_segmentator</A><BR/>
+<A href="../__code/include/agg_image_accessors.h.html#wrap_mode_reflect">wrap_mode_reflect</A><BR/>
+<A href="../__code/include/agg_image_accessors.h.html#wrap_mode_reflect_auto_pow2">wrap_mode_reflect_auto_pow2</A><BR/>
+<A href="../__code/include/agg_image_accessors.h.html#wrap_mode_reflect_pow2">wrap_mode_reflect_pow2</A><BR/>
+<A href="../__code/include/agg_image_accessors.h.html#wrap_mode_repeat">wrap_mode_repeat</A><BR/>
+<A href="../__code/include/agg_image_accessors.h.html#wrap_mode_repeat_auto_pow2">wrap_mode_repeat_auto_pow2</A><BR/>
+<A href="../__code/include/agg_image_accessors.h.html#wrap_mode_repeat_pow2">wrap_mode_repeat_pow2</A><BR/>
+</P></TD></TR></TABLE>
+
+<H3>Files<A name="toc0006"></A></H3>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><A href="../about/index.html">about/index.html</A><BR/>
+<A href="../agdoc/index.html">agdoc/index.html</A><BR/>
+<A href="../articles/ddj1.agdoc.html">articles/ddj1.agdoc.html</A><BR/>
+<A href="../articles/graphics/index.html">articles/graphics/index.html</A><BR/>
+<A href="../customers/index.html">customers/index.html</A><BR/>
+<A href="../cvs/index.html">cvs/index.html</A><BR/>
+<A href="../demo/aa_demo.cpp.html">demo/aa_demo.cpp.html</A><BR/>
+<A href="../demo/aa_test.cpp.html">demo/aa_test.cpp.html</A><BR/>
+<A href="../demo/alpha_gradient.cpp.html">demo/alpha_gradient.cpp.html</A><BR/>
+<A href="../demo/alpha_mask.cpp.html">demo/alpha_mask.cpp.html</A><BR/>
+<A href="../demo/alpha_mask2.cpp.html">demo/alpha_mask2.cpp.html</A><BR/>
+<A href="../demo/alpha_mask3.cpp.html">demo/alpha_mask3.cpp.html</A><BR/>
+<A href="../demo/bezier_div.cpp.html">demo/bezier_div.cpp.html</A><BR/>
+<A href="../demo/blend_color.cpp.html">demo/blend_color.cpp.html</A><BR/>
+<A href="../demo/blur.cpp.html">demo/blur.cpp.html</A><BR/>
+<A href="../demo/bspline.cpp.html">demo/bspline.cpp.html</A><BR/>
+<A href="../demo/circles.cpp.html">demo/circles.cpp.html</A><BR/>
+<A href="../demo/component_rendering.cpp.html">demo/component_rendering.cpp.html</A><BR/>
+<A href="../demo/compositing.cpp.html">demo/compositing.cpp.html</A><BR/>
+<A href="../demo/compositing2.cpp.html">demo/compositing2.cpp.html</A><BR/>
+<A href="../demo/conv_contour.cpp.html">demo/conv_contour.cpp.html</A><BR/>
+<A href="../demo/conv_dash_marker.cpp.html">demo/conv_dash_marker.cpp.html</A><BR/>
+<A href="../demo/conv_stroke.cpp.html">demo/conv_stroke.cpp.html</A><BR/>
+<A href="../demo/distortions.cpp.html">demo/distortions.cpp.html</A><BR/>
+<A href="../demo/flash_rasterizer.cpp.html">demo/flash_rasterizer.cpp.html</A><BR/>
+<A href="../demo/flash_rasterizer2.cpp.html">demo/flash_rasterizer2.cpp.html</A><BR/>
+<A href="../demo/freetype_test.cpp.html">demo/freetype_test.cpp.html</A><BR/>
+<A href="../demo/gamma_correction.cpp.html">demo/gamma_correction.cpp.html</A><BR/>
+<A href="../demo/gamma_ctrl.cpp.html">demo/gamma_ctrl.cpp.html</A><BR/>
+<A href="../demo/gamma_tuner.cpp.html">demo/gamma_tuner.cpp.html</A><BR/>
+<A href="../demo/gouraud.cpp.html">demo/gouraud.cpp.html</A><BR/>
+<A href="../demo/gouraud_mesh.cpp.html">demo/gouraud_mesh.cpp.html</A><BR/>
+<A href="../demo/gpc_test.cpp.html">demo/gpc_test.cpp.html</A><BR/>
+<A href="../demo/gradients.cpp.html">demo/gradients.cpp.html</A><BR/>
+<A href="../demo/gradient_focal.cpp.html">demo/gradient_focal.cpp.html</A><BR/>
+<A href="../demo/graph_test.cpp.html">demo/graph_test.cpp.html</A><BR/>
+<A href="../demo/idea.cpp.html">demo/idea.cpp.html</A><BR/>
+<A href="../demo/image1.cpp.html">demo/image1.cpp.html</A><BR/>
+<A href="../demo/image_alpha.cpp.html">demo/image_alpha.cpp.html</A><BR/>
+<A href="../demo/image_filters.cpp.html">demo/image_filters.cpp.html</A><BR/>
+<A href="../demo/image_filters2.cpp.html">demo/image_filters2.cpp.html</A><BR/>
+<A href="../demo/image_fltr_graph.cpp.html">demo/image_fltr_graph.cpp.html</A><BR/>
+<A href="../demo/image_perspective.cpp.html">demo/image_perspective.cpp.html</A><BR/>
+<A href="../demo/image_resample.cpp.html">demo/image_resample.cpp.html</A><BR/>
+<A href="../demo/image_transforms.cpp.html">demo/image_transforms.cpp.html</A><BR/>
+<A href="../demo/index.html">demo/index.html</A><BR/>
+<A href="../demo/interactive_polygon.cpp.html">demo/interactive_polygon.cpp.html</A><BR/>
+<A href="../demo/line_patterns.cpp.html">demo/line_patterns.cpp.html</A><BR/>
+<A href="../demo/line_patterns_clip.cpp.html">demo/line_patterns_clip.cpp.html</A><BR/>
+<A href="../demo/lion.cpp.html">demo/lion.cpp.html</A><BR/>
+<A href="../demo/lion_lens.cpp.html">demo/lion_lens.cpp.html</A><BR/>
+<A href="../demo/lion_outline.cpp.html">demo/lion_outline.cpp.html</A><BR/>
+<A href="../demo/make_arrows.cpp.html">demo/make_arrows.cpp.html</A><BR/>
+<A href="../demo/make_gb_poly.cpp.html">demo/make_gb_poly.cpp.html</A><BR/>
+<A href="../demo/mol_view.cpp.html">demo/mol_view.cpp.html</A><BR/>
+<A href="../demo/multi_clip.cpp.html">demo/multi_clip.cpp.html</A><BR/>
+<A href="../demo/parse_lion.cpp.html">demo/parse_lion.cpp.html</A><BR/>
+<A href="../demo/pattern_fill.cpp.html">demo/pattern_fill.cpp.html</A><BR/>
+<A href="../demo/pattern_perspective.cpp.html">demo/pattern_perspective.cpp.html</A><BR/>
+<A href="../demo/pattern_resample.cpp.html">demo/pattern_resample.cpp.html</A><BR/>
+<A href="../demo/perspective.cpp.html">demo/perspective.cpp.html</A><BR/>
+<A href="../demo/polymorphic_renderer.cpp.html">demo/polymorphic_renderer.cpp.html</A><BR/>
+<A href="../demo/rasterizers.cpp.html">demo/rasterizers.cpp.html</A><BR/>
+<A href="../demo/rasterizers2.cpp.html">demo/rasterizers2.cpp.html</A><BR/>
+<A href="../demo/rasterizer_compound.cpp.html">demo/rasterizer_compound.cpp.html</A><BR/>
+<A href="../demo/raster_text.cpp.html">demo/raster_text.cpp.html</A><BR/>
+<A href="../demo/rounded_rect.cpp.html">demo/rounded_rect.cpp.html</A><BR/>
+<A href="../demo/scanline_boolean.cpp.html">demo/scanline_boolean.cpp.html</A><BR/>
+<A href="../demo/scanline_boolean2.cpp.html">demo/scanline_boolean2.cpp.html</A><BR/>
+<A href="../demo/simple_blur.cpp.html">demo/simple_blur.cpp.html</A><BR/>
+<A href="../demo/svg_viewer/agg_svg_parser.cpp.html">demo/svg_viewer/agg_svg_parser.cpp.html</A><BR/>
+<A href="../demo/svg_viewer/agg_svg_path_renderer.cpp.html">demo/svg_viewer/agg_svg_path_renderer.cpp.html</A><BR/>
+<A href="../demo/svg_viewer/agg_svg_path_tokenizer.cpp.html">demo/svg_viewer/agg_svg_path_tokenizer.cpp.html</A><BR/>
+<A href="../demo/svg_viewer/svg_test.cpp.html">demo/svg_viewer/svg_test.cpp.html</A><BR/>
+<A href="../demo/trans_curve1.cpp.html">demo/trans_curve1.cpp.html</A><BR/>
+<A href="../demo/trans_curve1_ft.cpp.html">demo/trans_curve1_ft.cpp.html</A><BR/>
+<A href="../demo/trans_curve2.cpp.html">demo/trans_curve2.cpp.html</A><BR/>
+<A href="../demo/trans_curve2_ft.cpp.html">demo/trans_curve2_ft.cpp.html</A><BR/>
+<A href="../demo/trans_polar.cpp.html">demo/trans_polar.cpp.html</A><BR/>
+<A href="../demo/truetype_test.cpp.html">demo/truetype_test.cpp.html</A><BR/>
+<A href="basic_renderers/basic_renderers.agdoc.html">doc/basic_renderers/basic_renderers.agdoc.html</A><BR/>
+<A href="index.html">doc/index.html</A><BR/>
+<A href="introduction/introduction.agdoc.html">doc/introduction/introduction.agdoc.html</A><BR/>
+<A href="scanlines/scanlines.agdoc.html">doc/scanlines/scanlines.agdoc.html</A><BR/>
+<A href="../download/index.html">download/index.html</A><BR/>
+<A href="../faq/index.html">faq/index.html</A><BR/>
+<A href="../forum/index.html">forum/index.html</A><BR/>
+<A href="../index.html">index.html</A><BR/>
+<A href="../license/index.html">license/index.html</A><BR/>
+<A href="../links/index.html">links/index.html</A><BR/>
+<A href="../maillist/index.html">maillist/index.html</A><BR/>
+<A href="../mcseem/index.html">mcseem/index.html</A><BR/>
+<A href="../news/index.html">news/index.html</A><BR/>
+<A href="../news/release_notes/v21.agdoc.html">news/release_notes/v21.agdoc.html</A><BR/>
+<A href="../news/release_notes/v22.agdoc.html">news/release_notes/v22.agdoc.html</A><BR/>
+<A href="../news/release_notes/v23.agdoc.html">news/release_notes/v23.agdoc.html</A><BR/>
+<A href="../news/release_notes/v24.agdoc.html">news/release_notes/v24.agdoc.html</A><BR/>
+<A href="../research/adaptive_bezier/index.html">research/adaptive_bezier/index.html</A><BR/>
+<A href="../research/bezier_interpolation/index.html">research/bezier_interpolation/index.html</A><BR/>
+<A href="../research/flash_rasterizer/index.html">research/flash_rasterizer/index.html</A><BR/>
+<A href="../research/font_rasterization/index.html">research/font_rasterization/index.html</A><BR/>
+<A href="../research/gamma_correction/index.html">research/gamma_correction/index.html</A><BR/>
+<A href="../research/index.html">research/index.html</A><BR/>
+<A href="../screenshots/index.html">screenshots/index.html</A><BR/>
+<A href="../sponsors/index.html">sponsors/index.html</A><BR/>
+<A href="../svg/index.html">svg/index.html</A><BR/>
+<A href="../tips/gradients_tutorial/gradients_tutorial.agdoc.html">tips/gradients_tutorial/gradients_tutorial.agdoc.html</A><BR/>
+<A href="../tips/image_plg/image_plg.agdoc.html">tips/image_plg/image_plg.agdoc.html</A><BR/>
+<A href="../tips/index.html">tips/index.html</A><BR/>
+<A href="../tips/line_alignment/line_alignment.agdoc.html">tips/line_alignment/line_alignment.agdoc.html</A><BR/>
+<A href="../tips/square_color_interpolation/square_color_interpolation.agdoc.html">tips/square_color_interpolation/square_color_interpolation.agdoc.html</A><BR/>
+<A href="../tips/win_ce/win_ce.agdoc.html">tips/win_ce/win_ce.agdoc.html</A><BR/>
+<A href="../tips/win_glyph/win_glyph.agdoc.html">tips/win_glyph/win_glyph.agdoc.html</A><BR/>
+<A href="../__code/font_freetype/agg_font_freetype.cpp.html">__code/font_freetype/agg_font_freetype.cpp.html</A><BR/>
+<A href="../__code/font_freetype/agg_font_freetype.h.html">__code/font_freetype/agg_font_freetype.h.html</A><BR/>
+<A href="../__code/font_win32_tt/agg_font_win32_tt.cpp.html">__code/font_win32_tt/agg_font_win32_tt.cpp.html</A><BR/>
+<A href="../__code/font_win32_tt/agg_font_win32_tt.h.html">__code/font_win32_tt/agg_font_win32_tt.h.html</A><BR/>
+<A href="../__code/include/agg_alpha_mask_u8.h.html">__code/include/agg_alpha_mask_u8.h.html</A><BR/>
+<A href="../__code/include/agg_arc.h.html">__code/include/agg_arc.h.html</A><BR/>
+<A href="../__code/include/agg_array.h.html">__code/include/agg_array.h.html</A><BR/>
+<A href="../__code/include/agg_arrowhead.h.html">__code/include/agg_arrowhead.h.html</A><BR/>
+<A href="../__code/include/agg_basics.h.html">__code/include/agg_basics.h.html</A><BR/>
+<A href="../__code/include/agg_bezier_arc.h.html">__code/include/agg_bezier_arc.h.html</A><BR/>
+<A href="../__code/include/agg_bitset_iterator.h.html">__code/include/agg_bitset_iterator.h.html</A><BR/>
+<A href="../__code/include/agg_blur.h.html">__code/include/agg_blur.h.html</A><BR/>
+<A href="../__code/include/agg_bounding_rect.h.html">__code/include/agg_bounding_rect.h.html</A><BR/>
+<A href="../__code/include/agg_bspline.h.html">__code/include/agg_bspline.h.html</A><BR/>
+<A href="../__code/include/agg_clip_liang_barsky.h.html">__code/include/agg_clip_liang_barsky.h.html</A><BR/>
+<A href="../__code/include/agg_color_gray.h.html">__code/include/agg_color_gray.h.html</A><BR/>
+<A href="../__code/include/agg_color_rgba.h.html">__code/include/agg_color_rgba.h.html</A><BR/>
+<A href="../__code/include/agg_config.h.html">__code/include/agg_config.h.html</A><BR/>
+<A href="../__code/include/agg_conv_adaptor_vcgen.h.html">__code/include/agg_conv_adaptor_vcgen.h.html</A><BR/>
+<A href="../__code/include/agg_conv_adaptor_vpgen.h.html">__code/include/agg_conv_adaptor_vpgen.h.html</A><BR/>
+<A href="../__code/include/agg_conv_bspline.h.html">__code/include/agg_conv_bspline.h.html</A><BR/>
+<A href="../__code/include/agg_conv_clip_polygon.h.html">__code/include/agg_conv_clip_polygon.h.html</A><BR/>
+<A href="../__code/include/agg_conv_clip_polyline.h.html">__code/include/agg_conv_clip_polyline.h.html</A><BR/>
+<A href="../__code/include/agg_conv_close_polygon.h.html">__code/include/agg_conv_close_polygon.h.html</A><BR/>
+<A href="../__code/include/agg_conv_concat.h.html">__code/include/agg_conv_concat.h.html</A><BR/>
+<A href="../__code/include/agg_conv_contour.h.html">__code/include/agg_conv_contour.h.html</A><BR/>
+<A href="../__code/include/agg_conv_curve.h.html">__code/include/agg_conv_curve.h.html</A><BR/>
+<A href="../__code/include/agg_conv_dash.h.html">__code/include/agg_conv_dash.h.html</A><BR/>
+<A href="../__code/include/agg_conv_gpc.h.html">__code/include/agg_conv_gpc.h.html</A><BR/>
+<A href="../__code/include/agg_conv_marker.h.html">__code/include/agg_conv_marker.h.html</A><BR/>
+<A href="../__code/include/agg_conv_marker_adaptor.h.html">__code/include/agg_conv_marker_adaptor.h.html</A><BR/>
+<A href="../__code/include/agg_conv_segmentator.h.html">__code/include/agg_conv_segmentator.h.html</A><BR/>
+<A href="../__code/include/agg_conv_shorten_path.h.html">__code/include/agg_conv_shorten_path.h.html</A><BR/>
+<A href="../__code/include/agg_conv_smooth_poly1.h.html">__code/include/agg_conv_smooth_poly1.h.html</A><BR/>
+<A href="../__code/include/agg_conv_stroke.h.html">__code/include/agg_conv_stroke.h.html</A><BR/>
+<A href="../__code/include/agg_conv_transform.h.html">__code/include/agg_conv_transform.h.html</A><BR/>
+<A href="../__code/include/agg_conv_unclose_polygon.h.html">__code/include/agg_conv_unclose_polygon.h.html</A><BR/>
+<A href="../__code/include/agg_curves.h.html">__code/include/agg_curves.h.html</A><BR/>
+<A href="../__code/include/agg_dda_line.h.html">__code/include/agg_dda_line.h.html</A><BR/>
+<A href="../__code/include/agg_ellipse.h.html">__code/include/agg_ellipse.h.html</A><BR/>
+<A href="../__code/include/agg_ellipse_bresenham.h.html">__code/include/agg_ellipse_bresenham.h.html</A><BR/>
+<A href="../__code/include/agg_embedded_raster_fonts.h.html">__code/include/agg_embedded_raster_fonts.h.html</A><BR/>
+<A href="../__code/include/agg_font_cache_manager.h.html">__code/include/agg_font_cache_manager.h.html</A><BR/>
+<A href="../__code/include/agg_gamma_functions.h.html">__code/include/agg_gamma_functions.h.html</A><BR/>
+<A href="../__code/include/agg_gamma_lut.h.html">__code/include/agg_gamma_lut.h.html</A><BR/>
+<A href="../__code/include/agg_glyph_raster_bin.h.html">__code/include/agg_glyph_raster_bin.h.html</A><BR/>
+<A href="../__code/include/agg_gradient_lut.h.html">__code/include/agg_gradient_lut.h.html</A><BR/>
+<A href="../__code/include/agg_gsv_text.h.html">__code/include/agg_gsv_text.h.html</A><BR/>
+<A href="../__code/include/agg_image_accessors.h.html">__code/include/agg_image_accessors.h.html</A><BR/>
+<A href="../__code/include/agg_image_filters.h.html">__code/include/agg_image_filters.h.html</A><BR/>
+<A href="../__code/include/agg_line_aa_basics.h.html">__code/include/agg_line_aa_basics.h.html</A><BR/>
+<A href="../__code/include/agg_math.h.html">__code/include/agg_math.h.html</A><BR/>
+<A href="../__code/include/agg_math_stroke.h.html">__code/include/agg_math_stroke.h.html</A><BR/>
+<A href="../__code/include/agg_path_length.h.html">__code/include/agg_path_length.h.html</A><BR/>
+<A href="../__code/include/agg_path_storage.h.html">__code/include/agg_path_storage.h.html</A><BR/>
+<A href="../__code/include/agg_path_storage_integer.h.html">__code/include/agg_path_storage_integer.h.html</A><BR/>
+<A href="../__code/include/agg_pattern_filters_rgba.h.html">__code/include/agg_pattern_filters_rgba.h.html</A><BR/>
+<A href="../__code/include/agg_pixfmt_amask_adaptor.h.html">__code/include/agg_pixfmt_amask_adaptor.h.html</A><BR/>
+<A href="../__code/include/agg_pixfmt_gray.h.html">__code/include/agg_pixfmt_gray.h.html</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgb.h.html">__code/include/agg_pixfmt_rgb.h.html</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgba.h.html">__code/include/agg_pixfmt_rgba.h.html</A><BR/>
+<A href="../__code/include/agg_pixfmt_rgb_packed.h.html">__code/include/agg_pixfmt_rgb_packed.h.html</A><BR/>
+<A href="../__code/include/agg_pixfmt_transposer.h.html">__code/include/agg_pixfmt_transposer.h.html</A><BR/>
+<A href="../__code/include/agg_rasterizer_cells_aa.h.html">__code/include/agg_rasterizer_cells_aa.h.html</A><BR/>
+<A href="../__code/include/agg_rasterizer_compound_aa.h.html">__code/include/agg_rasterizer_compound_aa.h.html</A><BR/>
+<A href="../__code/include/agg_rasterizer_outline.h.html">__code/include/agg_rasterizer_outline.h.html</A><BR/>
+<A href="../__code/include/agg_rasterizer_outline_aa.h.html">__code/include/agg_rasterizer_outline_aa.h.html</A><BR/>
+<A href="../__code/include/agg_rasterizer_scanline_aa.h.html">__code/include/agg_rasterizer_scanline_aa.h.html</A><BR/>
+<A href="../__code/include/agg_rasterizer_sl_clip.h.html">__code/include/agg_rasterizer_sl_clip.h.html</A><BR/>
+<A href="../__code/include/agg_renderer_base.h.html">__code/include/agg_renderer_base.h.html</A><BR/>
+<A href="../__code/include/agg_renderer_markers.h.html">__code/include/agg_renderer_markers.h.html</A><BR/>
+<A href="../__code/include/agg_renderer_mclip.h.html">__code/include/agg_renderer_mclip.h.html</A><BR/>
+<A href="../__code/include/agg_renderer_outline_aa.h.html">__code/include/agg_renderer_outline_aa.h.html</A><BR/>
+<A href="../__code/include/agg_renderer_outline_image.h.html">__code/include/agg_renderer_outline_image.h.html</A><BR/>
+<A href="../__code/include/agg_renderer_primitives.h.html">__code/include/agg_renderer_primitives.h.html</A><BR/>
+<A href="../__code/include/agg_renderer_raster_text.h.html">__code/include/agg_renderer_raster_text.h.html</A><BR/>
+<A href="../__code/include/agg_renderer_scanline.h.html">__code/include/agg_renderer_scanline.h.html</A><BR/>
+<A href="../__code/include/agg_rendering_buffer.h.html">__code/include/agg_rendering_buffer.h.html</A><BR/>
+<A href="../__code/include/agg_rendering_buffer_dynarow.h.html">__code/include/agg_rendering_buffer_dynarow.h.html</A><BR/>
+<A href="../__code/include/agg_rounded_rect.h.html">__code/include/agg_rounded_rect.h.html</A><BR/>
+<A href="../__code/include/agg_scanline_bin.h.html">__code/include/agg_scanline_bin.h.html</A><BR/>
+<A href="../__code/include/agg_scanline_boolean_algebra.h.html">__code/include/agg_scanline_boolean_algebra.h.html</A><BR/>
+<A href="../__code/include/agg_scanline_p.h.html">__code/include/agg_scanline_p.h.html</A><BR/>
+<A href="../__code/include/agg_scanline_storage_aa.h.html">__code/include/agg_scanline_storage_aa.h.html</A><BR/>
+<A href="../__code/include/agg_scanline_storage_bin.h.html">__code/include/agg_scanline_storage_bin.h.html</A><BR/>
+<A href="../__code/include/agg_scanline_u.h.html">__code/include/agg_scanline_u.h.html</A><BR/>
+<A href="../__code/include/agg_shorten_path.h.html">__code/include/agg_shorten_path.h.html</A><BR/>
+<A href="../__code/include/agg_simul_eq.h.html">__code/include/agg_simul_eq.h.html</A><BR/>
+<A href="../__code/include/agg_span_allocator.h.html">__code/include/agg_span_allocator.h.html</A><BR/>
+<A href="../__code/include/agg_span_converter.h.html">__code/include/agg_span_converter.h.html</A><BR/>
+<A href="../__code/include/agg_span_gouraud.h.html">__code/include/agg_span_gouraud.h.html</A><BR/>
+<A href="../__code/include/agg_span_gouraud_gray.h.html">__code/include/agg_span_gouraud_gray.h.html</A><BR/>
+<A href="../__code/include/agg_span_gouraud_rgba.h.html">__code/include/agg_span_gouraud_rgba.h.html</A><BR/>
+<A href="../__code/include/agg_span_gradient.h.html">__code/include/agg_span_gradient.h.html</A><BR/>
+<A href="../__code/include/agg_span_gradient_alpha.h.html">__code/include/agg_span_gradient_alpha.h.html</A><BR/>
+<A href="../__code/include/agg_span_image_filter.h.html">__code/include/agg_span_image_filter.h.html</A><BR/>
+<A href="../__code/include/agg_span_image_filter_gray.h.html">__code/include/agg_span_image_filter_gray.h.html</A><BR/>
+<A href="../__code/include/agg_span_image_filter_rgb.h.html">__code/include/agg_span_image_filter_rgb.h.html</A><BR/>
+<A href="../__code/include/agg_span_image_filter_rgba.h.html">__code/include/agg_span_image_filter_rgba.h.html</A><BR/>
+<A href="../__code/include/agg_span_interpolator_adaptor.h.html">__code/include/agg_span_interpolator_adaptor.h.html</A><BR/>
+<A href="../__code/include/agg_span_interpolator_linear.h.html">__code/include/agg_span_interpolator_linear.h.html</A><BR/>
+<A href="../__code/include/agg_span_interpolator_persp.h.html">__code/include/agg_span_interpolator_persp.h.html</A><BR/>
+<A href="../__code/include/agg_span_interpolator_trans.h.html">__code/include/agg_span_interpolator_trans.h.html</A><BR/>
+<A href="../__code/include/agg_span_pattern_gray.h.html">__code/include/agg_span_pattern_gray.h.html</A><BR/>
+<A href="../__code/include/agg_span_pattern_rgb.h.html">__code/include/agg_span_pattern_rgb.h.html</A><BR/>
+<A href="../__code/include/agg_span_pattern_rgba.h.html">__code/include/agg_span_pattern_rgba.h.html</A><BR/>
+<A href="../__code/include/agg_span_solid.h.html">__code/include/agg_span_solid.h.html</A><BR/>
+<A href="../__code/include/agg_span_subdiv_adaptor.h.html">__code/include/agg_span_subdiv_adaptor.h.html</A><BR/>
+<A href="../__code/include/agg_trans_affine.h.html">__code/include/agg_trans_affine.h.html</A><BR/>
+<A href="../__code/include/agg_trans_bilinear.h.html">__code/include/agg_trans_bilinear.h.html</A><BR/>
+<A href="../__code/include/agg_trans_double_path.h.html">__code/include/agg_trans_double_path.h.html</A><BR/>
+<A href="../__code/include/agg_trans_perspective.h.html">__code/include/agg_trans_perspective.h.html</A><BR/>
+<A href="../__code/include/agg_trans_single_path.h.html">__code/include/agg_trans_single_path.h.html</A><BR/>
+<A href="../__code/include/agg_trans_viewport.h.html">__code/include/agg_trans_viewport.h.html</A><BR/>
+<A href="../__code/include/agg_trans_warp_magnifier.h.html">__code/include/agg_trans_warp_magnifier.h.html</A><BR/>
+<A href="../__code/include/agg_vcgen_bspline.h.html">__code/include/agg_vcgen_bspline.h.html</A><BR/>
+<A href="../__code/include/agg_vcgen_contour.h.html">__code/include/agg_vcgen_contour.h.html</A><BR/>
+<A href="../__code/include/agg_vcgen_dash.h.html">__code/include/agg_vcgen_dash.h.html</A><BR/>
+<A href="../__code/include/agg_vcgen_markers_term.h.html">__code/include/agg_vcgen_markers_term.h.html</A><BR/>
+<A href="../__code/include/agg_vcgen_smooth_poly1.h.html">__code/include/agg_vcgen_smooth_poly1.h.html</A><BR/>
+<A href="../__code/include/agg_vcgen_stroke.h.html">__code/include/agg_vcgen_stroke.h.html</A><BR/>
+<A href="../__code/include/agg_vcgen_vertex_sequence.h.html">__code/include/agg_vcgen_vertex_sequence.h.html</A><BR/>
+<A href="../__code/include/agg_vertex_sequence.h.html">__code/include/agg_vertex_sequence.h.html</A><BR/>
+<A href="../__code/include/agg_vpgen_clip_polygon.h.html">__code/include/agg_vpgen_clip_polygon.h.html</A><BR/>
+<A href="../__code/include/agg_vpgen_clip_polyline.h.html">__code/include/agg_vpgen_clip_polyline.h.html</A><BR/>
+<A href="../__code/include/agg_vpgen_segmentator.h.html">__code/include/agg_vpgen_segmentator.h.html</A><BR/>
+<A href="../__code/src/agg_arc.cpp.html">__code/src/agg_arc.cpp.html</A><BR/>
+<A href="../__code/src/agg_arrowhead.cpp.html">__code/src/agg_arrowhead.cpp.html</A><BR/>
+<A href="../__code/src/agg_bezier_arc.cpp.html">__code/src/agg_bezier_arc.cpp.html</A><BR/>
+<A href="../__code/src/agg_bspline.cpp.html">__code/src/agg_bspline.cpp.html</A><BR/>
+<A href="../__code/src/agg_curves.cpp.html">__code/src/agg_curves.cpp.html</A><BR/>
+<A href="../__code/src/agg_gsv_text.cpp.html">__code/src/agg_gsv_text.cpp.html</A><BR/>
+<A href="../__code/src/agg_image_filters.cpp.html">__code/src/agg_image_filters.cpp.html</A><BR/>
+<A href="../__code/src/agg_line_aa_basics.cpp.html">__code/src/agg_line_aa_basics.cpp.html</A><BR/>
+<A href="../__code/src/agg_line_profile_aa.cpp.html">__code/src/agg_line_profile_aa.cpp.html</A><BR/>
+<A href="../__code/src/agg_rounded_rect.cpp.html">__code/src/agg_rounded_rect.cpp.html</A><BR/>
+<A href="../__code/src/agg_sqrt_tables.cpp.html">__code/src/agg_sqrt_tables.cpp.html</A><BR/>
+<A href="../__code/src/agg_trans_affine.cpp.html">__code/src/agg_trans_affine.cpp.html</A><BR/>
+<A href="../__code/src/agg_trans_double_path.cpp.html">__code/src/agg_trans_double_path.cpp.html</A><BR/>
+<A href="../__code/src/agg_trans_single_path.cpp.html">__code/src/agg_trans_single_path.cpp.html</A><BR/>
+<A href="../__code/src/agg_trans_warp_magnifier.cpp.html">__code/src/agg_trans_warp_magnifier.cpp.html</A><BR/>
+<A href="../__code/src/agg_vcgen_bspline.cpp.html">__code/src/agg_vcgen_bspline.cpp.html</A><BR/>
+<A href="../__code/src/agg_vcgen_contour.cpp.html">__code/src/agg_vcgen_contour.cpp.html</A><BR/>
+<A href="../__code/src/agg_vcgen_dash.cpp.html">__code/src/agg_vcgen_dash.cpp.html</A><BR/>
+<A href="../__code/src/agg_vcgen_markers_term.cpp.html">__code/src/agg_vcgen_markers_term.cpp.html</A><BR/>
+<A href="../__code/src/agg_vcgen_smooth_poly1.cpp.html">__code/src/agg_vcgen_smooth_poly1.cpp.html</A><BR/>
+<A href="../__code/src/agg_vcgen_stroke.cpp.html">__code/src/agg_vcgen_stroke.cpp.html</A><BR/>
+<A href="../__code/src/agg_vpgen_clip_polygon.cpp.html">__code/src/agg_vpgen_clip_polygon.cpp.html</A><BR/>
+<A href="../__code/src/agg_vpgen_clip_polyline.cpp.html">__code/src/agg_vpgen_clip_polyline.cpp.html</A><BR/>
+<A href="../__code/src/agg_vpgen_segmentator.cpp.html">__code/src/agg_vpgen_segmentator.cpp.html</A><BR/>
+</P></TD></TR></TABLE>
+
+<BR/><H2>TO BE CONTINUED...<A name="toc0007"></A></H2>
+<BR/><TABLE width="640px" bgcolor="#583927" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0">
+<TR><TD><CENTER><SPAN class="authors">
+Copyright <SPAN class="larger">&#169;</SPAN> 2002-2006
+<A href="../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+<TR><TD><CENTER><SPAN class="authors">
+Web Design and Programming
+<A href="../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+</TABLE>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+</HTML>
