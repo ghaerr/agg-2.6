@@ -73,7 +73,7 @@ ENDIF ( ${CMAKE_GENERATOR} MATCHES "Borland Makefiles" )
 
 IF( agg_USE_EXPAT )
 
-    FIND_PACKAGE( EXPAT QUIET )                    
+    FIND_PACKAGE( EXPAT )                    
 
     IF(EXPAT_FOUND)  
         INCLUDE_DIRECTORIES(${EXPAT_INCLUDE_DIRS})
@@ -94,7 +94,7 @@ ENDIF( agg_USE_EXPAT )
 # This is the concatenation of the paths:  FREETYPE_INCLUDE_DIR_ft2build  FREETYPE_INCLUDE_DIR_freetype2
 
 IF( agg_USE_FREETYPE )
-    FIND_PACKAGE( FREETYPE QUIET )                    
+    FIND_PACKAGE( Freetype )                    
     IF( FREETYPE_FOUND )
         INCLUDE_DIRECTORIES( ${FREETYPE_INCLUDE_DIRS} )
         LINK_LIBRARIES( ${FREETYPE_LIBRARIES} )
