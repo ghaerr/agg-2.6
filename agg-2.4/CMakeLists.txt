@@ -73,7 +73,6 @@ ENDIF ( ${CMAKE_GENERATOR} MATCHES "Borland Makefiles" )
 
 IF( agg_USE_EXPAT )
 
-    SET ( CMAKE_FRAMEWORK_PATH "${antigrain_SOURCE_DIR}/thirdparty/expat/lib" )
     FIND_PACKAGE( EXPAT QUIET )                    
 
     IF(EXPAT_FOUND)  
