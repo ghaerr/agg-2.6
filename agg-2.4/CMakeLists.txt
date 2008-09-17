@@ -133,9 +133,9 @@ IF ( agg_USE_GPC )
 ENDIF ( agg_USE_GPC )
 
 IF( SDL_FOUND AND agg_USE_SDL_PLATFORM )
-    LINK_LIBRARIES( antigrain controls sdlplatform )
+    LINK_LIBRARIES( controls sdlplatform antigrain )
 ELSE( SDL_FOUND AND agg_USE_SDL_PLATFORM )
-    LINK_LIBRARIES( antigrain controls platform )
+    LINK_LIBRARIES( controls platform antigrain )
 ENDIF( SDL_FOUND AND agg_USE_SDL_PLATFORM )
 
 SUBDIRS( examples )
