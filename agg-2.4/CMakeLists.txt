@@ -79,11 +79,8 @@ IF( agg_USE_EXPAT )
     IF(EXPAT_FOUND)  
         INCLUDE_DIRECTORIES(${EXPAT_INCLUDE_DIRS})
         LINK_LIBRARIES(${EXPAT_LIBRARIES})
-    ELSE(EXPAT_FOUND)
-        INCLUDE_DIRECTORIES( "${antigrain_SOURCE_DIR}/thirdparty/expat/lib" )
-        LINK_LIBRARIES( expat )
-    
-        #MESSAGE(SEND_ERROR "expat not found")
+    ELSE(EXPAT_FOUND)  
+        MESSAGE(SEND_ERROR "expat not found")
     ENDIF(EXPAT_FOUND)
 ENDIF( agg_USE_EXPAT )
    
@@ -92,21 +89,25 @@ ENDIF( agg_USE_EXPAT )
 ##################################################
 
 #FindFreetype: Locate FreeType library
-#FREETYPE_LIBRARIES, the library to link against  FREETYPE_FOUND, if false, do not try to link to FREETYPE  FREETYPE_INCLUDE_DIRS, where to find #headers.  This is the concatenation of the paths:  FREETYPE_INCLUDE_DIR_ft2build  FREETYPE_INCLUDE_DIR_freetype2
+# FREETYPE_LIBRARIES, the library to link against  
+# FREETYPE_FOUND, if false, do not try to link to 
+# FREETYPE  FREETYPE_INCLUDE_DIRS, where to find #headers.  
+# This is the concatenation of the paths:  FREETYPE_INCLUDE_DIR_ft2build  FREETYPE_INCLUDE_DIR_freetype2
 
 IF( agg_USE_FREETYPE )
-    INCLUDE( ${antigrain_SOURCE_DIR}/bin/FindFreetype.cmake )
-    IF( FT2_FOUND )
-        ADD_DEFINITIONS( "${FT2_DEFINITIONS}" )
-        #INCLUDE_DIRECTORIES( "${FT2_INCLUDE_DIR}" )
-        LINK_LIBRARIES( ${FT2_LIBRARIES} )
-        LINK_DIRECTORIES( "${FT2_LINK_DIR}" )
-    ELSE( FT2_FOUND )
-        MESSAGE( STATUS "Could not find existing freetype library, will use builtin library instead" )
-        INCLUDE_DIRECTORIES( "${antigrain_SOURCE_DIR}/thirdparty/freetype/include" )
-        LINK_LIBRARIES( freetype${PFDEBUG} )
-    ENDIF( FT2_FOUND )
+    FIND_PACKAGE( FREETYPE QUIET )                    
+    IF( FREETYPE_FOUND )
+        INCLUDE_DIRECTORIES( ${FREETYPE_INCLUDE_DIRS} )
+        LINK_LIBRARIES( ${FREETYPE_LIBRARIES} )
+        LINK_DIRECTORIES( ${FREETYPE_LINK_DIR} )
+    ELSE( FREETYPE_FOUND )
+        MESSAGE(SEND_ERROR "freetype not found")
+    ENDIF( FREETYPE_FOUND )
 ENDIF( agg_USE_FREETYPE )
+
+##################################################
+# Set all includes, flags, libraries, related to SDL
+##################################################
 
 FIND_PACKAGE( SDL QUIET )
 IF( SDL_FOUND )
