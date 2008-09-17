@@ -1,0 +1,53 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+</head>
+<body>
+<h1><youros>Cmake to generate projects files or makefile.</youros></h1>
+<youros><br>
+You start with downloading and installing Cmake &nbsp;<a
+ href="http:://www.cmake.org">http:://www.cmake.org </a><br>
+</youros>
+<h2>On windows</h2>
+<youros>On windows call the program CmakeSetup.exe, distributed with
+Cmake.<br>
+This has a graphical interface used to generate your project files or
+makefiles.<br>
+<br>
+Asumming Agg is installed at </youros>C:\agg\agg-2.4<br>
+<youros><br>
+</youros>In CmakeSetup.exe choose:<br>
+<youros><br>
+Where is the source code: </youros>C:\agg\agg-2.4<br>
+Where to build the binaries: C:\agg\agg-2.4_Build<br>
+<br>
+The option:<br>
+<br>
+agg_USE_EXPAT<br>
+agg_USE_FREETYPE<br>
+agg_USE_GPC<br>
+<br>
+can be to your liking.<br>
+<h2>On Unix alikes</h2>
+Asumming Agg is installed at /home/me/agg/agg-2.4<br>
+<youros><br>
+</youros>cd /home/me/agg<br>
+mkdir agg_build<br>
+cd /home/me/agg/agg_build<br>
+cmake ../agg-2.4<br>
+<br>
+The option:<br>
+<br>
+agg_USE_EXPAT<br>
+agg_USE_FREETYPE<br>
+agg_USE_GPC<br>
+<br>
+can be to your liking.<br>
+<h2></h2>
+<br>
+<br>
+<br>
+<youros><br>
+</youros>
+</body>
+</html>
