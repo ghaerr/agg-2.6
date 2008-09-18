@@ -78,14 +78,19 @@ Asumming Agg is installed at /home/me/agg/agg-2.4<br>
 
 <youros><br>
 
-</youros>cd /home/me/agg<br>
-
-mkdir agg_build<br>
-
-cd /home/me/agg/agg_build<br>
-
-cmake ../agg-2.4<br>
-
+</youros><span style="font-family: monospace; font-weight: bold;">cd /home/me/agg</span><br style="font-family: monospace; font-weight: bold;">
+<span style="font-family: monospace; font-weight: bold;">
+mkdir agg_build</span><br style="font-family: monospace; font-weight: bold;">
+<span style="font-family: monospace; font-weight: bold;">
+cd /home/me/agg/agg_build</span><br>
+<br>
+Here you generate makefiles with a GUI with:<br>
+<br>
+<span style="font-family: monospace; font-weight: bold;">ccmake ../agg-2.4</span><br>
+<br>
+OR using commandline for example:<br>
+<br>
+<span style="font-family: monospace; font-weight: bold;">cmake &nbsp;-Dagg_USE_FREETYPE:BOOL=ON -Dagg_USE_EXPAT:BOOL=ON ../agg-2.4</span><br style="font-family: monospace;">
 <br>
 
 The options:<br>
@@ -108,10 +113,14 @@ agg_USE_GPC</li>
   <li>
 agg_USE_SDL_PLATFORM</li>
   <ul>
-    <li>SDL needs to be installed. </li>
+    <li>SDL needs to be installed.</li>
   </ul>
 </ul>
+After generating the makefiles, you just type:<br>
+<span style="font-weight: bold; font-family: monospace;">make</span><br>
 
+You can also build directly in the agg checkout dircetory, but that is bad habit.<br>
+<br>
 <br>
 <br>
 
