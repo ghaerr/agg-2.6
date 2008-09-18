@@ -2,52 +2,125 @@
 <html>
 <head>
 </head>
+
+
 <body>
+
 <h1><youros>Cmake to generate projects files or makefile.</youros></h1>
+
 <youros><br>
-You start with downloading and installing Cmake &nbsp;<a
- href="http:://www.cmake.org">http:://www.cmake.org </a><br>
+
+You start with downloading and installing Cmake &nbsp;<a href="http:://www.cmake.org">http:://www.cmake.org </a><br>
+
 </youros>
 <h2>On windows</h2>
+
 <youros>On windows call the program CmakeSetup.exe, distributed with
 Cmake.<br>
+
 This has a graphical interface used to generate your project files or
 makefiles.<br>
+
 <br>
+
 Asumming Agg is installed at </youros>C:\agg\agg-2.4<br>
+
 <youros><br>
+
 </youros>In CmakeSetup.exe choose:<br>
+
 <youros><br>
+
 Where is the source code: </youros>C:\agg\agg-2.4<br>
+
 Where to build the binaries: C:\agg\agg-2.4_Build<br>
+
 <br>
-The option:<br>
-<br>
-agg_USE_EXPAT<br>
-agg_USE_FREETYPE<br>
-agg_USE_GPC<br>
-<br>
-can be to your liking.<br>
+
+The options:<br>
+<ul>
+  <li>
+agg_USE_EXPAT</li>
+  <ul>
+    <li>At <a href="http://expat.sourceforge.net/">http://expat.sourceforge.net/&nbsp;</a></li>
+    <li>you will find&nbsp;<a href="http://garr.dl.sourceforge.net/sourceforge/expat/expat-win32bin-2.0.1.exe">expat-win32bin-2.0.1.exe</a> &nbsp;</li>
+    <li>This will add a key to your registry, which is searched for by Cmake, if not oke, use next step.</li>
+    <li><span style="font-family: monospace;">Do set EXPAT_DIR in your environment to the location where you installed the above.</span></li>
+  </ul>
+  <li>
+agg_USE_FREETYPE</li>
+  <ul>
+    <li>Get the library + headers from: <a href="http://gnuwin32.sourceforge.net/packages/freetype.htm">http://gnuwin32.sourceforge.net/packages/freetype.htm</a></li>
+    <li>tested with the download called: "Complete package, except sources"&nbsp;</li>
+    <li>This will add a key to your registry, which is searched for by Cmake, if not oke, use next step.</li>
+    <li><span style="font-family: monospace;">Do set FREETYPE_DIR in your environment to the location where you installed the above.<br>
+      </span></li>
+  </ul>
+  <li>
+agg_USE_GPC</li>
+  <ul>
+    <li>Internal files, but GPL, so an option.</li>
+  </ul>
+  <li>
+agg_USE_SDL_PLATFORM</li>
+  <ul>
+    <li>Todo</li>
+  </ul>
+</ul>
+For windows the routines to find expat and freetype are script found in
+C:\agg\agg-2.4\bin. They are available in Cmake itself, but the ones
+here are better.<br>
+In case of problem, un-comment the MESSAGE statements in those script, to see what is going on. 
+
 <h2>On Unix alikes</h2>
+
 Asumming Agg is installed at /home/me/agg/agg-2.4<br>
+
 <youros><br>
+
 </youros>cd /home/me/agg<br>
+
 mkdir agg_build<br>
+
 cd /home/me/agg/agg_build<br>
+
 cmake ../agg-2.4<br>
+
 <br>
-The option:<br>
+
+The options:<br>
+<ul>
+  <li>
+agg_USE_EXPAT</li>
+  <ul>
+    <li>Requires expat to be installed.</li>
+  </ul>
+  <li>
+agg_USE_FREETYPE</li>
+  <ul>
+    <li>Requires freetype-devel to be installed. (e.g. on Fedora:&nbsp; yum install freetype-devel&nbsp;)</li>
+  </ul>
+  <li>
+agg_USE_GPC</li>
+  <ul>
+    <li>Part of Agg for the moment, but GPL, that is why its optional.</li>
+  </ul>
+  <li>
+agg_USE_SDL_PLATFORM</li>
+  <ul>
+    <li>SDL needs to be installed. </li>
+  </ul>
+</ul>
+
 <br>
-agg_USE_EXPAT<br>
-agg_USE_FREETYPE<br>
-agg_USE_GPC<br>
 <br>
-can be to your liking.<br>
-<h2></h2>
+
 <br>
+
 <br>
-<br>
+
 <youros><br>
+
 </youros>
 </body>
 </html>

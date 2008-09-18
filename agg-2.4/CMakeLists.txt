@@ -1,5 +1,8 @@
 PROJECT( antigrain )
 
+# additional are modified Find routines
+SET ( CMAKE_MODULE_PATH "${antigrain_SOURCE_DIR}/bin" )
+
 CMAKE_MINIMUM_REQUIRED( VERSION 2.4.8 )
 
 SET (LIBRARY_OUTPUT_PATH ${antigrain_BINARY_DIR}/lib/ CACHE PATH "Single output directory for building all libraries." FORCE )
