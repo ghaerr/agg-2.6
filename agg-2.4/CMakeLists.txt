@@ -17,7 +17,7 @@ SET( AGG_LIBRARY_DIRS  ${antigrain_BINARY_DIR}/lib )
 
 LINK_DIRECTORIES(  ${antigrain_BINARY_DIR}/lib )
 
-OPTION( agg_USE_GPC "Use Gpc Boolean library" ON)
+OPTION( agg_USE_GPC "Use Gpc Boolean library" OFF)
 OPTION( agg_USE_FREETYPE "Use Freetype library" OFF)
 OPTION( agg_USE_EXPAT "Use Expat library" OFF)
 OPTION( agg_USE_SDL_PLATFORM "Use SDL as platform" OFF)
