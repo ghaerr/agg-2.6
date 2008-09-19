@@ -11,7 +11,14 @@
 <youros><br>
 
 You start with downloading and installing Cmake &nbsp;<a href="http:://www.cmake.org">http:://www.cmake.org </a><br>
-
+<br>
+</youros>
+<ul>
+  <li><a href="#On_windows">On Windows</a></li>
+  <li><a href="#On_Unix_alikes">On Unix alikes</a></li>
+  <li><a href="#My_Own_Application">My Own Application</a></li>
+</ul>
+<youros>
 </youros>
 <h2>On windows</h2>
 
@@ -117,15 +124,41 @@ agg_USE_SDL_PLATFORM</li>
   </ul>
 </ul>
 After generating the makefiles, you just type:<br>
-<span style="font-weight: bold; font-family: monospace;">make</span><br>
-
+<span style="font-weight: bold; font-family: monospace;">make</span>
 You can also build directly in the agg checkout dircetory, but that is bad habit.<br>
+<h2><span style="font-weight: bold;"></span>My Own Application</h2>
+Nice but what if i want to detect Agg libraries and headers etc. for
+use in &nbsp;my own application. For that you find in the resulting
+build directory created by Cmake, &nbsp;an template directory called
+myapp. In there you see CMakeLists.txt, this file you can use in
+CMakeSetup.exe/ccmake as your source. Again choose your build
+directory, and configure.<br>
+This will result in project/make files for the demo application my_demo.cpp.<br>
+<br>
+In principle this is needed ( see myapp/CMakeLists.txt ):<br>
+<br>
+FIND_PACKAGE( Agg )<br>
+IF( AGG_FOUND )<br>
+&nbsp;&nbsp;&nbsp; INCLUDE_DIRECTORIES(${AGG_INCLUDE_DIRS})<br>
+&nbsp;&nbsp;&nbsp; LINK_LIBRARIES(${AGG_LIBRARIES})<br>
+&nbsp;&nbsp;&nbsp; INCLUDE(${AGG_USE_FILE})<br>
+ELSE( AGG_FOUND )<br>
+&nbsp;&nbsp;&nbsp; MESSAGE( "AGG library was not found" )<br>
+ENDIF( AGG_FOUND )<br>
+<br>
+If you look in your&nbsp;C:\agg\agg-2.4_Build you will see that <span style="font-weight: bold;">AggConfig.cmake</span> and <span style="font-weight: bold;">UseAgg.cmake</span>, they contain all the information you need to have to use Agg in your application. Study <span style="font-weight: bold;">FindAgg.cmake</span> to know who Agg install dir is found.<br>
+On windows set the environment variable AGG_DIR, if automatic detection via the registry fails.<br>
 <br>
 <br>
 <br>
-
 <br>
-
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
 <br>
 
 <youros><br>

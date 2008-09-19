@@ -5,7 +5,13 @@ SET ( CMAKE_MODULE_PATH "${antigrain_SOURCE_DIR}/bin" )
 
 CMAKE_MINIMUM_REQUIRED( VERSION 2.4.8 )
 
+SET( AGG_FLAGS "" )
+SET( AGG_INCLUDE_DIRS "" )
+SET( AGG_LIBRARY_DIRS "" )
+SET( AGG_LIBRARIES "" )
+
 SET (LIBRARY_OUTPUT_PATH ${antigrain_BINARY_DIR}/lib/ CACHE PATH "Single output directory for building all libraries." FORCE )
+SET( AGG_LIBRARY_DIRS  ${antigrain_BINARY_DIR}/lib )
 #SET (EXECUTABLE_OUTPUT_PATH ${antigrain_BINARY_DIR}/exe/ CACHE PATH "Single output directory for building all executables.")
 #MARK_AS_ADVANCED(LIBRARY_OUTPUT_PATH EXECUTABLE_OUTPUT_PATH)
 
@@ -15,23 +21,19 @@ OPTION( agg_USE_GPC "Use Gpc Boolean library" ON)
 OPTION( agg_USE_FREETYPE "Use Freetype library" OFF)
 OPTION( agg_USE_EXPAT "Use Expat library" OFF)
 OPTION( agg_USE_SDL_PLATFORM "Use SDL as platform" OFF)
+OPTION( agg_USE_PACK "Package Agg" OFF)
 
-IF ( agg_USE_GPC )
-    INCLUDE_DIRECTORIES( ${antigrain_SOURCE_DIR}/gpc )
-ENDIF ( agg_USE_GPC )
-
-# for the moment this decides the platfoirm code.
+# for the moment this decides the platform code.
 IF(WIN32)
     ADD_DEFINITIONS( -D_MSWVC_ -D_CRT_SECURE_NO_WARNINGS -D_CRT_SECURE_NO_DEPRECATE )
     SET( WIN32GUI WIN32 )    
     INCLUDE_DIRECTORIES( ${antigrain_SOURCE_DIR}/font_win32_tt )
-    INCLUDE_DIRECTORIES( ${antigrain_SOURCE_DIR}/font_freetype )
+    SET( AGG_INCLUDE_DIRS ${AGG_INCLUDE_DIRS} ${antigrain_SOURCE_DIR}/font_win32_tt )    
 ENDIF(WIN32)
 
 IF(UNIX)
     ADD_DEFINITIONS( -D__UNIX__  )
     SET( WIN32GUI "" )
-    INCLUDE_DIRECTORIES( ${antigrain_SOURCE_DIR}/font_freetype )
 
     FIND_PACKAGE(X11)
     IF(X11_FOUND)  
@@ -90,18 +92,12 @@ ENDIF( agg_USE_EXPAT )
 # Set all includes, flags, libraries, related to freetype
 ##################################################
 
-#FindFreetype: Locate FreeType library
-# FREETYPE_LIBRARIES, the library to link against  
-# FREETYPE_FOUND, if false, do not try to link to 
-# FREETYPE  FREETYPE_INCLUDE_DIRS, where to find #headers.  
-# This is the concatenation of the paths:  FREETYPE_INCLUDE_DIR_ft2build  FREETYPE_INCLUDE_DIR_freetype2
-
 IF( agg_USE_FREETYPE )
     FIND_PACKAGE( Freetype )                    
     IF( FREETYPE_FOUND )
         INCLUDE_DIRECTORIES( ${FREETYPE_INCLUDE_DIRS} )
         LINK_LIBRARIES( ${FREETYPE_LIBRARIES} )
-        LINK_DIRECTORIES( ${FREETYPE_LINK_DIR} )
+        LINK_DIRECTORIES( ${FREETYPE_LINK_DIR} )		
     ELSE( FREETYPE_FOUND )
         MESSAGE(SEND_ERROR "freetype not found")
     ENDIF( FREETYPE_FOUND )
@@ -123,23 +119,58 @@ ELSE( SDL_FOUND )
     ENDIF ( agg_USE_SDL_PLATFORM )
 ENDIF( SDL_FOUND )
 
+# the main include dir of Agg
 INCLUDE_DIRECTORIES( ${antigrain_SOURCE_DIR}/include )
+SET( AGG_INCLUDE_DIRS ${AGG_INCLUDE_DIRS} ${antigrain_SOURCE_DIR}/include )    
 
 ADD_SUBDIRECTORY( src )
 
+# freetype specific lib of Agg
 IF( agg_USE_FREETYPE )
+    INCLUDE_DIRECTORIES( ${antigrain_SOURCE_DIR}/font_freetype )	
+    SET( AGG_INCLUDE_DIRS ${AGG_INCLUDE_DIRS} ${antigrain_SOURCE_DIR}/font_freetype )    
     LINK_LIBRARIES( freetypefont )
+    SET( AGG_LIBRARIES ${AGG_LIBRARIES} aggfontfreetype${PFDEBUG} ) 
 ENDIF( agg_USE_FREETYPE )
 
+# GPC lib if used within Agg
 IF ( agg_USE_GPC )
+    INCLUDE_DIRECTORIES( ${antigrain_SOURCE_DIR}/gpc )
+    SET( AGG_INCLUDE_DIRS ${AGG_INCLUDE_DIRS} ${antigrain_SOURCE_DIR}/gpc )    
     LINK_LIBRARIES( gpcbool )
+    SET( AGG_LIBRARIES ${AGG_LIBRARIES} gpc${PFDEBUG} ) 
 ENDIF ( agg_USE_GPC )
 
+# sld as platform or os
 IF( SDL_FOUND AND agg_USE_SDL_PLATFORM )
     LINK_LIBRARIES( controls sdlplatform antigrain )
+    SET( AGG_LIBRARIES ${AGG_LIBRARIES} aggctrl${PFDEBUG} aggsdlplatform${PFDEBUG} agg${PFDEBUG} )
 ELSE( SDL_FOUND AND agg_USE_SDL_PLATFORM )
     LINK_LIBRARIES( controls platform antigrain )
+    SET( AGG_LIBRARIES ${AGG_LIBRARIES} aggctrl${PFDEBUG} aggplatform${PFDEBUG} agg${PFDEBUG} )
 ENDIF( SDL_FOUND AND agg_USE_SDL_PLATFORM )
 
-SUBDIRS( examples )
- 
+SET( AGG_FLAGS ${AGG_FLAGS} CACHE STRING "Agg package flags" FORCE )
+SET( AGG_INCLUDE_DIRS ${AGG_INCLUDE_DIRS} CACHE STRING "Agg package libs include paths" FORCE )
+SET( AGG_LIBRARY_DIRS ${AGG_LIBRARY_DIRS} CACHE STRING "Agg package libs directory paths" FORCE )
+SET( AGG_LIBRARIES ${AGG_LIBRARIES} CACHE STRING "Agg package libraries" FORCE )
+
+ADD_SUBDIRECTORY( examples )
+
+#place it also one level higher
+CONFIGURE_FILE( ${antigrain_SOURCE_DIR}/AggConfig.cmake.in
+               ${antigrain_BINARY_DIR}/AggConfig.cmake
+               @ONLY IMMEDIATE )
+
+CONFIGURE_FILE( ${antigrain_SOURCE_DIR}/UseAgg.cmake.in
+${antigrain_BINARY_DIR}/UseAgg.cmake
+@ONLY IMMEDIATE )
+INSTALL_FILES( "/." FILES "AggConfig.cmake" )
+INSTALL_FILES( "/." FILES "UseAgg.cmake" )
+
+# tested and works. 
+IF ( agg_USE_PACK )
+	INCLUDE(CPack)
+ENDIF ( agg_USE_PACK )
+
+INCLUDE( myapp/myproject.cmake )

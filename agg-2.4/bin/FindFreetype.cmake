@@ -30,7 +30,7 @@
 # everything still works.
 FIND_PATH(FREETYPE_INCLUDE_DIR_ft2build ft2build.h 
   $ENV{FREETYPE_DIR}/include
-  PATHS "[HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\FreeType-2.3.5-1_is1;Inno Setup: App Path]/include"
+  "[HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\FreeType-2.3.5-1_is1;Inno Setup: App Path]/include"
   NO_DEFAULT_PATH
 )
 

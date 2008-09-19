@@ -185,49 +185,78 @@ ADD_LIBRARY( controls
     ${controls_HEADERS}
 )
 
+#freetype library
+
 IF ( agg_USE_FREETYPE )
+
+    INCLUDE_DIRECTORIES( ${antigrain_SOURCE_DIR}/font_freetype )
+
     ADD_LIBRARY( freetypefont
         ../font_freetype/agg_font_freetype.h
         ../font_freetype/agg_font_freetype.cpp
-    )
+    )	
     SET_TARGET_PROPERTIES( freetypefont  PROPERTIES OUTPUT_NAME aggfontfreetype${PFDEBUG} )
-    INSTALL_TARGETS( "/lib/agg" freetypefont )
+    INSTALL_TARGETS( "/lib" freetypefont )
+	INSTALL_FILES( "/include/font_freetype" FILES 
+	    ../font_freetype/agg_font_freetype.h 
+	)	
 ENDIF ( agg_USE_FREETYPE )
 
+#platform stuff to ease sample use
+SET( platform_HEADERS   
+    ${antigrain_SOURCE_DIR}/include/platform/agg_platform_support.h
+)
 
 IF(WIN32)
+    INCLUDE_DIRECTORIES( ${antigrain_SOURCE_DIR}/font_win32_tt )
+
     ADD_LIBRARY( platform
         ../src/platform/win32/agg_win32_bmp.cpp
         ../src/platform/win32/agg_platform_support.cpp
         ../font_win32_tt/agg_font_win32_tt.cpp
+		
+		${platform_HEADERS}		
     )
 ENDIF(WIN32)
 IF(UNIX)
     ADD_LIBRARY( platform
         ../src/platform/X11/agg_platform_support.cpp
+
+		${platform_HEADERS}		
     )
 ENDIF(UNIX)
 IF(APPLE)
     ADD_LIBRARY( platform
         ../src/platform/mac/agg_mac_pmap.cpp
         ../src/platform/mac/agg_platform_support.cpp
+
+		${platform_HEADERS}		
     )
 ENDIF(APPLE)
 
 IF( SDL_FOUND AND agg_USE_SDL_PLATFORM )
     ADD_LIBRARY( sdlplatform
         ../src/platform/sdl/agg_platform_support.cpp
+		
+		${platform_HEADERS}		
     )
-    INSTALL_TARGETS( "/lib/agg" sdlplatform )
+    INSTALL_TARGETS( "/lib" sdlplatform )
     SET_TARGET_PROPERTIES( sdlplatform  PROPERTIES OUTPUT_NAME aggsdlplatform${PFDEBUG} )
 ENDIF( SDL_FOUND AND agg_USE_SDL_PLATFORM )
 
+# boolean operations library GPC
+
 IF ( agg_USE_GPC )
+    INCLUDE_DIRECTORIES( ${antigrain_SOURCE_DIR}/gpc )
+
     ADD_LIBRARY( gpcbool
         ../gpc/gpc.c
         ../gpc/gpc.h
     )
-    INSTALL_TARGETS( "/lib/agg" gpcbool )
+    INSTALL_TARGETS( "/lib" gpcbool )
+	INSTALL_FILES( "/include/gpc" FILES 
+	    ../gpc/gpc.h 
+	)	
     SET_TARGET_PROPERTIES( gpcbool   PROPERTIES OUTPUT_NAME gpc${PFDEBUG} )
 ENDIF ( agg_USE_GPC )
 
@@ -235,8 +264,16 @@ SET_TARGET_PROPERTIES( antigrain PROPERTIES OUTPUT_NAME agg${PFDEBUG} )
 SET_TARGET_PROPERTIES( controls  PROPERTIES OUTPUT_NAME aggctrl${PFDEBUG} )
 SET_TARGET_PROPERTIES( platform  PROPERTIES OUTPUT_NAME aggplatform${PFDEBUG} )
 
-INSTALL_FILES( "/include/agg" FILES 
-    ${antigrain_HEADERS} ${control_HEADERS} ../font_freetype/agg_font_freetype.h  ../gpc/gpc.h 
+INSTALL_FILES( "/include" FILES 
+    ${antigrain_HEADERS}  
 )
 
-INSTALL_TARGETS( "/lib/agg" antigrain controls platform )
+INSTALL_FILES( "/include/ctrl" FILES 
+    ${controls_HEADERS}
+)
+
+INSTALL_FILES( "/include/platform" FILES 
+    ${platform_HEADERS} 
+)
+
+INSTALL_TARGETS( "/lib" antigrain controls platform )
