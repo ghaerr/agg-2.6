@@ -8,7 +8,7 @@ CONFIGURE_FILE(${antigrain_SOURCE_DIR}/bin/FindAgg.cmake
                ${antigrain_BINARY_DIR}/myapp/FindAgg.cmake
                @ONLY )
 
-CONFIGURE_FILE(${antigrain_SOURCE_DIR}/bin/FindExpat.cmake
+CONFIGURE_FILE(${antigrain_SOURCE_DIR}/bin/FindEXPAT.cmake
 ${antigrain_BINARY_DIR}/myapp/FindExpat.cmake
 @ONLY )
 
