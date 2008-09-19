@@ -17,10 +17,11 @@ You start with downloading and installing Cmake &nbsp;<a href="http:://www.cmake
   <li><a href="#On_windows">On Windows</a></li>
   <li><a href="#On_Unix_alikes">On Unix alikes</a></li>
   <li><a href="#My_Own_Application">My Own Application</a></li>
+  <li><a href="#Cpack_to_make_distributions">Cpack for making distribution</a></li>
 </ul>
 <youros>
 </youros>
-<h2>On windows</h2>
+<h2>On windows<a href="cmake_install.html#Cpack_to_make_distributions">Cpack for making distribution</a></h2>
 
 <youros>On windows call the program CmakeSetup.exe, distributed with
 Cmake.<br>
@@ -73,6 +74,10 @@ agg_USE_SDL_PLATFORM</li>
   <ul>
     <li>Todo</li>
   </ul>
+  <li>agg_USE_PACK</li>
+  <ul>
+    <li><a href="cmake_install.html#Cpack_to_make_distributions">See Cpack for making distribution</a></li>
+  </ul>
 </ul>
 For windows the routines to find expat and freetype are script found in
 C:\agg\agg-2.4\bin. They are available in Cmake itself, but the ones
@@ -122,6 +127,10 @@ agg_USE_SDL_PLATFORM</li>
   <ul>
     <li>SDL needs to be installed.</li>
   </ul>
+  <li>agg_USE_PACK</li>
+  <ul>
+    <li><a href="cmake_install.html#Cpack_to_make_distributions">See Cpack for making distribution</a></li>
+  </ul>
 </ul>
 After generating the makefiles, you just type:<br>
 <span style="font-weight: bold; font-family: monospace;">make</span>
@@ -148,8 +157,25 @@ ENDIF( AGG_FOUND )<br>
 <br>
 If you look in your&nbsp;C:\agg\agg-2.4_Build you will see that <span style="font-weight: bold;">AggConfig.cmake</span> and <span style="font-weight: bold;">UseAgg.cmake</span>, they contain all the information you need to have to use Agg in your application. Study <span style="font-weight: bold;">FindAgg.cmake</span> to know who Agg install dir is found.<br>
 On windows set the environment variable AGG_DIR, if automatic detection via the registry fails.<br>
+<h2>Cpack to make distributions</h2>
+If enabled agg_USE_PACK, you get an extra target.<br>
+On windows have gzip and nsis installed, they are used to generate the
+setup/installer script and zip files, and found automatically:<br>
+<br style="font-weight: bold;">
+<span style="font-weight: bold;">http://nsis.sourceforge.net</span><br style="font-weight: bold;">
+<span style="font-weight: bold;">http://www.7-zip.org</span><br>
 <br>
+Parts of the Cmake system &nbsp;is Cpack. After a build of Agg,
+&nbsp;you get an extra target to PACKAGE, but you can do it by hand
+also.<br>
+Calling the Cmake tool:&nbsp;<span style="font-weight: bold;">cpack.exe -C debug </span>or<span style="font-weight: bold;"> </span><span style="font-weight: bold;">cpack.exe -C &nbsp;release </span>on the command line, will result in files like:<br>
+<br style="font-weight: bold;">
+<span style="font-weight: bold;">antigrain-0.1.1-win32.exe &nbsp; &nbsp; </span>&nbsp;# this is the installers script for Agg on windows.<br style="font-weight: bold;">
+<span style="font-weight: bold;">antigrain-0.1.1-win32.zip &nbsp; &nbsp; &nbsp; </span>#contains the same, and can be installed by hand<span style="font-weight: bold;"><br>
 <br>
+</span><span style="font-weight: bold;"></span>The first gives you a
+registery key like this: [HKEY_LOCAL_MACHINE\SOFTWARE\Agg\antigrain
+0.1.1] And that is used to detect Agg in <span style="font-weight: bold;">FindAgg.cmake</span>, if you use the zip file, you will need to set AGG_DIR in your environment to reach the same.<br>
 <br>
 <br>
 <br>

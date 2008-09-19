@@ -5,6 +5,10 @@ SET ( CMAKE_MODULE_PATH "${antigrain_SOURCE_DIR}/bin" )
 
 CMAKE_MINIMUM_REQUIRED( VERSION 2.4.8 )
 
+SET(AGG_MAJOR_VERSION 0 )
+SET(AGG_MINOR_VERSION 1 )
+SET(AGG_BUILD_VERSION 1 )
+
 SET( AGG_FLAGS "" )
 SET( AGG_INCLUDE_DIRS "" )
 SET( AGG_LIBRARY_DIRS "" )
@@ -168,9 +172,32 @@ ${antigrain_BINARY_DIR}/UseAgg.cmake
 INSTALL_FILES( "/." FILES "AggConfig.cmake" )
 INSTALL_FILES( "/." FILES "UseAgg.cmake" )
 
-# tested and works. 
-IF ( agg_USE_PACK )
-	INCLUDE(CPack)
+#-------------------------------------------------------------------
+# Build a CPack installer if CPack is available and this is a build 
+IF ( agg_USE_PACK )    
+    IF(EXISTS "${CMAKE_ROOT}/Modules/CPack.cmake")
+        SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Agg - Vector Graphics")
+        SET(CPACK_PACKAGE_VENDOR "Agg")
+        SET(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/copying")
+        SET(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/copying")
+        SET(CPACK_PACKAGE_VERSION_MAJOR "${AGG_MAJOR_VERSION}")
+        SET(CPACK_PACKAGE_VERSION_MINOR "${AGG_MINOR_VERSION}")
+        SET(CPACK_PACKAGE_VERSION_PATCH "${AGG_BUILD_VERSION}")
+        SET(CPACK_PACKAGE_INSTALL_DIRECTORY "AGG ${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}")
+        SET(CPACK_SOURCE_PACKAGE_FILE_NAME "agg-${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}")
+        SET(CPACK_PACKAGE_EXECUTABLES
+        "agg" "AGG"
+        )
+
+        IF(WIN32)
+            SET(CPACK_NSIS_DISPLAY_NAME "${CPACK_PACKAGE_INSTALL_DIRECTORY}")
+            SET(CPACK_NSIS_HELP_LINK "http://agg.sourceforge.net")
+            SET(CPACK_NSIS_URL_INFO_ABOUT "http://agg.sourceforge.net")
+            SET(CPACK_NSIS_CONTACT "http://agg.sourceforge.net")
+        ENDIF(WIN32)
+
+        INCLUDE(CPack)
+    ENDIF(EXISTS "${CMAKE_ROOT}/Modules/CPack.cmake")   
 ENDIF ( agg_USE_PACK )
 
 INCLUDE( myapp/myproject.cmake )

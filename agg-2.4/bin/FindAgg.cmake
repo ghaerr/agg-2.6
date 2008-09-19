@@ -8,7 +8,6 @@
 # correspond to the install directory on e.g. windows.
 
 # Created by Klaas Holwerda. 
-
 # Search only if the location is not already known.
 IF(NOT AGG_DIR)
 
@@ -30,7 +29,8 @@ IF(NOT AGG_DIR)
     /usr/local/agg
     /usr/X11R6/include
 
-    "[HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Agg_is1;Inno Setup: App Path]/include"
+    "[HKEY_LOCAL_MACHINE\\SOFTWARE\\Agg\\antigrain 0.1.1]"
+    "[HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Agg_is1;Inno Setup: App Path]"
  
     # Read from the CMakeSetup registry entries.  It is likely that
     # AGG will have been recently built.
