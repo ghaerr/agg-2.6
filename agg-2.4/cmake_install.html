@@ -21,7 +21,7 @@ You start with downloading and installing Cmake &nbsp;<a href="http:://www.cmake
 </ul>
 <youros>
 </youros>
-<h2>On windows<a href="cmake_install.html#Cpack_to_make_distributions">Cpack for making distribution</a></h2>
+<h2 style="font-style: italic; text-decoration: underline;">On windows</h2>
 
 <youros>On windows call the program CmakeSetup.exe, distributed with
 Cmake.<br>
@@ -84,7 +84,7 @@ C:\agg\agg-2.4\bin. They are available in Cmake itself, but the ones
 here are better.<br>
 In case of problem, un-comment the MESSAGE statements in those script, to see what is going on. 
 
-<h2>On Unix alikes</h2>
+<h2 style="font-style: italic; text-decoration: underline;">On Unix alikes</h2>
 
 Asumming Agg is installed at /home/me/agg/agg-2.4<br>
 
@@ -135,7 +135,15 @@ agg_USE_SDL_PLATFORM</li>
 After generating the makefiles, you just type:<br>
 <span style="font-weight: bold; font-family: monospace;">make</span>
 You can also build directly in the agg checkout dircetory, but that is bad habit.<br>
-<h2><span style="font-weight: bold;"></span>My Own Application</h2>
+<br>
+When all is compiled, you can execute the samples already from the examples directory in your build tree.<br>
+Now you can login as root and install Agg as you compiled it.<br>
+So you type:<br>
+<br>
+<span style="font-weight: bold;">make install</span><br>
+<br>
+This installes your file in <span style="font-weight: bold;">/usr/local.</span><br>
+<h2><span style="font-weight: bold;"></span><span style="font-style: italic; text-decoration: underline;">My Own Application</span></h2>
 Nice but what if i want to detect Agg libraries and headers etc. for
 use in &nbsp;my own application. For that you find in the resulting
 build directory created by Cmake, &nbsp;an template directory called
@@ -157,7 +165,21 @@ ENDIF( AGG_FOUND )<br>
 <br>
 If you look in your&nbsp;C:\agg\agg-2.4_Build you will see that <span style="font-weight: bold;">AggConfig.cmake</span> and <span style="font-weight: bold;">UseAgg.cmake</span>, they contain all the information you need to have to use Agg in your application. Study <span style="font-weight: bold;">FindAgg.cmake</span> to know who Agg install dir is found.<br>
 On windows set the environment variable AGG_DIR, if automatic detection via the registry fails.<br>
-<h2>Cpack to make distributions</h2>
+<br>
+On Unix you can after installing Agg, go to <span style="font-family: monospace; font-weight: bold;">/home/me/agg/agg_build/myapp </span><span style="font-family: monospace;">and type this for an inside build:<br>
+<br>
+</span><span style="font-family: monospace; font-weight: bold;">cmake .<br>
+</span><span style="font-family: monospace;"><br>
+or for an outside build:<br>
+<br>
+</span><span style="font-family: monospace; font-weight: bold;">mkdir ../buildmyapp<br>
+cd </span><span style="font-family: monospace; font-weight: bold;">../buildmyapp</span><br>
+<span style="font-family: monospace; font-weight: bold;">cmake ../myapp</span><span style="font-weight: bold;"><br>
+</span><br>
+If you do not want to install, you can set<span style="font-weight: bold;"> </span>AGG_DIR first, to use the build without installing, like:<br>
+<br>
+<span style="font-weight: bold;">export AGG_DIR=</span><span style="font-family: monospace; font-weight: bold;">/home/me/agg/agg_build</span>
+<h2 style="font-style: italic; text-decoration: underline;">Cpack to make distributions</h2>
 If enabled agg_USE_PACK, you get an extra target.<br>
 On windows have gzip and nsis installed, they are used to generate the
 setup/installer script and zip files, and found automatically:<br>
@@ -176,6 +198,15 @@ Calling the Cmake tool:&nbsp;<span style="font-weight: bold;">cpack.exe -C debug
 </span><span style="font-weight: bold;"></span>The first gives you a
 registery key like this: [HKEY_LOCAL_MACHINE\SOFTWARE\Agg\antigrain
 0.1.1] And that is used to detect Agg in <span style="font-weight: bold;">FindAgg.cmake</span>, if you use the zip file, you will need to set AGG_DIR in your environment to reach the same.<br>
+<br>
+On unix you type:<br>
+<br>
+<span style="font-weight: bold;">cpack -C debug</span> on the&nbsp;line, and this gives you files like:<br>
+<br>
+<span style="font-weight: bold;">antigrain-0.1.1-Linux.sh</span><br style="font-weight: bold;">
+<span style="font-weight: bold;">antigrain-0.1.1-Linux.tar.gz</span><br style="font-weight: bold;">
+<span style="font-weight: bold;">antigrain-0.1.1-Linux.tar.Z</span><br style="font-weight: bold;">
+<span style="font-weight: bold;">antigrain-0.1.1-Linux.tar.bz2</span><br>
 <br>
 <br>
 <br>
