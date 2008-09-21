@@ -146,11 +146,12 @@ This installes your file in <span style="font-weight: bold;">/usr/local.</span><
 <h2><span style="font-weight: bold;"></span><span style="font-style: italic; text-decoration: underline;">My Own Application</span></h2>
 Nice but what if i want to detect Agg libraries and headers etc. for
 use in &nbsp;my own application. For that you find in the resulting
-build directory created by Cmake, &nbsp;an template directory called
-myapp. In there you see CMakeLists.txt, this file you can use in
-CMakeSetup.exe/ccmake as your source. Again choose your build
-directory, and configure.<br>
-This will result in project/make files for the demo application my_demo.cpp.<br>
+build directory created by Cmake, &nbsp;a template directory called
+myapp, containing a simple application. This show you how to do it for
+your own application. In there you see CMakeLists.txt, this file you
+can use in CMakeSetup.exe/ccmake as the&nbsp;source directory. Again
+choose your build directory, and configure.<br>
+This will result in project/make files for the demo application contained in my_demo.cpp.<br>
 <br>
 In principle this is needed ( see myapp/CMakeLists.txt ):<br>
 <br>
@@ -164,9 +165,15 @@ ELSE( AGG_FOUND )<br>
 ENDIF( AGG_FOUND )<br>
 <br>
 If you look in your&nbsp;C:\agg\agg-2.4_Build you will see that <span style="font-weight: bold;">AggConfig.cmake</span> and <span style="font-weight: bold;">UseAgg.cmake</span>, they contain all the information you need to have to use Agg in your application. Study <span style="font-weight: bold;">FindAgg.cmake</span> to know who Agg install dir is found.<br>
-On windows set the environment variable AGG_DIR, if automatic detection via the registry fails.<br>
+Also be aware &nbsp;that the file C:\agg\agg-2.4_Build\bin\<span style="font-weight: bold;">AggConfigOutBuild.cmake</span> is installed as&nbsp;<span style="font-weight: bold;">AggConfig.cmake</span> by <span style="font-weight: bold;">make install</span> are inside the packages.<br>
+The file C:\agg\agg-2.4_Build<span style="font-weight: bold;">\AggConfig.cmake </span>is setup such that you can use it from with in the build directory itself, using the Agg header files from the source directory.<br>
+This is the same as when building the agg libraries itself.<br>
+Only when packaging and/or doing a <span style="font-weight: bold;">make install</span>, the headers will be really installed. <br>
+On windows you need to set the environment variable AGG_DIR, if
+automatic detection via the registry fails. But if you use a package
+like <span style="font-weight: bold;">antigrain-0.1.1-win32.exe </span>to install on windows<span style="font-weight: bold;">, </span>a registry key<span style="font-weight: bold;">&nbsp; "[HKEY_LOCAL_MACHINE\\SOFTWARE\\Agg\\antigrain 0.1.1]/bin" </span>is generated, which is used by FindAgg.cmake to find the installation.<br>
 <br>
-On Unix you can after installing Agg, go to <span style="font-family: monospace; font-weight: bold;">/home/me/agg/agg_build/myapp </span><span style="font-family: monospace;">and type this for an inside build:<br>
+On Unix you can, after installing Agg, go to <span style="font-family: monospace; font-weight: bold;">/home/me/agg/agg_build/myapp </span><span style="font-family: monospace;">and type this for an inside build:<br>
 <br>
 </span><span style="font-family: monospace; font-weight: bold;">cmake .<br>
 </span><span style="font-family: monospace;"><br>
@@ -178,7 +185,9 @@ cd </span><span style="font-family: monospace; font-weight: bold;">../buildmyapp
 </span><br>
 If you do not want to install, you can set<span style="font-weight: bold;"> </span>AGG_DIR first, to use the build without installing, like:<br>
 <br>
-<span style="font-weight: bold;">export AGG_DIR=</span><span style="font-family: monospace; font-weight: bold;">/home/me/agg/agg_build</span>
+<span style="font-weight: bold;">export AGG_DIR=</span><span style="font-family: monospace; font-weight: bold;">/home/me/agg/agg_build<br>
+<br>
+</span>
 <h2 style="font-style: italic; text-decoration: underline;">Cpack to make distributions</h2>
 If enabled agg_USE_PACK, you get an extra target.<br>
 On windows have gzip and nsis installed, they are used to generate the
