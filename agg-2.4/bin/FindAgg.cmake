@@ -14,40 +14,44 @@ IF(NOT AGG_DIR)
   #
   # Look for an installation or build tree.
   #
-  FIND_PATH(AGG_DIR AggConfig.cmake
+  FIND_PATH(AGG_DIR_BIN AggConfig.cmake
     # Look for an environment variable AGG_DIR.
-    $ENV{AGG_DIR}
+    $ENV{AGG_DIR}/bin
 
     # Look in search path.
     $ENV{PATH}
 
     # Look in standard UNIX install locations.
+    /usr/local/bin
     /usr/local/lib/agg
     /usr/lib/agg
+    /usr/local/include/agg
     /usr/local/include
     /usr/include
     /usr/local/agg
     /usr/X11R6/include
 
-    "[HKEY_LOCAL_MACHINE\\SOFTWARE\\Agg\\antigrain 0.1.1]"
-    "[HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Agg_is1;Inno Setup: App Path]"
+    "[HKEY_LOCAL_MACHINE\\SOFTWARE\\Agg\\antigrain 0.1.1]/bin"
+    "[HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Agg_is1;Inno Setup: App Path]/bin"
  
     # Read from the CMakeSetup registry entries.  It is likely that
     # AGG will have been recently built.
-    [HKEY_CURRENT_USER\\Software\\Kitware\\CMakeSetup\\Settings\\StartPath;WhereBuild1]
-    [HKEY_CURRENT_USER\\Software\\Kitware\\CMakeSetup\\Settings\\StartPath;WhereBuild2]
-    [HKEY_CURRENT_USER\\Software\\Kitware\\CMakeSetup\\Settings\\StartPath;WhereBuild3]
-    [HKEY_CURRENT_USER\\Software\\Kitware\\CMakeSetup\\Settings\\StartPath;WhereBuild4]
-    [HKEY_CURRENT_USER\\Software\\Kitware\\CMakeSetup\\Settings\\StartPath;WhereBuild5]
-    [HKEY_CURRENT_USER\\Software\\Kitware\\CMakeSetup\\Settings\\StartPath;WhereBuild6]
-    [HKEY_CURRENT_USER\\Software\\Kitware\\CMakeSetup\\Settings\\StartPath;WhereBuild7]
-    [HKEY_CURRENT_USER\\Software\\Kitware\\CMakeSetup\\Settings\\StartPath;WhereBuild8]
-    [HKEY_CURRENT_USER\\Software\\Kitware\\CMakeSetup\\Settings\\StartPath;WhereBuild9]
-    [HKEY_CURRENT_USER\\Software\\Kitware\\CMakeSetup\\Settings\\StartPath;WhereBuild10]
+    [HKEY_CURRENT_USER\\Software\\Kitware\\CMakeSetup\\Settings\\StartPath;WhereBuild1]/bin
+    [HKEY_CURRENT_USER\\Software\\Kitware\\CMakeSetup\\Settings\\StartPath;WhereBuild2]/bin
+    [HKEY_CURRENT_USER\\Software\\Kitware\\CMakeSetup\\Settings\\StartPath;WhereBuild3]/bin
+    [HKEY_CURRENT_USER\\Software\\Kitware\\CMakeSetup\\Settings\\StartPath;WhereBuild4]/bin
+    [HKEY_CURRENT_USER\\Software\\Kitware\\CMakeSetup\\Settings\\StartPath;WhereBuild5]/bin
+    [HKEY_CURRENT_USER\\Software\\Kitware\\CMakeSetup\\Settings\\StartPath;WhereBuild6]/bin
+    [HKEY_CURRENT_USER\\Software\\Kitware\\CMakeSetup\\Settings\\StartPath;WhereBuild7]/bin
+    [HKEY_CURRENT_USER\\Software\\Kitware\\CMakeSetup\\Settings\\StartPath;WhereBuild8]/bin
+    [HKEY_CURRENT_USER\\Software\\Kitware\\CMakeSetup\\Settings\\StartPath;WhereBuild9]/bin
+    [HKEY_CURRENT_USER\\Software\\Kitware\\CMakeSetup\\Settings\\StartPath;WhereBuild10]/bin
 
     # Help the user find it if we cannot.
     DOC "The Agg dir"
   )
+  # one higher as "bin" dir is all of agg
+  SET( AGG_DIR ${AGG_DIR_BIN}/.. )
 
 ENDIF(NOT AGG_DIR)
 
@@ -56,13 +60,13 @@ ENDIF(NOT AGG_DIR)
 IF( AGG_DIR )
 
   # Check if AGG was built using CMake
-  IF(EXISTS ${AGG_DIR}/AggConfig.cmake)
+  IF(EXISTS ${AGG_DIR}/bin/AggConfig.cmake)
     SET(AGG_BUILT_WITH_CMAKE 1)
-  ENDIF(EXISTS ${AGG_DIR}/AggConfig.cmake)
+  ENDIF(EXISTS ${AGG_DIR}/bin/AggConfig.cmake)
 
   IF(AGG_BUILT_WITH_CMAKE)
 
-  INCLUDE(${AGG_DIR}/AggConfig.cmake)
+    INCLUDE(${AGG_DIR}/bin/AggConfig.cmake)
     # at this point  AGG_LIBRARIES AGG_INCLUDE_DIRS etc. are set .
 
   ELSE(AGG_BUILT_WITH_CMAKE)
@@ -141,4 +145,4 @@ ENDIF( AGG_DIR)
 INCLUDE(FindPackageHandleStandardArgs)
 FIND_PACKAGE_HANDLE_STANDARD_ARGS(Agg  DEFAULT_MSG  AGG_LIBRARIES  AGG_INCLUDE_DIRS)
 
-MARK_AS_ADVANCED(AGG_LIBRARIES AGG_INCLUDE_DIRS)
+MARK_AS_ADVANCED( AGG_DIR AGG_DIR_BIN AGG_LIBRARIES AGG_INCLUDE_DIRS)

@@ -196,10 +196,8 @@ IF ( agg_USE_FREETYPE )
         ../font_freetype/agg_font_freetype.cpp
     )	
     SET_TARGET_PROPERTIES( freetypefont  PROPERTIES OUTPUT_NAME aggfontfreetype${PFDEBUG} )
-    INSTALL_TARGETS( "/lib" freetypefont )
-	INSTALL_FILES( "/include/font_freetype" FILES 
-	    ../font_freetype/agg_font_freetype.h 
-	)	
+    INSTALL( TARGETS freetypefont DESTINATION lib )
+	INSTALL( FILES ../font_freetype/agg_font_freetype.h DESTINATION agg/include/font_freetype )	
 ENDIF ( agg_USE_FREETYPE )
 
 #platform stuff to ease sample use
@@ -240,7 +238,7 @@ IF( SDL_FOUND AND agg_USE_SDL_PLATFORM )
 		
 		${platform_HEADERS}		
     )
-    INSTALL_TARGETS( "/lib" sdlplatform )
+    INSTALL( TARGETS sdlplatform DESTINATION lib )
     SET_TARGET_PROPERTIES( sdlplatform  PROPERTIES OUTPUT_NAME aggsdlplatform${PFDEBUG} )
 ENDIF( SDL_FOUND AND agg_USE_SDL_PLATFORM )
 
@@ -253,10 +251,8 @@ IF ( agg_USE_GPC )
         ../gpc/gpc.c
         ../gpc/gpc.h
     )
-    INSTALL_TARGETS( "/lib" gpcbool )
-	INSTALL_FILES( "/include/gpc" FILES 
-	    ../gpc/gpc.h 
-	)	
+    INSTALL( TARGETS gpcbool DESTINATION lib )
+	INSTALL( FILES ../gpc/gpc.h DESTINATION agg/include/gpc )	
     SET_TARGET_PROPERTIES( gpcbool   PROPERTIES OUTPUT_NAME gpc${PFDEBUG} )
 ENDIF ( agg_USE_GPC )
 
@@ -264,16 +260,7 @@ SET_TARGET_PROPERTIES( antigrain PROPERTIES OUTPUT_NAME agg${PFDEBUG} )
 SET_TARGET_PROPERTIES( controls  PROPERTIES OUTPUT_NAME aggctrl${PFDEBUG} )
 SET_TARGET_PROPERTIES( platform  PROPERTIES OUTPUT_NAME aggplatform${PFDEBUG} )
 
-INSTALL_FILES( "/include" FILES 
-    ${antigrain_HEADERS}  
-)
-
-INSTALL_FILES( "/include/ctrl" FILES 
-    ${controls_HEADERS}
-)
-
-INSTALL_FILES( "/include/platform" FILES 
-    ${platform_HEADERS} 
-)
-
-INSTALL_TARGETS( "/lib" antigrain controls platform )
+INSTALL( FILES ${antigrain_HEADERS} DESTINATION agg/include )	
+INSTALL( FILES ${controls_HEADERS} DESTINATION agg/include/ctrl )	
+INSTALL( FILES ${platform_HEADERS} DESTINATION agg/include/platform )	
+INSTALL( TARGETS antigrain controls platform DESTINATION lib )

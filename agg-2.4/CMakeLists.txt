@@ -15,7 +15,7 @@ SET( AGG_LIBRARY_DIRS "" )
 SET( AGG_LIBRARIES "" )
 
 SET (LIBRARY_OUTPUT_PATH ${antigrain_BINARY_DIR}/lib/ CACHE PATH "Single output directory for building all libraries." FORCE )
-SET( AGG_LIBRARY_DIRS  ${antigrain_BINARY_DIR}/lib )
+SET( AGG_LIBRARY_DIRS  lib )
 #SET (EXECUTABLE_OUTPUT_PATH ${antigrain_BINARY_DIR}/exe/ CACHE PATH "Single output directory for building all executables.")
 #MARK_AS_ADVANCED(LIBRARY_OUTPUT_PATH EXECUTABLE_OUTPUT_PATH)
 
@@ -32,7 +32,7 @@ IF(WIN32)
     ADD_DEFINITIONS( -D_MSWVC_ -D_CRT_SECURE_NO_WARNINGS -D_CRT_SECURE_NO_DEPRECATE )
     SET( WIN32GUI WIN32 )    
     INCLUDE_DIRECTORIES( ${antigrain_SOURCE_DIR}/font_win32_tt )
-    SET( AGG_INCLUDE_DIRS ${AGG_INCLUDE_DIRS} ${antigrain_SOURCE_DIR}/font_win32_tt )    
+    SET( AGG_INCLUDE_DIRS ${AGG_INCLUDE_DIRS} include/font_win32_tt )    
 ENDIF(WIN32)
 
 IF(UNIX)
@@ -125,14 +125,14 @@ ENDIF( SDL_FOUND )
 
 # the main include dir of Agg
 INCLUDE_DIRECTORIES( ${antigrain_SOURCE_DIR}/include )
-SET( AGG_INCLUDE_DIRS ${AGG_INCLUDE_DIRS} ${antigrain_SOURCE_DIR}/include )    
+SET( AGG_INCLUDE_DIRS ${AGG_INCLUDE_DIRS} include )    
 
 ADD_SUBDIRECTORY( src )
 
 # freetype specific lib of Agg
 IF( agg_USE_FREETYPE )
     INCLUDE_DIRECTORIES( ${antigrain_SOURCE_DIR}/font_freetype )	
-    SET( AGG_INCLUDE_DIRS ${AGG_INCLUDE_DIRS} ${antigrain_SOURCE_DIR}/font_freetype )    
+    SET( AGG_INCLUDE_DIRS ${AGG_INCLUDE_DIRS} include/font_freetype )    
     LINK_LIBRARIES( freetypefont )
     SET( AGG_LIBRARIES ${AGG_LIBRARIES} aggfontfreetype${PFDEBUG} ) 
 ENDIF( agg_USE_FREETYPE )
@@ -140,7 +140,7 @@ ENDIF( agg_USE_FREETYPE )
 # GPC lib if used within Agg
 IF ( agg_USE_GPC )
     INCLUDE_DIRECTORIES( ${antigrain_SOURCE_DIR}/gpc )
-    SET( AGG_INCLUDE_DIRS ${AGG_INCLUDE_DIRS} ${antigrain_SOURCE_DIR}/gpc )    
+    SET( AGG_INCLUDE_DIRS ${AGG_INCLUDE_DIRS} include/gpc )    
     LINK_LIBRARIES( gpcbool )
     SET( AGG_LIBRARIES ${AGG_LIBRARIES} gpc${PFDEBUG} ) 
 ENDIF ( agg_USE_GPC )
@@ -161,16 +161,21 @@ SET( AGG_LIBRARIES ${AGG_LIBRARIES} CACHE STRING "Agg package libraries" FORCE )
 
 ADD_SUBDIRECTORY( examples )
 
-#place it also one level higher
-CONFIGURE_FILE( ${antigrain_SOURCE_DIR}/AggConfig.cmake.in
-               ${antigrain_BINARY_DIR}/AggConfig.cmake
-               @ONLY IMMEDIATE )
+CONFIGURE_FILE( ${antigrain_SOURCE_DIR}/bin/AggConfig.cmake.in
+                ${antigrain_BINARY_DIR}/bin/AggConfig.cmake
+                @ONLY IMMEDIATE )
 
-CONFIGURE_FILE( ${antigrain_SOURCE_DIR}/UseAgg.cmake.in
-${antigrain_BINARY_DIR}/UseAgg.cmake
-@ONLY IMMEDIATE )
-INSTALL_FILES( "/." FILES "AggConfig.cmake" )
-INSTALL_FILES( "/." FILES "UseAgg.cmake" )
+CONFIGURE_FILE( ${antigrain_SOURCE_DIR}/bin/AggConfigOutBuild.cmake.in
+                ${antigrain_BINARY_DIR}/bin/AggConfigOutBuild.cmake
+                @ONLY IMMEDIATE )
+                
+CONFIGURE_FILE( ${antigrain_SOURCE_DIR}/bin/UseAgg.cmake.in
+                ${antigrain_BINARY_DIR}/bin/UseAgg.cmake
+                @ONLY IMMEDIATE )
+
+INSTALL( FILES ${antigrain_BINARY_DIR}/bin/AggConfigOutBuild.cmake DESTINATION "bin" RENAME AggConfig.cmake )
+INSTALL( FILES ${antigrain_BINARY_DIR}/bin/AggConfig.cmake DESTINATION "bin" )
+INSTALL( FILES ${antigrain_BINARY_DIR}/bin/UseAgg.cmake DESTINATION "bin" )
 
 #-------------------------------------------------------------------
 # Build a CPack installer if CPack is available and this is a build 
@@ -188,6 +193,9 @@ IF ( agg_USE_PACK )
         SET(CPACK_PACKAGE_EXECUTABLES
         "agg" "AGG"
         )
+        SET(CPACK_SOURCE_STRIP_FILES "")
+        SET(CPACK_STRIP_FILES "bin/ccmake;bin/cmake;bin/cpack;bin/ctest")
+ 
 
         IF(WIN32)
             SET(CPACK_NSIS_DISPLAY_NAME "${CPACK_PACKAGE_INSTALL_DIRECTORY}")
