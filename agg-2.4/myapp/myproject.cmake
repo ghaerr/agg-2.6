@@ -22,4 +22,7 @@ CONFIGURE_FILE(${antigrain_SOURCE_DIR}/myapp/CMakeLists.txt.in
 CONFIGURE_FILE(${antigrain_SOURCE_DIR}/myapp/my_demo.cpp
                ${antigrain_BINARY_DIR}/myapp/my_demo.cpp
                @ONLY )
+CONFIGURE_FILE(${antigrain_SOURCE_DIR}/myapp/agg2d_demo.cpp
+               ${antigrain_BINARY_DIR}/myapp/agg2d_demo.cpp
+               @ONLY )
 

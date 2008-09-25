@@ -27,6 +27,17 @@ IF(UNIX)
 ENDIF(UNIX)
 
 ##################################################
+# Set all includes, flags, libraries, related to Agg
+##################################################
+
+FIND_PACKAGE( Agg )
+IF( AGG_FOUND )
+    INCLUDE(${AGG_USE_FILE})
+ELSE( AGG_FOUND )
+    MESSAGE( "AGG library was not found" )
+ENDIF( AGG_FOUND )
+
+##################################################
 # Set all includes, flags, libraries, related to expat
 ##################################################
 
@@ -57,21 +68,14 @@ IF( agg_USE_FREETYPE )
     ENDIF( FREETYPE_FOUND )
 ENDIF( agg_USE_FREETYPE )
 
-##################################################
-# Set all includes, flags, libraries, related to Agg
-##################################################
-
-FIND_PACKAGE( Agg )
-IF( AGG_FOUND )
-    INCLUDE_DIRECTORIES(${AGG_INCLUDE_DIRS})
-    LINK_LIBRARIES(${AGG_LIBRARIES})
-    INCLUDE(${AGG_USE_FILE})
-ELSE( AGG_FOUND )
-    MESSAGE( "AGG library was not found" )
-ENDIF( AGG_FOUND )
-
 ADD_EXECUTABLE( my_demo ${WIN32GUI}
     my_demo.cpp
 )
+
+IF( agg_USE_AGG2D )
+    ADD_EXECUTABLE( agg2_demo ${WIN32GUI}
+        agg2d_demo.cpp
+    )
+ENDIF( agg_USE_AGG2D )
 
 

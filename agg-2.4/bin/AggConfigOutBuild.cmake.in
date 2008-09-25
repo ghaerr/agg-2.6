@@ -30,6 +30,7 @@ SET( AGG_USE_FILE ${AGG_DIR}/bin/UseAgg.cmake )
 SET( agg_USE_GPC @agg_USE_GPC@ )
 SET( agg_USE_FREETYPE @agg_USE_FREETYPE@ )
 SET( agg_USE_EXPAT @agg_USE_EXPAT@ )
+SET( agg_USE_AGG2D @agg_USE_AGG2D@ )
 
 SET( AGG_DIR ${AGG_DIR} CACHE STRING "Agg root directory" FORCE )
 SET( AGG_FLAGS ${AGG_FLAGS} CACHE STRING "Agg package flags" FORCE )

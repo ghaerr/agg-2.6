@@ -318,6 +318,14 @@ IF(WIN32)
     )
 ENDIF(WIN32)
 
+IF( agg_USE_AGG2D )
+    ADD_EXECUTABLE( agg2_demo ${WIN32GUI}
+        agg2d_demo.cpp
+    )
+ENDIF( agg_USE_AGG2D )
+
+
+
 
 
     

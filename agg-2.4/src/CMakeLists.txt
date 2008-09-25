@@ -197,7 +197,7 @@ IF ( agg_USE_FREETYPE )
     )	
     SET_TARGET_PROPERTIES( freetypefont  PROPERTIES OUTPUT_NAME aggfontfreetype${PFDEBUG} )
     INSTALL( TARGETS freetypefont DESTINATION lib )
-	INSTALL( FILES ../font_freetype/agg_font_freetype.h DESTINATION agg/include/font_freetype )	
+	INSTALL( FILES ../font_freetype/agg_font_freetype.h DESTINATION agg/font_freetype )	
 ENDIF ( agg_USE_FREETYPE )
 
 #platform stuff to ease sample use
@@ -215,6 +215,7 @@ IF(WIN32)
 		
 		${platform_HEADERS}		
     )
+	INSTALL( FILES ../font_win32_tt/agg_font_win32_tt.h DESTINATION agg/font_win32_tt )	
 ENDIF(WIN32)
 IF(UNIX)
     ADD_LIBRARY( platform
@@ -252,9 +253,21 @@ IF ( agg_USE_GPC )
         ../gpc/gpc.h
     )
     INSTALL( TARGETS gpcbool DESTINATION lib )
-	INSTALL( FILES ../gpc/gpc.h DESTINATION agg/include/gpc )	
+	INSTALL( FILES ../gpc/gpc.h DESTINATION agg/gpc )	
     SET_TARGET_PROPERTIES( gpcbool   PROPERTIES OUTPUT_NAME gpc${PFDEBUG} )
 ENDIF ( agg_USE_GPC )
+
+IF ( agg_USE_AGG2D )
+    INCLUDE_DIRECTORIES( ${antigrain_SOURCE_DIR}/agg2d )
+
+    ADD_LIBRARY( agg2d
+        ../agg2d/agg2d.cpp
+        ../agg2d/agg2d.h
+    )
+    INSTALL( TARGETS agg2d DESTINATION lib )
+	INSTALL( FILES ../agg2d/agg2d.h DESTINATION agg/agg2d )	
+    SET_TARGET_PROPERTIES( agg2d  PROPERTIES OUTPUT_NAME agg2d${PFDEBUG} )
+ENDIF ( agg_USE_AGG2D )
 
 SET_TARGET_PROPERTIES( antigrain PROPERTIES OUTPUT_NAME agg${PFDEBUG} )
 SET_TARGET_PROPERTIES( controls  PROPERTIES OUTPUT_NAME aggctrl${PFDEBUG} )

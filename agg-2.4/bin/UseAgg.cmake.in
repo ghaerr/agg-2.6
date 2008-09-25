@@ -17,4 +17,10 @@ IF(NOT AGG_USE_FILE_INCLUDED)
   # Add link directories needed to use AGG.
   LINK_DIRECTORIES(${AGG_LIBRARY_DIRS})
 
+    FOREACH( flag ${AGG_FLAGS} )     
+        ADD_DEFINITIONS( ${flag} )
+    ENDFOREACH( flag )
+  
+    LINK_LIBRARIES(${AGG_LIBRARIES})
+ 
 ENDIF(NOT AGG_USE_FILE_INCLUDED)
