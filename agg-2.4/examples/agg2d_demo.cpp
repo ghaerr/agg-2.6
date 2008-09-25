@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include "platform/agg_platform_support.h"
-#include "Agg2D.h"
+#include "agg2d.h"
 
 #define pix_format agg::pix_format_bgra32
 

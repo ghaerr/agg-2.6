@@ -23,7 +23,7 @@
 //
 //----------------------------------------------------------------------------
 
-#include "Agg2D.h"
+#include "agg2d.h"
 
 static const double g_approxScale = 2.0;
 
