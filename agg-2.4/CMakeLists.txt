@@ -128,8 +128,6 @@ ENDIF( SDL_FOUND )
 INCLUDE_DIRECTORIES( ${antigrain_SOURCE_DIR}/include )
 SET( AGG_INCLUDE_DIRS ${AGG_INCLUDE_DIRS} include )    
 
-ADD_SUBDIRECTORY( src )
-
 # freetype specific lib of Agg
 IF( agg_USE_FREETYPE )
     INCLUDE_DIRECTORIES( ${antigrain_SOURCE_DIR}/font_freetype )	
@@ -179,6 +177,8 @@ SET( AGG_FLAGS ${AGG_FLAGS} CACHE STRING "Agg package flags" FORCE )
 SET( AGG_INCLUDE_DIRS ${AGG_INCLUDE_DIRS} CACHE STRING "Agg package libs include paths" FORCE )
 SET( AGG_LIBRARY_DIRS ${AGG_LIBRARY_DIRS} CACHE STRING "Agg package libs directory paths" FORCE )
 SET( AGG_LIBRARIES ${AGG_LIBRARIES} CACHE STRING "Agg package libraries" FORCE )
+
+ADD_SUBDIRECTORY( src )
 
 ADD_SUBDIRECTORY( examples )
 

@@ -921,7 +921,7 @@ void Agg2D::font(const char* fontName,
     m_fontCacheType = ch;
 
 #ifdef AGG2D_USE_FREETYPE
-    m_fontEngine.load_font(fileName,
+    m_fontEngine.load_font(fontName,
                            0,
                            (ch == VectorFontCache) ?
                                 agg::glyph_ren_outline :
