@@ -30,6 +30,7 @@ public:
 
     virtual void on_draw()
     {
+
         m_graphics.attach(rbuf_window().buf(),
                           rbuf_window().width(),
                           rbuf_window().height(),
@@ -73,13 +74,21 @@ public:
 
 
         // Reglar Text
-        m_graphics.font("Times New Roman", 14.0, false, false);
+#ifdef AGG2D_USE_FREETYPE
+		m_graphics.font("c:/WINDOWS/fonts/timesi.ttf", 14.0, false, false);
+#else
+		m_graphics.font("Times New Roman", 14.0, false, false);
+#endif
         m_graphics.fillColor(0, 0, 0);
         m_graphics.noLine();
         m_graphics.text(100, 20, "Regular Raster Text -- Fast, but can't be rotated");
 
         // Outlined Text
+#ifdef AGG2D_USE_FREETYPE
+        m_graphics.font("c:/WINDOWS/fonts/timesi.ttf", 50.0, false, false, Agg2D::VectorFontCache);
+#else
         m_graphics.font("Times New Roman", 50.0, false, false, Agg2D::VectorFontCache);
+#endif
         m_graphics.lineColor(50, 0, 0);
         m_graphics.fillColor(180, 200, 100);
         m_graphics.lineWidth(1.0);
@@ -109,7 +118,11 @@ public:
         m_graphics.fillColor(100, 50, 50);
         m_graphics.noLine();
         //m_graphics.textHints(false);
+#ifdef AGG2D_USE_FREETYPE
+		m_graphics.font("c:/WINDOWS/fonts/timesi.ttf", 40.0, false, false, Agg2D::VectorFontCache);
+#else
         m_graphics.font("Times New Roman", 40.0, false, false, Agg2D::VectorFontCache);
+#endif
 
         m_graphics.textAlignment(Agg2D::AlignLeft, Agg2D::AlignBottom);
         m_graphics.text(250.0,     150.0, "Left-Bottom", true, 0, 0);
@@ -141,7 +154,11 @@ public:
 
         // Gradients (Aqua Buttons)
         //=======================================
+#ifdef AGG2D_USE_FREETYPE
+        m_graphics.font("c:/WINDOWS/fonts/verdanab.ttf", 20.0, false, false, Agg2D::VectorFontCache);
+#else
         m_graphics.font("Verdana", 20.0, false, false, Agg2D::VectorFontCache);
+#endif
         double xb1 = 400;
         double yb1 = 80;
         double xb2 = xb1 + 150;
