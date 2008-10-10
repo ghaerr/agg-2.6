@@ -1,13 +1,10 @@
 #set where AggConfig.cmake was found, all else relative to that.
-get_filename_component( AGG_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH )
-# one higher as "bin" dir is all of agg
 
 SET( AGG_FLAGS "" )
 SET( AGG_INCLUDE_DIRS "" )
 SET( AGG_LIBRARY_DIRS "" )
 SET( AGG_LIBRARIES "" )
 
-SET( AGG_DIR ${AGG_DIR}/.. )
 SET( AGG_FLAGS @AGG_FLAGS@ )
 
 SET( AGG_INCLUDE_DIRS_CONFIG @AGG_INCLUDE_DIRS@ )
@@ -21,10 +18,10 @@ SET( AGG_LIBRARIES @AGG_LIBRARIES@ )
 SET( AGG_LIBRARY_DIRS_CONFIG @AGG_LIBRARY_DIRS@ )
 #convert relative to absolute
 FOREACH( libdir ${AGG_LIBRARY_DIRS_CONFIG} )
-    SET( AGG_LIBRARY_DIRS ${AGG_LIBRARY_DIRS} "${AGG_DIR}/${libdir}" )
+    SET( AGG_LIBRARY_DIRS ${AGG_LIBRARY_DIRS} "${AGG_DIR_BIN}/../${libdir}" )
 ENDFOREACH( libdir )
 
-SET( AGG_USE_FILE ${AGG_DIR}/bin/UseAgg.cmake )
+SET( AGG_USE_FILE ${AGG_DIR_BIN}/UseAgg.cmake )
 
 #options that where set
 SET( agg_USE_GPC @agg_USE_GPC@ )

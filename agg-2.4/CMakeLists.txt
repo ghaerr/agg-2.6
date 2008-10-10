@@ -27,6 +27,12 @@ OPTION( agg_USE_EXPAT "Use Expat library" OFF)
 OPTION( agg_USE_SDL_PLATFORM "Use SDL as platform" OFF)
 OPTION( agg_USE_PACK "Package Agg" OFF)
 OPTION( agg_USE_AGG2D "Agg 2D graphical context" OFF)
+OPTION( agg_USE_DEBUG "For debug version" OFF)
+
+IF( agg_USE_DEBUG )
+    #SET( PFDEBUG "d" )
+    SET( CMAKE_DEBUG_POSTFIX "d" )
+ENDIF( agg_USE_DEBUG )
 
 # for the moment this decides the platform code.
 IF(WIN32)
@@ -190,9 +196,15 @@ CONFIGURE_FILE( ${antigrain_SOURCE_DIR}/bin/AggConfigOutBuild.cmake.in
                 ${antigrain_BINARY_DIR}/bin/AggConfigOutBuild.cmake
                 @ONLY IMMEDIATE )
                 
+CONFIGURE_FILE( ${antigrain_SOURCE_DIR}/bin/FindAgg.cmake
+                ${antigrain_BINARY_DIR}/myapp/FindAgg.cmake
+                @ONLY IMMEDIATE )
+
 CONFIGURE_FILE( ${antigrain_SOURCE_DIR}/bin/UseAgg.cmake.in
                 ${antigrain_BINARY_DIR}/bin/UseAgg.cmake
                 @ONLY IMMEDIATE )
+
+ADD_SUBDIRECTORY( myapp )
 
 INSTALL( FILES ${antigrain_BINARY_DIR}/bin/AggConfigOutBuild.cmake DESTINATION "bin" RENAME AggConfig.cmake )
 INSTALL( FILES ${antigrain_BINARY_DIR}/bin/AggConfig.cmake DESTINATION "bin" )
@@ -209,7 +221,7 @@ IF ( agg_USE_PACK )
         SET(CPACK_PACKAGE_VERSION_MAJOR "${AGG_MAJOR_VERSION}")
         SET(CPACK_PACKAGE_VERSION_MINOR "${AGG_MINOR_VERSION}")
         SET(CPACK_PACKAGE_VERSION_PATCH "${AGG_BUILD_VERSION}")
-        SET(CPACK_PACKAGE_INSTALL_DIRECTORY "AGG ${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}")
+        SET(CPACK_PACKAGE_INSTALL_DIRECTORY "AGG_${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}")
         SET(CPACK_SOURCE_PACKAGE_FILE_NAME "agg-${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}")
         SET(CPACK_PACKAGE_EXECUTABLES
         "agg" "AGG"

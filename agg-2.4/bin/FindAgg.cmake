@@ -9,7 +9,8 @@
 
 # Created by Klaas Holwerda. 
 # Search only if the location is not already known.
-IF(NOT AGG_DIR)
+
+  SET( AGG_DIR_BIN AGG_DIR_BIN-NOTFOUND CACHE  INTERNAL "" )
 
   #
   # Look for an installation or build tree.
@@ -17,9 +18,20 @@ IF(NOT AGG_DIR)
   FIND_PATH(AGG_DIR_BIN AggConfig.cmake
     # Look for an environment variable AGG_DIR.
     $ENV{AGG_DIR}/bin
+    ${AGG_DIR}/bin
 
     # Look in search path.
     $ENV{PATH}
+
+    NO_DEFAULT_PATH 
+    DOC "WXART2D_DIR found"]
+    
+    # Help the user find it if we cannot.
+    DOC "The Agg bin dir"
+  )
+  
+  
+  FIND_PATH(AGG_DIR_BIN AggConfig.cmake
 
     # Look in standard UNIX install locations.
     /usr/local/bin
@@ -48,25 +60,21 @@ IF(NOT AGG_DIR)
     [HKEY_CURRENT_USER\\Software\\Kitware\\CMakeSetup\\Settings\\StartPath;WhereBuild10]/bin
 
     # Help the user find it if we cannot.
-    DOC "The Agg dir"
+    DOC "The Agg bin dir"
   )
-  # one higher as "bin" dir is all of agg
-  SET( AGG_DIR ${AGG_DIR_BIN}/.. )
-
-ENDIF(NOT AGG_DIR)
 
 # If AGG was found, load the configuration file to get the rest of the
 # settings.
-IF( AGG_DIR )
+IF( AGG_DIR_BIN )
 
   # Check if AGG was built using CMake
-  IF(EXISTS ${AGG_DIR}/bin/AggConfig.cmake)
+    IF(EXISTS ${AGG_DIR_BIN}/AggConfig.cmake)
     SET(AGG_BUILT_WITH_CMAKE 1)
-  ENDIF(EXISTS ${AGG_DIR}/bin/AggConfig.cmake)
+    ENDIF(EXISTS ${AGG_DIR_BIN}/AggConfig.cmake)
 
   IF(AGG_BUILT_WITH_CMAKE)
 
-    INCLUDE(${AGG_DIR}/bin/AggConfig.cmake)
+        INCLUDE(${AGG_DIR_BIN}/AggConfig.cmake)
     # at this point  AGG_LIBRARIES AGG_INCLUDE_DIRS etc. are set .
 
   ELSE(AGG_BUILT_WITH_CMAKE)
@@ -133,16 +141,17 @@ IF( AGG_DIR )
   
   ENDIF(AGG_BUILT_WITH_CMAKE)
 	
-ENDIF( AGG_DIR)
+ENDIF( AGG_DIR_BIN)
 
 
 
 #MESSAGE ( "AGG_INCLUDE_DIRS => ${AGG_INCLUDE_DIRS}" )
 #MESSAGE ( "AGG_LIBRARIES => ${AGG_LIBRARIES}" )
+#MESSAGE ( "AGG_DIR_BIN => ${AGG_DIR_BIN}" )
 
 # handle the QUIETLY and REQUIRED arguments and set AGG_FOUND to TRUE if 
 # all listed variables are TRUE
 INCLUDE(FindPackageHandleStandardArgs)
-FIND_PACKAGE_HANDLE_STANDARD_ARGS(Agg  DEFAULT_MSG  AGG_LIBRARIES  AGG_INCLUDE_DIRS)
+FIND_PACKAGE_HANDLE_STANDARD_ARGS(Agg  DEFAULT_MSG  AGG_DIR_BIN AGG_LIBRARIES  AGG_INCLUDE_DIRS)
 
-MARK_AS_ADVANCED( AGG_DIR AGG_DIR_BIN AGG_LIBRARIES AGG_INCLUDE_DIRS)
+MARK_AS_ADVANCED( AGG_DIR_BIN AGG_LIBRARIES AGG_INCLUDE_DIRS)
