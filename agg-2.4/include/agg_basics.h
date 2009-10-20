@@ -296,6 +296,12 @@ namespace agg
         {
             return (x >= x1 && x <= x2 && y >= y1 && y <= y2);
         }
+        
+        bool overlaps(const self_type& r) const
+        {
+            return !(r.x1 > x2 || r.x2 < x1
+                  || r.y1 > y2 || r.y2 < y1);
+        }
     };
 
     //-----------------------------------------------------intersect_rectangles

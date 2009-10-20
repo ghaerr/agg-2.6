@@ -44,7 +44,8 @@ namespace agg
         {
             base_shift = 8,
             base_scale = 1 << base_shift,
-            base_mask  = base_scale - 1
+            base_mask  = base_scale - 1,
+            base_MSB = 1 << (base_shift - 1)
         };
         typedef gray8 self_type;
 
@@ -79,9 +80,39 @@ namespace agg
 
         //--------------------------------------------------------------------
         gray8(const rgba8& c, unsigned a_) :
-            v((c.r*77 + c.g*150 + c.b*29) >> 8),
-            a(a_) {}
+            v((value_type)((c.r*77 + c.g*150 + c.b*29) >> 8)),
+            a((value_type)a_) {}
 
+        //--------------------------------------------------------------------
+        // fixed-point multiply, exact over uint8
+        static AGG_INLINE calc_type int_mult(calc_type a, calc_type b) 
+        {
+            calc_type t = a * b + base_MSB;
+            return ((t >> base_shift) + t) >> base_shift;
+        }
+        
+        //--------------------------------------------------------------------
+        // fixed-point multiply, exact over uint8
+        // specifically for multiplying a color component by a cover
+        static AGG_INLINE calc_type int_mult_cover(calc_type a, calc_type b) 
+        {
+            return int_mult(a, b);
+        }
+        
+        //--------------------------------------------------------------------
+        // linear interpolate q over p by a, assuming q is pre-muliplied by a
+        static AGG_INLINE calc_type int_prelerp(calc_type p, calc_type q, calc_type a) 
+        {
+            return p + q - int_mult(p, a);
+        }
+        
+        //--------------------------------------------------------------------
+        // linear interpolate q over p by a
+        static AGG_INLINE calc_type int_lerp(calc_type p, calc_type q, calc_type a) 
+        {
+            return p + int_mult(q - p, a);
+        }
+        
         //--------------------------------------------------------------------
         void clear()
         {
@@ -119,7 +150,7 @@ namespace agg
                 v = 0;
                 return *this;
             }
-            v = value_type((calc_type(v) * a) >> base_shift);
+            v = (value_type)int_mult(v, a);
             return *this;
         }
 
@@ -157,8 +188,8 @@ namespace agg
         {
             self_type ret;
             calc_type ik = uround(k * base_scale);
-            ret.v = value_type(calc_type(v) + (((calc_type(c.v) - v) * ik) >> base_shift));
-            ret.a = value_type(calc_type(a) + (((calc_type(c.a) - a) * ik) >> base_shift));
+            ret.v = (value_type)int_lerp(v, c.v, ik);
+            ret.a = (value_type)int_lerp(a, c.a, ik);
             return ret;
         }
 
@@ -171,20 +202,21 @@ namespace agg
                 if(c.a == base_mask) 
                 {
                     *this = c;
+                    return;
                 }
                 else
                 {
-                    cv = v + c.v; v = (cv > calc_type(base_mask)) ? calc_type(base_mask) : cv;
-                    ca = a + c.a; a = (ca > calc_type(base_mask)) ? calc_type(base_mask) : ca;
+                    cv = v + c.v; 
+                    ca = a + c.a; 
                 }
             }
             else
             {
-                cv = v + ((c.v * cover + cover_mask/2) >> cover_shift);
-                ca = a + ((c.a * cover + cover_mask/2) >> cover_shift);
-                v = (cv > calc_type(base_mask)) ? calc_type(base_mask) : cv;
-                a = (ca > calc_type(base_mask)) ? calc_type(base_mask) : ca;
+                cv = v + int_mult_cover(c.v, cover);
+                ca = a + int_mult_cover(c.a, cover);
             }
+            v = (value_type)((cv > calc_type(base_mask)) ? calc_type(base_mask) : cv);
+            a = (value_type)((ca > calc_type(base_mask)) ? calc_type(base_mask) : ca);
         }
 
         //--------------------------------------------------------------------
@@ -231,7 +263,8 @@ namespace agg
         {
             base_shift = 16,
             base_scale = 1 << base_shift,
-            base_mask  = base_scale - 1
+            base_mask  = base_scale - 1,
+            base_MSB = 1 << (base_shift - 1)
         };
         typedef gray16 self_type;
 
@@ -270,6 +303,46 @@ namespace agg
             a((value_type(a_) << 8) | c.a) {}
 
         //--------------------------------------------------------------------
+        gray16(const rgba16& c) :
+        v((c.r*19595 + c.g*38470 + c.b*7471) >> 16),
+        a(c.a) {}
+        
+        //--------------------------------------------------------------------
+        gray16(const rgba16& c, unsigned a_) :
+        v((value_type)((c.r*19595 + c.g*38470 + c.b*7471) >> 16)),
+        a((value_type)a_) {}
+        
+        //--------------------------------------------------------------------
+        // fixed-point multiply, exact over uint16
+        static AGG_INLINE calc_type int_mult(calc_type a, calc_type b) 
+        {
+            calc_type t = a * b + base_MSB;
+            return ((t >> base_shift) + t) >> base_shift;
+        }
+        
+        //--------------------------------------------------------------------
+        // fixed-point multiply, almost exact over uint16
+        // specifically for multiplying a color component by a cover
+        static AGG_INLINE calc_type int_mult_cover(calc_type a, calc_type b) 
+        {
+            return int_mult(a, b << 8 | b);
+        }
+        
+        //--------------------------------------------------------------------
+        // linear interpolate q over p by a, assuming q is pre-muliplied by a
+        static AGG_INLINE calc_type int_prelerp(calc_type p, calc_type q, calc_type a) 
+        {
+            return p + q - int_mult(p, a);
+        }
+        
+        //--------------------------------------------------------------------
+        // linear interpolate q over p by a
+        static AGG_INLINE calc_type int_lerp(calc_type p, calc_type q, calc_type a) 
+        {
+            return p + int_mult(q - p, a);
+        }
+        
+        //--------------------------------------------------------------------
         void clear()
         {
             v = a = 0;
@@ -306,7 +379,7 @@ namespace agg
                 v = 0;
                 return *this;
             }
-            v = value_type((calc_type(v) * a) >> base_shift);
+            v = (value_type)int_mult(v, a);
             return *this;
         }
 
@@ -344,8 +417,8 @@ namespace agg
         {
             self_type ret;
             calc_type ik = uround(k * base_scale);
-            ret.v = value_type(calc_type(v) + (((calc_type(c.v) - v) * ik) >> base_shift));
-            ret.a = value_type(calc_type(a) + (((calc_type(c.a) - a) * ik) >> base_shift));
+            ret.v = (value_type)int_lerp(v, c.v, ik);
+            ret.a = (value_type)int_lerp(a, c.a, ik);
             return ret;
         }
 
@@ -358,20 +431,21 @@ namespace agg
                 if(c.a == base_mask) 
                 {
                     *this = c;
+                    return;
                 }
                 else
                 {
-                    cv = v + c.v; v = (cv > calc_type(base_mask)) ? calc_type(base_mask) : cv;
-                    ca = a + c.a; a = (ca > calc_type(base_mask)) ? calc_type(base_mask) : ca;
+                    cv = v + c.v; 
+                    ca = a + c.a; 
                 }
             }
             else
             {
-                cv = v + ((c.v * cover + cover_mask/2) >> cover_shift);
-                ca = a + ((c.a * cover + cover_mask/2) >> cover_shift);
-                v = (cv > calc_type(base_mask)) ? calc_type(base_mask) : cv;
-                a = (ca > calc_type(base_mask)) ? calc_type(base_mask) : ca;
+                cv = v + int_mult_cover(c.v, cover);
+                ca = a + int_mult_cover(c.a, cover);
             }
+            v = (value_type)((cv > calc_type(base_mask)) ? calc_type(base_mask) : cv);
+            a = (value_type)((ca > calc_type(base_mask)) ? calc_type(base_mask) : ca);
         }
 
         //--------------------------------------------------------------------

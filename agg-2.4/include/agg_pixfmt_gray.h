@@ -40,10 +40,21 @@ namespace agg
         typedef typename color_type::calc_type calc_type;
         enum base_scale_e { base_shift = color_type::base_shift };
 
+        // Blend pixels using the non-premultiplied form of Alvy-Ray Smith's
+        // compositing function. Since the render buffer is opaque we skip the
+        // initial premultiply and final demultiply.
+
         static AGG_INLINE void blend_pix(value_type* p, unsigned cv, 
-                                         unsigned alpha, unsigned cover=0)
+                                         unsigned alpha, unsigned cover)
         {
-            *p = (value_type)((((cv - calc_type(*p)) * alpha) + (calc_type(*p) << base_shift)) >> base_shift);
+            alpha = color_type::int_mult_cover(alpha, cover);
+            *p = (value_type)(color_type::int_lerp(*p, cv, alpha));
+        }
+
+        static AGG_INLINE void blend_pix(value_type* p, unsigned cv, 
+                                         unsigned alpha)
+        {
+            *p = (value_type)(color_type::int_lerp(*p, cv, alpha));
         }
     };
 
@@ -56,18 +67,21 @@ namespace agg
         typedef typename color_type::calc_type calc_type;
         enum base_scale_e { base_shift = color_type::base_shift };
 
+        // Blend pixels using the premultiplied form of Alvy-Ray Smith's
+        // compositing function. 
+
         static AGG_INLINE void blend_pix(value_type* p, unsigned cv,
                                          unsigned alpha, unsigned cover)
         {
-            alpha = color_type::base_mask - alpha;
-            cover = (cover + 1) << (base_shift - 8);
-            *p = (value_type)((*p * alpha + cv * cover) >> base_shift);
+            cv = color_type::int_mult_cover(cv, cover);
+            alpha = color_type::int_mult_cover(alpha, cover);
+            *p = (value_type)(color_type::int_prelerp(*p, cv, alpha));
         }
 
         static AGG_INLINE void blend_pix(value_type* p, unsigned cv,
                                          unsigned alpha)
         {
-            *p = (value_type)(((*p * (color_type::base_mask - alpha)) >> base_shift) + cv);
+            *p = (value_type)(color_type::int_prelerp(*p, cv, alpha));
         }
     };
     
@@ -141,14 +155,13 @@ namespace agg
         {
             if (c.a)
             {
-                calc_type alpha = (calc_type(c.a) * (cover + 1)) >> 8;
-                if(alpha == base_mask)
+                if(c.a == base_mask && cover == cover_mask)
                 {
                     *p = c.v;
                 }
                 else
                 {
-                    Blender::blend_pix(p, c.v, alpha, cover);
+                    Blender::blend_pix(p, c.v, c.a, cover);
                 }
             }
         }
@@ -288,8 +301,7 @@ namespace agg
                 value_type* p = (value_type*)
                     m_rbuf->row_ptr(x, y, len) + x * Step + Offset;
 
-                calc_type alpha = (calc_type(c.a) * (cover + 1)) >> 8;
-                if(alpha == base_mask)
+                if(c.a == base_mask && cover == cover_mask)
                 {
                     do
                     {
@@ -302,7 +314,7 @@ namespace agg
                 {
                     do
                     {
-                        Blender::blend_pix(p, c.v, alpha, cover);
+                        Blender::blend_pix(p, c.v, c.a, cover);
                         p += Step;
                     }
                     while(--len);
@@ -320,8 +332,7 @@ namespace agg
             if (c.a)
             {
                 value_type* p;
-                calc_type alpha = (calc_type(c.a) * (cover + 1)) >> 8;
-                if(alpha == base_mask)
+                if(c.a == base_mask && cover == cover_mask)
                 {
                     do
                     {
@@ -339,7 +350,7 @@ namespace agg
                         p = (value_type*)
                             m_rbuf->row_ptr(x, y++, 1) + x * Step + Offset;
 
-                        Blender::blend_pix(p, c.v, alpha, cover);
+                        Blender::blend_pix(p, c.v, c.a, cover);
                     }
                     while(--len);
                 }
@@ -360,14 +371,13 @@ namespace agg
 
                 do 
                 {
-                    calc_type alpha = (calc_type(c.a) * (calc_type(*covers) + 1)) >> 8;
-                    if(alpha == base_mask)
+                    if(c.a == base_mask && *covers == cover_mask)
                     {
                         *p = c.v;
                     }
                     else
                     {
-                        Blender::blend_pix(p, c.v, alpha, *covers);
+                        Blender::blend_pix(p, c.v, c.a, *covers);
                     }
                     p += Step;
                     ++covers;
@@ -387,18 +397,16 @@ namespace agg
             {
                 do 
                 {
-                    calc_type alpha = (calc_type(c.a) * (calc_type(*covers) + 1)) >> 8;
-
                     value_type* p = (value_type*)
                         m_rbuf->row_ptr(x, y++, 1) + x * Step + Offset;
 
-                    if(alpha == base_mask)
+                    if(c.a == base_mask && *covers == cover_mask)
                     {
                         *p = c.v;
                     }
                     else
                     {
-                        Blender::blend_pix(p, c.v, alpha, *covers);
+                        Blender::blend_pix(p, c.v, c.a, *covers);
                     }
                     ++covers;
                 }
@@ -462,7 +470,7 @@ namespace agg
             }
             else
             {
-                if(cover == 255)
+                if(cover == cover_mask)
                 {
                     do 
                     {
@@ -514,7 +522,7 @@ namespace agg
             }
             else
             {
-                if(cover == 255)
+                if(cover == cover_mask)
                 {
                     do 
                     {
@@ -618,7 +626,7 @@ namespace agg
                 {
                     copy_or_blend_pix(pdst, 
                                       color, 
-                                      (*psrc * cover + base_mask) >> base_shift);
+                                      color_type::int_mult_cover(*psrc, cover));
                     ++psrc;
                     ++pdst;
                 }

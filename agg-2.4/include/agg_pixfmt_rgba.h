@@ -50,9 +50,9 @@ namespace agg
                     p[Order::R] = p[Order::G] = p[Order::B] = 0;
                     return;
                 }
-                p[Order::R] = value_type((p[Order::R] * a + ColorT::base_mask) >> ColorT::base_shift);
-                p[Order::G] = value_type((p[Order::G] * a + ColorT::base_mask) >> ColorT::base_shift);
-                p[Order::B] = value_type((p[Order::B] * a + ColorT::base_mask) >> ColorT::base_shift);
+                p[Order::R] = value_type(ColorT::int_mult(p[Order::R], a));
+                p[Order::G] = value_type(ColorT::int_mult(p[Order::G], a));
+                p[Order::B] = value_type(ColorT::int_mult(p[Order::B], a));
             }
         }
 
@@ -138,24 +138,36 @@ namespace agg
             base_mask  = color_type::base_mask
         };
 
+        // Blend pixels using the non-premultiplied form of Alvy-Ray Smith's
+        // compositing function. Since the render buffer is in fact premultiplied
+        // we omit the initial premultiplication and final demultiplication.
+
         //--------------------------------------------------------------------
         static AGG_INLINE void blend_pix(value_type* p, 
                                          unsigned cr, unsigned cg, unsigned cb,
                                          unsigned alpha, 
-                                         unsigned cover=0)
+                                         unsigned cover)
         {
-            calc_type r = p[Order::R];
-            calc_type g = p[Order::G];
-            calc_type b = p[Order::B];
-            calc_type a = p[Order::A];
-            p[Order::R] = (value_type)(((cr - r) * alpha + (r << base_shift)) >> base_shift);
-            p[Order::G] = (value_type)(((cg - g) * alpha + (g << base_shift)) >> base_shift);
-            p[Order::B] = (value_type)(((cb - b) * alpha + (b << base_shift)) >> base_shift);
-            p[Order::A] = (value_type)((alpha + a) - ((alpha * a + base_mask) >> base_shift));
+            alpha = color_type::int_mult_cover(alpha, cover);
+            p[Order::R] = (value_type)(color_type::int_lerp(p[Order::R], cr, alpha));
+            p[Order::G] = (value_type)(color_type::int_lerp(p[Order::G], cg, alpha));
+            p[Order::B] = (value_type)(color_type::int_lerp(p[Order::B], cb, alpha));
+            p[Order::A] = (value_type)(color_type::int_prelerp(p[Order::A], alpha, alpha));
+        }
+        
+        //--------------------------------------------------------------------
+        static AGG_INLINE void blend_pix(value_type* p, 
+                                         unsigned cr, unsigned cg, unsigned cb,
+                                         unsigned alpha)
+        {
+            p[Order::R] = (value_type)(color_type::int_lerp(p[Order::R], cr, alpha));
+            p[Order::G] = (value_type)(color_type::int_lerp(p[Order::G], cg, alpha));
+            p[Order::B] = (value_type)(color_type::int_lerp(p[Order::B], cb, alpha));
+            p[Order::A] = (value_type)(color_type::int_prelerp(p[Order::A], alpha, alpha));
         }
     };
 
-    //=========================================================blender_rgba_pre
+    //========================================================blender_rgba_pre
     template<class ColorT, class Order> struct blender_rgba_pre
     {
         typedef ColorT color_type;
@@ -168,30 +180,34 @@ namespace agg
             base_mask  = color_type::base_mask
         };
 
+        // Blend pixels using the premultiplied form of Alvy-Ray Smith's
+        // compositing function. 
+
         //--------------------------------------------------------------------
         static AGG_INLINE void blend_pix(value_type* p, 
                                          unsigned cr, unsigned cg, unsigned cb,
                                          unsigned alpha,
                                          unsigned cover)
         {
-            alpha = color_type::base_mask - alpha;
-            cover = (cover + 1) << (base_shift - 8);
-            p[Order::R] = (value_type)((p[Order::R] * alpha + cr * cover) >> base_shift);
-            p[Order::G] = (value_type)((p[Order::G] * alpha + cg * cover) >> base_shift);
-            p[Order::B] = (value_type)((p[Order::B] * alpha + cb * cover) >> base_shift);
-            p[Order::A] = (value_type)(base_mask - ((alpha * (base_mask - p[Order::A])) >> base_shift));
+            cr = color_type::int_mult_cover(cr, cover);
+            cg = color_type::int_mult_cover(cg, cover);
+            cb = color_type::int_mult_cover(cb, cover);
+            alpha = color_type::int_mult_cover(alpha, cover);
+            p[Order::R] = (value_type)(color_type::int_prelerp(p[Order::R], cr, alpha));
+            p[Order::G] = (value_type)(color_type::int_prelerp(p[Order::G], cg, alpha));
+            p[Order::B] = (value_type)(color_type::int_prelerp(p[Order::B], cb, alpha));
+            p[Order::A] = (value_type)(color_type::int_prelerp(p[Order::A], alpha, alpha));
         }
-
+        
         //--------------------------------------------------------------------
         static AGG_INLINE void blend_pix(value_type* p, 
                                          unsigned cr, unsigned cg, unsigned cb,
                                          unsigned alpha)
         {
-            alpha = color_type::base_mask - alpha;
-            p[Order::R] = (value_type)(((p[Order::R] * alpha) >> base_shift) + cr);
-            p[Order::G] = (value_type)(((p[Order::G] * alpha) >> base_shift) + cg);
-            p[Order::B] = (value_type)(((p[Order::B] * alpha) >> base_shift) + cb);
-            p[Order::A] = (value_type)(base_mask - ((alpha * (base_mask - p[Order::A])) >> base_shift));
+            p[Order::R] = (value_type)(color_type::int_prelerp(p[Order::R], cr, alpha));
+            p[Order::G] = (value_type)(color_type::int_prelerp(p[Order::G], cg, alpha));
+            p[Order::B] = (value_type)(color_type::int_prelerp(p[Order::B], cb, alpha));
+            p[Order::A] = (value_type)(color_type::int_prelerp(p[Order::A], alpha, alpha));
         }
     };
 
@@ -204,22 +220,43 @@ namespace agg
         typedef typename color_type::calc_type calc_type;
         enum base_scale_e { base_shift = color_type::base_shift };
 
+        // Blend pixels using the non-premultiplied form of Alvy-Ray Smith's
+        // compositing function. 
+
         //--------------------------------------------------------------------
         static AGG_INLINE void blend_pix(value_type* p, 
                                          unsigned cr, unsigned cg, unsigned cb,
                                          unsigned alpha,
-                                         unsigned cover=0)
+                                         unsigned cover)
+        {
+            alpha = color_type::int_mult_cover(alpha, cover);
+            if(alpha == 0) return;
+            calc_type a = p[Order::A];
+            calc_type r = color_type::int_mult(p[Order::R], a);
+            calc_type g = color_type::int_mult(p[Order::G], a);
+            calc_type b = color_type::int_mult(p[Order::B], a);
+            p[Order::R] = (value_type)(color_type::int_lerp(r, cr, alpha));
+            p[Order::G] = (value_type)(color_type::int_lerp(g, cg, alpha));
+            p[Order::B] = (value_type)(color_type::int_lerp(b, cb, alpha));
+            p[Order::A] = (value_type)(color_type::int_prelerp(a, alpha, alpha));
+            multiplier_rgba<ColorT,Order>::demultiply(p);
+        }
+        
+        //--------------------------------------------------------------------
+        static AGG_INLINE void blend_pix(value_type* p, 
+                                         unsigned cr, unsigned cg, unsigned cb,
+                                         unsigned alpha)
         {
             if(alpha == 0) return;
             calc_type a = p[Order::A];
-            calc_type r = p[Order::R] * a;
-            calc_type g = p[Order::G] * a;
-            calc_type b = p[Order::B] * a;
-            a = ((alpha + a) << base_shift) - alpha * a;
-            p[Order::A] = (value_type)(a >> base_shift);
-            p[Order::R] = (value_type)((((cr << base_shift) - r) * alpha + (r << base_shift)) / a);
-            p[Order::G] = (value_type)((((cg << base_shift) - g) * alpha + (g << base_shift)) / a);
-            p[Order::B] = (value_type)((((cb << base_shift) - b) * alpha + (b << base_shift)) / a);
+            calc_type r = color_type::int_mult(p[Order::R], a);
+            calc_type g = color_type::int_mult(p[Order::G], a);
+            calc_type b = color_type::int_mult(p[Order::B], a);
+            p[Order::R] = (value_type)(color_type::int_lerp(r, cr, alpha));
+            p[Order::G] = (value_type)(color_type::int_lerp(g, cg, alpha));
+            p[Order::B] = (value_type)(color_type::int_lerp(b, cb, alpha));
+            p[Order::A] = (value_type)(color_type::int_prelerp(a, alpha, alpha));
+            multiplier_rgba<ColorT,Order>::demultiply(p);
         }
     };
 
@@ -1718,7 +1755,7 @@ namespace agg
                                                  unsigned alpha,
                                                  unsigned cover)
         {
-            if(cover == 255)
+            if(cover == cover_mask)
             {
                 copy_or_blend_pix(p, cr, cg, cb, alpha);
             }
@@ -1726,8 +1763,8 @@ namespace agg
             {
                 if(alpha)
                 {
-                    alpha = (alpha * (cover + 1)) >> 8;
-                    if(alpha == base_mask)
+                    //alpha = color_type::int_mult_cover(alpha, cover)
+                    if(alpha == base_mask && cover == cover_mask)
                     {
                         p[order_type::R] = cr;
                         p[order_type::G] = cg;
@@ -1906,8 +1943,7 @@ namespace agg
             if (c.a)
             {
                 value_type* p = (value_type*)m_rbuf->row_ptr(x, y, len) + (x << 2);
-                calc_type alpha = (calc_type(c.a) * (cover + 1)) >> 8;
-                if(alpha == base_mask)
+                if(c.a == base_mask && cover == cover_mask)
                 {
                     pixel_type v;
                     ((value_type*)&v)[order_type::R] = c.r;
@@ -1923,11 +1959,11 @@ namespace agg
                 }
                 else
                 {
-                    if(cover == 255)
+                    if(cover == cover_mask)
                     {
                         do
                         {
-                            blender_type::blend_pix(p, c.r, c.g, c.b, alpha);
+                            blender_type::blend_pix(p, c.r, c.g, c.b, c.a);
                             p += 4;
                         }
                         while(--len);
@@ -1936,7 +1972,7 @@ namespace agg
                     {
                         do
                         {
-                            blender_type::blend_pix(p, c.r, c.g, c.b, alpha, cover);
+                            blender_type::blend_pix(p, c.r, c.g, c.b, c.a, cover);
                             p += 4;
                         }
                         while(--len);
@@ -1955,8 +1991,7 @@ namespace agg
             if (c.a)
             {
                 value_type* p;
-                calc_type alpha = (calc_type(c.a) * (cover + 1)) >> 8;
-                if(alpha == base_mask)
+                if(c.a == base_mask && cover == cover_mask)
                 {
                     pixel_type v;
                     ((value_type*)&v)[order_type::R] = c.r;
@@ -1972,12 +2007,12 @@ namespace agg
                 }
                 else
                 {
-                    if(cover == 255)
+                    if(cover == cover_mask)
                     {
                         do
                         {
                             p = (value_type*)m_rbuf->row_ptr(x, y++, 1) + (x << 2);
-                            blender_type::blend_pix(p, c.r, c.g, c.b, alpha);
+                            blender_type::blend_pix(p, c.r, c.g, c.b, c.a);
                         }
                         while(--len);
                     }
@@ -1986,7 +2021,7 @@ namespace agg
                         do
                         {
                             p = (value_type*)m_rbuf->row_ptr(x, y++, 1) + (x << 2);
-                            blender_type::blend_pix(p, c.r, c.g, c.b, alpha, cover);
+                            blender_type::blend_pix(p, c.r, c.g, c.b, c.a, cover);
                         }
                         while(--len);
                     }
@@ -2006,8 +2041,7 @@ namespace agg
                 value_type* p = (value_type*)m_rbuf->row_ptr(x, y, len) + (x << 2);
                 do 
                 {
-                    calc_type alpha = (calc_type(c.a) * (calc_type(*covers) + 1)) >> 8;
-                    if(alpha == base_mask)
+                    if(c.a == base_mask && *covers == cover_mask)
                     {
                         p[order_type::R] = c.r;
                         p[order_type::G] = c.g;
@@ -2016,7 +2050,7 @@ namespace agg
                     }
                     else
                     {
-                        blender_type::blend_pix(p, c.r, c.g, c.b, alpha, *covers);
+                        blender_type::blend_pix(p, c.r, c.g, c.b, c.a, *covers);
                     }
                     p += 4;
                     ++covers;
@@ -2037,8 +2071,7 @@ namespace agg
                 do 
                 {
                     value_type* p = (value_type*)m_rbuf->row_ptr(x, y++, 1) + (x << 2);
-                    calc_type alpha = (calc_type(c.a) * (calc_type(*covers) + 1)) >> 8;
-                    if(alpha == base_mask)
+                    if(c.a == base_mask && *covers == cover_mask)
                     {
                         p[order_type::R] = c.r;
                         p[order_type::G] = c.g;
@@ -2047,7 +2080,7 @@ namespace agg
                     }
                     else
                     {
-                        blender_type::blend_pix(p, c.r, c.g, c.b, alpha, *covers);
+                        blender_type::blend_pix(p, c.r, c.g, c.b, c.a, *covers);
                     }
                     ++covers;
                 }
@@ -2118,7 +2151,7 @@ namespace agg
             }
             else
             {
-                if(cover == 255)
+                if(cover == cover_mask)
                 {
                     do 
                     {
@@ -2177,7 +2210,7 @@ namespace agg
             }
             else
             {
-                if(cover == 255)
+                if(cover == cover_mask)
                 {
                     do 
                     {
@@ -2293,7 +2326,7 @@ namespace agg
                     incp = -4;
                 }
 
-                if(cover == 255)
+                if(cover == cover_mask)
                 {
                     do 
                     {
@@ -2344,7 +2377,7 @@ namespace agg
                 {
                     cob_type::copy_or_blend_pix(pdst, 
                                                 color.r, color.g, color.b, color.a,
-                                                (*psrc * cover + base_mask) >> base_shift);
+                                                color_type::int_mult_cover(*psrc, cover));
                     ++psrc;
                     pdst += 4;
                 }
@@ -2368,7 +2401,7 @@ namespace agg
                 value_type* pdst = 
                     (value_type*)m_rbuf->row_ptr(xdst, ydst, len) + (xdst << 2);
 
-                if(cover == 255)
+                if(cover == cover_mask)
                 {
                     do 
                     {
@@ -2498,7 +2531,7 @@ namespace agg
             blender_type::blend_pix(
                 m_comp_op, 
                 (value_type*)m_rbuf->row_ptr(x, y, 1) + (x << 2), 
-                c.r, c.g, c.b, c.a, 255);
+                c.r, c.g, c.b, c.a, cover_mask);
         }
 
         //--------------------------------------------------------------------
@@ -2517,7 +2550,7 @@ namespace agg
             value_type* p = (value_type*)m_rbuf->row_ptr(x, y, len) + (x << 2);;
             do
             {
-                blender_type::blend_pix(m_comp_op, p, c.r, c.g, c.b, c.a, 255);
+                blender_type::blend_pix(m_comp_op, p, c.r, c.g, c.b, c.a, cover_mask);
                 p += 4;
             }
             while(--len);
@@ -2531,7 +2564,7 @@ namespace agg
                 blender_type::blend_pix(
                     m_comp_op, 
                     (value_type*)m_rbuf->row_ptr(x, y++, 1) + (x << 2),
-                    c.r, c.g, c.b, c.a, 255);
+                    c.r, c.g, c.b, c.a, cover_mask);
             }
             while(--len);
         }
