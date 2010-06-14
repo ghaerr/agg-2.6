@@ -125,12 +125,19 @@ namespace agg
         gradient_linear_color() {}
         gradient_linear_color(const color_type& c1, const color_type& c2, 
                               unsigned size = 256) :
-            m_c1(c1), m_c2(c2), m_size(size) {}
+            m_c1(c1), m_c2(c2), m_size(size)
+				// VFALCO 4/28/09
+				,m_mult(1/(double(size)-1))
+				// VFALCO
+			{}
 
         unsigned size() const { return m_size; }
         color_type operator [] (unsigned v) const 
         {
-            return m_c1.gradient(m_c2, double(v) / double(m_size - 1));
+			// VFALCO 4/28/09 
+            //return m_c1.gradient(m_c2, double(v) / double(m_size - 1));
+            return m_c1.gradient(m_c2, double(v) * m_mult );
+			// VFALCO
         }
 
         void colors(const color_type& c1, const color_type& c2, unsigned size = 256)
@@ -138,11 +145,17 @@ namespace agg
             m_c1 = c1;
             m_c2 = c2;
             m_size = size;
+			// VFALCO 4/28/09
+			m_mult=1/(double(size)-1);
+			// VFALCO
         }
 
         color_type m_c1;
         color_type m_c2;
         unsigned m_size;
+		// VFALCO 4/28/09
+		double m_mult;
+		// VFALCO
     };
 
 
