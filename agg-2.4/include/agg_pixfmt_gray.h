@@ -144,7 +144,8 @@ namespace agg
             base_mask  = color_type::base_mask,
             pix_width  = sizeof(value_type),
             pix_step   = Step,
-            pix_offset = Offset
+            pix_offset = Offset,
+	    col_bytes  = Step
         };
 
     private:

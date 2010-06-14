@@ -1804,7 +1804,8 @@ namespace agg
             base_shift = color_type::base_shift,
             base_scale = color_type::base_scale,
             base_mask  = color_type::base_mask,
-            pix_width  = sizeof(pixel_type)
+            pix_width  = sizeof(pixel_type),
+            col_bytes  = pix_width
         };
 
         //--------------------------------------------------------------------
