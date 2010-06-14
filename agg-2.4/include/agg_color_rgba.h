@@ -388,7 +388,7 @@ namespace agg
         AGG_INLINE self_type gradient(const self_type& c, double k) const
         {
             self_type ret;
-            calc_type ik = uround(k * base_scale);
+            calc_type ik = uround(k * base_mask);
             ret.r = (value_type)int_lerp(r, c.r, ik);
             ret.g = (value_type)int_lerp(g, c.g, ik);
             ret.b = (value_type)int_lerp(b, c.b, ik);
@@ -696,7 +696,7 @@ namespace agg
         AGG_INLINE self_type gradient(const self_type& c, double k) const
         {
             self_type ret;
-            calc_type ik = uround(k * base_scale);
+            calc_type ik = uround(k * base_mask);
             ret.r = (value_type)int_lerp(r, c.r, ik);
             ret.g = (value_type)int_lerp(g, c.g, ik);
             ret.b = (value_type)int_lerp(b, c.b, ik);
