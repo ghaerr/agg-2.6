@@ -13,8 +13,6 @@
 //          http://www.antigrain.com
 //----------------------------------------------------------------------------
 
-#include "pch.h"
-
 #include <stdio.h>
 #include <freetype/ftmodapi.h>
 #include "agg_font_freetype2.h"
