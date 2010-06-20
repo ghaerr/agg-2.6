@@ -176,9 +176,9 @@ namespace agg
             calc_type r = m_gamma->dir(p[Order::R]);
             calc_type g = m_gamma->dir(p[Order::G]);
             calc_type b = m_gamma->dir(p[Order::B]);
-            p[Order::R] = m_gamma->inv((((m_gamma->dir(cr) - r) * alpha) >> base_shift) + r);
-            p[Order::G] = m_gamma->inv((((m_gamma->dir(cg) - g) * alpha) >> base_shift) + g);
-            p[Order::B] = m_gamma->inv((((m_gamma->dir(cb) - b) * alpha) >> base_shift) + b);
+            p[Order::R] = m_gamma->inv(color_type::int_lerp(r, m_gamma->dir(cr), alpha));
+            p[Order::G] = m_gamma->inv(color_type::int_lerp(g, m_gamma->dir(cg), alpha));
+            p[Order::B] = m_gamma->inv(color_type::int_lerp(b, m_gamma->dir(cb), alpha));
         }
         
         //--------------------------------------------------------------------
@@ -189,9 +189,9 @@ namespace agg
             calc_type r = m_gamma->dir(p[Order::R]);
             calc_type g = m_gamma->dir(p[Order::G]);
             calc_type b = m_gamma->dir(p[Order::B]);
-            p[Order::R] = m_gamma->inv((((m_gamma->dir(cr) - r) * alpha) >> base_shift) + r);
-            p[Order::G] = m_gamma->inv((((m_gamma->dir(cg) - g) * alpha) >> base_shift) + g);
-            p[Order::B] = m_gamma->inv((((m_gamma->dir(cb) - b) * alpha) >> base_shift) + b);
+            p[Order::R] = m_gamma->inv(color_type::int_lerp(r, m_gamma->dir(cr), alpha));
+            p[Order::G] = m_gamma->inv(color_type::int_lerp(g, m_gamma->dir(cg), alpha));
+            p[Order::B] = m_gamma->inv(color_type::int_lerp(b, m_gamma->dir(cb), alpha));
         }
         
     private:
