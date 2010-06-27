@@ -760,17 +760,20 @@ namespace agg
                               int8u cover)
         {
             typedef typename SrcPixelFormatRenderer::value_type src_value_type;
+            typedef typename SrcPixelFormatRenderer::color_type src_color_type;
             const src_value_type* psrc = (src_value_type*)from.row_ptr(ysrc);
             if(psrc)
             {
+                psrc += xsrc * SrcPixelFormatRenderer::pix_step + SrcPixelFormatRenderer::pix_offset;
                 value_type* pdst = 
                     (value_type*)m_rbuf->row_ptr(xdst, ydst, len) + xdst * Step;
                 do 
                 {
                     copy_or_blend_pix(pdst, 
                                       color, 
-                                      color_type::int_mult_cover(*psrc, cover));
-                    ++psrc;
+                                      src_color_type::int_mult_cover(*psrc, cover) >>
+                                      (src_color_type::base_shift - 8));
+                    psrc += SrcPixelFormatRenderer::pix_step;
                     pdst += Step;
                 }
                 while(--len);
@@ -790,6 +793,7 @@ namespace agg
             const src_value_type* psrc = (src_value_type*)from.row_ptr(ysrc);
             if(psrc)
             {
+                psrc += xsrc * SrcPixelFormatRenderer::pix_step + SrcPixelFormatRenderer::pix_offset;
                 value_type* pdst = 
                     (value_type*)m_rbuf->row_ptr(xdst, ydst, len) + xdst * Step;
 
@@ -800,7 +804,7 @@ namespace agg
                         const color_type& color = color_lut[*psrc];
                         m_blender.blend_pix(pdst, 
                                             color.r, color.g, color.b, color.a);
-                        ++psrc;
+                        psrc += SrcPixelFormatRenderer::pix_step;
                         pdst += Step;
                     }
                     while(--len);
@@ -810,7 +814,7 @@ namespace agg
                     do 
                     {
                         copy_or_blend_pix(pdst, color_lut[*psrc], cover);
-                        ++psrc;
+                        psrc += SrcPixelFormatRenderer::pix_step;
                         pdst += Step;
                     }
                     while(--len);

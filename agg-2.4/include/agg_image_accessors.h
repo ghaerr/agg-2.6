@@ -96,7 +96,7 @@ namespace agg
 
     private:
         const pixfmt_type* m_pixf;
-        int8u              m_bk_buf[4];
+        int8u              m_bk_buf[8];
         int                m_x, m_x0, m_y;
         const int8u*       m_pix_ptr;
     };
