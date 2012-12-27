@@ -21,21 +21,32 @@
 #include "ctrl/agg_cbox_ctrl.h"
 #include "platform/agg_platform_support.h"
 
+// Set LINEAR_RGB=1 to use a linear format. 
+// In that case the rendering is already gamma-correct, 
+// so we'll hide the gamma slider control.
+#define LINEAR_RGB 0
+
+#if LINEAR_RGB
+#define AGG_BGRA128
+#else
+#define AGG_BGRA32
+#endif
+#include "pixel_formats.h"
+
 enum flip_y_e { flip_y = true };
 
-enum { l = 255 };
-static agg::int8u g_image[] = 
+using agg::rgba;
+
+static rgba g_image[] = 
 {
-   0,l,0,l,  0,0,l,l,  l,l,l,l,  l,0,0,l,
-   l,0,0,l,  0,0,0,l,  l,l,l,l,  l,l,l,l,
-   l,l,l,l,  l,l,l,l,  0,0,l,l,  l,0,0,l,
-   0,0,l,l,  l,l,l,l,  0,0,0,l,  0,l,0,l
+    rgba(0,1,0,1), rgba(1,0,0,1), rgba(1,1,1,1), rgba(0,0,1,1), 
+    rgba(0,0,1,1), rgba(0,0,0,1), rgba(1,1,1,1), rgba(1,1,1,1), 
+    rgba(1,1,1,1), rgba(1,1,1,1), rgba(1,0,0,1), rgba(0,0,1,1), 
+    rgba(1,0,0,1), rgba(1,1,1,1), rgba(0,0,0,1), rgba(0,1,0,1)
 };
 
 class the_application : public agg::platform_support
 {
-    typedef agg::pixfmt_bgra32 pixfmt;
-    typedef agg::pixfmt_bgra32_pre pixfmt_pre;
     typedef agg::renderer_base<pixfmt> renderer_base;
     typedef agg::renderer_base<pixfmt_pre> renderer_base_pre;
 
@@ -65,7 +76,9 @@ public:
         m_time1(0),
         m_time2(0)
     {
+#if !LINEAR_RGB
         add_ctrl(m_gamma);
+#endif
         add_ctrl(m_radius);
         add_ctrl(m_filters);
         add_ctrl(m_normalize);
@@ -120,16 +133,20 @@ public:
         agg::rasterizer_scanline_aa<> ras;
         agg::scanline_u8 sl;
 
-        agg::rendering_buffer img_rbuf(g_image, 4, 4, 4*4);
+        agg::pod_array<agg::int8u> image(4 * 4 * pixfmt::pix_width);
+        agg::rendering_buffer img_rbuf(image.data(), 4, 4, 4 * pixfmt::pix_width);
+        pixfmt img_pixf(img_rbuf);
+        for (int y = 0; y < 4; ++y)
+            for (int x = 0; x < 4; ++x)
+                img_pixf.copy_pixel(x, y, g_image[4 * y + x]);
 
         double para[] = { 200, 40, 200+300, 40, 200+300, 40+300, 200, 40+300 };
         agg::trans_affine img_mtx(para, 0,0,4,4);
 
         typedef agg::span_interpolator_linear<> interpolator_type;
         interpolator_type interpolator(img_mtx); 
-        agg::span_allocator<agg::rgba8> sa;
+        agg::span_allocator<color_type> sa;
 
-        pixfmt img_pixf(img_rbuf);
         typedef agg::image_accessor_clone<pixfmt> img_source_type;
         img_source_type source(img_pixf);
 
@@ -196,8 +213,10 @@ public:
                 span_gen_type sg(source, interpolator, filter);
                 agg::render_scanlines_aa(ras, sl, rb, sa, sg);
 
+#if !LINEAR_RGB
                 agg::gamma_lut<agg::int8u, agg::int8u, 8, 8> gamma(m_gamma.value());
                 pixf.apply_gamma_inv(gamma);
+#endif
 
                 double x_start = 5.0;
                 double x_end   = 195.0;
@@ -249,7 +268,9 @@ public:
             break;
         }
 
+#if !LINEAR_RGB
         agg::render_ctrl(ras, sl, rb, m_gamma);
+#endif
         if(m_filters.cur_item() >= 14)
         {
             agg::render_ctrl(ras, sl, rb, m_radius);
@@ -266,7 +287,7 @@ public:
 
 int agg_main(int argc, char* argv[])
 {
-    the_application app(agg::pix_format_bgra32, flip_y);
+    the_application app(pix_format, flip_y);
     app.caption("Image transformation filters comparison");
 
     if(app.init(500, 340, 0))

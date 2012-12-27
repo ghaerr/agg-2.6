@@ -16,13 +16,13 @@
 #include "ctrl/agg_cbox_ctrl.h"
 #include "ctrl/agg_rbox_ctrl.h"
 
+#define AGG_BGR24
+//#define AGG_BGR96
+#include "pixel_formats.h"
 
 enum flip_y_e { flip_y = true };
 bool font_flip_y = !flip_y;
 
-
-#define pix_format agg::pix_format_bgr24
-typedef agg::pixfmt_bgr24 pixfmt_type;
 
 
 static char text[] = 
@@ -162,7 +162,7 @@ template<class VS> void dump_path(VS& path)
 
 class the_application : public agg::platform_support
 {
-    typedef agg::renderer_base<pixfmt_type> base_ren_type;
+    typedef agg::renderer_base<pixfmt> base_ren_type;
     typedef agg::renderer_scanline_aa_solid<base_ren_type> renderer_solid;
     typedef agg::renderer_scanline_bin_solid<base_ren_type> renderer_bin;
     typedef agg::font_engine_freetype_int32 font_engine_type;
@@ -370,7 +370,7 @@ public:
 
     virtual void on_draw()
     {
-        pixfmt_type pf(rbuf_window());
+        pixfmt pf(rbuf_window());
         base_ren_type ren_base(pf);
         renderer_solid ren_solid(ren_base);
         renderer_bin ren_bin(ren_base);
@@ -425,7 +425,7 @@ public:
     {
         if(m_performance.status())
         {
-            pixfmt_type pf(rbuf_window());
+            pixfmt pf(rbuf_window());
             base_ren_type ren_base(pf);
             renderer_solid ren_solid(ren_base);
             renderer_bin ren_bin(ren_base);

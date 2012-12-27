@@ -25,8 +25,7 @@
 #define AGG_PIXFMT_RGB_INCLUDED
 
 #include <string.h>
-#include "agg_basics.h"
-#include "agg_color_rgba.h"
+#include "agg_pixfmt_base.h"
 #include "agg_rendering_buffer.h"
 
 namespace agg
@@ -74,93 +73,64 @@ namespace agg
 
 
     //=========================================================blender_rgb
-    template<class ColorT, class Order> struct blender_rgb
+    template<class ColorT, class Order> 
+    struct blender_rgb : blender_base<ColorT, Order>
     {
-        typedef ColorT color_type;
-        typedef Order order_type;
-        typedef typename color_type::value_type value_type;
-        typedef typename color_type::calc_type calc_type;
-        enum base_scale_e { base_shift = color_type::base_shift };
-
         // Blend pixels using the non-premultiplied form of Alvy-Ray Smith's
         // compositing function. Since the render buffer is opaque we skip the
         // initial premultiply and final demultiply.
 
         //--------------------------------------------------------------------
         static AGG_INLINE void blend_pix(value_type* p, 
-                                         unsigned cr, unsigned cg, unsigned cb, 
-                                         unsigned alpha, 
-                                         unsigned cover)
+            value_type cr, value_type cg, value_type cb, value_type alpha, cover_type cover)
         {
-            alpha = color_type::int_mult_cover(alpha, cover);
-            p[Order::R] = (value_type)(color_type::int_lerp(p[Order::R], cr, alpha));
-            p[Order::G] = (value_type)(color_type::int_lerp(p[Order::G], cg, alpha));
-            p[Order::B] = (value_type)(color_type::int_lerp(p[Order::B], cb, alpha));
+            blend_pix(p, cr, cg, cb, mult_cover(alpha, cover));
         }
         
         //--------------------------------------------------------------------
         static AGG_INLINE void blend_pix(value_type* p, 
-                                         unsigned cr, unsigned cg, unsigned cb, 
-                                         unsigned alpha)
+            value_type cr, value_type cg, value_type cb, value_type alpha)
         {
-            p[Order::R] = (value_type)(color_type::int_lerp(p[Order::R], cr, alpha));
-            p[Order::G] = (value_type)(color_type::int_lerp(p[Order::G], cg, alpha));
-            p[Order::B] = (value_type)(color_type::int_lerp(p[Order::B], cb, alpha));
+            p[Order::R] = lerp(p[Order::R], cr, alpha);
+            p[Order::G] = lerp(p[Order::G], cg, alpha);
+            p[Order::B] = lerp(p[Order::B], cb, alpha);
         }
     };
 
-
     //======================================================blender_rgb_pre
-    template<class ColorT, class Order> struct blender_rgb_pre
+    template<class ColorT, class Order> 
+    struct blender_rgb_pre : blender_base<ColorT, Order>
     {
-        typedef ColorT color_type;
-        typedef Order order_type;
-        typedef typename color_type::value_type value_type;
-        typedef typename color_type::calc_type calc_type;
-        enum base_scale_e { base_shift = color_type::base_shift };
-
         // Blend pixels using the premultiplied form of Alvy-Ray Smith's
         // compositing function. 
 
         //--------------------------------------------------------------------
         static AGG_INLINE void blend_pix(value_type* p, 
-                                         unsigned cr, unsigned cg, unsigned cb,
-                                         unsigned alpha,
-                                         unsigned cover)
+            value_type cr, value_type cg, value_type cb, value_type alpha, cover_type cover)
         {
-            cr = color_type::int_mult_cover(cr, cover);
-            cg = color_type::int_mult_cover(cg, cover);
-            cb = color_type::int_mult_cover(cb, cover);
-            alpha = color_type::int_mult_cover(alpha, cover);
-            p[Order::R] = (value_type)(color_type::int_prelerp(p[Order::R], cr, alpha));
-            p[Order::G] = (value_type)(color_type::int_prelerp(p[Order::G], cg, alpha));
-            p[Order::B] = (value_type)(color_type::int_prelerp(p[Order::B], cb, alpha));
+            blend_pix(p, 
+                mult_cover(cr, cover), 
+                mult_cover(cg, cover), 
+                mult_cover(cb, cover), 
+                mult_cover(alpha, cover));
         }
 
         //--------------------------------------------------------------------
         static AGG_INLINE void blend_pix(value_type* p, 
-                                         unsigned cr, unsigned cg, unsigned cb,
-                                         unsigned alpha)
+            value_type cr, value_type cg, value_type cb, value_type alpha)
         {
-            p[Order::R] = (value_type)(color_type::int_prelerp(p[Order::R], cr, alpha));
-            p[Order::G] = (value_type)(color_type::int_prelerp(p[Order::G], cg, alpha));
-            p[Order::B] = (value_type)(color_type::int_prelerp(p[Order::B], cb, alpha));
+            p[Order::R] = prelerp(p[Order::R], cr, alpha);
+            p[Order::G] = prelerp(p[Order::G], cg, alpha);
+            p[Order::B] = prelerp(p[Order::B], cb, alpha);
         }
-
     };
 
-
-
     //===================================================blender_rgb_gamma
-    template<class ColorT, class Order, class Gamma> class blender_rgb_gamma
+    template<class ColorT, class Order, class Gamma> 
+    class blender_rgb_gamma : public blender_base<ColorT, Order>
     {
     public:
-        typedef ColorT color_type;
-        typedef Order order_type;
         typedef Gamma gamma_type;
-        typedef typename color_type::value_type value_type;
-        typedef typename color_type::calc_type calc_type;
-        enum base_scale_e { base_shift = color_type::base_shift };
 
         //--------------------------------------------------------------------
         blender_rgb_gamma() : m_gamma(0) {}
@@ -168,30 +138,21 @@ namespace agg
 
         //--------------------------------------------------------------------
         AGG_INLINE void blend_pix(value_type* p, 
-                                  unsigned cr, unsigned cg, unsigned cb,
-                                  unsigned alpha, 
-                                  unsigned cover)
+            value_type cr, value_type cg, value_type cb, value_type alpha, cover_type cover)
         {
-            alpha = color_type::int_mult_cover(alpha, cover);
-            calc_type r = m_gamma->dir(p[Order::R]);
-            calc_type g = m_gamma->dir(p[Order::G]);
-            calc_type b = m_gamma->dir(p[Order::B]);
-            p[Order::R] = m_gamma->inv(color_type::int_lerp(r, m_gamma->dir(cr), alpha));
-            p[Order::G] = m_gamma->inv(color_type::int_lerp(g, m_gamma->dir(cg), alpha));
-            p[Order::B] = m_gamma->inv(color_type::int_lerp(b, m_gamma->dir(cb), alpha));
+            blend_pix(p, cr, cg, cb, mult_cover(alpha, cover));
         }
         
         //--------------------------------------------------------------------
         AGG_INLINE void blend_pix(value_type* p, 
-                                  unsigned cr, unsigned cg, unsigned cb,
-                                  unsigned alpha)
+            value_type cr, value_type cg, value_type cb, value_type alpha)
         {
             calc_type r = m_gamma->dir(p[Order::R]);
             calc_type g = m_gamma->dir(p[Order::G]);
             calc_type b = m_gamma->dir(p[Order::B]);
-            p[Order::R] = m_gamma->inv(color_type::int_lerp(r, m_gamma->dir(cr), alpha));
-            p[Order::G] = m_gamma->inv(color_type::int_lerp(g, m_gamma->dir(cg), alpha));
-            p[Order::B] = m_gamma->inv(color_type::int_lerp(b, m_gamma->dir(cb), alpha));
+            p[Order::R] = m_gamma->inv(lerp(r, m_gamma->dir(cr), alpha));
+            p[Order::G] = m_gamma->inv(lerp(g, m_gamma->dir(cg), alpha));
+            p[Order::B] = m_gamma->inv(lerp(b, m_gamma->dir(cb), alpha));
         }
         
     private:
@@ -199,10 +160,9 @@ namespace agg
     };
 
 
-
-    
     //==================================================pixfmt_alpha_blend_rgb
-    template<class Blender, class RenBuf, const int Step = 3> class pixfmt_alpha_blend_rgb
+    template<class Blender, class RenBuf, unsigned Step, unsigned Offset = 0> 
+    class pixfmt_alpha_blend_rgb
     {
     public:
         typedef RenBuf   rbuf_type;
@@ -212,12 +172,11 @@ namespace agg
         typedef typename blender_type::order_type order_type;
         typedef typename color_type::value_type value_type;
         typedef typename color_type::calc_type calc_type;
-        enum base_scale_e 
+        enum 
         {
-            base_shift = color_type::base_shift,
-            base_scale = color_type::base_scale,
-            base_mask  = color_type::base_mask,
-            pix_width  = sizeof(value_type) * Step
+            pix_step = Step,
+            pix_offset = Offset,
+            pix_width = sizeof(value_type) * pix_step
         };
 
     private:
@@ -226,9 +185,9 @@ namespace agg
                                           const color_type& c, 
                                           unsigned cover)
         {
-            if (c.a)
+            if (!c.is_transparent())
             {
-                if(c.a == base_mask && cover == cover_mask)
+                if (c.is_opaque() && cover == cover_mask)
                 {
                     p[order_type::R] = c.r;
                     p[order_type::G] = c.g;
@@ -245,9 +204,9 @@ namespace agg
         AGG_INLINE void copy_or_blend_pix(value_type* p, 
                                           const color_type& c)
         {
-            if (c.a)
+            if (!c.is_transparent())
             {
-                if(c.a == base_mask)
+                if (c.is_opaque())
                 {
                     p[order_type::R] = c.r;
                     p[order_type::G] = c.g;
@@ -259,7 +218,6 @@ namespace agg
                 }
             }
         }
-
 
     public:
         //--------------------------------------------------------------------
@@ -273,7 +231,7 @@ namespace agg
         bool attach(PixFmt& pixf, int x1, int y1, int x2, int y2)
         {
             rect_i r(x1, y1, x2, y2);
-            if(r.clip(rect_i(0, 0, pixf.width()-1, pixf.height()-1)))
+            if (r.clip(rect_i(0, 0, pixf.width()-1, pixf.height()-1)))
             {
                 int stride = pixf.stride();
                 m_rbuf->attach(pixf.pix_ptr(r.x1, stride < 0 ? r.y2 : r.y1), 
@@ -309,51 +267,69 @@ namespace agg
             return m_rbuf->row_ptr(y) + x * pix_width; 
         }
 
-        //--------------------------------------------------------------------
-        AGG_INLINE static void make_pix(int8u* p, const color_type& c)
+        // Return pointer to pixel value, or null if row not allocated.
+        AGG_INLINE const value_type* pix_value_ptr(int x, int y) const 
         {
-            ((value_type*)p)[order_type::R] = c.r;
-            ((value_type*)p)[order_type::G] = c.g;
-            ((value_type*)p)[order_type::B] = c.b;
+            return (const value_type*)m_rbuf->row_ptr(y) + x * pix_step;
+        }
+
+        // Return pointer to pixel value, forcing row to be allocated.
+        AGG_INLINE value_type* pix_value_ptr(int x, int y, unsigned len) 
+        {
+            return (value_type*)m_rbuf->row_ptr(x, y, len) + x * pix_step;
         }
 
         //--------------------------------------------------------------------
-        AGG_INLINE color_type pixel(int x, int y) const
+        AGG_INLINE static void make_pix(value_type* p, const color_type& c)
         {
-            value_type* p = (value_type*)m_rbuf->row_ptr(y) + x * Step;
-            return color_type(p[order_type::R], 
-                              p[order_type::G], 
-                              p[order_type::B]);
-        }
-
-        //--------------------------------------------------------------------
-        AGG_INLINE void copy_pixel(int x, int y, const color_type& c)
-        {
-            value_type* p = (value_type*)m_rbuf->row_ptr(x, y, 1) + x * Step;
             p[order_type::R] = c.r;
             p[order_type::G] = c.g;
             p[order_type::B] = c.b;
         }
 
         //--------------------------------------------------------------------
-        AGG_INLINE void blend_pixel(int x, int y, const color_type& c, int8u cover)
+        AGG_INLINE static color_type make_color(const value_type* p)
         {
-            copy_or_blend_pix((value_type*)m_rbuf->row_ptr(x, y, 1) + x * Step, c, cover);
+            return color_type(
+                p[order_type::R], 
+                p[order_type::G], 
+                p[order_type::B]);
         }
 
+        //--------------------------------------------------------------------
+        AGG_INLINE color_type pixel(int x, int y) const
+        {
+            if (const value_type* p = pix_value_ptr(x, y))
+            {
+                return make_color(p);
+            }
+            return color_type::no_color();
+        }
+
+        //--------------------------------------------------------------------
+        AGG_INLINE void copy_pixel(int x, int y, const color_type& c)
+        {
+            make_pix(pix_value_ptr(x, y, 1), c);
+        }
+
+        //--------------------------------------------------------------------
+        AGG_INLINE void blend_pixel(int x, int y, const color_type& c, int8u cover)
+        {
+            copy_or_blend_pix(pix_value_ptr(x, y, 1), c, cover);
+        }
 
         //--------------------------------------------------------------------
         AGG_INLINE void copy_hline(int x, int y, 
                                    unsigned len, 
                                    const color_type& c)
         {
-            value_type* p = (value_type*)m_rbuf->row_ptr(x, y, len) + x * Step;
+            value_type* p = pix_value_ptr(x, y, len);
             do
             {
                 p[order_type::R] = c.r; 
                 p[order_type::G] = c.g; 
                 p[order_type::B] = c.b;
-                p += Step;
+                p += pix_step;
             }
             while(--len);
         }
@@ -366,15 +342,13 @@ namespace agg
         {
             do
             {
-                value_type* p = (value_type*)
-                    m_rbuf->row_ptr(x, y++, 1) + x * Step;
+                value_type* p = pix_value_ptr(x, y++, 1);
                 p[order_type::R] = c.r; 
                 p[order_type::G] = c.g; 
                 p[order_type::B] = c.b;
             }
-            while(--len);
+            while (--len);
         }
-
 
         //--------------------------------------------------------------------
         void blend_hline(int x, int y,
@@ -382,30 +356,29 @@ namespace agg
                          const color_type& c,
                          int8u cover)
         {
-            if (c.a)
+            if (!c.is_transparent())
             {
-                value_type* p = (value_type*)
-                    m_rbuf->row_ptr(x, y, len) + x * Step;
+                value_type* p = pix_value_ptr(x, y, len);
 
-                if(c.a == base_mask && cover == cover_mask)
+                if (c.is_opaque() && cover == cover_mask)
                 {
                     do
                     {
                         p[order_type::R] = c.r; 
                         p[order_type::G] = c.g; 
                         p[order_type::B] = c.b;
-                        p += Step;
+                        p += pix_step;
                     }
-                    while(--len);
+                    while (--len);
                 }
                 else
                 {
                     do
                     {
                         m_blender.blend_pix(p, c.r, c.g, c.b, c.a, cover);
-                        p += Step;
+                        p += pix_step;
                     }
-                    while(--len);
+                    while (--len);
                 }
             }
         }
@@ -417,36 +390,32 @@ namespace agg
                          const color_type& c,
                          int8u cover)
         {
-            if (c.a)
+            if (!c.is_transparent())
             {
-                value_type* p;
-                if(c.a == base_mask && cover == cover_mask)
+                if (c.is_opaque() && cover == cover_mask)
                 {
                     do
                     {
-                        p = (value_type*)
-                            m_rbuf->row_ptr(x, y++, 1) + x * Step;
+                        value_type* p = pix_value_ptr(x, y++, 1);
 
                         p[order_type::R] = c.r; 
                         p[order_type::G] = c.g; 
                         p[order_type::B] = c.b;
                     }
-                    while(--len);
+                    while (--len);
                 }
                 else
                 {
                     do
                     {
-                        p = (value_type*)
-                            m_rbuf->row_ptr(x, y++, 1) + x * Step;
+                        value_type* p = pix_value_ptr(x, y++, 1);
 
                         m_blender.blend_pix(p, c.r, c.g, c.b, c.a, cover);
                     }
-                    while(--len);
+                    while (--len);
                 }
             }
         }
-
 
         //--------------------------------------------------------------------
         void blend_solid_hspan(int x, int y,
@@ -454,14 +423,13 @@ namespace agg
                                const color_type& c,
                                const int8u* covers)
         {
-            if (c.a)
+            if (!c.is_transparent())
             {
-                value_type* p = (value_type*)
-                    m_rbuf->row_ptr(x, y, len) + x * Step;
+                value_type* p = pix_value_ptr(x, y, len);
 
                 do 
                 {
-                    if(c.a == base_mask && *covers == cover_mask)
+                    if (c.is_opaque() && *covers == cover_mask)
                     {
                         p[order_type::R] = c.r;
                         p[order_type::G] = c.g;
@@ -471,10 +439,10 @@ namespace agg
                     {
                         m_blender.blend_pix(p, c.r, c.g, c.b, c.a, *covers);
                     }
-                    p += Step;
+                    p += pix_step;
                     ++covers;
                 }
-                while(--len);
+                while (--len);
             }
         }
 
@@ -485,14 +453,13 @@ namespace agg
                                const color_type& c,
                                const int8u* covers)
         {
-            if (c.a)
+            if (!c.is_transparent())
             {
                 do 
                 {
-                    value_type* p = (value_type*)
-                        m_rbuf->row_ptr(x, y++, 1) + x * Step;
+                    value_type* p = pix_value_ptr(x, y++, 1);
 
-                    if(c.a == base_mask && *covers == cover_mask)
+                    if (c.is_opaque() && *covers == cover_mask)
                     {
                         p[order_type::R] = c.r;
                         p[order_type::G] = c.g;
@@ -504,18 +471,16 @@ namespace agg
                     }
                     ++covers;
                 }
-                while(--len);
+                while (--len);
             }
         }
-
 
         //--------------------------------------------------------------------
         void copy_color_hspan(int x, int y,
                               unsigned len, 
                               const color_type* colors)
         {
-            value_type* p = (value_type*)
-                m_rbuf->row_ptr(x, y, len) + x * Step;
+            value_type* p = pix_value_ptr(x, y, len);
 
             do 
             {
@@ -523,9 +488,9 @@ namespace agg
                 p[order_type::G] = colors->g;
                 p[order_type::B] = colors->b;
                 ++colors;
-                p += Step;
+                p += pix_step;
             }
-            while(--len);
+            while (--len);
         }
 
 
@@ -536,16 +501,14 @@ namespace agg
         {
             do 
             {
-                value_type* p = (value_type*)
-                    m_rbuf->row_ptr(x, y++, 1) + x * Step;
+                value_type* p = pix_value_ptr(x, y++, 1);
                 p[order_type::R] = colors->r;
                 p[order_type::G] = colors->g;
                 p[order_type::B] = colors->b;
                 ++colors;
             }
-            while(--len);
+            while (--len);
         }
-
 
         //--------------------------------------------------------------------
         void blend_color_hspan(int x, int y,
@@ -554,42 +517,39 @@ namespace agg
                                const int8u* covers,
                                int8u cover)
         {
-            value_type* p = (value_type*)
-                m_rbuf->row_ptr(x, y, len) + x * Step;
+            value_type* p = pix_value_ptr(x, y, len);
 
-            if(covers)
+            if (covers)
             {
                 do 
                 {
                     copy_or_blend_pix(p, *colors++, *covers++);
-                    p += Step;
+                    p += pix_step;
                 }
-                while(--len);
+                while (--len);
             }
             else
             {
-                if(cover == cover_mask)
+                if (cover == cover_mask)
                 {
                     do 
                     {
                         copy_or_blend_pix(p, *colors++);
-                        p += Step;
+                        p += pix_step;
                     }
-                    while(--len);
+                    while (--len);
                 }
                 else
                 {
                     do 
                     {
                         copy_or_blend_pix(p, *colors++, cover);
-                        p += Step;
+                        p += pix_step;
                     }
-                    while(--len);
+                    while (--len);
                 }
             }
         }
-
-
 
         //--------------------------------------------------------------------
         void blend_color_vspan(int x, int y,
@@ -598,41 +558,31 @@ namespace agg
                                const int8u* covers,
                                int8u cover)
         {
-            value_type* p;
-            if(covers)
+            if (covers)
             {
                 do 
                 {
-                    p = (value_type*)
-                        m_rbuf->row_ptr(x, y++, 1) + x * Step;
-
-                    copy_or_blend_pix(p, *colors++, *covers++);
+                    copy_or_blend_pix(pix_value_ptr(x, y++, 1), *colors++, *covers++);
                 }
-                while(--len);
+                while (--len);
             }
             else
             {
-                if(cover == cover_mask)
+                if (cover == cover_mask)
                 {
                     do 
                     {
-                        p = (value_type*)
-                            m_rbuf->row_ptr(x, y++, 1) + x * Step;
-
-                        copy_or_blend_pix(p, *colors++);
+                        copy_or_blend_pix(pix_value_ptr(x, y++, 1), *colors++);
                     }
-                    while(--len);
+                    while (--len);
                 }
                 else
                 {
                     do 
                     {
-                        p = (value_type*)
-                            m_rbuf->row_ptr(x, y++, 1) + x * Step;
-
-                        copy_or_blend_pix(p, *colors++, cover);
+                        copy_or_blend_pix(pix_value_ptr(x, y++, 1), *colors++, cover);
                     }
-                    while(--len);
+                    while (--len);
                 }
             }
         }
@@ -640,21 +590,19 @@ namespace agg
         //--------------------------------------------------------------------
         template<class Function> void for_each_pixel(Function f)
         {
-            unsigned y;
-            for(y = 0; y < height(); ++y)
+            for (unsigned y = 0; y < height(); ++y)
             {
                 row_data r = m_rbuf->row(y);
-                if(r.ptr)
+                if (r.ptr)
                 {
                     unsigned len = r.x2 - r.x1 + 1;
-                    value_type* p = (value_type*)
-                        m_rbuf->row_ptr(r.x1, y, len) + r.x1 * Step;
+                    value_type* p = pix_value_ptr(r.x1, y, len);
                     do
                     {
                         f(p);
-                        p += Step;
+                        p += pix_step;
                     }
-                    while(--len);
+                    while (--len);
                 }
             }
         }
@@ -678,8 +626,7 @@ namespace agg
                        int xsrc, int ysrc,
                        unsigned len)
         {
-            const int8u* p = from.row_ptr(ysrc);
-            if(p)
+            if (const int8u* p = from.row_ptr(ysrc))
             {
                 memmove(m_rbuf->row_ptr(xdst, ydst, len) + xdst * pix_width, 
                         p + xsrc * pix_width, 
@@ -687,8 +634,8 @@ namespace agg
             }
         }
 
-
         //--------------------------------------------------------------------
+        // Blend from an RGBA surface.
         template<class SrcPixelFormatRenderer>
         void blend_from(const SrcPixelFormatRenderer& from, 
                         int xdst, int ydst,
@@ -696,23 +643,23 @@ namespace agg
                         unsigned len,
                         int8u cover)
         {
+            typedef typename SrcPixelFormatRenderer::value_type src_value_type;
             typedef typename SrcPixelFormatRenderer::order_type src_order;
 
-            const value_type* psrc = (const value_type*)from.row_ptr(ysrc);
-            if(psrc)
+            if (const src_value_type* psrc = from.pix_value_ptr(xsrc, ysrc))
             {
-                psrc += xsrc * 4;
-                value_type* pdst = 
-                    (value_type*)m_rbuf->row_ptr(xdst, ydst, len) + xdst * Step;   
+                value_type* pdst = pix_value_ptr(xdst, ydst, len);
+                int srcinc = SrcPixelFormatRenderer::pix_step;
+                int dstinc = pix_step;
 
-                if(cover == cover_mask)
+                if (cover == cover_mask)
                 {
                     do 
                     {
                         value_type alpha = psrc[src_order::A];
-                        if(alpha)
+                        if (!is_empty(alpha))
                         {
-                            if(alpha == base_mask)
+                            if (is_full(alpha))
                             {
                                 pdst[order_type::R] = psrc[src_order::R];
                                 pdst[order_type::G] = psrc[src_order::G];
@@ -721,14 +668,14 @@ namespace agg
                             else
                             {
                                 m_blender.blend_pix(pdst, 
-                                                    psrc[src_order::R],
-                                                    psrc[src_order::G],
-                                                    psrc[src_order::B],
-                                                    alpha);
+                                    psrc[src_order::R],
+                                    psrc[src_order::G],
+                                    psrc[src_order::B],
+                                    alpha);
                             }
                         }
-                        psrc += 4;
-                        pdst += Step;
+                        psrc += srcinc;
+                        pdst += dstinc;
                     }
                     while(--len);
                 }
@@ -742,15 +689,16 @@ namespace agg
                         color.b = psrc[src_order::B];
                         color.a = psrc[src_order::A];
                         copy_or_blend_pix(pdst, color, cover);
-                        psrc += 4;
-                        pdst += Step;
+                        psrc += srcinc;
+                        pdst += dstinc;
                     }
-                    while(--len);
+                    while (--len);
                 }
             }
         }
 
         //--------------------------------------------------------------------
+        // Blend from single color, using grayscale surface as alpha channel.
         template<class SrcPixelFormatRenderer>
         void blend_from_color(const SrcPixelFormatRenderer& from, 
                               const color_type& color,
@@ -761,26 +709,26 @@ namespace agg
         {
             typedef typename SrcPixelFormatRenderer::value_type src_value_type;
             typedef typename SrcPixelFormatRenderer::color_type src_color_type;
-            const src_value_type* psrc = (src_value_type*)from.row_ptr(ysrc);
-            if(psrc)
+
+            if (const src_value_type* psrc = from.pix_value_ptr(xsrc, ysrc))
             {
-                psrc += xsrc * SrcPixelFormatRenderer::pix_step + SrcPixelFormatRenderer::pix_offset;
-                value_type* pdst = 
-                    (value_type*)m_rbuf->row_ptr(xdst, ydst, len) + xdst * Step;
+                value_type* pdst = pix_value_ptr(xdst, ydst, len);
+                int srcinc = SrcPixelFormatRenderer::pix_step;
+                int dstinc = pix_step;
+
                 do 
                 {
-                    copy_or_blend_pix(pdst, 
-                                      color, 
-                                      src_color_type::int_mult_cover(*psrc, cover) >>
-                                      (src_color_type::base_shift - 8));
-                    psrc += SrcPixelFormatRenderer::pix_step;
-                    pdst += Step;
+                    copy_or_blend_pix(pdst, color, src_color_type::scale_cover(cover, *psrc));
+                    psrc += srcinc;
+                    pdst += dstinc;
                 }
-                while(--len);
+                while (--len);
             }
         }
 
         //--------------------------------------------------------------------
+        // Blend from color table, using grayscale surface as indexes into table. 
+        // Obviously, this only works for integer value types.
         template<class SrcPixelFormatRenderer>
         void blend_from_lut(const SrcPixelFormatRenderer& from, 
                             const color_type* color_lut,
@@ -790,22 +738,21 @@ namespace agg
                             int8u cover)
         {
             typedef typename SrcPixelFormatRenderer::value_type src_value_type;
-            const src_value_type* psrc = (src_value_type*)from.row_ptr(ysrc);
-            if(psrc)
-            {
-                psrc += xsrc * SrcPixelFormatRenderer::pix_step + SrcPixelFormatRenderer::pix_offset;
-                value_type* pdst = 
-                    (value_type*)m_rbuf->row_ptr(xdst, ydst, len) + xdst * Step;
 
-                if(cover == cover_mask)
+            if (const src_value_type* psrc = from.pix_value_ptr(xsrc, ysrc))
+            {
+                value_type* pdst = pix_value_ptr(xdst, ydst, len);
+                int srcinc = SrcPixelFormatRenderer::pix_step;
+                int dstinc = pix_step;
+
+                if (cover == cover_mask)
                 {
                     do 
                     {
                         const color_type& color = color_lut[*psrc];
-                        m_blender.blend_pix(pdst, 
-                                            color.r, color.g, color.b, color.a);
-                        psrc += SrcPixelFormatRenderer::pix_step;
-                        pdst += Step;
+                        m_blender.blend_pix(pdst, color.r, color.g, color.b, color.a);
+                        psrc += srcinc;
+                        pdst += dstinc;
                     }
                     while(--len);
                 }
@@ -814,8 +761,8 @@ namespace agg
                     do 
                     {
                         copy_or_blend_pix(pdst, color_lut[*psrc], cover);
-                        psrc += SrcPixelFormatRenderer::pix_step;
-                        pdst += Step;
+                        psrc += srcinc;
+                        pdst += dstinc;
                     }
                     while(--len);
                 }
@@ -826,34 +773,80 @@ namespace agg
         rbuf_type* m_rbuf;
         Blender    m_blender;
     };
-
-    typedef pixfmt_alpha_blend_rgb<blender_rgb<rgba8,  order_rgb>, rendering_buffer> pixfmt_rgb24;    //----pixfmt_rgb24
-    typedef pixfmt_alpha_blend_rgb<blender_rgb<rgba8,  order_bgr>, rendering_buffer> pixfmt_bgr24;    //----pixfmt_bgr24
-    typedef pixfmt_alpha_blend_rgb<blender_rgb<rgba16, order_rgb>, rendering_buffer> pixfmt_rgb48;    //----pixfmt_rgb48
-    typedef pixfmt_alpha_blend_rgb<blender_rgb<rgba16, order_bgr>, rendering_buffer> pixfmt_bgr48;    //----pixfmt_bgr48
-
-    typedef pixfmt_alpha_blend_rgb<blender_rgb_pre<rgba8,  order_rgb>, rendering_buffer> pixfmt_rgb24_pre; //----pixfmt_rgb24_pre
-    typedef pixfmt_alpha_blend_rgb<blender_rgb_pre<rgba8,  order_bgr>, rendering_buffer> pixfmt_bgr24_pre; //----pixfmt_bgr24_pre
-    typedef pixfmt_alpha_blend_rgb<blender_rgb_pre<rgba16, order_rgb>, rendering_buffer> pixfmt_rgb48_pre; //----pixfmt_rgb48_pre
-    typedef pixfmt_alpha_blend_rgb<blender_rgb_pre<rgba16, order_bgr>, rendering_buffer> pixfmt_bgr48_pre; //----pixfmt_bgr48_pre
-
-    typedef pixfmt_alpha_blend_rgb<blender_rgb<rgba8,  order_rgb>, rendering_buffer, 4> pixfmt_rgbx32;    //----pixfmt_rgb24
-    typedef pixfmt_alpha_blend_rgb<blender_rgb<rgba8,  order_bgr>, rendering_buffer, 4> pixfmt_bgrx32;    //----pixfmt_bgr24
-    typedef pixfmt_alpha_blend_rgb<blender_rgb<rgba16, order_rgb>, rendering_buffer, 4> pixfmt_rgbx64;    //----pixfmt_rgb48
-    typedef pixfmt_alpha_blend_rgb<blender_rgb<rgba16, order_bgr>, rendering_buffer, 4> pixfmt_bgrx64;    //----pixfmt_bgr48
     
-    typedef pixfmt_alpha_blend_rgb<blender_rgb_pre<rgba8,  order_rgb>, rendering_buffer, 4> pixfmt_rgbx32_pre; //----pixfmt_rgb24_pre
-    typedef pixfmt_alpha_blend_rgb<blender_rgb_pre<rgba8,  order_bgr>, rendering_buffer, 4> pixfmt_bgrx32_pre; //----pixfmt_bgr24_pre
-    typedef pixfmt_alpha_blend_rgb<blender_rgb_pre<rgba16, order_rgb>, rendering_buffer, 4> pixfmt_rgbx64_pre; //----pixfmt_rgb48_pre
-    typedef pixfmt_alpha_blend_rgb<blender_rgb_pre<rgba16, order_bgr>, rendering_buffer, 4> pixfmt_bgrx64_pre; //----pixfmt_bgr48_pre
+    //-----------------------------------------------------------------------
+    typedef blender_rgb<rgba8, order_rgb> blender_rgb24;
+    typedef blender_rgb<rgba8, order_bgr> blender_bgr24;
+    typedef blender_rgb<rgba16, order_rgb> blender_rgb48;
+    typedef blender_rgb<rgba16, order_bgr> blender_bgr48;
+    typedef blender_rgb<rgba32, order_rgb> blender_rgb96;
+    typedef blender_rgb<rgba32, order_bgr> blender_bgr96;
+
+    typedef blender_rgb_pre<rgba8, order_rgb> blender_rgb24_pre;
+    typedef blender_rgb_pre<rgba8, order_bgr> blender_bgr24_pre;
+    typedef blender_rgb_pre<rgba16, order_rgb> blender_rgb48_pre;
+    typedef blender_rgb_pre<rgba16, order_bgr> blender_bgr48_pre;
+    typedef blender_rgb_pre<rgba32, order_rgb> blender_rgb96_pre;
+    typedef blender_rgb_pre<rgba32, order_bgr> blender_bgr96_pre;
+
+    typedef blender_rgb<rgba8, order_rgba> blender_rgbx32;
+    typedef blender_rgb<rgba8, order_argb> blender_xrgb32;
+    typedef blender_rgb<rgba8, order_abgr> blender_xbgr32;
+    typedef blender_rgb<rgba8, order_bgra> blender_bgrx32;
+    typedef blender_rgb<rgba16, order_rgba> blender_rgbx64;
+    typedef blender_rgb<rgba16, order_argb> blender_xrgb64;
+    typedef blender_rgb<rgba16, order_abgr> blender_xbgr64;
+    typedef blender_rgb<rgba16, order_bgra> blender_bgrx64;
+
+    typedef blender_rgb_pre<rgba8, order_rgba> blender_rgbx32_pre;
+    typedef blender_rgb_pre<rgba8, order_argb> blender_xrgb32_pre;
+    typedef blender_rgb_pre<rgba8, order_abgr> blender_xbgr32_pre;
+    typedef blender_rgb_pre<rgba8, order_bgra> blender_bgrx32_pre;
+    typedef blender_rgb_pre<rgba16, order_rgba> blender_rgbx64_pre;
+    typedef blender_rgb_pre<rgba16, order_argb> blender_xrgb64_pre;
+    typedef blender_rgb_pre<rgba16, order_abgr> blender_xbgr64_pre;
+    typedef blender_rgb_pre<rgba16, order_bgra> blender_bgrx64_pre;
+
+    typedef pixfmt_alpha_blend_rgb<blender_rgb24, rendering_buffer, 3> pixfmt_rgb24;
+    typedef pixfmt_alpha_blend_rgb<blender_bgr24, rendering_buffer, 3> pixfmt_bgr24;
+    typedef pixfmt_alpha_blend_rgb<blender_rgb48, rendering_buffer, 3> pixfmt_rgb48;
+    typedef pixfmt_alpha_blend_rgb<blender_bgr48, rendering_buffer, 3> pixfmt_bgr48;
+    typedef pixfmt_alpha_blend_rgb<blender_rgb96, rendering_buffer, 3> pixfmt_rgb96;
+    typedef pixfmt_alpha_blend_rgb<blender_bgr96, rendering_buffer, 3> pixfmt_bgr96;
+
+    typedef pixfmt_alpha_blend_rgb<blender_rgb24_pre, rendering_buffer, 3> pixfmt_rgb24_pre;
+    typedef pixfmt_alpha_blend_rgb<blender_bgr24_pre, rendering_buffer, 3> pixfmt_bgr24_pre;
+    typedef pixfmt_alpha_blend_rgb<blender_rgb48_pre, rendering_buffer, 3> pixfmt_rgb48_pre;
+    typedef pixfmt_alpha_blend_rgb<blender_bgr48_pre, rendering_buffer, 3> pixfmt_bgr48_pre;
+    typedef pixfmt_alpha_blend_rgb<blender_rgb96_pre, rendering_buffer, 3> pixfmt_rgb96_pre;
+    typedef pixfmt_alpha_blend_rgb<blender_bgr96_pre, rendering_buffer, 3> pixfmt_bgr96_pre;
+
+    typedef pixfmt_alpha_blend_rgb<blender_rgbx32, rendering_buffer, 4> pixfmt_rgbx32;
+    typedef pixfmt_alpha_blend_rgb<blender_xrgb32, rendering_buffer, 4> pixfmt_xrgb32;
+    typedef pixfmt_alpha_blend_rgb<blender_xbgr32, rendering_buffer, 4> pixfmt_xbgr32;
+    typedef pixfmt_alpha_blend_rgb<blender_bgrx32, rendering_buffer, 4> pixfmt_bgrx32;
+    typedef pixfmt_alpha_blend_rgb<blender_rgbx64, rendering_buffer, 4> pixfmt_rgbx64;
+    typedef pixfmt_alpha_blend_rgb<blender_xrgb64, rendering_buffer, 4> pixfmt_xrgb64;
+    typedef pixfmt_alpha_blend_rgb<blender_xbgr64, rendering_buffer, 4> pixfmt_xbgr64;
+    typedef pixfmt_alpha_blend_rgb<blender_bgrx64, rendering_buffer, 4> pixfmt_bgrx64;
+
+    typedef pixfmt_alpha_blend_rgb<blender_rgbx32_pre, rendering_buffer, 4> pixfmt_rgbx32_pre;
+    typedef pixfmt_alpha_blend_rgb<blender_xrgb32_pre, rendering_buffer, 4> pixfmt_xrgb32_pre;
+    typedef pixfmt_alpha_blend_rgb<blender_xbgr32_pre, rendering_buffer, 4> pixfmt_xbgr32_pre;
+    typedef pixfmt_alpha_blend_rgb<blender_bgrx32_pre, rendering_buffer, 4> pixfmt_bgrx32_pre;
+    typedef pixfmt_alpha_blend_rgb<blender_rgbx64_pre, rendering_buffer, 4> pixfmt_rgbx64_pre;
+    typedef pixfmt_alpha_blend_rgb<blender_xrgb64_pre, rendering_buffer, 4> pixfmt_xrgb64_pre;
+    typedef pixfmt_alpha_blend_rgb<blender_xbgr64_pre, rendering_buffer, 4> pixfmt_xbgr64_pre;
+    typedef pixfmt_alpha_blend_rgb<blender_bgrx64_pre, rendering_buffer, 4> pixfmt_bgrx64_pre;
     
+
     //-----------------------------------------------------pixfmt_rgb24_gamma
     template<class Gamma> class pixfmt_rgb24_gamma : 
-    public pixfmt_alpha_blend_rgb<blender_rgb_gamma<rgba8, order_rgb, Gamma>, rendering_buffer>
+    public pixfmt_alpha_blend_rgb<blender_rgb_gamma<rgba8, order_rgb, Gamma>, rendering_buffer, 3>
     {
     public:
         pixfmt_rgb24_gamma(rendering_buffer& rb, const Gamma& g) :
-            pixfmt_alpha_blend_rgb<blender_rgb_gamma<rgba8, order_rgb, Gamma>, rendering_buffer>(rb) 
+            pixfmt_alpha_blend_rgb<blender_rgb_gamma<rgba8, order_rgb, Gamma>, rendering_buffer, 3>(rb) 
         {
             this->blender().gamma(g);
         }
@@ -861,11 +854,11 @@ namespace agg
         
     //-----------------------------------------------------pixfmt_bgr24_gamma
     template<class Gamma> class pixfmt_bgr24_gamma : 
-    public pixfmt_alpha_blend_rgb<blender_rgb_gamma<rgba8, order_bgr, Gamma>, rendering_buffer>
+    public pixfmt_alpha_blend_rgb<blender_rgb_gamma<rgba8, order_bgr, Gamma>, rendering_buffer, 3>
     {
     public:
         pixfmt_bgr24_gamma(rendering_buffer& rb, const Gamma& g) :
-            pixfmt_alpha_blend_rgb<blender_rgb_gamma<rgba8, order_bgr, Gamma>, rendering_buffer>(rb) 
+            pixfmt_alpha_blend_rgb<blender_rgb_gamma<rgba8, order_bgr, Gamma>, rendering_buffer, 3>(rb) 
         {
             this->blender().gamma(g);
         }
@@ -873,11 +866,11 @@ namespace agg
 
     //-----------------------------------------------------pixfmt_rgb48_gamma
     template<class Gamma> class pixfmt_rgb48_gamma : 
-    public pixfmt_alpha_blend_rgb<blender_rgb_gamma<rgba16, order_rgb, Gamma>, rendering_buffer>
+    public pixfmt_alpha_blend_rgb<blender_rgb_gamma<rgba16, order_rgb, Gamma>, rendering_buffer, 3>
     {
     public:
         pixfmt_rgb48_gamma(rendering_buffer& rb, const Gamma& g) :
-            pixfmt_alpha_blend_rgb<blender_rgb_gamma<rgba16, order_rgb, Gamma>, rendering_buffer>(rb) 
+            pixfmt_alpha_blend_rgb<blender_rgb_gamma<rgba16, order_rgb, Gamma>, rendering_buffer, 3>(rb) 
         {
             this->blender().gamma(g);
         }
@@ -885,64 +878,15 @@ namespace agg
         
     //-----------------------------------------------------pixfmt_bgr48_gamma
     template<class Gamma> class pixfmt_bgr48_gamma : 
-    public pixfmt_alpha_blend_rgb<blender_rgb_gamma<rgba16, order_bgr, Gamma>, rendering_buffer>
+    public pixfmt_alpha_blend_rgb<blender_rgb_gamma<rgba16, order_bgr, Gamma>, rendering_buffer, 3>
     {
     public:
         pixfmt_bgr48_gamma(rendering_buffer& rb, const Gamma& g) :
-            pixfmt_alpha_blend_rgb<blender_rgb_gamma<rgba16, order_bgr, Gamma>, rendering_buffer>(rb) 
+            pixfmt_alpha_blend_rgb<blender_rgb_gamma<rgba16, order_bgr, Gamma>, rendering_buffer, 3>(rb) 
         {
             this->blender().gamma(g);
         }
     };
-
-    //-----------------------------------------------------pixfmt_rgbx32_gamma
-    template<class Gamma> class pixfmt_rgbx32_gamma : 
-    public pixfmt_alpha_blend_rgb<blender_rgb_gamma<rgba8, order_rgb, Gamma>, rendering_buffer, 4>
-    {
-    public:
-        pixfmt_rgbx32_gamma(rendering_buffer& rb, const Gamma& g) :
-        pixfmt_alpha_blend_rgb<blender_rgb_gamma<rgba8, order_rgb, Gamma>, rendering_buffer, 4>(rb) 
-        {
-            this->blender().gamma(g);
-        }
-    };
-    
-    //-----------------------------------------------------pixfmt_bgrx32_gamma
-    template<class Gamma> class pixfmt_bgrx32_gamma : 
-    public pixfmt_alpha_blend_rgb<blender_rgb_gamma<rgba8, order_bgr, Gamma>, rendering_buffer, 4>
-    {
-    public:
-        pixfmt_bgrx32_gamma(rendering_buffer& rb, const Gamma& g) :
-        pixfmt_alpha_blend_rgb<blender_rgb_gamma<rgba8, order_bgr, Gamma>, rendering_buffer, 4>(rb) 
-        {
-            this->blender().gamma(g);
-        }
-    };
-    
-    //-----------------------------------------------------pixfmt_rgbx64_gamma
-    template<class Gamma> class pixfmt_rgbx64_gamma : 
-    public pixfmt_alpha_blend_rgb<blender_rgb_gamma<rgba16, order_rgb, Gamma>, rendering_buffer, 4>
-    {
-    public:
-        pixfmt_rgbx64_gamma(rendering_buffer& rb, const Gamma& g) :
-        pixfmt_alpha_blend_rgb<blender_rgb_gamma<rgba16, order_rgb, Gamma>, rendering_buffer, 4>(rb) 
-        {
-            this->blender().gamma(g);
-        }
-    };
-    
-    //-----------------------------------------------------pixfmt_bgrx64_gamma
-    template<class Gamma> class pixfmt_bgrx64_gamma : 
-    public pixfmt_alpha_blend_rgb<blender_rgb_gamma<rgba16, order_bgr, Gamma>, rendering_buffer, 4>
-    {
-    public:
-        pixfmt_bgrx64_gamma(rendering_buffer& rb, const Gamma& g) :
-        pixfmt_alpha_blend_rgb<blender_rgb_gamma<rgba16, order_bgr, Gamma>, rendering_buffer, 4>(rb) 
-        {
-            this->blender().gamma(g);
-        }
-    };
-    
     
 }
 

@@ -26,12 +26,10 @@
 
 #include <math.h>
 #include "agg_basics.h"
+#include "agg_gamma_lut.h"
 
 namespace agg
 {
-    struct gray8;
-    struct gray16;
-    
     // Supported byte orders for RGB and RGBA pixel formats
     //=======================================================================
     struct order_rgb  { enum rgb_e  { R=0, G=1, B=2, rgb_tag, hasAlpha=false }; };       //----order_rgb
@@ -70,16 +68,16 @@ namespace agg
         //--------------------------------------------------------------------
         const rgba& transparent()
         {
-            a = 0.0;
+            a = 0;
             return *this;
         }
 
         //--------------------------------------------------------------------
         const rgba& opacity(double a_)
         {
-            if(a_ < 0.0) a_ = 0.0;
-            if(a_ > 1.0) a_ = 1.0;
-            a = a_;
+            if (a_ < 0) a_ = 0;
+            else if (a_ > 1) a_ = 1;
+            else a = a_;
             return *this;
         }
 
@@ -101,31 +99,35 @@ namespace agg
         //--------------------------------------------------------------------
         const rgba& premultiply(double a_)
         {
-            if(a <= 0.0 || a_ <= 0.0)
+            if (a <= 0 || a_ <= 0)
             {
-                r = g = b = a = 0.0;
-                return *this;
+                r = g = b = a = 0;
             }
-            a_ /= a;
-            r *= a_;
-            g *= a_;
-            b *= a_;
-            a  = a_;
+            else
+            {
+                a_ /= a;
+                r *= a_;
+                g *= a_;
+                b *= a_;
+                a  = a_;
+            }
             return *this;
         }
 
         //--------------------------------------------------------------------
         const rgba& demultiply()
         {
-            if(a == 0)
+            if (a == 0)
             {
                 r = g = b = 0;
-                return *this;
             }
-            double a_ = 1.0 / a;
-            r *= a_;
-            g *= a_;
-            b *= a_;
+            else
+            {
+                double a_ = 1.0 / a;
+                r *= a_;
+                g *= a_;
+                b *= a_;
+            }
             return *this;
         }
 
@@ -174,44 +176,39 @@ namespace agg
     {
         rgba t(0.0, 0.0, 0.0);
 
-        if(wl >= 380.0 && wl <= 440.0)
+        if (wl >= 380.0 && wl <= 440.0)
         {
             t.r = -1.0 * (wl - 440.0) / (440.0 - 380.0);
             t.b = 1.0;
         }
-        else 
-        if(wl >= 440.0 && wl <= 490.0)
+        else if (wl >= 440.0 && wl <= 490.0)
         {
             t.g = (wl - 440.0) / (490.0 - 440.0);
             t.b = 1.0;
         }
-        else
-        if(wl >= 490.0 && wl <= 510.0)
+        else if (wl >= 490.0 && wl <= 510.0)
         {
             t.g = 1.0;
             t.b = -1.0 * (wl - 510.0) / (510.0 - 490.0);
         }
-        else
-        if(wl >= 510.0 && wl <= 580.0)
+        else if (wl >= 510.0 && wl <= 580.0)
         {
             t.r = (wl - 510.0) / (580.0 - 510.0);
             t.g = 1.0;
         }
-        else
-        if(wl >= 580.0 && wl <= 645.0)
+        else if (wl >= 580.0 && wl <= 645.0)
         {
             t.r = 1.0;
             t.g = -1.0 * (wl - 645.0) / (645.0 - 580.0);
         }
-        else
-        if(wl >= 645.0 && wl <= 780.0)
+        else if (wl >= 645.0 && wl <= 780.0)
         {
             t.r = 1.0;
         }
 
         double s = 1.0;
-        if(wl > 700.0)       s = 0.3 + 0.7 * (780.0 - wl) / (780.0 - 700.0);
-        else if(wl <  420.0) s = 0.3 + 0.7 * (wl - 380.0) / (420.0 - 380.0);
+        if (wl > 700.0)       s = 0.3 + 0.7 * (780.0 - wl) / (780.0 - 700.0);
+        else if (wl <  420.0) s = 0.3 + 0.7 * (wl - 380.0) / (420.0 - 380.0);
 
         t.r = pow(t.r * s, gamma);
         t.g = pow(t.g * s, gamma);
@@ -272,36 +269,96 @@ namespace agg
             a((value_type)uround(c.a * double(base_mask))) {}
 
         //--------------------------------------------------------------------
-        rgba8(const gray8& c);
+        static AGG_INLINE double to_double(value_type a)
+        {
+            return double(a) / base_mask;
+        }
+
+        //--------------------------------------------------------------------
+        static AGG_INLINE value_type from_double(double a)
+        {
+            return value_type(uround(a * base_mask));
+        }
+
+        //--------------------------------------------------------------------
+        static AGG_INLINE value_type empty_value()
+        {
+            return 0;
+        }
+
+        //--------------------------------------------------------------------
+        static AGG_INLINE value_type full_value()
+        {
+            return base_mask;
+        }
+
+        //--------------------------------------------------------------------
+        AGG_INLINE bool is_transparent() const
+        {
+            return a == 0;
+        }
+
+        //--------------------------------------------------------------------
+        AGG_INLINE bool is_opaque() const
+        {
+            return a == base_mask;
+        }
+
+        //--------------------------------------------------------------------
+        static AGG_INLINE value_type invert(value_type x) 
+        {
+            return base_mask - x;
+        }
 
         //--------------------------------------------------------------------
         // fixed-point multiply, exact over uint8
-        static AGG_INLINE calc_type int_mult(calc_type a, calc_type b) 
+        static AGG_INLINE value_type multiply(value_type a, value_type b) 
         {
             calc_type t = a * b + base_MSB;
-            return ((t >> base_shift) + t) >> base_shift;
+            return value_type(((t >> base_shift) + t) >> base_shift);
         }
         
         //--------------------------------------------------------------------
+        static AGG_INLINE value_type demultiply(value_type a, value_type b) 
+        {
+            return b > 0 ? value_type((a << base_shift) / b) : 0; 
+        }
+
+        //--------------------------------------------------------------------
+        template<typename T>
+        static AGG_INLINE value_type downshift(T a, unsigned n) 
+        {
+            return value_type(a >> n);
+        }
+
+        //--------------------------------------------------------------------
         // fixed-point multiply, exact over uint8
         // specifically for multiplying a color component by a cover
-        static AGG_INLINE calc_type int_mult_cover(calc_type a, calc_type b) 
+        static AGG_INLINE value_type mult_cover(value_type a, cover_type b) 
         {
-            return int_mult(a, b);
+            return multiply(a, b);
+        }
+        
+        //--------------------------------------------------------------------
+        static AGG_INLINE cover_type scale_cover(cover_type a, value_type b) 
+        {
+            return multiply(b, a);
         }
         
         //--------------------------------------------------------------------
         // linear interpolate q over p by a, assuming q is pre-muliplied by a
-        static AGG_INLINE calc_type int_prelerp(calc_type p, calc_type q, calc_type a) 
+        static AGG_INLINE value_type prelerp(value_type p, value_type q, value_type a) 
         {
-            return p + q - int_mult(p, a);
+            return (p == q) ? p : p + q - multiply(p, a);
         }
         
         //--------------------------------------------------------------------
         // linear interpolate q over p by a
-        static AGG_INLINE calc_type int_lerp(calc_type p, calc_type q, calc_type a) 
+        static AGG_INLINE value_type lerp(value_type p, value_type q, value_type a) 
         {
-            return p + int_mult(q - p, a);
+            if (p < q) return p + multiply(q - p, a);
+            else if (p > q) return p - multiply(p - q, a);
+            else return p;
         }
         
         //--------------------------------------------------------------------
@@ -320,9 +377,9 @@ namespace agg
         //--------------------------------------------------------------------
         const self_type& opacity(double a_)
         {
-            if(a_ < 0.0) a_ = 0.0;
-            if(a_ > 1.0) a_ = 1.0;
-            a = (value_type)uround(a_ * double(base_mask));
+            if (a_ < 0) a_ = 0;
+            else if (a_ > 1) a_ = 1;
+            else a = (value_type)uround(a_ * double(base_mask));
             return *this;
         }
 
@@ -335,52 +392,57 @@ namespace agg
         //--------------------------------------------------------------------
         AGG_INLINE const self_type& premultiply()
         {
-            if(a == base_mask) return *this;
-            if(a == 0)
+            if (a != base_mask)
             {
-                r = g = b = 0;
-                return *this;
+                r = multiply(r, a);
+                g = multiply(g, a);
+                b = multiply(b, a);
             }
-            r = (value_type)int_mult(r, a);
-            g = (value_type)int_mult(g, a);
-            b = (value_type)int_mult(b, a);
             return *this;
         }
 
         //--------------------------------------------------------------------
         AGG_INLINE const self_type& premultiply(unsigned a_)
         {
-            if(a == base_mask && a_ >= base_mask) return *this;
-            if(a == 0 || a_ == 0)
+            if (a != base_mask || a_ < base_mask)
             {
-                r = g = b = a = 0;
-                return *this;
+                if (a == 0 || a_ == 0)
+                {
+                    r = g = b = a = 0;
+                }
+                else
+                {
+                    calc_type r_ = (calc_type(r) * a_) / a;
+                    calc_type g_ = (calc_type(g) * a_) / a;
+                    calc_type b_ = (calc_type(b) * a_) / a;
+                    r = value_type((r_ > a_) ? a_ : r_);
+                    g = value_type((g_ > a_) ? a_ : g_);
+                    b = value_type((b_ > a_) ? a_ : b_);
+                    a = value_type(a_);
+                }
             }
-            calc_type r_ = (calc_type(r) * a_) / a;
-            calc_type g_ = (calc_type(g) * a_) / a;
-            calc_type b_ = (calc_type(b) * a_) / a;
-            r = value_type((r_ > a_) ? a_ : r_);
-            g = value_type((g_ > a_) ? a_ : g_);
-            b = value_type((b_ > a_) ? a_ : b_);
-            a = value_type(a_);
             return *this;
         }
 
         //--------------------------------------------------------------------
         AGG_INLINE const self_type& demultiply()
         {
-            if(a == base_mask) return *this;
-            if(a == 0)
+            if (a < base_mask)
             {
-                r = g = b = 0;
-                return *this;
+                if (a == 0)
+                {
+                    r = g = b = 0;
+                }
+                else
+                {
+                    calc_type r_ = (calc_type(r) * base_mask) / a;
+                    calc_type g_ = (calc_type(g) * base_mask) / a;
+                    calc_type b_ = (calc_type(b) * base_mask) / a;
+                    r = value_type((r_ > calc_type(base_mask)) ? calc_type(base_mask) : r_);
+                    g = value_type((g_ > calc_type(base_mask)) ? calc_type(base_mask) : g_);
+                    b = value_type((b_ > calc_type(base_mask)) ? calc_type(base_mask) : b_);
+                }
             }
-            calc_type r_ = (calc_type(r) * base_mask) / a;
-            calc_type g_ = (calc_type(g) * base_mask) / a;
-            calc_type b_ = (calc_type(b) * base_mask) / a;
-            r = value_type((r_ > calc_type(base_mask)) ? calc_type(base_mask) : r_);
-            g = value_type((g_ > calc_type(base_mask)) ? calc_type(base_mask) : g_);
-            b = value_type((b_ > calc_type(base_mask)) ? calc_type(base_mask) : b_);
             return *this;
         }
 
@@ -389,10 +451,10 @@ namespace agg
         {
             self_type ret;
             calc_type ik = uround(k * base_mask);
-            ret.r = (value_type)int_lerp(r, c.r, ik);
-            ret.g = (value_type)int_lerp(g, c.g, ik);
-            ret.b = (value_type)int_lerp(b, c.b, ik);
-            ret.a = (value_type)int_lerp(a, c.a, ik);
+            ret.r = lerp(r, c.r, ik);
+            ret.g = lerp(g, c.g, ik);
+            ret.b = lerp(b, c.b, ik);
+            ret.a = lerp(a, c.a, ik);
             return ret;
         }
 
@@ -400,9 +462,9 @@ namespace agg
         AGG_INLINE void add(const self_type& c, unsigned cover)
         {
             calc_type cr, cg, cb, ca;
-            if(cover == cover_mask)
+            if (cover == cover_mask)
             {
-                if(c.a == base_mask) 
+                if (c.a == base_mask) 
                 {
                     *this = c;
                     return;
@@ -417,10 +479,10 @@ namespace agg
             }
             else
             {
-                cr = r + int_mult_cover(c.r, cover);
-                cg = g + int_mult_cover(c.g, cover);
-                cb = b + int_mult_cover(c.b, cover);
-                ca = a + int_mult_cover(c.a, cover);
+                cr = r + mult_cover(c.r, cover);
+                cg = g + mult_cover(c.g, cover);
+                cb = b + mult_cover(c.b, cover);
+                ca = a + mult_cover(c.a, cover);
             }
             r = (value_type)((cr > calc_type(base_mask)) ? calc_type(base_mask) : cr);
             g = (value_type)((cg > calc_type(base_mask)) ? calc_type(base_mask) : cg);
@@ -580,36 +642,102 @@ namespace agg
             a(value_type((             a_ << 8) | c.a)) {}
 
         //--------------------------------------------------------------------
-        rgba16(const gray16& c);
+        operator rgba8()
+        {
+            return rgba8(r >> 8, g >> 8, b >> 8, a >> 8);
+        }
+
+        //--------------------------------------------------------------------
+        static AGG_INLINE double to_double(value_type a)
+        {
+            return double(a) / base_mask;
+        }
+
+        //--------------------------------------------------------------------
+        static AGG_INLINE value_type from_double(double a)
+        {
+            return value_type(uround(a * base_mask));
+        }
+
+        //--------------------------------------------------------------------
+        static AGG_INLINE value_type empty_value()
+        {
+            return 0;
+        }
+
+        //--------------------------------------------------------------------
+        static AGG_INLINE value_type full_value()
+        {
+            return base_mask;
+        }
+
+        //--------------------------------------------------------------------
+        AGG_INLINE bool is_transparent() const
+        {
+            return a == 0;
+        }
+
+        //--------------------------------------------------------------------
+        AGG_INLINE bool is_opaque() const
+        {
+            return a == base_mask;
+        }
+
+        //--------------------------------------------------------------------
+        static AGG_INLINE value_type invert(value_type x) 
+        {
+            return base_mask - x;
+        }
 
         //--------------------------------------------------------------------
         // fixed-point multiply, exact over uint16
-        static AGG_INLINE calc_type int_mult(calc_type a, calc_type b) 
+        static AGG_INLINE value_type multiply(value_type a, value_type b) 
         {
             calc_type t = a * b + base_MSB;
-            return ((t >> base_shift) + t) >> base_shift;
+            return value_type(((t >> base_shift) + t) >> base_shift);
         }
         
         //--------------------------------------------------------------------
+        static AGG_INLINE value_type demultiply(value_type a, value_type b) 
+        {
+            return b > 0 ? value_type((a << base_shift) / b) : 0;
+        }
+
+        //--------------------------------------------------------------------
+        template<typename T>
+        static AGG_INLINE value_type downshift(T a, unsigned n) 
+        {
+            return value_type(a >> n);
+        }
+
+        //--------------------------------------------------------------------
         // fixed-point multiply, almost exact over uint16
         // specifically for multiplying a color component by a cover
-        static AGG_INLINE calc_type int_mult_cover(calc_type a, calc_type b) 
+        static AGG_INLINE value_type mult_cover(value_type a, cover_type b) 
         {
-            return int_mult(a, (b << 8) | b);
+            return multiply(a, (b << 8) | b);
+        }
+        
+        //--------------------------------------------------------------------
+        static AGG_INLINE cover_type scale_cover(cover_type a, value_type b) 
+        {
+            return multiply((a << 8) | a, b) >> 8;
         }
         
         //--------------------------------------------------------------------
         // linear interpolate q over p by a, assuming q is pre-muliplied by a
-        static AGG_INLINE calc_type int_prelerp(calc_type p, calc_type q, calc_type a) 
+        static AGG_INLINE value_type prelerp(value_type p, value_type q, value_type a) 
         {
-            return p + q - int_mult(p, a);
+            return (p == q) ? p : p + q - multiply(p, a);
         }
         
         //--------------------------------------------------------------------
         // linear interpolate q over p by a
-        static AGG_INLINE calc_type int_lerp(calc_type p, calc_type q, calc_type a) 
+        static AGG_INLINE value_type lerp(value_type p, value_type q, value_type a) 
         {
-            return p + int_mult(q - p, a);
+            if (p < q) return p + multiply(q - p, a);
+            else if (p > q) return p - multiply(p - q, a);
+            else return p;
         }
         
         //--------------------------------------------------------------------
@@ -628,9 +756,9 @@ namespace agg
         //--------------------------------------------------------------------
         AGG_INLINE const self_type& opacity(double a_)
         {
-            if(a_ < 0.0) a_ = 0.0;
-            if(a_ > 1.0) a_ = 1.0;
-            a = (value_type)uround(a_ * double(base_mask));
+            if (a_ < 0) a_ = 0;
+            if (a_ > 1) a_ = 1;
+            a = value_type(uround(a_ * double(base_mask)));
             return *this;
         }
 
@@ -643,52 +771,57 @@ namespace agg
         //--------------------------------------------------------------------
         AGG_INLINE const self_type& premultiply()
         {
-            if(a == base_mask) return *this;
-            if(a == 0)
+            if (a != base_mask) 
             {
-                r = g = b = 0;
-                return *this;
+                r = multiply(r, a);
+                g = multiply(g, a);
+                b = multiply(b, a);
             }
-            r = (value_type)int_mult(r, a);
-            g = (value_type)int_mult(g, a);
-            b = (value_type)int_mult(b, a);
             return *this;
         }
 
         //--------------------------------------------------------------------
         AGG_INLINE const self_type& premultiply(unsigned a_)
         {
-            if(a == base_mask && a_ >= base_mask) return *this;
-            if(a == 0 || a_ == 0)
+            if (a < base_mask || a_ < base_mask)
             {
-                r = g = b = a = 0;
-                return *this;
+                if (a == 0 || a_ == 0)
+                {
+                    r = g = b = a = 0;
+                }
+                else
+                {
+                    calc_type r_ = (calc_type(r) * a_) / a;
+                    calc_type g_ = (calc_type(g) * a_) / a;
+                    calc_type b_ = (calc_type(b) * a_) / a;
+                    r = value_type((r_ > a_) ? a_ : r_);
+                    g = value_type((g_ > a_) ? a_ : g_);
+                    b = value_type((b_ > a_) ? a_ : b_);
+                    a = value_type(a_);
+                }
             }
-            calc_type r_ = (calc_type(r) * a_) / a;
-            calc_type g_ = (calc_type(g) * a_) / a;
-            calc_type b_ = (calc_type(b) * a_) / a;
-            r = value_type((r_ > a_) ? a_ : r_);
-            g = value_type((g_ > a_) ? a_ : g_);
-            b = value_type((b_ > a_) ? a_ : b_);
-            a = value_type(a_);
             return *this;
         }
 
         //--------------------------------------------------------------------
         AGG_INLINE const self_type& demultiply()
         {
-            if(a == base_mask) return *this;
-            if(a == 0)
+            if (a < base_mask)
             {
-                r = g = b = 0;
-                return *this;
+                if (a == 0)
+                {
+                    r = g = b = 0;
+                }
+                else
+                {
+                    calc_type r_ = (calc_type(r) * base_mask) / a;
+                    calc_type g_ = (calc_type(g) * base_mask) / a;
+                    calc_type b_ = (calc_type(b) * base_mask) / a;
+                    r = value_type((r_ > calc_type(base_mask)) ? calc_type(base_mask) : r_);
+                    g = value_type((g_ > calc_type(base_mask)) ? calc_type(base_mask) : g_);
+                    b = value_type((b_ > calc_type(base_mask)) ? calc_type(base_mask) : b_);
+                }
             }
-            calc_type r_ = (calc_type(r) * base_mask) / a;
-            calc_type g_ = (calc_type(g) * base_mask) / a;
-            calc_type b_ = (calc_type(b) * base_mask) / a;
-            r = value_type((r_ > calc_type(base_mask)) ? calc_type(base_mask) : r_);
-            g = value_type((g_ > calc_type(base_mask)) ? calc_type(base_mask) : g_);
-            b = value_type((b_ > calc_type(base_mask)) ? calc_type(base_mask) : b_);
             return *this;
         }
 
@@ -697,10 +830,10 @@ namespace agg
         {
             self_type ret;
             calc_type ik = uround(k * base_mask);
-            ret.r = (value_type)int_lerp(r, c.r, ik);
-            ret.g = (value_type)int_lerp(g, c.g, ik);
-            ret.b = (value_type)int_lerp(b, c.b, ik);
-            ret.a = (value_type)int_lerp(a, c.a, ik);
+            ret.r = lerp(r, c.r, ik);
+            ret.g = lerp(g, c.g, ik);
+            ret.b = lerp(b, c.b, ik);
+            ret.a = lerp(a, c.a, ik);
             return ret;
         }
 
@@ -708,9 +841,9 @@ namespace agg
         AGG_INLINE void add(const self_type& c, unsigned cover)
         {
             calc_type cr, cg, cb, ca;
-            if(cover == cover_mask)
+            if (cover == cover_mask)
             {
-                if(c.a == base_mask) 
+                if (c.a == base_mask) 
                 {
                     *this = c;
                     return;
@@ -725,10 +858,10 @@ namespace agg
             }
             else
             {
-                cr = r + int_mult_cover(c.r, cover);
-                cg = g + int_mult_cover(c.g, cover);
-                cb = b + int_mult_cover(c.b, cover);
-                ca = a + int_mult_cover(c.a, cover);
+                cr = r + mult_cover(c.r, cover);
+                cg = g + mult_cover(c.g, cover);
+                cb = b + mult_cover(c.b, cover);
+                ca = a + mult_cover(c.a, cover);
             }
             r = (value_type)((cr > calc_type(base_mask)) ? calc_type(base_mask) : cr);
             g = (value_type)((cg > calc_type(base_mask)) ? calc_type(base_mask) : cg);
@@ -809,6 +942,306 @@ namespace agg
     }
 
 
+    struct rgba32
+    {
+        typedef float value_type;
+        typedef double calc_type;
+        typedef double long_type;
+        typedef rgba32 self_type;
+
+        value_type r;
+        value_type g;
+        value_type b;
+        value_type a;
+
+        //--------------------------------------------------------------------
+        rgba32() {}
+
+        //--------------------------------------------------------------------
+        rgba32(value_type r_, value_type g_, value_type b_, value_type a_= 1) :
+            r(r_), g(g_), b(b_), a(a_) {}
+
+        //--------------------------------------------------------------------
+        rgba32(const self_type& c, float a_) :
+            r(c.r), g(c.g), b(c.b), a(a_) {}
+
+        //--------------------------------------------------------------------
+        rgba32(const rgba& c) :
+            r(value_type(c.r)), g(value_type(c.g)), b(value_type(c.b)), a(value_type(c.a)) {}
+
+        //--------------------------------------------------------------------
+        rgba32(const rgba& c, double a_) :
+            r(value_type(c.r)), g(value_type(c.g)), b(value_type(c.b)), a(value_type(a_)) {}
+
+        //--------------------------------------------------------------------
+        // Initialize from non-premultiplied sRGB values.
+        rgba32(const rgba8& c) :
+            r(sRGB<>::conv_rgb(c.r)), 
+            g(sRGB<>::conv_rgb(c.g)), 
+            b(sRGB<>::conv_rgb(c.b)), 
+            a(sRGB<>::conv_alpha(c.a)) {}
+
+        //--------------------------------------------------------------------
+        operator rgba()
+        {
+            return rgba(r, g, b, a);
+        }
+
+        //--------------------------------------------------------------------
+        operator rgba8()
+        {
+            // Return non-premultiplied sRGB values.
+            return rgba8(
+                sRGB<>::conv_rgb(r), 
+                sRGB<>::conv_rgb(g), 
+                sRGB<>::conv_rgb(b), 
+                sRGB<>::conv_alpha(a));
+        }
+
+        //--------------------------------------------------------------------
+        static AGG_INLINE double to_double(value_type a)
+        {
+            return a;
+        }
+
+        //--------------------------------------------------------------------
+        static AGG_INLINE value_type from_double(double a)
+        {
+            return value_type(a);
+        }
+
+        //--------------------------------------------------------------------
+        static AGG_INLINE value_type empty_value()
+        {
+            return 0;
+        }
+
+        //--------------------------------------------------------------------
+        static AGG_INLINE value_type full_value()
+        {
+            return 1;
+        }
+
+        //--------------------------------------------------------------------
+        AGG_INLINE bool is_transparent() const
+        {
+            return a <= 0;
+        }
+
+        //--------------------------------------------------------------------
+        AGG_INLINE bool is_opaque() const
+        {
+            return a >= 1;
+        }
+
+        //--------------------------------------------------------------------
+        static AGG_INLINE value_type invert(value_type x) 
+        {
+            return 1 - x;
+        }
+
+        //--------------------------------------------------------------------
+        static AGG_INLINE value_type multiply(value_type a, value_type b) 
+        {
+            return value_type(a * b);
+        }
+
+        //--------------------------------------------------------------------
+        static AGG_INLINE value_type demultiply(value_type a, value_type b) 
+        {
+            if (b <= 0) return 0;
+            else if (b >= 1) return a;
+            else return value_type(a / b);
+        }
+
+        //--------------------------------------------------------------------
+        template<typename T>
+        static AGG_INLINE value_type downshift(T a, unsigned n) 
+        {
+            return value_type(n > 0 ? a / (1 << n) : a);
+        }
+
+        //--------------------------------------------------------------------
+        static AGG_INLINE value_type mult_cover(value_type a, cover_type b) 
+        {
+            return value_type(a * b / cover_mask);
+        }
+
+        //--------------------------------------------------------------------
+        static AGG_INLINE cover_type scale_cover(cover_type a, value_type b) 
+        {
+            return cover_type(uround(a * b));
+        }
+        
+        //--------------------------------------------------------------------
+        // linear interpolate q over p by a, assuming q is pre-muliplied by a
+        static AGG_INLINE value_type prelerp(value_type p, value_type q, value_type a) 
+        {
+            return p + q - multiply(p, a);
+        }
+        
+        //--------------------------------------------------------------------
+        // linear interpolate q over p by a
+        static AGG_INLINE value_type lerp(value_type p, value_type q, value_type a) 
+        {
+            return p + multiply(q - p, a);
+        }
+        
+        //--------------------------------------------------------------------
+        void clear()
+        {
+            r = g = b = a = 0;
+        }
+        
+        //--------------------------------------------------------------------
+        const self_type& transparent()
+        {
+            a = 0;
+            return *this;
+        }
+
+        //--------------------------------------------------------------------
+        AGG_INLINE const self_type& opacity(double a_)
+        {
+            if (a_ < 0) a_ = 0;
+            else if (a_ > 1) a_ = 1;
+            else a = value_type(a_);
+            return *this;
+        }
+
+        //--------------------------------------------------------------------
+        double opacity() const
+        {
+            return a;
+        }
+
+        //--------------------------------------------------------------------
+        AGG_INLINE const self_type& premultiply()
+        {
+            if (a < 1)
+            {
+                if (a <= 0)
+                {
+                    r = g = b = 0;
+                }
+                else
+                {
+                    r *= a;
+                    g *= a;
+                    b *= a;
+                }
+            }
+            return *this;
+        }
+
+        //--------------------------------------------------------------------
+        AGG_INLINE const self_type& demultiply()
+        {
+            if (a < 1)
+            {
+                if (a <= 0)
+                {
+                    r = g = b = 0;
+                }
+                else
+                {
+                    r /= a;
+                    g /= a;
+                    b /= a;
+                }
+            }
+            return *this;
+        }
+
+        //--------------------------------------------------------------------
+        AGG_INLINE self_type gradient(const self_type& c, double k) const
+        {
+            self_type ret;
+            ret.r = value_type(r + (c.r - r) * k);
+            ret.g = value_type(g + (c.g - g) * k);
+            ret.b = value_type(b + (c.b - b) * k);
+            ret.a = value_type(a + (c.a - a) * k);
+            return ret;
+        }
+
+        //--------------------------------------------------------------------
+        AGG_INLINE void add(const self_type& c, unsigned cover)
+        {
+            if (cover == cover_mask)
+            {
+                if (c.is_opaque()) 
+                {
+                    *this = c;
+                    return;
+                }
+                else
+                {
+                    r += c.r; 
+                    g += c.g; 
+                    b += c.b; 
+                    a += c.a; 
+                }
+            }
+            else
+            {
+                r += mult_cover(c.r, cover);
+                g += mult_cover(c.g, cover);
+                b += mult_cover(c.b, cover);
+                a += mult_cover(c.a, cover);
+            }
+            if (a > 1) a = 1;
+            if (r > a) r = a;
+            if (g > a) g = a;
+            if (b > a) b = a;
+        }
+
+        //--------------------------------------------------------------------
+        template<class GammaLUT>
+        AGG_INLINE void apply_gamma_dir(const GammaLUT& gamma)
+        {
+            r = gamma.dir(r);
+            g = gamma.dir(g);
+            b = gamma.dir(b);
+        }
+
+        //--------------------------------------------------------------------
+        template<class GammaLUT>
+        AGG_INLINE void apply_gamma_inv(const GammaLUT& gamma)
+        {
+            r = gamma.inv(r);
+            g = gamma.inv(g);
+            b = gamma.inv(b);
+        }
+
+        //--------------------------------------------------------------------
+        static self_type no_color() { return self_type(0,0,0,0); }
+
+        //--------------------------------------------------------------------
+        static self_type from_wavelength(double wl, double gamma = 1)
+        {
+            return self_type(rgba::from_wavelength(wl, gamma));
+        }
+    };
+
+
+
+    //--------------------------------------------------------------rgba32_pre
+    inline rgba32 rgba32_pre(float r, float g, float b, float a = 1.0f)
+    {
+        return rgba32(r,g,b,a).premultiply();
+    }
+    inline rgba32 rgba32_pre(const rgba32& c, float a)
+    {
+        return rgba32(c,a).premultiply();
+    }
+    inline rgba32 rgba32_pre(const rgba& c)
+    {
+        return rgba32(c).premultiply();
+    }
+    inline rgba32 rgba32_pre(const rgba& c, double a)
+    {
+        return rgba32(c,a).premultiply();
+    }
 }
 
 

@@ -13,6 +13,15 @@
 #include "ctrl/agg_slider_ctrl.h"
 #include "ctrl/agg_cbox_ctrl.h"
 
+// Set LINEAR_RGB=1 to use a linear format. 
+#define LINEAR_RGB 0
+
+#if LINEAR_RGB
+#define AGG_BGR96
+#else
+#define AGG_BGR24
+#endif
+#include "pixel_formats.h"
 
 enum flip_y_e { flip_y = true };
 
@@ -46,8 +55,13 @@ public:
         add_ctrl(m_offset);
         add_ctrl(m_white_on_black);
         m_gamma.label("gamma=%4.3f");
+#if LINEAR_RGB
+        m_gamma.range(0.9999, 1.0001);
+        m_gamma.value(1.0);
+#else
         m_gamma.range(0.0, 3.0);
         m_gamma.value(1.8);
+#endif
 
         m_radius.label("radius=%4.3f");
         m_radius.range(0.0, 50.0);
@@ -63,13 +77,17 @@ public:
 
     virtual void on_draw()
     {
+#if LINEAR_RGB
+        pixfmt pixf(rbuf_window());
+#else
         typedef agg::gamma_lut<agg::int8u, agg::int8u, 8, 8> gamma_lut_type;
-        typedef agg::pixfmt_bgr24_gamma<gamma_lut_type> pixfmt;
+        typedef pixfmt_gamma<gamma_lut_type> pixfmt;
+        gamma_lut_type gamma(m_gamma.value());
+        pixfmt pixf(rbuf_window(), gamma);
+#endif
         typedef agg::renderer_base<pixfmt> renderer_base;
         typedef agg::renderer_scanline_aa_solid<renderer_base> renderer_solid;
 
-        gamma_lut_type gamma(m_gamma.value());
-        pixfmt pixf(rbuf_window(), gamma);
         renderer_base rb(pixf);
         renderer_solid ren(rb);
 
@@ -159,7 +177,7 @@ public:
 
 int agg_main(int argc, char* argv[])
 {
-    the_application app(agg::pix_format_bgr24, flip_y);
+    the_application app(pix_format, flip_y);
     app.caption("AGG Example. Rounded rectangle with gamma-correction & stuff");
 
     if(app.init(600, 400, agg::window_resize))

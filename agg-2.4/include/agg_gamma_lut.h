@@ -18,6 +18,7 @@
 
 #include <math.h>
 #include "agg_basics.h"
+#include "agg_gamma_functions.h"
 
 namespace agg
 {
@@ -116,6 +117,117 @@ namespace agg
         HiResT* m_dir_gamma;
         LoResT* m_inv_gamma;
     };
+
+
+    // Optimized sRGB lookup table. The direct conversion (sRGB to linear) 
+    // is a straightforward lookup. The inverse conversion (linear to sRGB) 
+    // is implemented using binary search.
+    template<class HiResT = float>
+    class sRGB_lut
+    {
+    public:
+        sRGB_lut()
+        {
+            // Generate lookup tables.
+            m_dir_table[0] = 0;
+            m_inv_table[0] = 0;
+            for (unsigned i = 1; i <= 255; ++i)
+            {
+                m_dir_table[i] = HiResT(sRGB_to_linear(i / 255.0));
+                m_inv_table[i] = HiResT(sRGB_to_linear((i - 0.5) / 255.0));
+            }
+        }
+
+        HiResT dir(int8u v) const
+        {
+            return m_dir_table[v];
+        }
+
+        int8u inv(HiResT v) const
+        {
+            // Unrolled binary search.
+            int8u x = 0;
+            if (v > m_inv_table[128]) x = 128;
+            if (v > m_inv_table[x + 64]) x += 64;
+            if (v > m_inv_table[x + 32]) x += 32;
+            if (v > m_inv_table[x + 16]) x += 16;
+            if (v > m_inv_table[x + 8]) x += 8;
+            if (v > m_inv_table[x + 4]) x += 4;
+            if (v > m_inv_table[x + 2]) x += 2;
+            if (v > m_inv_table[x + 1]) x += 1;
+            return x;
+        }
+
+    private:
+        HiResT m_dir_table[256];
+        HiResT m_inv_table[256];
+    };
+
+    // Wrapper for sRGB-linear conversion. Overloading is used to automatically 
+    // select the direction of conversion, and support is provided for 
+    // handling premultiplied RGB values.
+    template<class T = float>
+    class sRGB
+    {
+    private:
+        static sRGB_lut<> lut;
+
+    public:
+        static T conv_rgb(int8u x) // full alpha
+        {
+            return lut.dir(x);
+        }
+
+        static T conv_rgb(int8u x, int8u a) // premultiplied x
+        {
+            if (a == 0) return 0;
+            else if (a == 255) return lut.dir(x);
+            else return lut.dir(int8u(0.5 + x * 255.0 / a)) * a / 255;
+        }
+
+        static T conv_rgb_demultiply(int8u x, int8u a)
+        {
+            if (a == 0) return 0;
+            else if (a == 255) return lut.dir(x);
+            else return lut.dir(int8u(0.5 + x * 255.0 / a));
+        }
+
+        static int8u conv_rgb(T x) // full alpha
+        {
+            return lut.inv(x);
+        }
+
+        static int8u conv_rgb(T x, T a) // premultiplied x
+        {
+            if (a <= 0) return 0;
+            else if (a >= 1) return lut.inv(x);
+            else return int8u(0.5 + lut.inv(x / a) * a);
+        }
+
+        static int8u conv_rgb_demultiply(T x, T a)
+        {
+            if (a <= 0) return 0;
+            else if (a >= 1) return lut.inv(x);
+            else return lut.inv(x / a);
+        }
+
+        static T conv_alpha(int8u x)
+        {
+            return T(x / 255.0);
+        }
+
+        static int8u conv_alpha(T x)
+        {
+            if (x <= 0) return 0;
+            else if (x >= 1) return 255;
+            else return int8(0.5 + x * 255);
+        }
+    };
+
+    // Definition of sRGB::lut. Due to the fact that this a template, 
+    // we don't need to place the definition in a cpp file. Hurrah.
+    sRGB_lut<> sRGB<>::lut;
+
 }
 
 #endif

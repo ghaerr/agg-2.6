@@ -8,7 +8,6 @@
 #include "agg_trans_affine.h"
 #include "agg_conv_transform.h"
 #include "agg_conv_stroke.h"
-#include "agg_pixfmt_rgb.h"
 #include "agg_scanline_p.h"
 #include "agg_renderer_scanline.h"
 #include "agg_image_filters.h"
@@ -17,6 +16,9 @@
 #include "ctrl/agg_cbox_ctrl.h"
 #include "platform/agg_platform_support.h"
 
+#define AGG_BGR24
+//#define AGG_BGR96
+#include "pixel_formats.h"
 
 enum flip_y_e { flip_y = true };
 
@@ -165,7 +167,6 @@ public:
 
     virtual void on_draw()
     {
-        typedef agg::pixfmt_bgr24 pixfmt; 
         typedef agg::renderer_base<pixfmt> renderer_base;
         typedef agg::renderer_scanline_aa_solid<renderer_base> renderer_solid;
        
@@ -301,7 +302,7 @@ public:
 
 int agg_main(int argc, char* argv[])
 {
-    the_application app(agg::pix_format_bgr24, flip_y);
+    the_application app(pix_format, flip_y);
     app.caption("Image filters' shape comparison");
 
     if(app.init(780, 300, agg::window_resize))

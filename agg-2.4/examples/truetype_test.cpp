@@ -143,7 +143,7 @@ bool text_flip = false;
 
 class the_application : public agg::platform_support
 {
-    typedef agg::gamma_lut<agg::int8u, agg::int16u, 8, 16> gamma_type;
+    typedef agg::gamma_lut<> gamma_type;
     typedef agg::pixfmt_bgr24_gamma<gamma_type> pixfmt_type;
     typedef agg::renderer_base<pixfmt_type> base_ren_type;
     typedef agg::renderer_scanline_aa_solid<base_ren_type> renderer_solid;

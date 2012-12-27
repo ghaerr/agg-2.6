@@ -17,6 +17,16 @@
 #include "platform/agg_platform_support.h"
 
 
+// Set LINEAR_RGB=1 to use a linear format. 
+#define LINEAR_RGB 0
+
+#if LINEAR_RGB
+#define AGG_BGRA128
+#else
+#define AGG_BGRA32
+#endif
+#include "pixel_formats.h"
+
 enum flip_y_e { flip_y = true };
 
 
@@ -24,7 +34,7 @@ enum flip_y_e { flip_y = true };
 class style_handler
 {
 public:
-    style_handler(const agg::rgba8* styles, unsigned count) : 
+    style_handler(const color_type* styles, unsigned count) : 
         m_transparent(0, 0, 0, 0),
         m_styles(styles),
         m_count(count)
@@ -32,7 +42,7 @@ public:
 
     bool is_solid(unsigned style) const { return true; }
 
-    const agg::rgba8& color(unsigned style) const 
+    const color_type& color(unsigned style) const 
     {
         if (style < m_count)
             return m_styles[style];
@@ -40,13 +50,13 @@ public:
         return m_transparent;
     }
 
-    void generate_span(agg::rgba8* span, int x, int y, unsigned len, unsigned style)
+    void generate_span(color_type* span, int x, int y, unsigned len, unsigned style)
     {
     }
 
 private:
-    agg::rgba8          m_transparent;
-    const agg::rgba8*   m_styles;
+    color_type          m_transparent;
+    const color_type*   m_styles;
     unsigned            m_count;
 };
 
@@ -152,19 +162,23 @@ public:
 
     virtual void on_draw()
     {
-        typedef agg::renderer_base<agg::pixfmt_bgra32>     ren_base;
-        typedef agg::renderer_base<agg::pixfmt_bgra32_pre> ren_base_pre;
+        typedef agg::renderer_base<pixfmt>     ren_base;
+        typedef agg::renderer_base<pixfmt_pre> ren_base_pre;
 
-        agg::gamma_lut<agg::int8u, agg::int8u> lut(2.0);
+        agg::gamma_lut<agg::int8u, agg::int8u> lut;
 
-        agg::pixfmt_bgra32 pixf(rbuf_window());
+#if !LINEAR_RGB
+        lut.gamma(2.2);
+#endif
+
+        pixfmt pixf(rbuf_window());
         ren_base renb(pixf);
 
-        agg::pixfmt_bgra32_pre pixf_pre(rbuf_window());
+        pixfmt_pre pixf_pre(rbuf_window());
         ren_base_pre renb_pre(pixf_pre);
 
         // Clear the window with a gradient
-        agg::pod_vector<agg::rgba8> gr(pixf_pre.width());
+        agg::pod_vector<color_type> gr(pixf_pre.width());
         unsigned i;
         for(i = 0; i < pixf.width(); i++)
         {
@@ -175,13 +189,14 @@ public:
         {
             renb.copy_color_hspan(0, i, pixf.width(), &gr[0]);
         }
+#if !LINEAR_RGB
         pixf.apply_gamma_dir(lut);
-
+#endif
 
         agg::rasterizer_scanline_aa<> ras;
         agg::rasterizer_compound_aa<agg::rasterizer_sl_clip_dbl> rasc;
         agg::scanline_u8 sl;
-        agg::span_allocator<agg::rgba8> alloc;
+        agg::span_allocator<color_type> alloc;
 
         // Draw two triangles
         ras.move_to_d(0, 0);
@@ -214,7 +229,7 @@ public:
 
         compose_path();
 
-        agg::rgba8 styles[4];
+        color_type styles[4];
 
         if(m_invert_order.status())
         {
@@ -279,7 +294,9 @@ public:
         agg::render_ctrl(ras, sl, renb, m_alpha4);
         agg::render_ctrl(ras, sl, renb, m_invert_order);
 
+#if !LINEAR_RGB
         pixf.apply_gamma_inv(lut);
+#endif
     }
 
 };
@@ -288,7 +305,7 @@ public:
 
 int agg_main(int argc, char* argv[])
 {
-    the_application app(agg::pix_format_bgra32, flip_y);
+    the_application app(pix_format, flip_y);
     app.caption("AGG Example. Compound Rasterizer -- Geometry Flattening");
 
     if(app.init(440, 330, 0))

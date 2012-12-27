@@ -11,6 +11,9 @@
 #include "ctrl/agg_slider_ctrl.h"
 #include "ctrl/agg_cbox_ctrl.h"
 
+#define AGG_BGR24
+//#define AGG_BGR96
+#include "pixel_formats.h"
 
 enum flip_y_e { flip_y = true };
 
@@ -143,10 +146,10 @@ public:
 
     virtual void on_draw()
     {
-        typedef agg::renderer_base<agg::pixfmt_bgr24> ren_base;
+        typedef agg::renderer_base<pixfmt> ren_base;
         typedef agg::renderer_scanline_aa_solid<ren_base> renderer;
 
-        agg::pixfmt_bgr24 pixf(rbuf_window());
+        pixfmt pixf(rbuf_window());
         ren_base rb(pixf);
         renderer ren(rb);
         agg::scanline_u8 sl;
@@ -187,7 +190,7 @@ public:
 
 int agg_main(int argc, char* argv[])
 {
-    the_application app(agg::pix_format_bgr24, flip_y);
+    the_application app(pix_format, flip_y);
     app.caption("AGG Example. Polar Transformer");
 
     if(app.init(600, 400, agg::window_resize))

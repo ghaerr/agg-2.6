@@ -1203,10 +1203,10 @@ namespace agg
         AGG_INLINE void to_pix(ColorT& c) const
         {
             typedef typename ColorT::value_type cv_type;
-            c.r = (cv_type)uround(r);
-            c.g = (cv_type)uround(g);
-            c.b = (cv_type)uround(b);
-            c.a = (cv_type)uround(a);
+            c.r = cv_type(r);
+            c.g = cv_type(g);
+            c.b = cv_type(b);
+            c.a = cv_type(a);
         }
     };
 
@@ -1245,9 +1245,9 @@ namespace agg
         AGG_INLINE void to_pix(ColorT& c) const
         {
             typedef typename ColorT::value_type cv_type;
-            c.r = (cv_type)uround(r);
-            c.g = (cv_type)uround(g);
-            c.b = (cv_type)uround(b);
+            c.r = cv_type(r);
+            c.g = cv_type(g);
+            c.b = cv_type(b);
         }
     };
 
@@ -1282,7 +1282,7 @@ namespace agg
         AGG_INLINE void to_pix(ColorT& c) const
         {
             typedef typename ColorT::value_type cv_type;
-            c.v = (cv_type)uround(v);
+            c.v = cv_type(v);
         }
     };
 

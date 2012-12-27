@@ -21,10 +21,15 @@
 #include "ctrl/agg_cbox_ctrl.h"
 #include "platform/agg_platform_support.h"
 
+//#define AGG_GRAY8 
+//#define AGG_GRAY32
+#define AGG_BGR24
+//#define AGG_BGR96
+//#define AGG_BGRA32 
+//#define AGG_BGRA128
+#include "pixel_formats.h"
 
 enum flip_y_e { flip_y = true };
-
-typedef agg::pixfmt_bgr24 pixfmt;
 
 
 void bezier4_point(double x1, double y1, double x2, double y2,
@@ -552,7 +557,7 @@ public:
 
 int agg_main(int argc, char* argv[])
 {
-    the_application app(agg::pix_format_bgr24, flip_y);
+    the_application app(pix_format, flip_y);
     app.caption("AGG Example");
     if(app.init(655, 520, agg::window_resize))
     {

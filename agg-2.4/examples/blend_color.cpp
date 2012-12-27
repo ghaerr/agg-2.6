@@ -21,13 +21,23 @@
 #include "platform/agg_platform_support.h"
 
 //#define AGG_GRAY8
+//#define AGG_GRAY16
+//#define AGG_GRAY32
 #define AGG_BGR24
+//#define AGG_RGB24
 //#define AGG_BGR48 
+//#define AGG_RGB48
+//#define AGG_BGR96
+//#define AGG_RGB96
 //#define AGG_RGB_AAA
 //#define AGG_BGRA32
 //#define AGG_RGBA32 
 //#define AGG_ARGB32 
 //#define AGG_ABGR32
+//#define AGG_BGRA128
+//#define AGG_RGBA128
+//#define AGG_ARGB128
+//#define AGG_ABGR128
 //#define AGG_RGB565
 //#define AGG_RGB555
 #include "pixel_formats.h"

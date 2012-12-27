@@ -19,6 +19,8 @@
 #include "ctrl/agg_rbox_ctrl.h"
 #include "platform/agg_platform_support.h"
 
+#define AGG_BGR24
+#include "pixel_formats.h"
 
 enum flip_y_e { flip_y = true };
 
@@ -468,7 +470,7 @@ public:
         double img_width = rbuf_img(0).width();
         double img_height = rbuf_img(0).height();
     
-        typedef agg::pixfmt_bgr24 pixfmt; 
+        typedef pixfmt pixfmt; 
         typedef agg::renderer_base<pixfmt> renderer_base;
 
         pixfmt pixf(rbuf_window());
@@ -674,7 +676,7 @@ public:
 
 int agg_main(int argc, char* argv[])
 {
-    the_application app(agg::pix_format_bgr24, flip_y);
+    the_application app(pix_format, flip_y);
     app.caption("Image and Gradient Distortions");
 
     const char* img_name = "spheres";

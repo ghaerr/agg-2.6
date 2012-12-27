@@ -9,6 +9,15 @@
 #include "ctrl/agg_slider_ctrl.h"
 #include "platform/agg_platform_support.h"
 
+// Set LINEAR_RGB=1 to use a linear format. 
+// In that case the rendering is already gamma-correct, 
+// so we'll hide the gamma slider control.
+#define LINEAR_RGB 0
+
+#if LINEAR_RGB
+#define AGG_BGR96
+//#define AGG_BGRA128
+#else
 #define AGG_BGR24 
 //#define AGG_RGB24
 //#define AGG_BGRA32 
@@ -17,6 +26,7 @@
 //#define AGG_ABGR32
 //#define AGG_RGB565
 //#define AGG_RGB555
+#endif
 #include "pixel_formats.h"
 
 enum flip_y_e { flip_y = true };
@@ -24,8 +34,8 @@ enum flip_y_e { flip_y = true };
 class the_application : public agg::platform_support
 {
     agg::slider_ctrl<agg::rgba8> m_thickness;
-    agg::slider_ctrl<agg::rgba8> m_gamma;
     agg::slider_ctrl<agg::rgba8> m_contrast;
+    agg::slider_ctrl<agg::rgba8> m_gamma;
     double m_rx;
     double m_ry;
 
@@ -33,24 +43,25 @@ public:
     the_application(agg::pix_format_e format, bool flip_y) :
         agg::platform_support(format, flip_y),
         m_thickness(5, 5,    400-5, 11,    !flip_y),
-        m_gamma    (5, 5+15, 400-5, 11+15, !flip_y),
-        m_contrast (5, 5+30, 400-5, 11+30, !flip_y)
+        m_contrast (5, 5+15, 400-5, 11+15, !flip_y),
+        m_gamma    (5, 5+30, 400-5, 11+30, !flip_y)
     {
         add_ctrl(m_thickness);
-        add_ctrl(m_gamma);
-        add_ctrl(m_contrast);
-
         m_thickness.label("Thickness=%3.2f");
-        m_gamma.label("Gamma=%3.2f");
-        m_contrast.label("Contrast");
-
         m_thickness.range(0.0, 3.0);
-        m_gamma.range(0.5, 3.0);
-        m_contrast.range(0.0, 1.0);
-
         m_thickness.value(1.0);
-        m_gamma.value(1.0);
+
+        add_ctrl(m_contrast);
+        m_contrast.label("Contrast");
+        m_contrast.range(0.0, 1.0);
         m_contrast.value(1.0);
+
+#if !LINEAR_RGB
+        add_ctrl(m_gamma);
+        m_gamma.label("Gamma=%3.2f");
+        m_gamma.range(0.5, 3.0);
+        m_gamma.value(1.0);
+#endif
     }
 
     virtual void on_init()
@@ -61,6 +72,10 @@ public:
 
     virtual void on_draw()
     {
+#if LINEAR_RGB
+        typedef agg::renderer_base<pixfmt> ren_base;
+        pixfmt pixf(rbuf_window());
+#else
         typedef agg::gamma_lut<agg::int8u, agg::int8u, 8, 8> gamma_type;
         typedef pixfmt_gamma<gamma_type> pixfmt_type;
         typedef agg::renderer_base<pixfmt_type> ren_base;
@@ -68,6 +83,7 @@ public:
         double g = m_gamma.value();
         gamma_type gamma(g);
         pixfmt_type pixf(rbuf_window(), gamma);
+#endif
         ren_base renb(pixf);
         renb.clear(agg::rgba(1, 1, 1));
 
@@ -83,7 +99,7 @@ public:
         agg::scanline_u8 sl;
         agg::path_storage path;
 
-
+#if !LINEAR_RGB
         unsigned i;
         double x = (width() - 256.0) / 2.0;
         double y = 50.0;
@@ -102,6 +118,7 @@ public:
         ras.reset();
         ras.add_path(gpoly);
         agg::render_scanlines_aa_solid(ras, sl, renb, agg::rgba8(80,127,80));
+#endif
 
         agg::ellipse ell(width() / 2, height() / 2, m_rx, m_ry, 150);
         agg::conv_stroke<agg::ellipse> poly(ell);
@@ -131,8 +148,10 @@ public:
         agg::render_scanlines_aa_solid(ras, sl, renb, agg::rgba8(255,255,255));
 
         agg::render_ctrl(ras, sl, renb, m_thickness);
-        agg::render_ctrl(ras, sl, renb, m_gamma);
         agg::render_ctrl(ras, sl, renb, m_contrast);
+#if !LINEAR_RGB
+        agg::render_ctrl(ras, sl, renb, m_gamma);
+#endif
     }
 
 

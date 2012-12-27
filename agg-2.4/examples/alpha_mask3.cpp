@@ -20,6 +20,13 @@
 #include "ctrl/agg_cbox_ctrl.h"
 #include "ctrl/agg_rbox_ctrl.h"
 
+//#define AGG_GRAY8 
+//#define AGG_GRAY32
+#define AGG_BGR24
+//#define AGG_BGR96
+//#define AGG_BGRA32 
+//#define AGG_BGRA128
+#include "pixel_formats.h"
 
 enum flip_y_e { flip_y = true };
 
@@ -96,7 +103,7 @@ class the_application : public agg::platform_support
     typedef agg::amask_no_clip_gray8 alpha_mask_type;
     //typedef agg::alpha_mask_gray8 alpha_mask_type;
 
-    typedef agg::pixfmt_bgr24 pixfmt_type;
+    typedef pixfmt pixfmt_type;
 
     unsigned char* m_alpha_buf;
     agg::rendering_buffer m_alpha_mask_rbuf;
@@ -549,7 +556,7 @@ public:
 
 int agg_main(int argc, char* argv[])
 {
-    the_application app(agg::pix_format_bgr24, flip_y);
+    the_application app(pix_format, flip_y);
     app.caption("AGG Example. Alpha-Mask as a Polygon Clipper");
 
     if(app.init(640, 520, agg::window_resize))

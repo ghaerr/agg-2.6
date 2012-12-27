@@ -16,14 +16,17 @@
 #include "ctrl/agg_gamma_ctrl.h"
 #include "platform/agg_platform_support.h"
 
-
+//#define AGG_GRAY8
 //#define AGG_GRAY16
+//#define AGG_GRAY32
 #define AGG_BGR24
 //#define AGG_RGB24
 //#define AGG_RGB_AAA
 //#define AGG_RGBA32 
 //#define AGG_ARGB32 
 //#define AGG_ABGR32
+//#define AGG_BGR96
+//#define AGG_BGRA128
 //#define AGG_RGB565
 //#define AGG_RGB555
 #include "pixel_formats.h"
@@ -484,7 +487,7 @@ public:
             int i;
             for(i = 0; i < 256; i++)
             {
-                color_type c = agg::rgba(m_spline_r.spline()[i], 
+                agg::rgba8 c = agg::rgba(m_spline_r.spline()[i], 
                                          m_spline_g.spline()[i],
                                          m_spline_b.spline()[i],
                                          m_spline_a.spline()[i]);

@@ -77,6 +77,62 @@ namespace agg
     };
 
 
+    // Base class for converters.
+    template<class DstFormat, class SrcFormat>
+    struct conv_base
+    {
+        typedef DstFormat dst_format;
+        typedef SrcFormat src_format;
+        typedef typename dst_format::value_type dst_value;
+        typedef typename const src_format::value_type src_value;
+    };
+
+    // Generic pixel converter.
+    template<class DstFormat, class SrcFormat>
+    struct conv_pixel : conv_base<DstFormat, SrcFormat>
+    {
+        void operator()(dst_value* dst, src_value* src) const
+        {
+            // Read a pixel from the source format and write it to the destination format.
+            dst_format::make_pix(dst, src_format::make_color(src));
+        }
+    };
+
+    // Generic row converter. Uses conv_pixel to convert individual pixels.
+    template<class DstFormat, class SrcFormat>
+    struct conv_row : conv_base<DstFormat, SrcFormat>
+    {
+        void operator()(void* dst, const void* src, unsigned width) const
+        {
+            dst_value* dval = static_cast<dst_value*>(dst);
+            src_value* sval = static_cast<src_value*>(src);
+            conv_pixel<DstFormat, SrcFormat> conv;
+            do
+            {
+                conv(dval, sval);
+                dval += DstFormat::pix_step;
+                sval += SrcFormat::pix_step;
+            }
+            while (--width);
+        }
+    };
+
+    // Specialization for case where source and destination formats are identical.
+    template<class Format>
+    struct conv_row<Format, Format>
+    {
+        void operator()(void* dst, const void* src, unsigned width) const
+        {
+            memmove(dst, src, width * Format::pix_width);
+        }
+    };
+
+    // Top-level conversion function, converts one pixel format to any other.
+    template<class DstFormat, class SrcFormat, class RenBuf>
+    void convert(RenBuf* dst, const RenBuf* src)
+    {
+        color_conv(dst, src, conv_row<DstFormat, SrcFormat>());
+    }
 }
 
 

@@ -14,15 +14,15 @@
 #include "agg_rasterizer_outline_aa.h"
 #include "agg_rasterizer_scanline_aa.h"
 #include "agg_span_allocator.h"
-#include "agg_gamma_lut.h"
 #include "agg_pixfmt_rgba.h"
 #include "agg_bounding_rect.h"
 #include "platform/agg_platform_support.h"
 
+#define AGG_BGRA32
+//#define AGG_BGRA128
+#include "pixel_formats.h"
 
 enum { flip_y = false };
-
-typedef agg::pixfmt_bgra32_pre pixfmt;
 
 
 
@@ -253,9 +253,8 @@ class the_application : public agg::platform_support
 
 public:
     agg::compound_shape        m_shape;
-    agg::rgba8                 m_colors[100];
+    color_type                 m_colors[100];
     agg::trans_affine          m_scale;
-    agg::gamma_lut<>           m_gamma;
     int                        m_point_idx;
 
 
@@ -263,8 +262,6 @@ public:
         agg::platform_support(format, flip_y),
         m_point_idx(-1)
     {
-        m_gamma.gamma(2.0);
-
         for(unsigned i = 0; i < 100; i++)
         {
             m_colors[i] = agg::rgba8(
@@ -273,7 +270,6 @@ public:
                 (rand() & 0xFF), 
                 230);
 
-            m_colors[i].apply_gamma_dir(m_gamma);
             m_colors[i].premultiply();
         }
     }
@@ -293,11 +289,11 @@ public:
 
     virtual void on_draw()
     {
-        typedef agg::renderer_base<pixfmt> renderer_base;
+        typedef agg::renderer_base<pixfmt_pre> renderer_base;
         typedef agg::renderer_scanline_aa_solid<renderer_base> renderer_scanline;
         typedef agg::scanline_u8 scanline;
 
-        pixfmt pixf(rbuf_window());
+        pixfmt_pre pixf(rbuf_window());
         renderer_base ren_base(pixf);
         ren_base.clear(agg::rgba(1.0, 1.0, 0.95));
         renderer_scanline ren(ren_base);
@@ -414,11 +410,6 @@ public:
         ras.add_path(ts);
         ren.color(agg::rgba(0,0,0));
         agg::render_scanlines(ras, sl, ren);
-
-        if(m_gamma.gamma() != 1.0)
-        {
-            pixf.apply_gamma_inv(m_gamma);
-        }
     }
 
     
@@ -508,7 +499,7 @@ public:
 
 int agg_main(int argc, char* argv[])
 {
-    the_application app(agg::pix_format_bgra32, flip_y);
+    the_application app(pix_format, flip_y);
     app.caption("AGG Example - Flash Rasterizer");
     const char* fname = "shapes.txt";
     if(argc > 1) fname = argv[1];

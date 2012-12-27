@@ -21,8 +21,12 @@
 #include <string.h>
 #include "platform/agg_platform_support.h"
 #include "platform/win32/agg_win32_bmp.h"
+#include "util/agg_color_conv.h"
 #include "util/agg_color_conv_rgb8.h"
 #include "util/agg_color_conv_rgb16.h"
+#include "agg_pixfmt_gray.h"
+#include "agg_pixfmt_rgb.h"
+#include "agg_pixfmt_rgba.h"
 
 
 namespace agg
@@ -159,6 +163,12 @@ namespace agg
             m_sys_bpp = 8;
             break;
 
+        case pix_format_gray32:
+            m_sys_format = pix_format_gray8;
+            m_bpp = 32;
+            m_sys_bpp = 8;
+            break;
+
         case pix_format_rgb565:
         case pix_format_rgb555:
             m_sys_format = pix_format_rgb555;
@@ -189,6 +199,13 @@ namespace agg
             m_sys_bpp = 24;
             break;
 
+        case pix_format_rgb96:
+        case pix_format_bgr96:
+            m_sys_format = pix_format_bgr24;
+            m_bpp = 96;
+            m_sys_bpp = 24;
+            break;
+
         case pix_format_bgra32:
         case pix_format_abgr32:
         case pix_format_argb32:
@@ -206,6 +223,16 @@ namespace agg
             m_bpp = 64;
             m_sys_bpp = 32;
             break;
+
+        case pix_format_bgra128:
+        case pix_format_abgr128:
+        case pix_format_argb128:
+        case pix_format_rgba128:
+            m_sys_format = pix_format_bgr24;
+            m_bpp = 128;
+            m_sys_bpp = 24;
+            break;
+
         }
         ::QueryPerformanceFrequency(&m_sw_freq);
         ::QueryPerformanceCounter(&m_sw_start);
@@ -239,6 +266,10 @@ namespace agg
 
         case pix_format_gray16:
             color_conv(dst, src, color_conv_gray16_to_gray8());
+            break;
+
+        case pix_format_gray32:
+            convert<pixfmt_gray8, pixfmt_gray32>(dst, src);
             break;
 
         case pix_format_rgb565:
@@ -299,6 +330,30 @@ namespace agg
 
         case pix_format_rgba64:
             color_conv(dst, src, color_conv_rgba64_to_bgra32());
+            break;
+
+        case pix_format_rgb96:
+            convert<pixfmt_bgr24, pixfmt_rgb96>(dst, src);
+            break;
+
+        case pix_format_bgr96:
+            convert<pixfmt_bgr24, pixfmt_bgr96>(dst, src);
+            break;
+
+        case pix_format_bgra128:
+            convert<pixfmt_bgr24, pixfmt_bgra128>(dst, src);
+            break;
+
+        case pix_format_abgr128:
+            convert<pixfmt_bgr24, pixfmt_abgr128>(dst, src);
+            break;
+
+        case pix_format_argb128:
+            convert<pixfmt_bgr24, pixfmt_argb128>(dst, src);
+            break;
+
+        case pix_format_rgba128:
+            convert<pixfmt_bgr24, pixfmt_rgba128>(dst, src);
             break;
         }
     }
@@ -405,6 +460,15 @@ namespace agg
             //case 16: color_conv(dst, &rbuf_tmp, color_conv_rgb555_to_gray16()); break;
             case 24: color_conv(dst, &rbuf_tmp, color_conv_bgr24_to_gray16()); break;
             //case 32: color_conv(dst, &rbuf_tmp, color_conv_bgra32_to_gray16()); break;
+            }
+            break;
+
+        case pix_format_gray32:
+            switch(pmap_tmp.bpp())
+            {
+            //case 16: color_conv(dst, &rbuf_tmp, color_conv_rgb555_to_gray32()); break;
+            case 24: convert<pixfmt_gray32, pixfmt_bgr24>(dst, &rbuf_tmp); break;
+            //case 32: color_conv(dst, &rbuf_tmp, color_conv_bgra32_to_gray32()); break;
             }
             break;
 
@@ -534,6 +598,47 @@ namespace agg
             }
             break;
 
+        case pix_format_rgb96:
+            switch(pmap_tmp.bpp())
+            {
+            case 24: convert<pixfmt_rgb96, pixfmt_bgr24>(dst, &rbuf_tmp); break;
+            }
+            break;
+
+        case pix_format_bgr96:
+            switch(pmap_tmp.bpp())
+            {
+            case 24: convert<pixfmt_bgr96, pixfmt_bgr24>(dst, &rbuf_tmp); break;
+            }
+            break;
+
+        case pix_format_abgr128:
+            switch(pmap_tmp.bpp())
+            {
+            case 24: convert<pixfmt_abgr128, pixfmt_bgr24>(dst, &rbuf_tmp); break;
+            }
+            break;
+
+        case pix_format_argb128:
+            switch(pmap_tmp.bpp())
+            {
+            case 24: convert<pixfmt_argb128, pixfmt_bgr24>(dst, &rbuf_tmp); break;
+            }
+            break;
+
+        case pix_format_bgra128:
+            switch(pmap_tmp.bpp())
+            {
+            case 24: convert<pixfmt_bgra128, pixfmt_bgr24>(dst, &rbuf_tmp); break;
+            }
+            break;
+
+        case pix_format_rgba128:
+            switch(pmap_tmp.bpp())
+            {
+            case 24: convert<pixfmt_rgba128, pixfmt_bgr24>(dst, &rbuf_tmp); break;
+            }
+            break;
         }
 
         return true;
@@ -630,7 +735,7 @@ namespace agg
         HDC paintDC;
 
 
-        void* user_data = reinterpret_cast<void*>(::GetWindowLong(hWnd, GWL_USERDATA));
+        void* user_data = reinterpret_cast<void*>(::GetWindowLongPtr(hWnd, GWLP_USERDATA));
         platform_support* app = 0;
 
         if(user_data)
@@ -1053,7 +1158,7 @@ namespace agg
                      height + (height - (rct.bottom - rct.top)),
                      FALSE);
    
-        ::SetWindowLong(m_specific->m_hwnd, GWL_USERDATA, (LONG)this);
+        ::SetWindowLongPtr(m_specific->m_hwnd, GWLP_USERDATA, (LONG)this);
         m_specific->create_pmap(width, height, &m_rbuf_window);
         m_initial_width = width;
         m_initial_height = height;
@@ -1120,7 +1225,7 @@ namespace agg
             char fn[1024];
             strcpy(fn, file);
             int len = strlen(fn);
-            if(len < 4 || stricmp(fn + len - 4, ".BMP") != 0)
+            if(len < 4 || _stricmp(fn + len - 4, ".BMP") != 0)
             {
                 strcat(fn, ".bmp");
             }
@@ -1139,7 +1244,7 @@ namespace agg
             char fn[1024];
             strcpy(fn, file);
             int len = strlen(fn);
-            if(len < 4 || stricmp(fn + len - 4, ".BMP") != 0)
+            if(len < 4 || _stricmp(fn + len - 4, ".BMP") != 0)
             {
                 strcat(fn, ".bmp");
             }

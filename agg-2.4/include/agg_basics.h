@@ -528,7 +528,6 @@ namespace agg
     {
         return fabs(v1 - v2) <= double(epsilon);
     }
-
 }
 
 

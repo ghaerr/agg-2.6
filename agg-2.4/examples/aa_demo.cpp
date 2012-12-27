@@ -8,6 +8,17 @@
 #include "ctrl/agg_slider_ctrl.h"
 #include "ctrl/agg_cbox_ctrl.h"
 
+// Set LINEAR_RGB=1 to use a linear format. 
+// In that case the rendering is already gamma-correct, 
+// so we'll hide the gamma slider control.
+#define LINEAR_RGB 0
+
+#if LINEAR_RGB
+#define AGG_BGR96
+#else
+#define AGG_BGR24 
+#endif
+#include "pixel_formats.h"
 
 enum flip_y_e { flip_y = true };
 
@@ -133,20 +144,21 @@ public:
         m_x[2] = 143;   m_y[2] = 310;
 
         add_ctrl(m_slider1);
-        add_ctrl(m_slider2);
-
         m_slider1.range(8.0, 100.0);
         m_slider1.num_steps(23);
         m_slider1.value(32.0);
+        m_slider1.label("Pixel size=%1.0f");
+        m_slider1.no_transform();
 
+#if LINEAR_RGB
+        m_slider2.value(1.0);
+#else
+        add_ctrl(m_slider2);
         m_slider2.range(0.1, 3.0);
         m_slider2.value(1.0);
-
-        m_slider1.label("Pixel size=%1.0f");
         m_slider2.label("Gamma=%4.3f");
-
-        m_slider1.no_transform();
         m_slider2.no_transform();
+#endif
     }
 
 
@@ -162,9 +174,9 @@ public:
 
     virtual void on_draw()
     {
-        typedef agg::renderer_base<agg::pixfmt_bgr24> ren_base;
+        typedef agg::renderer_base<pixfmt> ren_base;
 
-        agg::pixfmt_bgr24 pixf(rbuf_window());
+        pixfmt pixf(rbuf_window());
         ren_base ren(pixf);
         agg::scanline_u8 sl;
 
@@ -215,7 +227,9 @@ public:
 
         // Render the controls
         agg::render_ctrl(ras, sl, ren, m_slider1);
+#if !LINEAR_RGB
         agg::render_ctrl(ras, sl, ren, m_slider2);
+#endif
     }
 
 
@@ -292,7 +306,7 @@ public:
 
 int agg_main(int argc, char* argv[])
 {
-    the_application app(agg::pix_format_bgr24, flip_y);
+    the_application app(pix_format, flip_y);
     app.caption("AGG Example. Anti-Aliasing Demo");
 
     if(app.init(600, 400, agg::window_resize))

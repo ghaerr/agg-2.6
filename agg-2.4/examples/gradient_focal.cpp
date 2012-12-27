@@ -13,13 +13,17 @@
 #include "ctrl/agg_slider_ctrl.h"
 #include "platform/agg_platform_support.h"
 
+// Set LINEAR_RGB=1 to use a linear format. 
+// In that case the rendering is already gamma-correct, 
+// so we'll hide the gamma slider control.
+#define LINEAR_RGB 0
 
-#include "agg_pixfmt_rgb.h"
-#define pix_format agg::pix_format_bgr24
-typedef agg::pixfmt_bgr24 pixfmt;
-typedef agg::rgba8 color_type;
-typedef agg::order_bgr component_order;
-
+#if LINEAR_RGB
+#define AGG_BGR96
+#else
+#define AGG_BGR24
+#endif
+#include "pixel_formats.h"
 
 enum { flip_y = true };
 
@@ -57,11 +61,15 @@ public:
         m_gamma(5.0, 5.0, 340.0, 12.0, !flip_y),
         m_mouse_x(200), m_mouse_y(200)
     {
+#if LINEAR_RGB
+        m_gamma.value(1.0);
+#else
         m_gamma.range(0.5, 2.5);
         m_gamma.value(1.8);
         m_gamma.label("Gamma = %.3f");
         add_ctrl(m_gamma);
         m_gamma.no_transform();
+#endif
 
         m_gamma_lut.gamma(m_gamma.value());
         m_old_gamma = m_gamma.value();
@@ -188,6 +196,7 @@ public:
         m_rasterizer.add_path(pt);
         agg::render_scanlines_aa_solid(m_rasterizer, m_scanline, rb, agg::rgba(0,0,0));
 
+#if !LINEAR_RGB
         // Show the controls
         //------------------
         agg::render_ctrl(m_rasterizer, m_scanline, rb, m_gamma);
@@ -196,6 +205,7 @@ public:
         // (transform the colors to the perceptually uniform space)
         //------------------
         pixf.apply_gamma_inv(m_gamma_lut);
+#endif
     }
 
 

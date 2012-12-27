@@ -14,6 +14,7 @@
 #include "platform/agg_platform_support.h"
 
 #define AGG_BGR24
+//#define AGG_BGR96
 #include "pixel_formats.h"
 
 

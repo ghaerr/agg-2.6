@@ -36,7 +36,7 @@ namespace agg
                                      const color_type& bk) : 
             m_pixf(&pixf)
         {
-            pixfmt_type::make_pix(m_bk_buf, bk);
+            pixfmt_type::make_pix((value_type*)m_bk_buf, bk);
         }
 
         void attach(const pixfmt_type& pixf)
@@ -46,7 +46,7 @@ namespace agg
 
         void background_color(const color_type& bk)
         {
-            pixfmt_type::make_pix(m_bk_buf, bk);
+            pixfmt_type::make_pix((value_type*)m_bk_buf, bk);
         }
 
     private:
@@ -96,7 +96,7 @@ namespace agg
 
     private:
         const pixfmt_type* m_pixf;
-        int8u              m_bk_buf[8];
+        int8u              m_bk_buf[pix_width];
         int                m_x, m_x0, m_y;
         const int8u*       m_pix_ptr;
     };

@@ -106,6 +106,7 @@ namespace agg
         pix_format_bw,             // 1 bit per color B/W
         pix_format_gray8,          // Simple 256 level grayscale
         pix_format_gray16,         // Simple 65535 level grayscale
+        pix_format_gray32,         // Grayscale, one 32-bit float per pixel
         pix_format_rgb555,         // 15 bit rgb. Depends on the byte ordering!
         pix_format_rgb565,         // 16 bit rgb. Depends on the byte ordering!
         pix_format_rgbAAA,         // 30 bit rgb. Depends on the byte ordering!
@@ -120,10 +121,16 @@ namespace agg
         pix_format_bgra32,         // B-G-R-A, native win32 BMP format
         pix_format_rgb48,          // R-G-B, 16 bits per color component
         pix_format_bgr48,          // B-G-R, native win32 BMP format.
+        pix_format_rgb96,          // R-G-B, one 32-bit float per color component
+        pix_format_bgr96,          // B-G-R, one 32-bit float per color component
         pix_format_rgba64,         // R-G-B-A, 16 bits byte per color component
         pix_format_argb64,         // A-R-G-B, native MAC format
         pix_format_abgr64,         // A-B-G-R, one byte per color component
         pix_format_bgra64,         // B-G-R-A, native win32 BMP format
+        pix_format_rgba128,         // R-G-B-A, one 32-bit float per color component
+        pix_format_argb128,         // A-R-G-B, one 32-bit float per color component
+        pix_format_abgr128,         // A-B-G-R, one 32-bit float per color component
+        pix_format_bgra128,         // B-G-R-A, one 32-bit float per color component
   
         end_of_pix_formats
     };

@@ -13,17 +13,16 @@
 #include "ctrl/agg_slider_ctrl.h"
 #include "ctrl/agg_rbox_ctrl.h"
 
+#define AGG_BGRA32
+//#define AGG_BGRA128
+#include "pixel_formats.h"
 
 enum flip_y_e { flip_y = true };
 
-typedef agg::rgba8 color;
-typedef agg::order_bgra order;
-typedef agg::pixel32_type pixel_type;
-#define pix_format agg::pix_format_bgra32
-
-
+typedef color_type color;
+typedef component_order order;
 typedef agg::blender_rgba<color, order> prim_blender_type; 
-typedef agg::pixfmt_alpha_blend_rgba<prim_blender_type, agg::rendering_buffer, pixel_type> prim_pixfmt_type;
+typedef agg::pixfmt_alpha_blend_rgba<prim_blender_type, agg::rendering_buffer> prim_pixfmt_type;
 typedef agg::renderer_base<prim_pixfmt_type> prim_ren_base_type;
 
 
@@ -31,10 +30,10 @@ void force_comp_op_link()
 {
     // For unknown reason Digital Mars C++ doesn't want to link these 
     // functions if they are not specified explicitly. 
-    agg::int8u p[4] = {0};
-    agg::comp_op_rgba_invert_rgb <color, order>::blend_pix(p,0,0,0,0,0);
-    agg::comp_op_rgba_invert     <color, order>::blend_pix(p,0,0,0,0,0);
-    agg::comp_op_rgba_contrast   <color, order>::blend_pix(p,0,0,0,0,0);
+    color::value_type p[4] = {0};
+    //agg::comp_op_rgba_invert_rgb <color, order>::blend_pix(p,0,0,0,0,0);
+    //agg::comp_op_rgba_invert     <color, order>::blend_pix(p,0,0,0,0,0);
+    //agg::comp_op_rgba_contrast   <color, order>::blend_pix(p,0,0,0,0,0);
     agg::comp_op_rgba_darken     <color, order>::blend_pix(p,0,0,0,0,0);
     agg::comp_op_rgba_lighten    <color, order>::blend_pix(p,0,0,0,0,0);
     agg::comp_op_rgba_color_dodge<color, order>::blend_pix(p,0,0,0,0,0);
@@ -47,7 +46,7 @@ void force_comp_op_link()
     agg::comp_op_rgba_dst_atop   <color, order>::blend_pix(p,0,0,0,0,0);
     agg::comp_op_rgba_xor        <color, order>::blend_pix(p,0,0,0,0,0);
     agg::comp_op_rgba_plus       <color, order>::blend_pix(p,0,0,0,0,0);
-    agg::comp_op_rgba_minus      <color, order>::blend_pix(p,0,0,0,0,0);
+    //agg::comp_op_rgba_minus      <color, order>::blend_pix(p,0,0,0,0,0);
     agg::comp_op_rgba_multiply   <color, order>::blend_pix(p,0,0,0,0,0);
     agg::comp_op_rgba_screen     <color, order>::blend_pix(p,0,0,0,0,0);
     agg::comp_op_rgba_overlay    <color, order>::blend_pix(p,0,0,0,0,0);
@@ -100,7 +99,7 @@ public:
         agg::platform_support(format, flip_y),
         m_alpha_dst(5, 5,    400, 11,    !flip_y),
         m_alpha_src(5, 5+15, 400, 11+15, !flip_y),
-        m_comp_op(420, 5.0, 420+170.0, 395.0, !flip_y)
+        m_comp_op(420, 5.0, 420+170.0, 340.0, !flip_y)
     {
         m_alpha_dst.label("Dst Alpha=%.2f");
         m_alpha_dst.value(1.0);
@@ -124,7 +123,7 @@ public:
         m_comp_op.add_item("dst-atop");
         m_comp_op.add_item("xor");
         m_comp_op.add_item("plus");
-        m_comp_op.add_item("minus");
+        //m_comp_op.add_item("minus");
         m_comp_op.add_item("multiply");
         m_comp_op.add_item("screen");
         m_comp_op.add_item("overlay");
@@ -136,9 +135,9 @@ public:
         m_comp_op.add_item("soft-light");
         m_comp_op.add_item("difference");
         m_comp_op.add_item("exclusion");
-        m_comp_op.add_item("contrast");
-        m_comp_op.add_item("invert");
-        m_comp_op.add_item("invert-rgb");
+        //m_comp_op.add_item("contrast");
+        //m_comp_op.add_item("invert");
+        //m_comp_op.add_item("invert-rgb");
         m_comp_op.cur_item(3);
         add_ctrl(m_comp_op);
     }

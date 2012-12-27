@@ -22,15 +22,19 @@
 #include "agg_span_gradient.h"
 #include "agg_span_interpolator_linear.h"
 #include "agg_pixfmt_rgb.h"
+#include "agg_pixfmt_rgba.h"
 #include "ctrl/agg_slider_ctrl.h"
 #include "ctrl/agg_rbox_ctrl.h"
 #include "ctrl/agg_cbox_ctrl.h"
 #include "platform/agg_platform_support.h"
 
+#define AGG_BGR24
+//#define AGG_BGR96
+#include "pixel_formats.h"
+
 enum flip_y_e { flip_y = true };
 
-
-typedef agg::pixfmt_bgr24 pixfmt;
+//typedef agg::pixfmt_bgra128 pixfmt;
 typedef pixfmt::color_type color_type;
 typedef agg::renderer_base<pixfmt> base_renderer;
 typedef agg::renderer_primitives<base_renderer> primitives_renderer;
@@ -910,7 +914,7 @@ public:
 
 int agg_main(int argc, char* argv[])
 {
-    the_application app(agg::pix_format_bgr24, flip_y);
+    the_application app(pix_format, flip_y);
     app.caption("AGG Example. Line Join");
 
     if(app.init(600+100, 500+30, agg::window_resize))

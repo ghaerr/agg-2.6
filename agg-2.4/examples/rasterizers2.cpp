@@ -19,7 +19,7 @@
 #include "ctrl/agg_cbox_ctrl.h"
 #include "platform/agg_platform_support.h"
 
-#define AGG_BGR24 
+#define AGG_BGR24
 //#define AGG_RGB24
 //#define AGG_BGRA32 
 //#define AGG_RGBA32 

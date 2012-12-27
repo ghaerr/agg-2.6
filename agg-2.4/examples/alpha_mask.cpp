@@ -16,6 +16,11 @@
 #include "agg_ellipse.h"
 #include "platform/agg_platform_support.h"
 
+#define AGG_BGR24
+//#define AGG_BGR48
+//#define AGG_BGR96
+#include "pixel_formats.h"
+
 enum flip_y_e { flip_y = true };
 
 agg::path_storage g_path;
@@ -115,10 +120,10 @@ public:
         int height = rbuf_window().height();
 
         typedef agg::scanline_u8_am<agg::alpha_mask_gray8> scanline_type;
-        typedef agg::renderer_base<agg::pixfmt_bgr24> ren_base;
+        typedef agg::renderer_base<pixfmt> ren_base;
         typedef agg::renderer_scanline_aa_solid<ren_base> renderer;
 
-        agg::pixfmt_bgr24 pixf(rbuf_window());
+        pixfmt pixf(rbuf_window());
         ren_base rb(pixf);
         renderer r(rb);
 
@@ -181,7 +186,7 @@ public:
 
 int agg_main(int argc, char* argv[])
 {
-    the_application app(agg::pix_format_bgr24, flip_y);
+    the_application app(pix_format, flip_y);
     app.caption("AGG Example. Lion with Alpha-Masking");
 
     if(app.init(512, 400, agg::window_resize))

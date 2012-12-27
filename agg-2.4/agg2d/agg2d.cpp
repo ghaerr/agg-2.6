@@ -1420,7 +1420,7 @@ public:
     void static render(Agg2D& gr, BaseRenderer& renBase, SolidRenderer& renSolid, bool fillColor)
     {
 		// JME
-		typedef agg::span_allocator<agg::rgba8> span_allocator_type;
+		typedef agg::span_allocator<Agg2D::ColorType> span_allocator_type;
         //- typedef agg::renderer_scanline_aa<BaseRenderer, Agg2D::LinearGradientSpan> RendererLinearGradient;
         typedef agg::renderer_scanline_aa<BaseRenderer,
 										span_allocator_type,
@@ -1521,23 +1521,22 @@ public:
                                       m_color.r,
                                       m_color.g,
                                       m_color.b,
-                                      Agg2D::Color::base_mask,
+                                      Agg2D::Color::full_value(),
                                       agg::cover_full);
                     ++s2;
                 }
                 while(--l2);
             }
-            if(m_color.a < Agg2D::Color::base_mask)
+            if(!m_color.is_opaque())
             {
                 l2 = len;
                 s2 = span;
-                unsigned a = m_color.a;
                 do
                 {
-                    s2->r = (s2->r * a) >> Agg2D::Color::base_shift;
-                    s2->g = (s2->g * a) >> Agg2D::Color::base_shift;
-                    s2->b = (s2->b * a) >> Agg2D::Color::base_shift;
-                    s2->a = (s2->a * a) >> Agg2D::Color::base_shift;
+                    s2->r = Agg2D::Color::multiply(s2->r, m_color.a);
+                    s2->g = Agg2D::Color::multiply(s2->g, m_color.a);
+                    s2->b = Agg2D::Color::multiply(s2->b, m_color.a);
+                    s2->a = Agg2D::Color::multiply(s2->a, m_color.a);
                     ++s2;
                 }
                 while(--l2);
@@ -1557,7 +1556,7 @@ public:
     void static render(Agg2D& gr, BaseRenderer& renBase, SolidRenderer& renSolid, Rasterizer& ras, Scanline& sl)
     {
 		// JME
-		typedef agg::span_allocator<agg::rgba8> span_allocator_type;
+		typedef agg::span_allocator<Agg2D::ColorType> span_allocator_type;
         typedef agg::renderer_scanline_aa<BaseRenderer,span_allocator_type,Agg2D::LinearGradientSpan> RendererLinearGradient;
         typedef agg::renderer_scanline_aa<BaseRenderer,span_allocator_type,Agg2D::RadialGradientSpan> RendererRadialGradient;
 
