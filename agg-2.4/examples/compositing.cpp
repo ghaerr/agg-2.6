@@ -238,7 +238,7 @@ public:
 
         rb.blend_from(prim_pixfmt_type(rbuf_img(1)), 
                       0, 250, 180, 
-                      unsigned(m_alpha_dst.value() * 255));
+                      agg::cover_type(m_alpha_dst.value() * agg::cover_full));
 
         circle(rb, 
                agg::rgba8(0xFD, 0xF0, 0x6F, unsigned(m_alpha_dst.value() * 255)), 
@@ -248,28 +248,16 @@ public:
 
         ren_pixf.comp_op(m_comp_op.cur_item());
 
-        if(m_comp_op.cur_item() == 25) // Contrast
-        {
-            double v = m_alpha_src.value();
-            src_shape(renderer, 
-                      agg::rgba(v, v, v), 
-                      agg::rgba(v, v, v),
-                      300+50, 100+24*3, 107+50, 100+79*3);
-        }
-        else
-        {
-
-            src_shape(renderer, 
-                      agg::rgba8(0x7F, 0xC1, 0xFF, unsigned(m_alpha_src.value() * 255)), 
-                      agg::rgba8(0x05, 0x00, 0x5F, unsigned(m_alpha_src.value() * 255)),
-                      300+50, 100+24*3, 107+50, 100+79*3);
+        src_shape(renderer, 
+                    agg::rgba8(0x7F, 0xC1, 0xFF, unsigned(m_alpha_src.value() * 255)), 
+                    agg::rgba8(0x05, 0x00, 0x5F, unsigned(m_alpha_src.value() * 255)),
+                    300+50, 100+24*3, 107+50, 100+79*3);
 /*
-            src_shape(renderer, 
-                      agg::rgba8(0xFF, 0xFF, 0xFF, unsigned(m_alpha_src.value() * 255)), 
-                      agg::rgba8(0xFF, 0xFF, 0xFF, unsigned(m_alpha_src.value() * 255)),
-                      300+50, 100+24*3, 107+50, 100+79*3);
+        src_shape(renderer, 
+                    agg::rgba8(0xFF, 0xFF, 0xFF, unsigned(m_alpha_src.value() * 255)), 
+                    agg::rgba8(0xFF, 0xFF, 0xFF, unsigned(m_alpha_src.value() * 255)),
+                    300+50, 100+24*3, 107+50, 100+79*3);
 */
-        }
     }
 
 

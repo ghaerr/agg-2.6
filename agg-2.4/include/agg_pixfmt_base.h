@@ -22,6 +22,18 @@
 
 namespace agg
 {
+    struct pixfmt_gray_tag
+    {
+    };
+
+    struct pixfmt_rgb_tag
+    {
+    };
+
+    struct pixfmt_rgba_tag
+    {
+    };
+
     //--------------------------------------------------------------blender_base
     template<class ColorT, class Order = void> 
     struct blender_base

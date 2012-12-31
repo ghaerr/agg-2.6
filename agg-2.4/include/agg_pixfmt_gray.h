@@ -116,6 +116,7 @@ namespace agg
     class pixfmt_alpha_blend_gray
     {
     public:
+        typedef pixfmt_gray_tag pixfmt_category;
         typedef RenBuf   rbuf_type;
         typedef typename rbuf_type::row_data row_data;
         typedef Blender  blender_type;
@@ -125,9 +126,14 @@ namespace agg
         typedef typename color_type::calc_type    calc_type;
         enum 
         {
+            num_components = 1,
             pix_width = sizeof(value_type) * Step,
             pix_step = Step,
             pix_offset = Offset,
+        };
+        struct pixel_type
+        {
+            value_type c[num_components];
         };
 
     private:
@@ -221,6 +227,20 @@ namespace agg
         AGG_INLINE value_type* pix_value_ptr(int x, int y, unsigned len) 
         {
             return (value_type*)m_rbuf->row_ptr(x, y, len) + x * pix_step + pix_offset;
+        }
+
+        //--------------------------------------------------------------------
+        AGG_INLINE static void set_plain_color(value_type* p, color_type c)
+        {
+            // Grayscale formats are implicitly premultiplied.
+            c.premultiply();
+            *p = c.v;
+        }
+
+        //--------------------------------------------------------------------
+        AGG_INLINE static color_type get_plain_color(const value_type* p)
+        {
+            return color_type(*p);
         }
 
         //--------------------------------------------------------------------

@@ -94,7 +94,7 @@ namespace agg
         void operator()(dst_value* dst, src_value* src) const
         {
             // Read a pixel from the source format and write it to the destination format.
-            dst_format::make_pix(dst, src_format::make_color(src));
+            dst_format::set_plain_color(dst, src_format::get_plain_color(src));
         }
     };
 

@@ -144,26 +144,28 @@ namespace agg
             p[Order::R] = multiply(cr, alpha);
             p[Order::G] = multiply(cg, alpha);
             p[Order::B] = multiply(cb, alpha);
-            p[Order::A] = (alpha);
+            p[Order::A] = alpha;
         }
 
         //--------------------------------------------------------------------
-        static AGG_INLINE void make_pix(value_type* p, const color_type& c)
+        static AGG_INLINE void set_plain_color(value_type* p, color_type c)
         {
-            make_pix(p, c.r, c.g, c.b, c.a);
+            c.premultiply();
+            p[Order::R] = c.r;
+            p[Order::G] = c.g;
+            p[Order::B] = c.b;
+            p[Order::A] = c.a;
         }
 
         //--------------------------------------------------------------------
-        static AGG_INLINE color_type make_color(const value_type* p)
+        static AGG_INLINE color_type get_plain_color(const value_type* p)
         {
-            // Buffer is premultiplied, so demultiply.
             return color_type(
-                p[Order::R], 
-                p[Order::G], 
-                p[Order::B], 
+                p[Order::R],
+                p[Order::G],
+                p[Order::B],
                 p[Order::A]).demultiply();
         }
-
     };
 
 
@@ -197,29 +199,22 @@ namespace agg
         }
 
         //--------------------------------------------------------------------
-        static AGG_INLINE void make_pix(value_type* p, 
-            value_type cr, value_type cg, value_type cb, value_type alpha)
+        static AGG_INLINE void set_plain_color(value_type* p, color_type c)
         {
-            p[Order::R] = cr;
-            p[Order::G] = cg;
-            p[Order::B] = cb;
-            p[Order::A] = alpha;
+            c.premultiply();
+            p[Order::R] = c.r;
+            p[Order::G] = c.g;
+            p[Order::B] = c.b;
+            p[Order::A] = c.a;
         }
 
         //--------------------------------------------------------------------
-        static AGG_INLINE void make_pix(value_type* p, const color_type& c)
+        static AGG_INLINE color_type get_plain_color(const value_type* p)
         {
-            make_pix(p, c.r, c.g, c.b, c.a);
-        }
-
-        //--------------------------------------------------------------------
-        static AGG_INLINE color_type make_color(const value_type* p)
-        {
-            // Buffer is premultiplied, so demultiply.
             return color_type(
-                p[Order::R], 
-                p[Order::G], 
-                p[Order::B], 
+                p[Order::R],
+                p[Order::G],
+                p[Order::B],
                 p[Order::A]).demultiply();
         }
     };
@@ -258,28 +253,21 @@ namespace agg
         }
 
         //--------------------------------------------------------------------
-        static AGG_INLINE void make_pix(value_type* p, 
-            value_type cr, value_type cg, value_type cb, value_type alpha)
+        static AGG_INLINE void set_plain_color(value_type* p, color_type c)
         {
-            p[Order::R] = cr;
-            p[Order::G] = cg;
-            p[Order::B] = cb;
-            p[Order::A] = alpha;
+            p[Order::R] = c.r;
+            p[Order::G] = c.g;
+            p[Order::B] = c.b;
+            p[Order::A] = c.a;
         }
 
         //--------------------------------------------------------------------
-        static AGG_INLINE void make_pix(value_type* p, const color_type& c)
-        {
-            make_pix(p, c.r, c.g, c.b, c.a);
-        }
-
-        //--------------------------------------------------------------------
-        static AGG_INLINE color_type make_color(const value_type* p)
+        static AGG_INLINE color_type get_plain_color(const value_type* p)
         {
             return color_type(
-                p[Order::R], 
-                p[Order::G], 
-                p[Order::B], 
+                p[Order::R],
+                p[Order::G],
+                p[Order::B],
                 p[Order::A]);
         }
     };
@@ -1289,6 +1277,7 @@ namespace agg
     class pixfmt_alpha_blend_rgba
     {
     public:
+        typedef pixfmt_rgba_tag pixfmt_category;
         typedef RenBuf   rbuf_type;
         typedef typename rbuf_type::row_data row_data;
         typedef Blender  blender_type;
@@ -1299,12 +1288,13 @@ namespace agg
         typedef copy_or_blend_rgba_wrapper<blender_type> cob_type;
         enum 
         {
+            num_components = 4,
             pix_step = 4,
-            pix_width  = sizeof(value_type) * pix_step,
+            pix_width = sizeof(value_type) * pix_step,
         };
         struct pixel_type
         {
-            value_type c[pix_step];
+            value_type c[num_components];
         };
 
         //--------------------------------------------------------------------
@@ -1363,17 +1353,34 @@ namespace agg
         }
 
         //--------------------------------------------------------------------
+        AGG_INLINE static void set_plain_color(value_type* p, color_type c)
+        {
+            blender_type::set_plain_color(p, c);
+        }
+
+        //--------------------------------------------------------------------
+        AGG_INLINE static color_type get_plain_color(const value_type* p)
+        {
+            return blender_type::get_plain_color(p);
+        }
+
+        //--------------------------------------------------------------------
         AGG_INLINE static void make_pix(value_type* p, const color_type& c)
         {
-            // Let blender decide whether to premultiply.
-            blender_type::make_pix(p, c.r, c.g, c.b, c.a);
+            p[order_type::R] = c.r;
+            p[order_type::G] = c.g;
+            p[order_type::B] = c.b;
+            p[order_type::A] = c.a;
         }
 
         //--------------------------------------------------------------------
         AGG_INLINE static color_type make_color(const value_type* p)
         {
-            // Let blender decide whether to demultiply.
-            return blender_type::make_color(p);
+            return color_type(
+                p[order_type::R],
+                p[order_type::G],
+                p[order_type::B],
+                p[order_type::A]);
         }
 
         //--------------------------------------------------------------------
@@ -1913,6 +1920,7 @@ namespace agg
     template<class Blender, class RenBuf> class pixfmt_custom_blend_rgba
     {
     public:
+        typedef pixfmt_rgba_tag pixfmt_category;
         typedef RenBuf   rbuf_type;
         typedef typename rbuf_type::row_data row_data;
         typedef Blender  blender_type;
@@ -1920,10 +1928,15 @@ namespace agg
         typedef typename blender_type::order_type order_type;
         typedef typename color_type::value_type value_type;
         typedef typename color_type::calc_type calc_type;
-        enum
+        enum 
         {
+            num_components = 4,
             pix_step = 4,
-            pix_width  = sizeof(value_type) * pix_step
+            pix_width  = sizeof(value_type) * pix_step,
+        };
+        struct pixel_type
+        {
+            value_type c[num_components];
         };
 
 
@@ -1990,17 +2003,34 @@ namespace agg
         unsigned comp_op() const  { return m_comp_op; }
 
         //--------------------------------------------------------------------
+        AGG_INLINE static void set_plain_color(value_type* p, color_type c)
+        {
+            blender_type::set_plain_color(p, c);
+        }
+
+        //--------------------------------------------------------------------
+        AGG_INLINE static color_type get_plain_color(const value_type* p)
+        {
+            return blender_type::get_plain_color(p);
+        }
+
+        //--------------------------------------------------------------------
         AGG_INLINE static void make_pix(value_type* p, const color_type& c)
         {
-            // Let blender decide whether to premultiply.
-            blender_type::make_pix(p, c.r, c.g, c.b, c.a);
+            p[order_type::R] = c.r;
+            p[order_type::G] = c.g;
+            p[order_type::B] = c.b;
+            p[order_type::A] = c.a;
         }
 
         //--------------------------------------------------------------------
         AGG_INLINE static color_type make_color(const value_type* p)
         {
-            // Let blender decide whether to demultiply.
-            return blender_type::make_color(p);
+            return color_type(
+                p[order_type::R],
+                p[order_type::G],
+                p[order_type::B],
+                p[order_type::A]);
         }
 
         //--------------------------------------------------------------------

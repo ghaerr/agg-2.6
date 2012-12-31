@@ -136,7 +136,7 @@ namespace agg
         //--------------------------------------------------------------------
         static AGG_INLINE value_type demultiply(value_type a, value_type b) 
         {
-            return b > 0 ? value_type(a / b) : 0; 
+            return (b == 0) ? 0 : value_type(a / b);
         }
 
         //--------------------------------------------------------------------
@@ -437,7 +437,7 @@ namespace agg
         //--------------------------------------------------------------------
         static AGG_INLINE value_type demultiply(value_type a, value_type b) 
         {
-            return b > 0 ? value_type(a / b) : 0; 
+            return (b == 0) ? 0 : value_type(a / b);
         }
 
         //--------------------------------------------------------------------
@@ -742,9 +742,7 @@ namespace agg
         //--------------------------------------------------------------------
         static AGG_INLINE value_type demultiply(value_type a, value_type b) 
         {
-            if (b <= 0) return 0;
-            else if (b >= 1) return a;
-            else return value_type(a / b);
+            return (b == 0) ? 0 : value_type(a / b);
         }
 
         //--------------------------------------------------------------------
