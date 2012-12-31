@@ -1286,6 +1286,156 @@ namespace agg
         }
     };
 
+    //================================================slight_blur
+    // Special-purpose filter for applying a Gaussian blur with a radius small enough 
+    // that the blur only affects adjacent pixels. The specified radius should be between 
+    // 0 and 1. The Gaussian curve is sampled at 1.5 standard deviations either side of 
+    // the center. At 3 standard deviations, the contribution would be less than 0.005, 
+    // i.e. less than half a percent. This filter is useful for smoothing artefacts caused 
+    // by detail rendered at the pixel scale, e.g. single-pixel lines. Note that the filter 
+    // should only be used with premultiplied pixel formats (or those without alpha).
+    // See the "line_thickness" example for a demonstration.
+    template<class PixFmt>
+    class slight_blur
+    {
+    public:
+        typedef typename PixFmt::pixel_type pixel_type;
+        typedef typename PixFmt::value_type value_type;
+    
+        slight_blur(double r = 1)
+        {
+            radius(r);
+        }
+
+        void radius(double r)
+        {
+            if (r > 0)
+            {
+		        // Sample the gaussian curve at 0 and 1.5 standard deviations. 
+                // At 3 standard deviations, the response is < 0.005.
+		        double pi = 3.14159;
+                double n = 1.5 / r;
+		        m_g0 = 1 / sqrt(2 * pi);
+		        m_g1 = m_g0 * exp(-n * n);
+
+		        // Normalize.
+		        double sum = m_g0 + 2 * m_g1;
+		        m_g0 /= sum;
+		        m_g1 /= sum;
+            }
+            else
+            {
+                m_g0 = 1;
+                m_g1 = 0;
+            }
+        }
+
+        void blur(PixFmt& img)
+        {
+            int w = img.width();
+            int h = img.height();
+
+            if (w < 3 || h < 3) return;
+
+            // Allocate 3 rows of buffer space.
+            m_buf.allocate(w * 3);
+
+            // Set up row pointers
+            pixel_type * begin = &m_buf[0];
+            pixel_type * r0 = begin;
+            pixel_type * r1 = r0 + w;
+            pixel_type * r2 = r1 + w;
+            pixel_type * end = r2 + w;
+
+            // Set up first two input rows.
+            calc_row(img, 0, r0);
+            memcpy(r1, r0, w * PixFmt::pix_width);
+
+            for (int y = 0; ; )
+            {
+                // Get desination row pointer.
+                pixel_type* p = (pixel_type*)img.pix_value_ptr(0, y, w);
+
+                if (y + 1 < h)
+                {
+                    calc_row(img, y + 1, r2);
+                }
+                else
+                {
+                    memcpy(r2, r1, w * PixFmt::pix_width); // duplicate bottom row
+                }
+
+                // Combine blurred rows into destination.
+                for (int x = 0; x < w; ++x)
+                {
+                    calc_pixel(*r0++, *r1++, *r2++, *p++);
+                }
+
+                if (++y == h) break;
+
+                // Wrap bottom row pointer around to top of buffer.
+                if (r2 == end) r2 = begin;
+                else if (r1 == end) r1 = begin;
+                else if (r0 == end) r0 = begin;
+            }
+        }
+
+    private:
+        void calc_row(PixFmt& img, int y, pixel_type* row)
+        {
+            int w = img.width();
+            int wm = w - 1;
+            int i0 = 0;
+            int i1 = 1;
+            int i2 = 2;
+
+            pixel_type* p = (pixel_type*)img.pix_value_ptr(0, y, w);
+
+            pixel_type c[3];
+            c[0] = *p;
+            c[1] = c[0];
+
+            for (int x = 0; x < wm; ++x)
+            {
+                c[i2] = *++p;
+
+                calc_pixel(c[i0++], c[i1++], c[i2++], row[x]);
+
+                if (i0 > 2) i0 = 0;
+                else if (i1 > 2) i1 = 0;
+                else if (i2 > 2) i2 = 0;
+            }
+
+            calc_pixel(c[i0], c[i1], c[i1], row[wm]);
+        }
+
+        void calc_pixel(
+            pixel_type const & c1,
+            pixel_type const & c2,
+            pixel_type const & c3,
+            pixel_type & x)
+        {
+            for (int i = 0; i < pixfmt::num_components; ++i)
+            {
+                x.c[i] = calc_value(c1.c[i], c2.c[i], c3.c[i]);
+            }
+        }
+
+        value_type calc_value(value_type v1, value_type v2, value_type v3)
+        {
+            return value_type(m_g1 * v1 + m_g0 * v2 + m_g1 * v3);
+        }
+
+        double m_g0, m_g1;
+        pod_vector<pixel_type> m_buf;
+    };
+
+    // Helper function for applying blur to a surface without having to create an intermediate object.
+    template<class PixFmt>
+    void apply_slight_blur(PixFmt& img, double r = 1)
+    {
+        if (r > 0) slight_blur<PixFmt>(r).blur(img);
+    }
 }
 
 
