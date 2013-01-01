@@ -25,7 +25,9 @@
 // With this define uncommented you can use FreeType font engine
 //#define AGG2D_USE_FREETYPE
 
-// JME
+// With this define uncommented you can use floating-point pixel format
+#define AGG2D_USE_FLOAT_FORMAT
+
 #include "agg_basics.h"
 #include "agg_trans_affine.h"
 #include "agg_trans_viewport.h"
@@ -38,8 +40,6 @@
 #include "agg_renderer_scanline.h"
 #include "agg_span_gradient.h"
 #include "agg_span_image_filter_rgba.h"
-//#include "agg_span_image_resample_rgba.h"
-//+ JME
 #include "agg_span_allocator.h"
 #include "agg_span_converter.h"
 #include "agg_span_interpolator_linear.h"
@@ -56,35 +56,26 @@
 #include "agg_font_win32_tt.h"
 #endif
 
-//+ JME
+#include "agg_pixfmt_rgba.h"
 #include "agg_image_accessors.h"
-
-//#define AGG_BGRA32
-#define AGG_BGRA128
-#include "agg_pixel_formats.h"
 
 class Agg2D
 {
+#ifdef AGG2D_USE_FLOAT_FORMAT
+    typedef agg::rgba32 ColorType;
+#else
+    typedef agg::rgba8  ColorType;
+#endif
     typedef agg::order_bgra ComponentOrder; // Platform dependent!
-
-    typedef color_type                                               ColorType;
     typedef agg::blender_rgba<ColorType, ComponentOrder>             Blender;
     typedef agg::comp_op_adaptor_rgba<ColorType, ComponentOrder>     BlenderComp;
     typedef agg::blender_rgba_pre<ColorType, ComponentOrder>         BlenderPre;
     typedef agg::comp_op_adaptor_rgba_pre<ColorType, ComponentOrder> BlenderCompPre;
 
-	// JME
-    //typedef agg::pixel_formats_rgba<Blender, agg::pixel32_type>    PixFormat;
-    typedef pixfmt									PixFormat;
-    // JME
-    //typedef agg::pixfmt_custom_blend_rgba<BlenderComp,>             PixFormatComp;
-    typedef agg::pixfmt_custom_blend_rgba<BlenderComp,agg::rendering_buffer>             PixFormatComp;
-	// JME
-    //typedef agg::pixel_formats_rgba<BlenderPre, agg::pixel32_type> PixFormatPre;
-    typedef pixfmt_pre PixFormatPre;
-    // JME
-    //typedef agg::pixfmt_custom_blend_rgba<BlenderCompPre>          PixFormatCompPre;
-    typedef agg::pixfmt_custom_blend_rgba<BlenderCompPre,agg::rendering_buffer>          PixFormatCompPre;
+    typedef agg::pixfmt_alpha_blend_rgba<Blender, agg::rendering_buffer>         PixFormat;
+    typedef agg::pixfmt_custom_blend_rgba<BlenderComp, agg::rendering_buffer>    PixFormatComp;
+    typedef agg::pixfmt_alpha_blend_rgba<BlenderPre, agg::rendering_buffer>      PixFormatPre;
+    typedef agg::pixfmt_custom_blend_rgba<BlenderCompPre, agg::rendering_buffer> PixFormatCompPre;
 
     typedef agg::renderer_base<PixFormat>        RendererBase;
     typedef agg::renderer_base<PixFormatComp>    RendererBaseComp;
@@ -127,9 +118,7 @@ public:
     // Use rgba8 as the "user" color type, even though the underlying color type 
     // might be something else, such as rgba32. This allows code based on 
     // 8-bit sRGB values to carry on working as before.
-    typedef agg::rgba8         Color;
-    // JME
-    //typedef agg::rect         Rect;
+    typedef agg::rgba8        Color;
     typedef agg::rect_i       Rect;
     typedef agg::rect_d       RectD;
     typedef agg::trans_affine Affine;
@@ -246,7 +235,6 @@ public:
         BlendDstAtop    = agg::comp_op_dst_atop,
         BlendXor        = agg::comp_op_xor,
         BlendAdd        = agg::comp_op_plus,
-        //BlendSub        = agg::comp_op_minus,
         BlendMultiply   = agg::comp_op_multiply,
         BlendScreen     = agg::comp_op_screen,
         BlendOverlay    = agg::comp_op_overlay,
@@ -258,7 +246,6 @@ public:
         BlendSoftLight  = agg::comp_op_soft_light,
         BlendDifference = agg::comp_op_difference,
         BlendExclusion  = agg::comp_op_exclusion,
-        //BlendContrast   = agg::comp_op_contrast
     };
 
     enum Direction

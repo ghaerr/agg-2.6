@@ -41,8 +41,7 @@ public:
 
         // Note that "rasterizer gamma" does not correctly compensate 
         // for sRGB non-linearity and should not be used for this purpose. 
-        // Instead, use linear floating-point RGB by defining 
-        // AGG_BGRA128 in agg2d.h.
+        // Instead, use a linear pixel format such as agg::pixfmt_bgra128.
         //m_graphics.antiAliasGamma(1.4);
 
         // Set flipText(true) if you have the Y axis upside down.
@@ -369,7 +368,11 @@ public:
 
 int agg_main(int argc, char* argv[])
 {
-    the_application app(pix_format, flip_y);
+#ifdef AGG2D_USE_FLOAT_FORMAT
+    the_application app(agg::pix_format_bgra128, flip_y);
+#else
+    the_application app(agg::pix_format_bgra32, flip_y);
+#endif
     app.caption("Agg2DDemo");
 
     char buf[256];
