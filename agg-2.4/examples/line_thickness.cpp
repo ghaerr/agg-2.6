@@ -21,7 +21,7 @@ class the_application : public agg::platform_support
 {
     agg::slider_ctrl<color_type> m_slider1;
     agg::slider_ctrl<color_type> m_slider2;
-	agg::cbox_ctrl<color_type> m_cbox1;
+    agg::cbox_ctrl<color_type> m_cbox1;
     agg::cbox_ctrl<color_type> m_cbox2;
 
 public:
@@ -29,12 +29,12 @@ public:
         agg::platform_support(format, flip_y),
         m_slider1(10, 10,    640-10, 19,    !flip_y),
         m_slider2(10, 10+20, 640-10, 19+20, !flip_y),
-		m_cbox1(10, 10+40, "Monochrome", !flip_y),
+        m_cbox1(10, 10+40, "Monochrome", !flip_y),
         m_cbox2(10, 10+60, "Invert", !flip_y)
     {
         add_ctrl(m_slider1);
         add_ctrl(m_slider2);
-		add_ctrl(m_cbox1);
+        add_ctrl(m_cbox1);
         add_ctrl(m_cbox2);
 
         m_slider1.label("Line thickness=%1.2f");
@@ -45,12 +45,12 @@ public:
         m_slider2.range(0.0, 1.0);
         m_slider2.value(1.0);
 
-		m_cbox1.status(true);
+        m_cbox1.status(true);
         m_cbox2.status(false);
 
         m_slider1.no_transform();
         m_slider2.no_transform();
-		m_cbox1.no_transform();
+        m_cbox1.no_transform();
         m_cbox2.no_transform();
     }
 
@@ -68,8 +68,8 @@ public:
         agg::renderer_base<pixfmt> ren(pf);
         agg::scanline_u8 sl;
         agg::rasterizer_scanline_aa<> ras;
-		agg::path_storage ps;
-		agg::conv_stroke<agg::path_storage> pg(ps);
+        agg::path_storage ps;
+        agg::conv_stroke<agg::path_storage> pg(ps);
 
         agg::rgba clr1 = m_cbox1.status() ? agg::rgba(1, 1, 1) : agg::rgba(1, 0, 1);
         agg::rgba clr2 = m_cbox1.status() ? agg::rgba(0, 0, 0) : agg::rgba(0, 1, 0);
@@ -81,27 +81,27 @@ public:
 
         ren.clear(background);
 
-		// Draw row of straight lines.
-		for (int i = 0; i < 20; ++i)
-		{
-			pg.width(m_slider1.value() * 0.3 * (i + 1));
-			ps.remove_all();
-			ps.move_to(20 + 30 * i, 310);
-			ps.line_to(40 + 30 * i, 460);
-			ras.add_path(pg);
-			agg::render_scanlines_aa_solid(ras, sl, ren, foreground);
-		}
+        // Draw row of straight lines.
+        for (int i = 0; i < 20; ++i)
+        {
+            pg.width(m_slider1.value() * 0.3 * (i + 1));
+            ps.remove_all();
+            ps.move_to(20 + 30 * i, 310);
+            ps.line_to(40 + 30 * i, 460);
+            ras.add_path(pg);
+            agg::render_scanlines_aa_solid(ras, sl, ren, foreground);
+        }
 
-		// Draw wheel of lines.
-		for (int i = 0; i < 40; ++i)
-		{
-			pg.width(m_slider1.value());
-			ps.remove_all();
-			ps.move_to(320 + 20 * sin(i * agg::pi / 20), 180 + 20 * cos(i * agg::pi / 20));
-			ps.line_to(320 + 100 * sin(i * agg::pi / 20), 180 + 100 * cos(i * agg::pi / 20));
-			ras.add_path(pg);
-			agg::render_scanlines_aa_solid(ras, sl, ren, foreground);
-		}
+        // Draw wheel of lines.
+        for (int i = 0; i < 40; ++i)
+        {
+            pg.width(m_slider1.value());
+            ps.remove_all();
+            ps.move_to(320 + 20 * sin(i * agg::pi / 20), 180 + 20 * cos(i * agg::pi / 20));
+            ps.line_to(320 + 100 * sin(i * agg::pi / 20), 180 + 100 * cos(i * agg::pi / 20));
+            ras.add_path(pg);
+            agg::render_scanlines_aa_solid(ras, sl, ren, foreground);
+        }
 
         // Apply blur.
         start_timer();
@@ -123,7 +123,7 @@ public:
         // Render the controls
         render_ctrl(ras, sl, ren, m_slider1);
         render_ctrl(ras, sl, ren, m_slider2);
-		render_ctrl(ras, sl, ren, m_cbox1);
+        render_ctrl(ras, sl, ren, m_cbox1);
         render_ctrl(ras, sl, ren, m_cbox2);
     }
 };

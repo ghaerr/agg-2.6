@@ -1301,7 +1301,7 @@ namespace agg
     public:
         typedef typename PixFmt::pixel_type pixel_type;
         typedef typename PixFmt::value_type value_type;
-    
+
         slight_blur(double r = 1)
         {
             radius(r);
@@ -1311,17 +1311,17 @@ namespace agg
         {
             if (r > 0)
             {
-		        // Sample the gaussian curve at 0 and 1.5 standard deviations. 
+                // Sample the gaussian curve at 0 and 1.5 standard deviations. 
                 // At 3 standard deviations, the response is < 0.005.
-		        double pi = 3.14159;
+                double pi = 3.14159;
                 double n = 1.5 / r;
-		        m_g0 = 1 / sqrt(2 * pi);
-		        m_g1 = m_g0 * exp(-n * n);
+                m_g0 = 1 / sqrt(2 * pi);
+                m_g1 = m_g0 * exp(-n * n);
 
-		        // Normalize.
-		        double sum = m_g0 + 2 * m_g1;
-		        m_g0 /= sum;
-		        m_g1 /= sum;
+                // Normalize.
+                double sum = m_g0 + 2 * m_g1;
+                m_g0 /= sum;
+                m_g1 /= sum;
             }
             else
             {
