@@ -1330,10 +1330,13 @@ namespace agg
             }
         }
 
-        void blur(PixFmt& img)
+        void blur(PixFmt& img, rect_i bounds)
         {
-            int w = img.width();
-            int h = img.height();
+            // Make sure we stay within the image area.
+            bounds.clip(rect_i(0, 0, img.width() - 1, img.height() - 1));
+
+            int w = bounds.x2 - bounds.x1 + 1;
+            int h = bounds.y2 - bounds.y1 + 1;
 
             if (w < 3 || h < 3) return;
 
@@ -1347,22 +1350,23 @@ namespace agg
             pixel_type * r2 = r1 + w;
             pixel_type * end = r2 + w;
 
-            // Set up first two input rows.
-            calc_row(img, 0, r0);
-            memcpy(r1, r0, w * PixFmt::pix_width);
+            // Horizontally blur the first two input rows.
+            calc_row(img, bounds.x1, bounds.y1, w, r0);
+            memcpy(r1, r0, w * sizeof(pixel_type));
 
             for (int y = 0; ; )
             {
-                // Get desination row pointer.
-                pixel_type* p = (pixel_type*)img.pix_value_ptr(0, y, w);
+                // Get pointer to first pixel.
+                pixel_type* p = img.pix_value_ptr(bounds.x1, bounds.y1 + y, bounds.x1 + w);
 
+                // Horizontally blur the row below.
                 if (y + 1 < h)
                 {
-                    calc_row(img, y + 1, r2);
+                    calc_row(img, bounds.x1, bounds.y1 + y + 1, w, r2);
                 }
                 else
                 {
-                    memcpy(r2, r1, w * PixFmt::pix_width); // duplicate bottom row
+                    memcpy(r2, r1, w * sizeof(pixel_type)); // duplicate bottom row
                 }
 
                 // Combine blurred rows into destination.
@@ -1371,7 +1375,7 @@ namespace agg
                     calc_pixel(*r0++, *r1++, *r2++, *p++);
                 }
 
-                if (++y == h) break;
+                if (++y >= h) break;
 
                 // Wrap bottom row pointer around to top of buffer.
                 if (r2 == end) r2 = begin;
@@ -1381,15 +1385,14 @@ namespace agg
         }
 
     private:
-        void calc_row(PixFmt& img, int y, pixel_type* row)
+        void calc_row(PixFmt& img, int x, int y, int w, pixel_type* row)
         {
-            int w = img.width();
             int wm = w - 1;
             int i0 = 0;
             int i1 = 1;
             int i2 = 2;
 
-            pixel_type* p = (pixel_type*)img.pix_value_ptr(0, y, w);
+            pixel_type* p = img.pix_value_ptr(x, y, w);
 
             pixel_type c[3];
             c[0] = *p;
@@ -1397,7 +1400,7 @@ namespace agg
 
             for (int x = 0; x < wm; ++x)
             {
-                c[i2] = *++p;
+                c[i2] = *(p = p->next());
 
                 calc_pixel(c[i0++], c[i1++], c[i2++], row[x]);
 
@@ -1415,7 +1418,7 @@ namespace agg
             pixel_type const & c3,
             pixel_type & x)
         {
-            for (int i = 0; i < pixfmt::num_components; ++i)
+            for (int i = 0; i < PixFmt::num_components; ++i)
             {
                 x.c[i] = calc_value(c1.c[i], c2.c[i], c3.c[i]);
             }
@@ -1430,11 +1433,30 @@ namespace agg
         pod_vector<pixel_type> m_buf;
     };
 
-    // Helper function for applying blur to a surface without having to create an intermediate object.
+    // Helper functions for applying blur to a surface without having to create an intermediate object.
+
+    template<class PixFmt>
+    void apply_slight_blur(PixFmt& img, const rect_i& bounds, double r = 1)
+    {
+        if (r > 0) slight_blur<PixFmt>(r).blur(img, bounds);
+    }
+
     template<class PixFmt>
     void apply_slight_blur(PixFmt& img, double r = 1)
     {
-        if (r > 0) slight_blur<PixFmt>(r).blur(img);
+        if (r > 0) slight_blur<PixFmt>(r).blur(img, rect_i(0, 0, img.width() - 1, img.height() - 1));
+    }
+
+    template<class PixFmt>
+    void apply_slight_blur(renderer_base<PixFmt>& img, const rect_i& bounds, double r = 1)
+    {
+        if (r > 0) slight_blur<PixFmt>(r).blur(img.ren(), bounds);
+    }
+
+    template<class PixFmt>
+    void apply_slight_blur(renderer_base<PixFmt>& img, double r = 1)
+    {
+        if (r > 0) slight_blur<PixFmt>(r).blur(img.ren(), img.clip_box());
     }
 }
 

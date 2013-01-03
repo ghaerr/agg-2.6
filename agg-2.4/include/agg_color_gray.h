@@ -624,6 +624,11 @@ namespace agg
             return luminance(c.r, c.g, c.b);
         }
 
+        static value_type luminance(const rgba32& c)
+        {
+            return luminance(c.r, c.g, c.b);
+        }
+
         static value_type luminance(const rgba8& c)
         {
             return luminance(
@@ -667,6 +672,11 @@ namespace agg
         gray32(const gray8& c) :
             v(sRGB<>::conv_rgb(c.v)), 
             a(sRGB<>::conv_alpha(c.a)) {}
+
+        //--------------------------------------------------------------------
+        gray32(const rgba32& c) :
+            v(luminance(c)),
+            a(value_type(c.a)) {}
 
         //--------------------------------------------------------------------
         operator rgba()

@@ -77,41 +77,29 @@ namespace agg
     };
 
 
-    // Base class for converters.
-    template<class DstFormat, class SrcFormat>
-    struct conv_base
-    {
-        typedef DstFormat dst_format;
-        typedef SrcFormat src_format;
-        typedef typename dst_format::value_type dst_value;
-        typedef typename const src_format::value_type src_value;
-    };
-
     // Generic pixel converter.
     template<class DstFormat, class SrcFormat>
-    struct conv_pixel : conv_base<DstFormat, SrcFormat>
+    struct conv_pixel
     {
-        void operator()(dst_value* dst, src_value* src) const
+        void operator()(void* dst, const void* src) const
         {
             // Read a pixel from the source format and write it to the destination format.
-            dst_format::set_plain_color(dst, src_format::get_plain_color(src));
+            DstFormat::write_plain_color(dst, SrcFormat::read_plain_color(src));
         }
     };
 
     // Generic row converter. Uses conv_pixel to convert individual pixels.
     template<class DstFormat, class SrcFormat>
-    struct conv_row : conv_base<DstFormat, SrcFormat>
+    struct conv_row
     {
         void operator()(void* dst, const void* src, unsigned width) const
         {
-            dst_value* dval = static_cast<dst_value*>(dst);
-            src_value* sval = static_cast<src_value*>(src);
             conv_pixel<DstFormat, SrcFormat> conv;
             do
             {
-                conv(dval, sval);
-                dval += DstFormat::pix_step;
-                sval += SrcFormat::pix_step;
+                conv(dst, src);
+                dst = (int8u*)dst + DstFormat::pix_width;
+                src = (int8u*)src + SrcFormat::pix_width;
             }
             while (--width);
         }

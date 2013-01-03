@@ -105,7 +105,7 @@ public:
 
         // Apply blur.
         start_timer();
-        agg::apply_slight_blur(pf, m_slider2.value());
+        agg::apply_slight_blur(ren, m_slider2.value());
         double tm = elapsed_time();
 
         // Display the blur time.
