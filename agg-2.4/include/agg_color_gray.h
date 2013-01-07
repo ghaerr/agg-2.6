@@ -90,6 +90,20 @@ namespace agg
         }
 
         //--------------------------------------------------------------------
+        operator rgba16()
+        {
+			rgba16::value_type v16 = v << 8 | v;
+            return rgba16(v16, v16, v16, a);
+        }
+
+        //--------------------------------------------------------------------
+        operator rgba32()
+        {
+			rgba32::value_type v32 = sRGB<>::conv_rgb(v);
+            return rgba32(v32, v32, v32, sRGB<>::conv_alpha(a));
+        }
+
+        //--------------------------------------------------------------------
         static AGG_INLINE double to_double(value_type a)
         {
             return double(a) / base_mask;
