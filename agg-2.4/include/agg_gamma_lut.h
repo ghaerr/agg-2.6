@@ -164,8 +164,7 @@ namespace agg
     };
 
     // Wrapper for sRGB-linear conversion. Overloading is used to automatically 
-    // select the direction of conversion, and support is provided for 
-    // handling premultiplied RGB values.
+    // select the direction of conversion.
     template<class T = float>
     class sRGB
     {
@@ -173,42 +172,14 @@ namespace agg
         static sRGB_lut<> lut;
 
     public:
-        static T conv_rgb(int8u x) // full alpha
+        static T conv_rgb(int8u x)
         {
             return lut.dir(x);
         }
 
-        static T conv_rgb(int8u x, int8u a) // premultiplied x
-        {
-            if (a == 0) return 0;
-            else if (a == 255) return lut.dir(x);
-            else return lut.dir(int8u(0.5 + x * 255.0 / a)) * a / 255;
-        }
-
-        static T conv_rgb_demultiply(int8u x, int8u a)
-        {
-            if (a == 0) return 0;
-            else if (a == 255) return lut.dir(x);
-            else return lut.dir(int8u(0.5 + x * 255.0 / a));
-        }
-
-        static int8u conv_rgb(T x) // full alpha
+        static int8u conv_rgb(T x)
         {
             return lut.inv(x);
-        }
-
-        static int8u conv_rgb(T x, T a) // premultiplied x
-        {
-            if (a <= 0) return 0;
-            else if (a >= 1) return lut.inv(x);
-            else return int8u(0.5 + lut.inv(x / a) * a);
-        }
-
-        static int8u conv_rgb_demultiply(T x, T a)
-        {
-            if (a <= 0) return 0;
-            else if (a >= 1) return lut.inv(x);
-            else return lut.inv(x / a);
         }
 
         static T conv_alpha(int8u x)
