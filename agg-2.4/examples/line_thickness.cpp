@@ -42,8 +42,8 @@ public:
         m_slider1.value(1.0);
 
         m_slider2.label("Blur radius=%1.2f");
-        m_slider2.range(0.0, 1.0);
-        m_slider2.value(1.0);
+        m_slider2.range(0.0, 2.0);
+        m_slider2.value(1.33);
 
         m_cbox1.status(true);
         m_cbox2.status(false);

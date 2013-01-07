@@ -1288,12 +1288,13 @@ namespace agg
 
     //================================================slight_blur
     // Special-purpose filter for applying a Gaussian blur with a radius small enough 
-    // that the blur only affects adjacent pixels. The specified radius should be between 
-    // 0 and 1. The Gaussian curve is sampled at 1.5 standard deviations either side of 
-    // the center. At 3 standard deviations, the contribution would be less than 0.005, 
-    // i.e. less than half a percent. This filter is useful for smoothing artefacts caused 
-    // by detail rendered at the pixel scale, e.g. single-pixel lines. Note that the filter 
-    // should only be used with premultiplied pixel formats (or those without alpha).
+    // that the blur only affects adjacent pixels. A Gaussian curve with a standard
+	// deviation of r/2 is used, as per the HTML/CSS spec. At 3 standard deviations, 
+	// the contribution drops to less than 0.005, i.e. less than half a percent, 
+	// therefore the radius can be at least 1.33 before errors become significant.
+	// This filter is useful for smoothing artifacts caused by detail rendered 
+	// at the pixel scale, e.g. single-pixel lines. Note that the filter should 
+	// only be used with premultiplied pixel formats (or those without alpha).
     // See the "line_thickness" example for a demonstration.
     template<class PixFmt>
     class slight_blur
@@ -1302,7 +1303,7 @@ namespace agg
         typedef typename PixFmt::pixel_type pixel_type;
         typedef typename PixFmt::value_type value_type;
 
-        slight_blur(double r = 1)
+        slight_blur(double r = 1.33)
         {
             radius(r);
         }
@@ -1311,10 +1312,10 @@ namespace agg
         {
             if (r > 0)
             {
-                // Sample the gaussian curve at 0 and 1.5 standard deviations. 
+                // Sample the gaussian curve at 0 and r/2 standard deviations. 
                 // At 3 standard deviations, the response is < 0.005.
                 double pi = 3.14159;
-                double n = 1.5 / r;
+                double n = 2 / r;
                 m_g0 = 1 / sqrt(2 * pi);
                 m_g1 = m_g0 * exp(-n * n);
 
