@@ -21,7 +21,7 @@ enum flip_y_e { flip_y = true };
 
 class the_application : public agg::platform_support
 {
-    agg::slider_ctrl<agg::rgba8> m_alpha;
+    agg::slider_ctrl<color_type> m_alpha;
 
 public:
     the_application(agg::pix_format_e format, bool flip_y) :
@@ -59,17 +59,17 @@ public:
         agg::ellipse er(width() / 2 - 0.87*50, height() / 2 - 0.5*50, 100, 100, 100);
         ras.add_path(er);
         agg::render_scanlines_aa_solid(ras, sl, rbr,
-                                       agg::gray8(0, unsigned(m_alpha.value())));
+                                       gray_type(0, unsigned(m_alpha.value())));
         
         agg::ellipse eg(width() / 2 + 0.87*50, height() / 2 - 0.5*50, 100, 100, 100);
         ras.add_path(eg);
         agg::render_scanlines_aa_solid(ras, sl, rbg, 
-                                       agg::gray8(0, unsigned(m_alpha.value())));
+                                       gray_type(0, unsigned(m_alpha.value())));
 
         agg::ellipse eb(width() / 2, height() / 2 + 50, 100, 100, 100);
         ras.add_path(eb);
         agg::render_scanlines_aa_solid(ras, sl, rbb,
-                                       agg::gray8(0, unsigned(m_alpha.value())));
+                                       gray_type(0, unsigned(m_alpha.value())));
 
         agg::render_ctrl(ras, sl, rbase, m_alpha);
     }

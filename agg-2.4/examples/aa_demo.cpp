@@ -8,16 +8,7 @@
 #include "ctrl/agg_slider_ctrl.h"
 #include "ctrl/agg_cbox_ctrl.h"
 
-// Set LINEAR_RGB=1 to use a linear format. 
-// In that case the rendering is already gamma-correct, 
-// so we'll hide the gamma slider control.
-#define LINEAR_RGB 0
-
-#if LINEAR_RGB
-#define AGG_BGR96
-#else
-#define AGG_BGR24 
-#endif
+#define AGG_BGR24
 #include "pixel_formats.h"
 
 enum flip_y_e { flip_y = true };
@@ -58,7 +49,7 @@ namespace agg
             m_size(size) {}
 
         //--------------------------------------------------------------------
-        void color(rgba8 c) { m_color = c; }
+        void color(srgba8 c) { m_color = c; }
 
         //--------------------------------------------------------------------
         void prepare() {}
@@ -81,7 +72,7 @@ namespace agg
                 {
                     int a = (*covers++ * m_color.a) >> 8;
                     m_square.draw(m_ras, m_sl, m_ren, 
-                                  rgba8(m_color.r, m_color.g, m_color.b, a),
+                                  srgba8(m_color.r, m_color.g, m_color.b, a),
                                   x, y);
                     ++x;
                 }
@@ -95,7 +86,7 @@ namespace agg
         scanline_u8 m_sl;
         Renderer&   m_ren;
         square      m_square;
-        rgba8       m_color;
+        srgba8       m_color;
         double      m_size;
     };
 
@@ -129,14 +120,12 @@ class the_application : public agg::platform_support
     double m_dy;
     int    m_idx;
 
-    agg::slider_ctrl<agg::rgba8> m_slider1;
-    agg::slider_ctrl<agg::rgba8> m_slider2;
+    agg::slider_ctrl<color_type> m_slider1;
 
 public:
     the_application(agg::pix_format_e format, bool flip_y) :
         agg::platform_support(format, flip_y),
-        m_slider1(80, 10,    600-10, 19,    !flip_y),
-        m_slider2(80, 10+20, 600-10, 19+20, !flip_y)
+        m_slider1(80, 10,    600-10, 19,    !flip_y)
     {
         m_idx = -1;
         m_x[0] = 57;    m_y[0] = 100;
@@ -149,16 +138,6 @@ public:
         m_slider1.value(32.0);
         m_slider1.label("Pixel size=%1.0f");
         m_slider1.no_transform();
-
-#if LINEAR_RGB
-        m_slider2.value(1.0);
-#else
-        add_ctrl(m_slider2);
-        m_slider2.range(0.1, 3.0);
-        m_slider2.value(1.0);
-        m_slider2.label("Gamma=%4.3f");
-        m_slider2.no_transform();
-#endif
     }
 
 
@@ -186,22 +165,17 @@ public:
 
         int size_mul = int(m_slider1.value());
 
-        ras.gamma(agg::gamma_power(m_slider2.value()));
-
-
         agg::renderer_enlarged<ren_base> ren_en(ren, size_mul);
 
         ras.reset();
         ras.move_to_d(m_x[0]/size_mul, m_y[0]/size_mul);
         ras.line_to_d(m_x[1]/size_mul, m_y[1]/size_mul);
         ras.line_to_d(m_x[2]/size_mul, m_y[2]/size_mul);
-        ren_en.color(agg::rgba8(0,0,0, 255));
+        ren_en.color(agg::srgba8(0,0,0, 255));
         agg::render_scanlines(ras, sl, ren_en);
 
 
-        agg::render_scanlines_aa_solid(ras, sl, ren, agg::rgba8(0,0,0));
-
-        ras.gamma(agg::gamma_none());
+        agg::render_scanlines_aa_solid(ras, sl, ren, agg::srgba8(0,0,0));
 
         agg::path_storage ps;
         agg::conv_stroke<agg::path_storage> pg(ps);
@@ -211,25 +185,22 @@ public:
         ps.move_to(m_x[0], m_y[0]);
         ps.line_to(m_x[1], m_y[1]);
         ras.add_path(pg);
-        agg::render_scanlines_aa_solid(ras, sl, ren, agg::rgba8(0,150,160, 200));
+        agg::render_scanlines_aa_solid(ras, sl, ren, agg::srgba8(0,150,160, 200));
 
         ps.remove_all();
         ps.move_to(m_x[1], m_y[1]);
         ps.line_to(m_x[2], m_y[2]);
         ras.add_path(pg);
-        agg::render_scanlines_aa_solid(ras, sl, ren, agg::rgba8(0,150,160, 200));
+        agg::render_scanlines_aa_solid(ras, sl, ren, agg::srgba8(0,150,160, 200));
 
         ps.remove_all();
         ps.move_to(m_x[2], m_y[2]);
         ps.line_to(m_x[0], m_y[0]);
         ras.add_path(pg);
-        agg::render_scanlines_aa_solid(ras, sl, ren, agg::rgba8(0,150,160, 200));
+        agg::render_scanlines_aa_solid(ras, sl, ren, agg::srgba8(0,150,160, 200));
 
         // Render the controls
         agg::render_ctrl(ras, sl, ren, m_slider1);
-#if !LINEAR_RGB
-        agg::render_ctrl(ras, sl, ren, m_slider2);
-#endif
     }
 
 

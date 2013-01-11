@@ -80,12 +80,12 @@ struct color_function_profile
 
 class the_application : public agg::platform_support
 {
-    agg::gamma_ctrl<agg::rgba8>  m_profile;
-    agg::spline_ctrl<agg::rgba8> m_spline_r;
-    agg::spline_ctrl<agg::rgba8> m_spline_g;
-    agg::spline_ctrl<agg::rgba8> m_spline_b;
-    agg::spline_ctrl<agg::rgba8> m_spline_a;
-    agg::rbox_ctrl<agg::rgba8>   m_rbox;
+    agg::gamma_ctrl<color_type>  m_profile;
+    agg::spline_ctrl<color_type> m_spline_r;
+    agg::spline_ctrl<color_type> m_spline_g;
+    agg::spline_ctrl<color_type> m_spline_b;
+    agg::spline_ctrl<color_type> m_spline_a;
+    agg::rbox_ctrl<color_type>   m_rbox;
 
     double m_pdx;
     double m_pdy;
@@ -487,7 +487,7 @@ public:
             int i;
             for(i = 0; i < 256; i++)
             {
-                agg::rgba8 c = agg::rgba(m_spline_r.spline()[i], 
+                agg::srgba8 c = agg::rgba(m_spline_r.spline()[i], 
                                          m_spline_g.spline()[i],
                                          m_spline_b.spline()[i],
                                          m_spline_a.spline()[i]);

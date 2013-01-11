@@ -26,7 +26,7 @@
 //#define AGG2D_USE_FREETYPE
 
 // With this define uncommented you can use floating-point pixel format
-#define AGG2D_USE_FLOAT_FORMAT
+//#define AGG2D_USE_FLOAT_FORMAT
 
 #include "agg_basics.h"
 #include "agg_trans_affine.h"
@@ -115,10 +115,10 @@ class Agg2D
 public:
     friend class Agg2DRenderer;
 
-    // Use rgba8 as the "user" color type, even though the underlying color type 
+    // Use srgba8 as the "user" color type, even though the underlying color type 
     // might be something else, such as rgba32. This allows code based on 
     // 8-bit sRGB values to carry on working as before.
-    typedef agg::rgba8        Color;
+    typedef agg::srgba8       Color;
     typedef agg::rect_i       Rect;
     typedef agg::rect_d       RectD;
     typedef agg::trans_affine Affine;

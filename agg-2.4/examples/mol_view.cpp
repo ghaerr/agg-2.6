@@ -743,8 +743,8 @@ class the_application : public agg::platform_support
     molecule*                    m_molecules;
     unsigned                     m_num_molecules;
     unsigned                     m_cur_molecule;
-    agg::slider_ctrl<agg::rgba8> m_thickness;
-    agg::slider_ctrl<agg::rgba8> m_text_size;
+    agg::slider_ctrl<color_type> m_thickness;
+    agg::slider_ctrl<color_type> m_text_size;
     double     m_pdx;
     double     m_pdy;
     double     m_center_x;
@@ -754,7 +754,7 @@ class the_application : public agg::platform_support
     double     m_angle;
     double     m_prev_angle;
     bool       m_mouse_move;
-    agg::rgba8 m_atom_colors[end_of_atom_colors];
+    agg::srgba8 m_atom_colors[end_of_atom_colors];
 
 
 public:
@@ -803,13 +803,13 @@ public:
                     fname, fname);
             message(buf);
         }
-        memset(m_atom_colors, 0, sizeof(agg::rgba8) * end_of_atom_colors);
-        m_atom_colors[atom_color_general] = agg::rgba8(0,0,0);
-        m_atom_colors[atom_color_N]       = agg::rgba8(0,0,120);
-        m_atom_colors[atom_color_O]       = agg::rgba8(200,0,0);
-        m_atom_colors[atom_color_S]       = agg::rgba8(120,120,0);
-        m_atom_colors[atom_color_P]       = agg::rgba8(80,50,0);
-        m_atom_colors[atom_color_halogen] = agg::rgba8(0,200,0);
+        memset(m_atom_colors, 0, sizeof(agg::srgba8) * end_of_atom_colors);
+        m_atom_colors[atom_color_general] = agg::srgba8(0,0,0);
+        m_atom_colors[atom_color_N]       = agg::srgba8(0,0,120);
+        m_atom_colors[atom_color_O]       = agg::srgba8(200,0,0);
+        m_atom_colors[atom_color_S]       = agg::srgba8(120,120,0);
+        m_atom_colors[atom_color_P]       = agg::srgba8(80,50,0);
+        m_atom_colors[atom_color_halogen] = agg::srgba8(0,200,0);
     }
 
 

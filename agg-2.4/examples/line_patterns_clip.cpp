@@ -106,10 +106,10 @@ private:
 
 class the_application : public agg::platform_support
 {
-    agg::rgba8 m_ctrl_color;
-    agg::polygon_ctrl<agg::rgba8> m_line1;
-    agg::slider_ctrl<agg::rgba8>  m_scale_x;
-    agg::slider_ctrl<agg::rgba8>  m_start_x;
+    agg::srgba8 m_ctrl_color;
+    agg::polygon_ctrl<color_type> m_line1;
+    agg::slider_ctrl<color_type>  m_scale_x;
+    agg::slider_ctrl<color_type>  m_start_x;
     agg::trans_affine             m_scale;
 
 public:
@@ -222,7 +222,7 @@ public:
         profile.smoother_width(10.0);                    //optional
         profile.width(8.0);                              //mandatory!
         renderer_line_type ren_line(ren_base, profile);
-        ren_line.color(agg::rgba8(0,0,127));            //mandatory!
+        ren_line.color(agg::srgba8(0,0,127));            //mandatory!
         rasterizer_line_type ras_line(ren_line);
         ras_line.round_cap(true);                       //optional
         //ras_line.line_join(agg::outline_no_join);     //optional

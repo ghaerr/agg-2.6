@@ -296,7 +296,7 @@ public:
     {
         for(unsigned i = 0; i < 100; i++)
         {
-            m_colors[i] = agg::rgba8(
+            m_colors[i] = agg::srgba8(
                 (rand() & 0xFF), 
                 (rand() & 0xFF), 
                 (rand() & 0xFF), 
@@ -333,8 +333,8 @@ public:
         unsigned i;
         unsigned w = unsigned(width());
         m_gradient.resize(w);
-        agg::rgba8 c1(255, 0, 0, 180);
-        agg::rgba8 c2(0, 0, 255, 180);
+        agg::srgba8 c1(255, 0, 0, 180);
+        agg::srgba8 c2(0, 0, 255, 180);
         for(i = 0; i < w; i++)
         {
             m_gradient[i] = c1.gradient(c2, i / width());
@@ -398,7 +398,7 @@ public:
                 if(m_shape.style(i).line >= 0)
                 {
                     ras.add_path(stroke, m_shape.style(i).path_id);
-                    ren.color(agg::rgba8(0,0,0, 128));
+                    ren.color(agg::srgba8(0,0,0, 128));
                     agg::render_scanlines(ras, sl, ren);
                 }
             }

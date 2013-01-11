@@ -97,8 +97,8 @@ void make_arrows(agg::path_storage& ps);
 
 class the_application : public agg::platform_support
 {
-    agg::rbox_ctrl<agg::rgba8> m_polygons;
-    agg::rbox_ctrl<agg::rgba8> m_operation;
+    agg::rbox_ctrl<color_type> m_polygons;
+    agg::rbox_ctrl<color_type> m_operation;
 
     typedef agg::amask_no_clip_gray8 alpha_mask_type;
     //typedef agg::alpha_mask_gray8 alpha_mask_type;
@@ -175,23 +175,23 @@ public:
         m_alpha_buf = new unsigned char[cx * cy];
         m_alpha_mask_rbuf.attach(m_alpha_buf, cx, cy, cx);
 
-        typedef agg::renderer_base<agg::pixfmt_gray8> ren_base;
+        typedef agg::renderer_base<agg::pixfmt_sgray8> ren_base;
         typedef agg::renderer_scanline_aa_solid<ren_base> renderer;
 
-        agg::pixfmt_gray8 pixf(m_alpha_mask_rbuf);
+        agg::pixfmt_sgray8 pixf(m_alpha_mask_rbuf);
         ren_base rb(pixf);
         renderer ren(rb);
 
         start_timer();
         if(m_operation.cur_item() == 0)
         {
-            rb.clear(agg::gray8(0));
-            ren.color(agg::gray8(255));
+            rb.clear(agg::sgray8(0));
+            ren.color(agg::sgray8(255));
         }
         else 
         {
-            rb.clear(agg::gray8(255));
-            ren.color(agg::gray8(0));
+            rb.clear(agg::sgray8(255));
+            ren.color(agg::sgray8(0));
         }
         m_ras.add_path(vs);
         agg::render_scanlines(m_ras, m_sl, ren);

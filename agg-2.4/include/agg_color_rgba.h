@@ -39,6 +39,10 @@ namespace agg
     struct order_abgr { enum abgr_e { A=0, B=1, G=2, R=3, rgba_tag, hasAlpha=true }; }; //----order_abgr
     struct order_bgra { enum bgra_e { B=0, G=1, R=2, A=3, rgba_tag, hasAlpha=true }; }; //----order_bgra
 
+    // Colorspace tag types.
+    struct linear {};
+    struct sRGB {};
+
     //====================================================================rgba
     struct rgba
     {
@@ -148,7 +152,7 @@ namespace agg
 
         //--------------------------------------------------------------------
         static rgba from_wavelength(double wl, double gamma = 1.0);
-	
+    
         //--------------------------------------------------------------------
         explicit rgba(double wavelen, double gamma=1.0)
         {
@@ -156,20 +160,6 @@ namespace agg
         }
 
     };
-
-    //----------------------------------------------------------------rgba_pre
-    inline rgba rgba_pre(double r, double g, double b, double a=1.0)
-    {
-        return rgba(r, g, b, a).premultiply();
-    }
-    inline rgba rgba_pre(const rgba& c)
-    {
-        return rgba(c).premultiply();
-    }
-    inline rgba rgba_pre(const rgba& c, double a)
-    {
-        return rgba(c, a).premultiply();
-    }
 
     //------------------------------------------------------------------------
     inline rgba rgba::from_wavelength(double wl, double gamma)
@@ -216,11 +206,15 @@ namespace agg
         return t;
     }
 
-
+    inline rgba rgba_pre(double r, double g, double b, double a)
+    {
+        return rgba(r, g, b, a).premultiply();
+    }
 
     
     //===================================================================rgba8
-    struct rgba8
+    template<class Colorspace>
+    struct rgba8T
     {
         typedef int8u  value_type;
         typedef int32u calc_type;
@@ -232,7 +226,7 @@ namespace agg
             base_mask  = base_scale - 1,
             base_MSB = 1 << (base_shift - 1)
         };
-        typedef rgba8 self_type;
+        typedef rgba8T self_type;
 
 
         value_type r;
@@ -240,33 +234,65 @@ namespace agg
         value_type b;
         value_type a;
 
-        //--------------------------------------------------------------------
-        rgba8() {}
+        static void convert(rgba8T<linear>& dst, const rgba8T<sRGB>& src)
+        {
+            dst.r = sRGB_conv<value_type>::rgb_from_sRGB(src.r);
+            dst.g = sRGB_conv<value_type>::rgb_from_sRGB(src.g);
+            dst.b = sRGB_conv<value_type>::rgb_from_sRGB(src.b);
+            dst.a = src.a;
+        }
+
+        static void convert(rgba8T<sRGB>& dst, const rgba8T<linear>& src)
+        {
+            dst.r = sRGB_conv<value_type>::rgb_to_sRGB(src.r);
+            dst.g = sRGB_conv<value_type>::rgb_to_sRGB(src.g);
+            dst.b = sRGB_conv<value_type>::rgb_to_sRGB(src.b);
+            dst.a = src.a;
+        }
+
+        static void convert(rgba8T<linear>& dst, const rgba& src)
+        {
+            dst.r = value_type(uround(src.r * base_mask));
+            dst.g = value_type(uround(src.g * base_mask));
+            dst.b = value_type(uround(src.b * base_mask));
+            dst.a = value_type(uround(src.a * base_mask));
+        }
+
+        static void convert(rgba8T<sRGB>& dst, const rgba& src)
+        {
+            // Use the "float" table.
+            dst.r = sRGB_conv<float>::rgb_to_sRGB(float(src.r));
+            dst.g = sRGB_conv<float>::rgb_to_sRGB(float(src.g));
+            dst.b = sRGB_conv<float>::rgb_to_sRGB(float(src.b));
+            dst.a = sRGB_conv<float>::alpha_to_sRGB(float(src.a));
+        }
 
         //--------------------------------------------------------------------
-        rgba8(unsigned r_, unsigned g_, unsigned b_, unsigned a_=base_mask) :
+        rgba8T() {}
+
+        //--------------------------------------------------------------------
+        rgba8T(unsigned r_, unsigned g_, unsigned b_, unsigned a_ = base_mask) :
             r(value_type(r_)), 
             g(value_type(g_)), 
             b(value_type(b_)), 
             a(value_type(a_)) {}
 
         //--------------------------------------------------------------------
-        rgba8(const rgba& c, double a_) :
-            r((value_type)uround(c.r * double(base_mask))), 
-            g((value_type)uround(c.g * double(base_mask))), 
-            b((value_type)uround(c.b * double(base_mask))), 
-            a((value_type)uround(a_  * double(base_mask))) {}
+        rgba8T(const rgba& c)
+        {
+            convert(*this, c);
+        }
 
         //--------------------------------------------------------------------
-        rgba8(const self_type& c, unsigned a_) :
+        rgba8T(const self_type& c, unsigned a_) :
             r(c.r), g(c.g), b(c.b), a(value_type(a_)) {}
 
         //--------------------------------------------------------------------
-        rgba8(const rgba& c) :
-            r((value_type)uround(c.r * double(base_mask))), 
-            g((value_type)uround(c.g * double(base_mask))), 
-            b((value_type)uround(c.b * double(base_mask))), 
-            a((value_type)uround(c.a * double(base_mask))) {}
+        template<class T>
+        rgba8T(const rgba8T<T>& c)
+        {
+            convert(*this, c);
+        }
 
         //--------------------------------------------------------------------
         static AGG_INLINE double to_double(value_type a)
@@ -326,9 +352,9 @@ namespace agg
 
         //--------------------------------------------------------------------
         template<typename T>
-        static AGG_INLINE value_type downshift(T a, unsigned n) 
+        static AGG_INLINE T downshift(T a, unsigned n) 
         {
-            return value_type(a >> n);
+            return a >> n;
         }
 
         //--------------------------------------------------------------------
@@ -518,29 +544,8 @@ namespace agg
         }
     };
 
-
-    //-------------------------------------------------------------rgba8_pre
-    inline rgba8 rgba8_pre(unsigned r, unsigned g, unsigned b, 
-                           unsigned a = rgba8::base_mask)
-    {
-        return rgba8(r,g,b,a).premultiply();
-    }
-    inline rgba8 rgba8_pre(const rgba8& c)
-    {
-        return rgba8(c).premultiply();
-    }
-    inline rgba8 rgba8_pre(const rgba8& c, unsigned a)
-    {
-        return rgba8(c,a).premultiply();
-    }
-    inline rgba8 rgba8_pre(const rgba& c)
-    {
-        return rgba8(c).premultiply();
-    }
-    inline rgba8 rgba8_pre(const rgba& c, double a)
-    {
-        return rgba8(c,a).premultiply();
-    }
+    typedef rgba8T<linear> rgba8;
+    typedef rgba8T<sRGB> srgba8;
 
 
     //-------------------------------------------------------------rgb8_packed
@@ -574,8 +579,6 @@ namespace agg
     {
         return rgba8(gamma.inv(c.r), gamma.inv(c.g), gamma.inv(c.b), c.a);
     }
-
-
 
 
 
@@ -621,13 +624,6 @@ namespace agg
             a((value_type)uround(c.a * double(base_mask))) {}
 
         //--------------------------------------------------------------------
-        rgba16(const rgba& c, double a_) :
-            r((value_type)uround(c.r * double(base_mask))), 
-            g((value_type)uround(c.g * double(base_mask))), 
-            b((value_type)uround(c.b * double(base_mask))), 
-            a((value_type)uround(a_  * double(base_mask))) {}
-
-        //--------------------------------------------------------------------
         rgba16(const rgba8& c) :
             r(value_type((value_type(c.r) << 8) | c.r)), 
             g(value_type((value_type(c.g) << 8) | c.g)), 
@@ -635,16 +631,27 @@ namespace agg
             a(value_type((value_type(c.a) << 8) | c.a)) {}
 
         //--------------------------------------------------------------------
-        rgba16(const rgba8& c, unsigned a_) :
-            r(value_type((value_type(c.r) << 8) | c.r)), 
-            g(value_type((value_type(c.g) << 8) | c.g)), 
-            b(value_type((value_type(c.b) << 8) | c.b)), 
-            a(value_type((             a_ << 8) | c.a)) {}
+        rgba16(const srgba8& c) :
+            r(sRGB_conv<value_type>::rgb_from_sRGB(c.r)), 
+            g(sRGB_conv<value_type>::rgb_from_sRGB(c.g)), 
+            b(sRGB_conv<value_type>::rgb_from_sRGB(c.b)), 
+            a(sRGB_conv<value_type>::alpha_from_sRGB(c.a)) {}
 
         //--------------------------------------------------------------------
-        operator rgba8()
+        operator rgba8() const 
         {
             return rgba8(r >> 8, g >> 8, b >> 8, a >> 8);
+        }
+
+        //--------------------------------------------------------------------
+        operator srgba8() const 
+        {
+            // Return (non-premultiplied) sRGB values.
+            return srgba8(
+                sRGB_conv<value_type>::rgb_to_sRGB(r), 
+                sRGB_conv<value_type>::rgb_to_sRGB(g), 
+                sRGB_conv<value_type>::rgb_to_sRGB(b), 
+                sRGB_conv<value_type>::alpha_to_sRGB(a));
         }
 
         //--------------------------------------------------------------------
@@ -705,9 +712,9 @@ namespace agg
 
         //--------------------------------------------------------------------
         template<typename T>
-        static AGG_INLINE value_type downshift(T a, unsigned n) 
+        static AGG_INLINE T downshift(T a, unsigned n) 
         {
-            return value_type(a >> n);
+            return a >> n;
         }
 
         //--------------------------------------------------------------------
@@ -898,35 +905,6 @@ namespace agg
     };
 
 
-
-    //--------------------------------------------------------------rgba16_pre
-    inline rgba16 rgba16_pre(unsigned r, unsigned g, unsigned b, 
-                             unsigned a = rgba16::base_mask)
-    {
-        return rgba16(r,g,b,a).premultiply();
-    }
-    inline rgba16 rgba16_pre(const rgba16& c, unsigned a)
-    {
-        return rgba16(c,a).premultiply();
-    }
-    inline rgba16 rgba16_pre(const rgba& c)
-    {
-        return rgba16(c).premultiply();
-    }
-    inline rgba16 rgba16_pre(const rgba& c, double a)
-    {
-        return rgba16(c,a).premultiply();
-    }
-    inline rgba16 rgba16_pre(const rgba8& c)
-    {
-        return rgba16(c).premultiply();
-    }
-    inline rgba16 rgba16_pre(const rgba8& c, unsigned a)
-    {
-        return rgba16(c,a).premultiply();
-    }
-
-
     //------------------------------------------------------rgba16_gamma_dir
     template<class GammaLUT>
     rgba16 rgba16_gamma_dir(rgba16 c, const GammaLUT& gamma)
@@ -941,7 +919,7 @@ namespace agg
         return rgba16(gamma.inv(c.r), gamma.inv(c.g), gamma.inv(c.b), c.a);
     }
 
-
+    //====================================================================rgba32
     struct rgba32
     {
         typedef float value_type;
@@ -970,32 +948,43 @@ namespace agg
             r(value_type(c.r)), g(value_type(c.g)), b(value_type(c.b)), a(value_type(c.a)) {}
 
         //--------------------------------------------------------------------
-        rgba32(const rgba& c, double a_) :
-            r(value_type(c.r)), g(value_type(c.g)), b(value_type(c.b)), a(value_type(a_)) {}
-
-        //--------------------------------------------------------------------
-        // Initialize from non-premultiplied sRGB values.
         rgba32(const rgba8& c) :
-            r(sRGB<>::conv_rgb(c.r)), 
-            g(sRGB<>::conv_rgb(c.g)), 
-            b(sRGB<>::conv_rgb(c.b)), 
-            a(sRGB<>::conv_alpha(c.a)) {}
+            r(value_type(c.r / 255.0)), 
+            g(value_type(c.g / 255.0)), 
+            b(value_type(c.b / 255.0)), 
+            a(value_type(c.a / 255.0)) {}
 
         //--------------------------------------------------------------------
-        operator rgba()
+        rgba32(const srgba8& c) :
+            r(sRGB_conv<value_type>::rgb_from_sRGB(c.r)), 
+            g(sRGB_conv<value_type>::rgb_from_sRGB(c.g)), 
+            b(sRGB_conv<value_type>::rgb_from_sRGB(c.b)), 
+            a(sRGB_conv<value_type>::alpha_from_sRGB(c.a)) {}
+
+        //--------------------------------------------------------------------
+        operator rgba() const 
         {
             return rgba(r, g, b, a);
         }
 
         //--------------------------------------------------------------------
-        operator rgba8()
+        operator rgba8() const 
         {
-            // Return non-premultiplied sRGB values.
             return rgba8(
-                sRGB<>::conv_rgb(r), 
-                sRGB<>::conv_rgb(g), 
-                sRGB<>::conv_rgb(b), 
-                sRGB<>::conv_alpha(a));
+                uround(r * 255.0), 
+                uround(g * 255.0), 
+                uround(b * 255.0), 
+                uround(a * 255.0));
+        }
+
+        //--------------------------------------------------------------------
+        operator srgba8() const 
+        {
+            return srgba8(
+                sRGB_conv<value_type>::rgb_to_sRGB(r), 
+                sRGB_conv<value_type>::rgb_to_sRGB(g), 
+                sRGB_conv<value_type>::rgb_to_sRGB(b), 
+                sRGB_conv<value_type>::alpha_to_sRGB(a));
         }
 
         //--------------------------------------------------------------------
@@ -1054,9 +1043,9 @@ namespace agg
 
         //--------------------------------------------------------------------
         template<typename T>
-        static AGG_INLINE value_type downshift(T a, unsigned n) 
+        static AGG_INLINE T downshift(T a, unsigned n) 
         {
-            return value_type(n > 0 ? a / (1 << n) : a);
+            return n > 0 ? a / (1 << n) : a;
         }
 
         //--------------------------------------------------------------------
@@ -1220,26 +1209,6 @@ namespace agg
             return self_type(rgba::from_wavelength(wl, gamma));
         }
     };
-
-
-
-    //--------------------------------------------------------------rgba32_pre
-    inline rgba32 rgba32_pre(float r, float g, float b, float a = 1.0f)
-    {
-        return rgba32(r,g,b,a).premultiply();
-    }
-    inline rgba32 rgba32_pre(const rgba32& c, float a)
-    {
-        return rgba32(c,a).premultiply();
-    }
-    inline rgba32 rgba32_pre(const rgba& c)
-    {
-        return rgba32(c).premultiply();
-    }
-    inline rgba32 rgba32_pre(const rgba& c, double a)
-    {
-        return rgba32(c,a).premultiply();
-    }
 }
 
 

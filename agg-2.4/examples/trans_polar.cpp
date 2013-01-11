@@ -33,7 +33,7 @@ namespace agg
         unsigned num_paths() { return m_ctrl.num_paths(); }
         void     rewind(unsigned path_id) { m_pipeline.rewind(path_id); }
         unsigned vertex(double* x, double* y) { return m_pipeline.vertex(x, y); }
-        const ColorT& color(unsigned i) const { return m_ctrl.color(i); } 
+        const ColorT color(unsigned i) const { return m_ctrl.color(i); } 
 
     private:
         Ctrl&     m_ctrl;
@@ -105,9 +105,9 @@ namespace agg
 
 class the_application : public agg::platform_support
 {
-    agg::slider_ctrl<agg::rgba8> m_slider1;
-    agg::slider_ctrl<agg::rgba8> m_slider_spiral;
-    agg::slider_ctrl<agg::rgba8> m_slider_base_y;
+    agg::slider_ctrl<color_type> m_slider1;
+    agg::slider_ctrl<color_type> m_slider_spiral;
+    agg::slider_ctrl<color_type> m_slider_base_y;
 
 public:
     the_application(agg::pix_format_e format, bool flip_y) :
@@ -163,7 +163,7 @@ public:
         agg::render_ctrl(ras, sl, rb, m_slider_base_y);
  
 
-        typedef agg::conv_segmentator<agg::slider_ctrl<agg::rgba8> > conv_segmentator_type;
+        typedef agg::conv_segmentator<agg::slider_ctrl<color_type> > conv_segmentator_type;
         typedef agg::conv_transform<conv_segmentator_type, agg::trans_polar> conv_transform_type;
 
         agg::trans_polar trans;
@@ -176,8 +176,8 @@ public:
         conv_segmentator_type segm(m_slider1);
         conv_transform_type pipeline(segm, trans);
 
-        agg::transformed_control<agg::rgba8, 
-                                 agg::slider_ctrl<agg::rgba8>, 
+        agg::transformed_control<agg::srgba8, 
+                                 agg::slider_ctrl<color_type>, 
                                  conv_transform_type>  ctrl(m_slider1, pipeline);
 
 

@@ -1289,12 +1289,12 @@ namespace agg
     //================================================slight_blur
     // Special-purpose filter for applying a Gaussian blur with a radius small enough 
     // that the blur only affects adjacent pixels. A Gaussian curve with a standard
-	// deviation of r/2 is used, as per the HTML/CSS spec. At 3 standard deviations, 
-	// the contribution drops to less than 0.005, i.e. less than half a percent, 
-	// therefore the radius can be at least 1.33 before errors become significant.
-	// This filter is useful for smoothing artifacts caused by detail rendered 
-	// at the pixel scale, e.g. single-pixel lines. Note that the filter should 
-	// only be used with premultiplied pixel formats (or those without alpha).
+    // deviation of r/2 is used, as per the HTML/CSS spec. At 3 standard deviations, 
+    // the contribution drops to less than 0.005, i.e. less than half a percent, 
+    // therefore the radius can be at least 1.33 before errors become significant.
+    // This filter is useful for smoothing artifacts caused by detail rendered 
+    // at the pixel scale, e.g. single-pixel lines. Note that the filter should 
+    // only be used with premultiplied pixel formats (or those without alpha).
     // See the "line_thickness" example for a demonstration.
     template<class PixFmt>
     class slight_blur

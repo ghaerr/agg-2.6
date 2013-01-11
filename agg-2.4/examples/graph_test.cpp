@@ -34,8 +34,6 @@
 
 enum flip_y_e { flip_y = true };
 
-//typedef agg::pixfmt_bgra128 pixfmt;
-typedef pixfmt::color_type color_type;
 typedef agg::renderer_base<pixfmt> base_renderer;
 typedef agg::renderer_primitives<base_renderer> primitives_renderer;
 
@@ -590,12 +588,12 @@ public:
 
                 if(m_type.cur_item() < 4)
                 {
-                    ren_fine.color(agg::rgba8(r, g, b, a));
+                    ren_fine.color(agg::srgba8(r, g, b, a));
                     agg::render_scanlines(ras, m_sl, ren_fine);
                 }
                 else
                 {
-                    ren_draft.color(agg::rgba8(r, g, b, a));
+                    ren_draft.color(agg::srgba8(r, g, b, a));
                     agg::render_scanlines(ras, m_sl, ren_draft);
                 }
             }
@@ -627,7 +625,7 @@ public:
             int b = rand() & 0x7F;
             int a = 255;
             if(m_translucent.status()) a = 80;
-            prim.line_color(agg::rgba8(r, g, b, a));
+            prim.line_color(agg::srgba8(r, g, b, a));
             ras.add_path(s);
         }
     }
@@ -655,7 +653,7 @@ public:
             int b = rand() & 0x7F;
             int a = 255;
             if(m_translucent.status()) a = 80;
-            prim.line_color(agg::rgba8(r, g, b, a));
+            prim.line_color(agg::srgba8(r, g, b, a));
             ras.add_path(s);
         }
     }
@@ -683,7 +681,7 @@ public:
             int b = rand() & 0x7F;
             int a = 255;
             if(m_translucent.status()) a = 80;
-            prim.line_color(agg::rgba8(r, g, b, a));
+            prim.line_color(agg::srgba8(r, g, b, a));
             ras.add_path(s);
         }
     }

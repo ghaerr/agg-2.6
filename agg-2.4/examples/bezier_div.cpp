@@ -21,7 +21,7 @@
 #include "ctrl/agg_cbox_ctrl.h"
 #include "platform/agg_platform_support.h"
 
-//#define AGG_GRAY8 
+//#define AGG_GRAY8
 //#define AGG_GRAY32
 #define AGG_BGR24
 //#define AGG_BGR96
@@ -52,19 +52,19 @@ void bezier4_point(double x1, double y1, double x2, double y2,
 
 class the_application : public agg::platform_support
 {
-    agg::rgba8 m_ctrl_color;
-    agg::bezier_ctrl<agg::rgba8> m_curve1;
-    agg::slider_ctrl<agg::rgba8> m_angle_tolerance;
-    agg::slider_ctrl<agg::rgba8> m_approximation_scale;
-    agg::slider_ctrl<agg::rgba8> m_cusp_limit;
-    agg::slider_ctrl<agg::rgba8> m_width;
-    agg::cbox_ctrl<agg::rgba8>   m_show_points;
-    agg::cbox_ctrl<agg::rgba8>   m_show_outline;
-    agg::rbox_ctrl<agg::rgba8>   m_curve_type;
-    agg::rbox_ctrl<agg::rgba8>   m_case_type;
-    agg::rbox_ctrl<agg::rgba8>   m_inner_join;
-    agg::rbox_ctrl<agg::rgba8>   m_line_join;
-    agg::rbox_ctrl<agg::rgba8>   m_line_cap;
+    agg::srgba8 m_ctrl_color;
+    agg::bezier_ctrl<color_type> m_curve1;
+    agg::slider_ctrl<color_type> m_angle_tolerance;
+    agg::slider_ctrl<color_type> m_approximation_scale;
+    agg::slider_ctrl<color_type> m_cusp_limit;
+    agg::slider_ctrl<color_type> m_width;
+    agg::cbox_ctrl<color_type>   m_show_points;
+    agg::cbox_ctrl<color_type>   m_show_outline;
+    agg::rbox_ctrl<color_type>   m_curve_type;
+    agg::rbox_ctrl<color_type>   m_case_type;
+    agg::rbox_ctrl<color_type>   m_inner_join;
+    agg::rbox_ctrl<color_type>   m_line_join;
+    agg::rbox_ctrl<color_type>   m_line_cap;
 
     int m_cur_case_type;
 

@@ -45,7 +45,7 @@ public:
     typedef agg::renderer_base<pixfmt_pre> renderer_base_pre;
 
     agg::interactive_polygon   m_quad;
-    agg::rbox_ctrl<agg::rgba8> m_trans_type;
+    agg::rbox_ctrl<color_type> m_trans_type;
 
     the_application(agg::pix_format_e format, bool flip_y) :
         agg::platform_support(format, flip_y),
@@ -297,7 +297,7 @@ int agg_main(int argc, char* argv[])
     //----------------------------------------
     the_application::pixfmt pixf(app.rbuf_img(0));
     the_application::renderer_base rbase(pixf);
-    rbase.clear(agg::rgba8(0,0,0,0));
+    rbase.clear(agg::srgba8(0,0,0,0));
     unsigned i;
     for(i = 0; i < 50; i++)
     {
@@ -308,7 +308,7 @@ int agg_main(int argc, char* argv[])
                          100);
         g_rasterizer.add_path(ell);
         agg::render_scanlines_aa_solid(g_rasterizer, g_scanline, rbase, 
-                                       agg::rgba8((rand() & 0x7F) + 127, 
+                                       agg::srgba8((rand() & 0x7F) + 127, 
                                                   (rand() & 0x7F) + 127, 
                                                   (rand() & 0x7F) + 127, 
                                                   255));

@@ -10,6 +10,15 @@ typedef agg::pixfmt_gray8_pre pixfmt_pre;
 typedef agg::gray8 color_type;
 typedef agg::gray8 gray_type;
 
+#elif defined(AGG_SGRAY8)
+
+#include "agg_pixfmt_gray.h"
+const agg::pix_format_e pix_format = agg::pix_format_sgray8;
+typedef agg::pixfmt_sgray8 pixfmt;
+typedef agg::pixfmt_sgray8_pre pixfmt_pre;
+typedef agg::sgray8 color_type;
+typedef agg::sgray8 gray_type;
+
 #elif defined(AGG_GRAY16)
 
 #include "agg_pixfmt_gray.h"
@@ -49,6 +58,28 @@ typedef agg::pixfmt_rgb24_pre pixfmt_pre;
 typedef agg::rgba8 color_type;
 typedef agg::order_rgb component_order;
 typedef agg::gray8 gray_type;
+
+#elif defined(AGG_SBGR24)
+
+#include "agg_pixfmt_rgb.h"
+const agg::pix_format_e pix_format = agg::pix_format_sbgr24;
+typedef agg::pixfmt_sbgr24 pixfmt;
+typedef agg::pixfmt_sbgr24_pre pixfmt_pre;
+#define pixfmt_gamma agg::pixfmt_sbgr24_gamma
+typedef agg::srgba8 color_type;
+typedef agg::order_bgr component_order;
+typedef agg::sgray8 gray_type;
+
+#elif defined(AGG_SRGB24)
+
+#include "agg_pixfmt_rgb.h"
+const agg::pix_format_e pix_format = agg::pix_format_srgb24;
+typedef agg::pixfmt_srgb24 pixfmt;
+typedef agg::pixfmt_srgb24_pre pixfmt_pre;
+#define pixfmt_gamma agg::pixfmt_srgb24_gamma
+typedef agg::srgba8 color_type;
+typedef agg::order_rgb component_order;
+typedef agg::sgray8 gray_type;
 
 #elif defined(AGG_BGR48)
 
@@ -132,6 +163,46 @@ typedef agg::rgba8 color_type;
 typedef agg::order_argb component_order;
 typedef agg::gray8 gray_type;
 
+#elif defined(AGG_SBGRA32)
+
+#include "agg_pixfmt_rgba.h"
+const agg::pix_format_e pix_format = agg::pix_format_sbgra32;
+typedef agg::pixfmt_sbgra32 pixfmt;
+typedef agg::pixfmt_sbgra32_pre pixfmt_pre;
+typedef agg::srgba8 color_type;
+typedef agg::order_bgra component_order;
+typedef agg::sgray8 gray_type;
+
+#elif defined(AGG_SRGBA32)
+
+#include "agg_pixfmt_rgba.h"
+const agg::pix_format_e pix_format = agg::pix_format_srgba32;
+typedef agg::pixfmt_srgba32 pixfmt;
+typedef agg::pixfmt_srgba32_pre pixfmt_pre;
+typedef agg::srgba8 color_type;
+typedef agg::order_rgba component_order;
+typedef agg::sgray8 gray_type;
+
+#elif defined(AGG_SARGB32)
+
+#include "agg_pixfmt_rgba.h"
+const agg::pix_format_e pix_format = agg::pix_format_sargb32;
+typedef agg::pixfmt_sargb32 pixfmt;
+typedef agg::pixfmt_sargb32_pre pixfmt_pre;
+typedef agg::srgba8 color_type;
+typedef agg::order_argb component_order;
+typedef agg::sgray8 gray_type;
+
+#elif defined(AGG_SABGR32)
+
+#include "agg_pixfmt_rgba.h"
+const agg::pix_format_e pix_format = agg::pix_format_sabgr32;
+typedef agg::pixfmt_sabgr32 pixfmt;
+typedef agg::pixfmt_sabgr32_pre pixfmt_pre;
+typedef agg::srgba8 color_type;
+typedef agg::order_argb component_order;
+typedef agg::sgray8 gray_type;
+
 #elif defined(AGG_BGRA64)
 
 #include "agg_pixfmt_rgba.h"
@@ -150,7 +221,7 @@ typedef agg::pixfmt_rgba64 pixfmt;
 typedef agg::pixfmt_rgba64_pre pixfmt_pre;
 typedef agg::rgba16 color_type;
 typedef agg::order_rgba component_order;
-typedef agg::gray8 gray_type;
+typedef agg::gray16 gray_type;
 
 #elif defined(AGG_ARGB64)
 
@@ -160,7 +231,7 @@ typedef agg::pixfmt_argb64 pixfmt;
 typedef agg::pixfmt_argb64_pre pixfmt_pre;
 typedef agg::rgba16 color_type;
 typedef agg::order_argb component_order;
-typedef agg::gray8 gray_type;
+typedef agg::gray16 gray_type;
 
 #elif defined(AGG_ABGR64)
 
@@ -170,7 +241,7 @@ typedef agg::pixfmt_abgr64 pixfmt;
 typedef agg::pixfmt_abgr64_pre pixfmt_pre;
 typedef agg::rgba16 color_type;
 typedef agg::order_argb component_order;
-typedef agg::gray8 gray_type;
+typedef agg::gray16 gray_type;
 
 #elif defined(AGG_BGRA128)
 

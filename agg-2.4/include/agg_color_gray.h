@@ -35,7 +35,8 @@ namespace agg
 {
 
     //===================================================================gray8
-    struct gray8
+    template<class Colorspace>
+    struct gray8T
     {
         typedef int8u  value_type;
         typedef int32u calc_type;
@@ -47,60 +48,168 @@ namespace agg
             base_mask  = base_scale - 1,
             base_MSB = 1 << (base_shift - 1)
         };
-        typedef gray8 self_type;
+        typedef gray8T self_type;
 
         value_type v;
         value_type a;
 
-        //--------------------------------------------------------------------
-        gray8() {}
+        static value_type luminance(const rgba& c)
+        {
+            // Calculate grayscale value as per ITU-R BT.709.
+            return value_type(uround((0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b) * base_mask));
+        }
+
+        static value_type luminance(const rgba8& c)
+        {
+            // Calculate grayscale value as per ITU-R BT.709.
+            return value_type((55u * c.r + 184u * c.g + 18u * c.b) >> 8);
+        }
+
+        static void convert(gray8T<linear>& dst, const gray8T<sRGB>& src)
+        {
+            dst.v = sRGB_conv<value_type>::rgb_from_sRGB(src.v);
+            dst.a = src.a;
+        }
+
+        static void convert(gray8T<sRGB>& dst, const gray8T<linear>& src)
+        {
+            dst.v = sRGB_conv<value_type>::rgb_to_sRGB(src.v);
+            dst.a = src.a;
+        }
+
+        static void convert(gray8T<linear>& dst, const rgba8& src)
+        {
+            dst.v = luminance(src);
+            dst.a = src.a;
+        }
+
+        static void convert(gray8T<sRGB>& dst, const srgba8& src)
+        {
+            // The RGB weights are only valid for linear values.
+            convert(dst, rgba8(src));
+        }
+
+        static void convert(gray8T<linear>& dst, const srgba8& src)
+        {
+            dst.v = luminance(src);
+            dst.a = src.a;
+        }
+
+        static void convert(gray8T<sRGB>& dst, const rgba8& src)
+        {
+            dst.v = sRGB_conv<value_type>::rgb_to_sRGB(luminance(src));
+            dst.a = src.a;
+        }
 
         //--------------------------------------------------------------------
-        gray8(unsigned v_, unsigned a_=base_mask) :
+        gray8T() {}
+
+        //--------------------------------------------------------------------
+        gray8T(unsigned v_, unsigned a_=base_mask) :
             v(int8u(v_)), a(int8u(a_)) {}
 
         //--------------------------------------------------------------------
-        gray8(const self_type& c, unsigned a_) :
+        gray8T(const self_type& c, unsigned a_) :
             v(c.v), a(value_type(a_)) {}
 
         //--------------------------------------------------------------------
-        gray8(const rgba& c) :
-            v((value_type)uround((0.299*c.r + 0.587*c.g + 0.114*c.b) * double(base_mask))),
-            a((value_type)uround(c.a * double(base_mask))) {}
+        gray8T(const rgba& c) :
+            v(luminance(c)),
+            a(value_type(uround(c.a * base_mask))) {}
 
         //--------------------------------------------------------------------
-        gray8(const rgba& c, double a_) :
-            v((value_type)uround((0.299*c.r + 0.587*c.g + 0.114*c.b) * double(base_mask))),
-            a((value_type)uround(a_ * double(base_mask))) {}
+        template<class T>
+        gray8T(const gray8T<T>& c)
+        {
+            convert(*this, c);
+        }
 
         //--------------------------------------------------------------------
-        gray8(const rgba8& c) :
-            v((c.r*77 + c.g*150 + c.b*29) >> 8),
-            a(c.a) {}
+        template<class T>
+        gray8T(const rgba8T<T>& c)
+        {
+            convert(*this, c);
+        }
 
         //--------------------------------------------------------------------
-        gray8(const rgba8& c, unsigned a_) :
-            v((value_type)((c.r*77 + c.g*150 + c.b*29) >> 8)),
-            a((value_type)a_) {}
+        template<class T> 
+        T convert_from_sRGB() const 
+        {
+            T::value_type y = sRGB_conv<T::value_type>::rgb_from_sRGB(v);
+            return T(y, y, y, sRGB_conv<T::value_type>::alpha_from_sRGB(a));
+        }
+
+        template<class T> 
+        T convert_to_sRGB() const 
+        {
+            T::value_type y = sRGB_conv<T::value_type>::rgb_to_sRGB(v);
+            return T(y, y, y, sRGB_conv<T::value_type>::alpha_to_sRGB(a));
+        }
 
         //--------------------------------------------------------------------
-        operator rgba8()
+        rgba8 make_rgba8(const linear&) const 
         {
             return rgba8(v, v, v, a);
         }
 
-        //--------------------------------------------------------------------
-        operator rgba16()
+        rgba8 make_rgba8(const sRGB&) const 
         {
-			rgba16::value_type v16 = v << 8 | v;
-            return rgba16(v16, v16, v16, a);
+            return convert_from_sRGB<srgba8>();
+        }
+
+        operator rgba8() const 
+        {
+            return make_rgba8(Colorspace());
         }
 
         //--------------------------------------------------------------------
-        operator rgba32()
+        srgba8 make_srgba8(const linear&) const 
         {
-			rgba32::value_type v32 = sRGB<>::conv_rgb(v);
-            return rgba32(v32, v32, v32, sRGB<>::conv_alpha(a));
+            return convert_to_sRGB<rgba8>();
+        }
+
+        srgba8 make_srgba8(const sRGB&) const 
+        {
+            return srgba8(v, v, v, a);
+        }
+
+        operator srgba8() const 
+        {
+            return make_rgba8(Colorspace());
+        }
+
+        //--------------------------------------------------------------------
+        rgba16 make_rgba16(const linear&) const 
+        {
+            rgba16::value_type rgb = (v << 8) | v;
+            return rgba16(rgb, rgb, rgb, (a << 8) | a);
+        }
+
+        rgba16 make_rgba16(const sRGB&) const 
+        {
+            return convert_from_sRGB<rgba16>();
+        }
+
+        operator rgba16() const 
+        {
+            return make_rgba16(Colorspace());
+        }
+
+        //--------------------------------------------------------------------
+        rgba32 make_rgba32(const linear&) const 
+        {
+            rgba32::value_type v32 = v / 255.0;
+            return rgba32(v32, v32, v32, a / 255.0);
+        }
+
+        rgba32 make_rgba32(const sRGB&) const 
+        {
+            return convert_from_sRGB<rgba32>();
+        }
+
+        operator rgba32() const 
+        {
+            return make_rgba32(Colorspace());
         }
 
         //--------------------------------------------------------------------
@@ -155,9 +264,9 @@ namespace agg
 
         //--------------------------------------------------------------------
         template<typename T>
-        static AGG_INLINE value_type downshift(T a, unsigned n) 
+        static AGG_INLINE T downshift(T a, unsigned n) 
         {
-            return value_type(a >> n);
+            return a >> n;
         }
 
         //--------------------------------------------------------------------
@@ -286,34 +395,8 @@ namespace agg
         static self_type no_color() { return self_type(0,0); }
     };
 
-
-    //-------------------------------------------------------------gray8_pre
-    inline gray8 gray8_pre(unsigned v, unsigned a = gray8::base_mask)
-    {
-        return gray8(v,a).premultiply();
-    }
-    inline gray8 gray8_pre(const gray8& c, unsigned a)
-    {
-        return gray8(c,a).premultiply();
-    }
-    inline gray8 gray8_pre(const rgba& c)
-    {
-        return gray8(c).premultiply();
-    }
-    inline gray8 gray8_pre(const rgba& c, double a)
-    {
-        return gray8(c,a).premultiply();
-    }
-    inline gray8 gray8_pre(const rgba8& c)
-    {
-        return gray8(c).premultiply();
-    }
-    inline gray8 gray8_pre(const rgba8& c, unsigned a)
-    {
-        return gray8(c,a).premultiply();
-    }
-
-
+    typedef gray8T<linear> gray8;
+    typedef gray8T<sRGB> sgray8;
 
 
     //==================================================================gray16
@@ -334,11 +417,38 @@ namespace agg
         value_type v;
         value_type a;
 
+        static value_type luminance(const rgba& c)
+        {
+            // Calculate grayscale value as per ITU-R BT.709.
+            return value_type(uround((0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b) * base_mask));
+        }
+
+        static value_type luminance(const rgba16& c)
+        {
+            // Calculate grayscale value as per ITU-R BT.709.
+            return value_type((13933u * c.r + 46872u * c.g + 4732u * c.b) >> 16);
+        }
+
+        static value_type luminance(const rgba8& c)
+        {
+            return luminance(rgba16(c));
+        }
+
+        static value_type luminance(const srgba8& c)
+        {
+            return luminance(rgba16(c));
+        }
+
+        static value_type luminance(const rgba32& c)
+        {
+            return luminance(rgba(c));
+        }
+
         //--------------------------------------------------------------------
         gray16() {}
 
         //--------------------------------------------------------------------
-        gray16(unsigned v_, unsigned a_=base_mask) :
+        gray16(unsigned v_, unsigned a_ = base_mask) :
             v(int16u(v_)), a(int16u(a_)) {}
 
         //--------------------------------------------------------------------
@@ -347,33 +457,23 @@ namespace agg
 
         //--------------------------------------------------------------------
         gray16(const rgba& c) :
-            v((value_type)uround((0.299*c.r + 0.587*c.g + 0.114*c.b) * double(base_mask))),
+            v(luminance(c)),
             a((value_type)uround(c.a * double(base_mask))) {}
 
         //--------------------------------------------------------------------
-        gray16(const rgba& c, double a_) :
-            v((value_type)uround((0.299*c.r + 0.587*c.g + 0.114*c.b) * double(base_mask))),
-            a((value_type)uround(a_ * double(base_mask))) {}
-
-        //--------------------------------------------------------------------
         gray16(const rgba8& c) :
-            v(c.r*77 + c.g*150 + c.b*29),
+            v(luminance(c)),
             a((value_type(c.a) << 8) | c.a) {}
 
         //--------------------------------------------------------------------
-        gray16(const rgba8& c, unsigned a_) :
-            v(c.r*77 + c.g*150 + c.b*29),
-            a((value_type(a_) << 8) | c.a) {}
+        gray16(const srgba8& c) :
+            v(luminance(c)),
+            a((value_type(c.a) << 8) | c.a) {}
 
         //--------------------------------------------------------------------
         gray16(const rgba16& c) :
-        v((c.r*19595 + c.g*38470 + c.b*7471) >> 16),
-        a(c.a) {}
-        
-        //--------------------------------------------------------------------
-        gray16(const rgba16& c, unsigned a_) :
-        v((value_type)((c.r*19595 + c.g*38470 + c.b*7471) >> 16)),
-        a((value_type)a_) {}
+            v(luminance(c)),
+            a(c.a) {}
         
         //--------------------------------------------------------------------
         gray16(const gray8& c) :
@@ -381,27 +481,41 @@ namespace agg
             a((value_type(c.a) << 8) | c.a) {}
 
         //--------------------------------------------------------------------
-        operator rgba8()
+        gray16(const sgray8& c) :
+            v(sRGB_conv<value_type>::rgb_from_sRGB(c.v)),
+            a(sRGB_conv<value_type>::alpha_from_sRGB(c.a)) {}
+
+        //--------------------------------------------------------------------
+        operator rgba8() const 
         {
             return rgba8(v >> 8, v >> 8, v >> 8, a >> 8);
         }
 
         //--------------------------------------------------------------------
-        operator rgba16()
+        operator srgba8() const 
+        {
+            value_type y = sRGB_conv<value_type>::rgb_to_sRGB(v);
+            return srgba8(y, y, y, sRGB_conv<value_type>::alpha_to_sRGB(a));
+        }
+
+        //--------------------------------------------------------------------
+        operator rgba16() const 
         {
             return rgba16(v, v, v, a);
         }
 
         //--------------------------------------------------------------------
-        operator gray8()
+        operator gray8() const 
         {
             return gray8(v >> 8, a >> 8);
         }
 
         //--------------------------------------------------------------------
-        operator gray16()
+        operator sgray8() const 
         {
-            return gray16(v, a);
+            return sgray8(
+                sRGB_conv<value_type>::rgb_to_sRGB(v), 
+                sRGB_conv<value_type>::alpha_to_sRGB(a));
         }
 
         //--------------------------------------------------------------------
@@ -456,9 +570,9 @@ namespace agg
 
         //--------------------------------------------------------------------
         template<typename T>
-        static AGG_INLINE value_type downshift(T a, unsigned n) 
+        static AGG_INLINE T downshift(T a, unsigned n) 
         {
-            return value_type(a >> n);
+            return a >> n;
         }
 
         //--------------------------------------------------------------------
@@ -589,33 +703,6 @@ namespace agg
     };
 
 
-    //------------------------------------------------------------gray16_pre
-    inline gray16 gray16_pre(unsigned v, unsigned a = gray16::base_mask)
-    {
-        return gray16(v,a).premultiply();
-    }
-    inline gray16 gray16_pre(const gray16& c, unsigned a)
-    {
-        return gray16(c,a).premultiply();
-    }
-    inline gray16 gray16_pre(const rgba& c)
-    {
-        return gray16(c).premultiply();
-    }
-    inline gray16 gray16_pre(const rgba& c, double a)
-    {
-        return gray16(c,a).premultiply();
-    }
-    inline gray16 gray16_pre(const rgba8& c)
-    {
-        return gray16(c).premultiply();
-    }
-    inline gray16 gray16_pre(const rgba8& c, unsigned a)
-    {
-        return gray16(c,a).premultiply();
-    }
-
-
     //===================================================================gray32
     struct gray32
     {
@@ -627,7 +714,7 @@ namespace agg
         value_type v;
         value_type a;
 
-        // Calculate greyscale value as per ITU-R BT.709.
+        // Calculate grayscale value as per ITU-R BT.709.
         static value_type luminance(double r, double g, double b)
         {
             return value_type(0.2126 * r + 0.7152 * g + 0.0722 * b);
@@ -645,17 +732,19 @@ namespace agg
 
         static value_type luminance(const rgba8& c)
         {
-            return luminance(
-                sRGB<>::conv_rgb(c.r), 
-                sRGB<>::conv_rgb(c.g), 
-                sRGB<>::conv_rgb(c.b));
+            return luminance(c.r / 255.0, c.g / 255.0, c.g / 255.0);
+        }
+
+        static value_type luminance(const rgba16& c)
+        {
+            return luminance(c.r / 65535.0, c.g / 65535.0, c.g / 65535.0);
         }
 
         //--------------------------------------------------------------------
         gray32() {}
 
         //--------------------------------------------------------------------
-        gray32(value_type v_, value_type a_= 1) :
+        gray32(value_type v_, value_type a_ = 1) :
             v(v_), a(a_) {}
 
         //--------------------------------------------------------------------
@@ -668,24 +757,19 @@ namespace agg
             a(value_type(c.a)) {}
 
         //--------------------------------------------------------------------
-        gray32(const rgba& c, double a_) :
-            v(luminance(c)),
-            a(value_type(a_)) {}
-
-        //--------------------------------------------------------------------
         gray32(const rgba8& c) :
             v(luminance(c)),
-            a(value_type(c.a) / rgba8::base_mask) {}
+            a(value_type(c.a / 255.0)) {}
 
         //--------------------------------------------------------------------
-        gray32(const rgba8& c, unsigned a_) :
+        gray32(const srgba8& c) :
+            v(luminance(rgba32(c))),
+            a(value_type(c.a / 255.0)) {}
+
+        //--------------------------------------------------------------------
+        gray32(const rgba16& c) :
             v(luminance(c)),
-            a(value_type(a_) / rgba8::base_mask) {}
-
-        //--------------------------------------------------------------------
-        gray32(const gray8& c) :
-            v(sRGB<>::conv_rgb(c.v)), 
-            a(sRGB<>::conv_alpha(c.a)) {}
+            a(value_type(c.a / 65535.0)) {}
 
         //--------------------------------------------------------------------
         gray32(const rgba32& c) :
@@ -693,26 +777,66 @@ namespace agg
             a(value_type(c.a)) {}
 
         //--------------------------------------------------------------------
-        operator rgba()
+        gray32(const gray8& c) :
+            v(value_type(c.v / 255.0)), 
+            a(value_type(c.a / 255.0)) {}
+
+        //--------------------------------------------------------------------
+        gray32(const sgray8& c) :
+            v(sRGB_conv<value_type>::rgb_from_sRGB(c.v)), 
+            a(sRGB_conv<value_type>::alpha_from_sRGB(c.a)) {}
+
+        //--------------------------------------------------------------------
+        gray32(const gray16& c) :
+            v(value_type(c.v / 65535.0)), 
+            a(value_type(c.a / 65535.0)) {}
+
+        //--------------------------------------------------------------------
+        operator rgba() const 
         {
             return rgba(v, v, v, a);
         }
 
         //--------------------------------------------------------------------
-        operator gray8()
+        operator gray8() const 
         {
-            // Return non-premultiplied sRGB values.
-            return gray8(
-                sRGB<>::conv_rgb(v), 
-                sRGB<>::conv_alpha(a));
+            return gray8(uround(v * 255.0), uround(a * 255.0));
         }
 
         //--------------------------------------------------------------------
-        operator rgba8()
+        operator sgray8() const 
         {
-            // Return non-premultiplied sRGB values.
-            rgba8::value_type y = sRGB<>::conv_rgb(v);
-            return rgba8(y, y, y, sRGB<>::conv_alpha(a));
+            // Return (non-premultiplied) sRGB values.
+            return sgray8(
+                sRGB_conv<value_type>::rgb_to_sRGB(v), 
+                sRGB_conv<value_type>::alpha_to_sRGB(a));
+        }
+
+        //--------------------------------------------------------------------
+        operator gray16() const 
+        {
+            return gray16(uround(v * 65535.0), uround(a * 65535.0));
+        }
+
+        //--------------------------------------------------------------------
+        operator rgba8() const 
+        {
+            rgba8::value_type y = uround(v * 255.0);
+            return rgba8(y, y, y, uround(a * 255.0));
+        }
+
+        //--------------------------------------------------------------------
+        operator srgba8() const 
+        {
+            srgba8::value_type y = sRGB_conv<value_type>::rgb_to_sRGB(v);
+            return srgba8(y, y, y, sRGB_conv<value_type>::alpha_to_sRGB(a));
+        }
+
+        //--------------------------------------------------------------------
+        operator rgba16() const 
+        {
+            rgba16::value_type y = uround(v * 65535.0);
+            return rgba16(y, y, y, uround(a * 65535.0));
         }
 
         //--------------------------------------------------------------------
@@ -771,9 +895,9 @@ namespace agg
 
         //--------------------------------------------------------------------
         template<typename T>
-        static AGG_INLINE value_type downshift(T a, unsigned n) 
+        static AGG_INLINE T downshift(T a, unsigned n) 
         {
-            return value_type(n > 0 ? a / (1 << n) : a);
+            return n > 0 ? a / (1 << n) : a;
         }
 
         //--------------------------------------------------------------------
@@ -857,34 +981,6 @@ namespace agg
         //--------------------------------------------------------------------
         static self_type no_color() { return self_type(0,0); }
     };
-
-
-    //-------------------------------------------------------------gray32_pre
-    inline gray32 gray32_pre(float v, float a = 1)
-    {
-        return gray32(v,a).premultiply();
-    }
-    inline gray32 gray32_pre(const gray32& c, float a)
-    {
-        return gray32(c,a).premultiply();
-    }
-    inline gray32 gray32_pre(const rgba& c)
-    {
-        return gray32(c).premultiply();
-    }
-    inline gray32 gray32_pre(const rgba& c, double a)
-    {
-        return gray32(c,a).premultiply();
-    }
-    inline gray32 gray32_pre(const rgba8& c)
-    {
-        return gray32(c).premultiply();
-    }
-    inline gray32 gray32_pre(const rgba8& c, unsigned a)
-    {
-        return gray32(c,a).premultiply();
-    }
-
 }
 
 

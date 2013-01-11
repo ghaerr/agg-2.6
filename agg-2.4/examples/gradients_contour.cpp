@@ -54,6 +54,9 @@
 #include "ctrl/agg_rbox_ctrl.h"
 #include "ctrl/agg_polygon_ctrl.h"
 
+#define AGG_BGR24
+#include "pixel_formats.h"
+
 enum flip_y_e { flip_y = true };
 
 #define angle 10
@@ -971,23 +974,21 @@ void make_arrows(agg::path_storage& ps);
 //==========================================================the_application
 class the_application : public agg::platform_support
 {
-    typedef agg::pixfmt_bgr24 pixfmt_type;
-	typedef agg::gradient_lut<agg::color_interpolator<agg::rgba8>, 1024> color_func_type;
-	typedef agg::rgba8 color_type;
+	typedef agg::gradient_lut<agg::color_interpolator<color_type>, 1024> color_func_type;
 
-    agg::rbox_ctrl<agg::rgba8> m_polygons;
-    agg::rbox_ctrl<agg::rgba8> m_gradient;
+    agg::rbox_ctrl<color_type> m_polygons;
+    agg::rbox_ctrl<color_type> m_gradient;
 
-	agg::cbox_ctrl<agg::rgba8>   m_stroke;
-	agg::cbox_ctrl<agg::rgba8>   m_refl;
+	agg::cbox_ctrl<color_type>   m_stroke;
+	agg::cbox_ctrl<color_type>   m_refl;
 
-	agg::slider_ctrl<agg::rgba8> m_c1;
-	agg::slider_ctrl<agg::rgba8> m_c2;
-	agg::slider_ctrl<agg::rgba8> m_d1;
-	agg::slider_ctrl<agg::rgba8> m_d2;
-	agg::slider_ctrl<agg::rgba8> m_clrs;
+	agg::slider_ctrl<color_type> m_c1;
+	agg::slider_ctrl<color_type> m_c2;
+	agg::slider_ctrl<color_type> m_d1;
+	agg::slider_ctrl<color_type> m_d2;
+	agg::slider_ctrl<color_type> m_clrs;
 
-	agg::polygon_ctrl<agg::rgba8> m_persp;
+	agg::polygon_ctrl<color_type> m_persp;
 
     agg::rasterizer_scanline_aa<>   m_ras;
     agg::scanline_p8                m_sl;
@@ -1099,109 +1100,109 @@ public:
 
 	   // 2 colors gradient
         m_colors02.remove_all();
-		m_colors02.add_color(0.0, agg::rgba8(178 ,34 ,34 ) );
-		m_colors02.add_color(1.0, agg::rgba8(255 ,255 ,0 ) );
+		m_colors02.add_color(0.0, agg::srgba8(178 ,34 ,34 ) );
+		m_colors02.add_color(1.0, agg::srgba8(255 ,255 ,0 ) );
 		m_colors02.build_lut();
 
 	   // 3 colors gradient
         m_colors03.remove_all();
-		m_colors03.add_color(0.0, agg::rgba8(245 ,233 ,131 ) );
-		m_colors03.add_color(0.5, agg::rgba8(146 ,35 ,219 ) );
-		m_colors03.add_color(1.0, agg::rgba8(255 ,35 ,0 ) );
+		m_colors03.add_color(0.0, agg::srgba8(245 ,233 ,131 ) );
+		m_colors03.add_color(0.5, agg::srgba8(146 ,35 ,219 ) );
+		m_colors03.add_color(1.0, agg::srgba8(255 ,35 ,0 ) );
 		m_colors03.build_lut();
 
 	   // 4 colors gradient
         m_colors04.remove_all();
-		m_colors04.add_color(1.0, agg::rgba8(0 ,255 ,0 ) );
-		m_colors04.add_color(0.7, agg::rgba8(120 ,0 ,0 ) );
-		m_colors04.add_color(0.2, agg::rgba8(120 ,120 ,0 ) );
-		m_colors04.add_color(0.0, agg::rgba8(0 ,0 ,255 ) );
+		m_colors04.add_color(1.0, agg::srgba8(0 ,255 ,0 ) );
+		m_colors04.add_color(0.7, agg::srgba8(120 ,0 ,0 ) );
+		m_colors04.add_color(0.2, agg::srgba8(120 ,120 ,0 ) );
+		m_colors04.add_color(0.0, agg::srgba8(0 ,0 ,255 ) );
 		m_colors04.build_lut();
 
 	   // 5 colors gradient
         m_colors05.remove_all();
-		m_colors05.add_color(0.2, agg::rgba8(230 ,188 ,106 ) );
-		m_colors05.add_color(0.4, agg::rgba8(207 ,148 ,31 ) );
-		m_colors05.add_color(0.6, agg::rgba8(69 ,56 ,30 ) );
-		m_colors05.add_color(0.8, agg::rgba8(43 ,33 ,13 ) );
-		m_colors05.add_color(1.0, agg::rgba8(227 ,221 ,209 ) );
+		m_colors05.add_color(0.2, agg::srgba8(230 ,188 ,106 ) );
+		m_colors05.add_color(0.4, agg::srgba8(207 ,148 ,31 ) );
+		m_colors05.add_color(0.6, agg::srgba8(69 ,56 ,30 ) );
+		m_colors05.add_color(0.8, agg::srgba8(43 ,33 ,13 ) );
+		m_colors05.add_color(1.0, agg::srgba8(227 ,221 ,209 ) );
 		m_colors05.build_lut();
 
 	   // 6 colors gradient
         m_colors06.remove_all();
-		m_colors06.add_color(0.0, agg::rgba8(125 ,99 ,255 ) );
-		m_colors06.add_color(0.2, agg::rgba8(118 ,79 ,210 ) );
-		m_colors06.add_color(0.4, agg::rgba8(105 ,58 ,81 ) );
-		m_colors06.add_color(0.6, agg::rgba8(217 ,74 ,102 ) );
-		m_colors06.add_color(0.8, agg::rgba8(242 ,148 ,90 ) );
-		m_colors06.add_color(1.0, agg::rgba8(242 ,200 ,102 ) );
+		m_colors06.add_color(0.0, agg::srgba8(125 ,99 ,255 ) );
+		m_colors06.add_color(0.2, agg::srgba8(118 ,79 ,210 ) );
+		m_colors06.add_color(0.4, agg::srgba8(105 ,58 ,81 ) );
+		m_colors06.add_color(0.6, agg::srgba8(217 ,74 ,102 ) );
+		m_colors06.add_color(0.8, agg::srgba8(242 ,148 ,90 ) );
+		m_colors06.add_color(1.0, agg::srgba8(242 ,200 ,102 ) );
 		m_colors06.build_lut();
 
 	   // 7 colors gradient
         m_colors07.remove_all();
-		m_colors07.add_color(0.00, agg::rgba8(216 ,237 ,232 ) );
-		m_colors07.add_color(0.16, agg::rgba8(196 ,214 ,226 ) );
-		m_colors07.add_color(0.32, agg::rgba8(175 ,194 ,217 ) );
-		m_colors07.add_color(0.48, agg::rgba8(155 ,176 ,210 ) );
-		m_colors07.add_color(0.64, agg::rgba8(140 ,162 ,202 ) );
-		m_colors07.add_color(0.80, agg::rgba8(130 ,149 ,193 ) );
-		m_colors07.add_color(1.00, agg::rgba8(72 ,102 ,165 ) );
+		m_colors07.add_color(0.00, agg::srgba8(216 ,237 ,232 ) );
+		m_colors07.add_color(0.16, agg::srgba8(196 ,214 ,226 ) );
+		m_colors07.add_color(0.32, agg::srgba8(175 ,194 ,217 ) );
+		m_colors07.add_color(0.48, agg::srgba8(155 ,176 ,210 ) );
+		m_colors07.add_color(0.64, agg::srgba8(140 ,162 ,202 ) );
+		m_colors07.add_color(0.80, agg::srgba8(130 ,149 ,193 ) );
+		m_colors07.add_color(1.00, agg::srgba8(72 ,102 ,165 ) );
 		m_colors07.build_lut();
 
 	   // 8 colors gradient
         m_colors08.remove_all();
-		m_colors08.add_color(0.00, agg::rgba8(255 ,223 ,168 ) );
-		m_colors08.add_color(0.14, agg::rgba8(255 ,199 ,162 ) );
-		m_colors08.add_color(0.28, agg::rgba8(255 ,175 ,156 ) );
-		m_colors08.add_color(0.42, agg::rgba8(255 ,151 ,151 ) );
-		m_colors08.add_color(0.56, agg::rgba8(255 ,127 ,145 ) );
-		m_colors08.add_color(0.70, agg::rgba8(255 ,104 ,140 ) );
-		m_colors08.add_color(0.84, agg::rgba8(255 ,80 ,133 ) );
-		m_colors08.add_color(1.00, agg::rgba8(255 ,56 ,128 ) );
+		m_colors08.add_color(0.00, agg::srgba8(255 ,223 ,168 ) );
+		m_colors08.add_color(0.14, agg::srgba8(255 ,199 ,162 ) );
+		m_colors08.add_color(0.28, agg::srgba8(255 ,175 ,156 ) );
+		m_colors08.add_color(0.42, agg::srgba8(255 ,151 ,151 ) );
+		m_colors08.add_color(0.56, agg::srgba8(255 ,127 ,145 ) );
+		m_colors08.add_color(0.70, agg::srgba8(255 ,104 ,140 ) );
+		m_colors08.add_color(0.84, agg::srgba8(255 ,80 ,133 ) );
+		m_colors08.add_color(1.00, agg::srgba8(255 ,56 ,128 ) );
 		m_colors08.build_lut();
 
 	   // 9 colors gradient
         m_colors09.remove_all();
-		m_colors09.add_color(0.000, agg::rgba8(255 ,4 ,163 ) );
-		m_colors09.add_color(0.125, agg::rgba8(255 ,4 ,109 ) );
-		m_colors09.add_color(0.250, agg::rgba8(255 ,4 ,46 ) );
-		m_colors09.add_color(0.375, agg::rgba8(255 ,75 ,75 ) );
-		m_colors09.add_color(0.500, agg::rgba8(255 ,120 ,83 ) );
-		m_colors09.add_color(0.625, agg::rgba8(255 ,143 ,83 ) );
-		m_colors09.add_color(0.750, agg::rgba8(255 ,180 ,83 ) );
-		m_colors09.add_color(0.875, agg::rgba8(255 ,209 ,83 ) );
-		m_colors09.add_color(1.000, agg::rgba8(255 ,246 ,83 ) );
+		m_colors09.add_color(0.000, agg::srgba8(255 ,4 ,163 ) );
+		m_colors09.add_color(0.125, agg::srgba8(255 ,4 ,109 ) );
+		m_colors09.add_color(0.250, agg::srgba8(255 ,4 ,46 ) );
+		m_colors09.add_color(0.375, agg::srgba8(255 ,75 ,75 ) );
+		m_colors09.add_color(0.500, agg::srgba8(255 ,120 ,83 ) );
+		m_colors09.add_color(0.625, agg::srgba8(255 ,143 ,83 ) );
+		m_colors09.add_color(0.750, agg::srgba8(255 ,180 ,83 ) );
+		m_colors09.add_color(0.875, agg::srgba8(255 ,209 ,83 ) );
+		m_colors09.add_color(1.000, agg::srgba8(255 ,246 ,83 ) );
 		m_colors09.build_lut();
 
 	   // 10 colors gradient
         m_colors10.remove_all();
-		m_colors10.add_color(0.00, agg::rgba8(255 ,0 ,0 ) );
-		m_colors10.add_color(0.11, agg::rgba8(255 ,198 ,198 ) );
-		m_colors10.add_color(0.22, agg::rgba8(255 ,255 ,0 ) );
-		m_colors10.add_color(0.33, agg::rgba8(255 ,255 ,226 ) );
-		m_colors10.add_color(0.44, agg::rgba8(85 ,85 ,255 ) );
-		m_colors10.add_color(0.55, agg::rgba8(226 ,226 ,255 ) );
-		m_colors10.add_color(0.66, agg::rgba8(28 ,255 ,28 ) );
-		m_colors10.add_color(0.77, agg::rgba8(226 ,255 ,226 ) );
-		m_colors10.add_color(0.88, agg::rgba8(255 ,72 ,255 ) );
-		m_colors10.add_color(1.00, agg::rgba8(255 ,227 ,255 ) );
+		m_colors10.add_color(0.00, agg::srgba8(255 ,0 ,0 ) );
+		m_colors10.add_color(0.11, agg::srgba8(255 ,198 ,198 ) );
+		m_colors10.add_color(0.22, agg::srgba8(255 ,255 ,0 ) );
+		m_colors10.add_color(0.33, agg::srgba8(255 ,255 ,226 ) );
+		m_colors10.add_color(0.44, agg::srgba8(85 ,85 ,255 ) );
+		m_colors10.add_color(0.55, agg::srgba8(226 ,226 ,255 ) );
+		m_colors10.add_color(0.66, agg::srgba8(28 ,255 ,28 ) );
+		m_colors10.add_color(0.77, agg::srgba8(226 ,255 ,226 ) );
+		m_colors10.add_color(0.88, agg::srgba8(255 ,72 ,255 ) );
+		m_colors10.add_color(1.00, agg::srgba8(255 ,227 ,255 ) );
 		m_colors10.build_lut();
 
 	   // 11 colors gradient
         m_gamma = 1.8;
 
         m_colors11.remove_all();
-		m_colors11.add_color(0.0, agg::rgba8::from_wavelength(380, m_gamma ) );
-		m_colors11.add_color(0.1, agg::rgba8::from_wavelength(420, m_gamma ) );
-		m_colors11.add_color(0.2, agg::rgba8::from_wavelength(460, m_gamma ) );
-		m_colors11.add_color(0.3, agg::rgba8::from_wavelength(500, m_gamma ) );
-		m_colors11.add_color(0.4, agg::rgba8::from_wavelength(540, m_gamma ) );
-		m_colors11.add_color(0.5, agg::rgba8::from_wavelength(580, m_gamma ) );
-		m_colors11.add_color(0.6, agg::rgba8::from_wavelength(620, m_gamma ) );
-		m_colors11.add_color(0.7, agg::rgba8::from_wavelength(660, m_gamma ) );
-		m_colors11.add_color(0.8, agg::rgba8::from_wavelength(700, m_gamma ) );
-		m_colors11.add_color(0.9, agg::rgba8::from_wavelength(740, m_gamma ) );
-		m_colors11.add_color(1.0, agg::rgba8::from_wavelength(780, m_gamma ) );
+		m_colors11.add_color(0.0, agg::srgba8::from_wavelength(380, m_gamma ) );
+		m_colors11.add_color(0.1, agg::srgba8::from_wavelength(420, m_gamma ) );
+		m_colors11.add_color(0.2, agg::srgba8::from_wavelength(460, m_gamma ) );
+		m_colors11.add_color(0.3, agg::srgba8::from_wavelength(500, m_gamma ) );
+		m_colors11.add_color(0.4, agg::srgba8::from_wavelength(540, m_gamma ) );
+		m_colors11.add_color(0.5, agg::srgba8::from_wavelength(580, m_gamma ) );
+		m_colors11.add_color(0.6, agg::srgba8::from_wavelength(620, m_gamma ) );
+		m_colors11.add_color(0.7, agg::srgba8::from_wavelength(660, m_gamma ) );
+		m_colors11.add_color(0.8, agg::srgba8::from_wavelength(700, m_gamma ) );
+		m_colors11.add_color(0.9, agg::srgba8::from_wavelength(740, m_gamma ) );
+		m_colors11.add_color(1.0, agg::srgba8::from_wavelength(780, m_gamma ) );
 		m_colors11.build_lut();
 
     }
@@ -1209,9 +1210,9 @@ public:
 
     void draw_text(double x, double y, const char* str)
     {
-        pixfmt_type pf(rbuf_window());
-        agg::renderer_base<pixfmt_type> rb(pf);
-        agg::renderer_scanline_aa_solid<agg::renderer_base<pixfmt_type> > ren(rb);
+        pixfmt pf(rbuf_window());
+        agg::renderer_base<pixfmt> rb(pf);
+        agg::renderer_scanline_aa_solid<agg::renderer_base<pixfmt> > ren(rb);
 
         agg::gsv_text txt;
         agg::conv_stroke<agg::gsv_text> txt_stroke(txt);
@@ -1228,11 +1229,11 @@ public:
     template<class VertexSource>
 	void perform_rendering(VertexSource& vs, agg::path_storage& contour)
     {
-		typedef agg::renderer_base<pixfmt_type> ren_base;
+		typedef agg::renderer_base<pixfmt> ren_base;
 		
-		pixfmt_type pf(rbuf_window());
+		pixfmt pf(rbuf_window());
 		ren_base rb(pf);
-		agg::renderer_scanline_aa_solid<agg::renderer_base<pixfmt_type> > rs(rb);
+		agg::renderer_scanline_aa_solid<agg::renderer_base<pixfmt> > rs(rb);
 
 		double x1,y1,x2,y2;
 
@@ -1476,7 +1477,7 @@ public:
 		   // Stroke
 			if (m_stroke.status())
 			{
-				agg::gradient_image<agg::rgba8> gradient_func;
+				agg::gradient_image<agg::srgba8> gradient_func;
 
 				void* bitmap = gradient_func.image_create(64 ,64 );
 
@@ -1489,10 +1490,10 @@ public:
 
 					agg::span_interpolator_trans<agg::trans_perspective> span_interpolator(trpg );
 
-					typedef agg::one_color_function<agg::rgba8> color_func_type;
+					typedef agg::one_color_function<agg::srgba8> color_func_type;
 					typedef agg::span_gradient<color_type, 
                             agg::span_interpolator_trans<agg::trans_perspective>, 
-							agg::gradient_image<agg::rgba8>, 
+							agg::gradient_image<agg::srgba8>, 
 							color_func_type> span_gradient_type;
 
 					span_gradient_type span_gradient(
@@ -1627,9 +1628,9 @@ public:
 
     virtual void on_draw()
     {
-        typedef agg::renderer_base<pixfmt_type> base_ren_type;
+        typedef agg::renderer_base<pixfmt> base_ren_type;
 
-        pixfmt_type pf(rbuf_window());
+        pixfmt pf(rbuf_window());
         base_ren_type ren_base(pf);
         ren_base.clear(agg::rgba(1,1,1));
 
@@ -1783,7 +1784,7 @@ force_redraw();
 
 int agg_main(int argc, char* argv[])
 {
-    the_application app(agg::pix_format_bgr24, flip_y);
+    the_application app(pix_format, flip_y);
     app.caption("AGG Example. More gradients: Contour, Bitmap & Assymetric Conic (F1-Help)");
 
     if(app.init(520, 520, agg::window_resize))

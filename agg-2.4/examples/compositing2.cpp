@@ -86,7 +86,7 @@ class the_application : public agg::platform_support
 {
     agg::slider_ctrl<color>    m_alpha_dst;
     agg::slider_ctrl<color>    m_alpha_src;
-    agg::rbox_ctrl<agg::rgba8> m_comp_op;
+    agg::rbox_ctrl<color_type> m_comp_op;
 
     agg::pod_auto_array<color, 256> m_ramp1;
     agg::pod_auto_array<color, 256> m_ramp2;
@@ -210,7 +210,7 @@ public:
     {
         prim_pixfmt_type pixf(rbuf_window());
         prim_ren_base_type rb(pixf);
-        rb.clear(agg::rgba8(255, 255, 255));
+        rb.clear(agg::srgba8(255, 255, 255));
 
         generate_color_ramp(m_ramp1, 
                             agg::rgba(0, 0, 0, m_alpha_dst.value()),

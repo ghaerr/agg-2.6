@@ -24,9 +24,9 @@ enum flip_y_e { flip_y = true };
 
 class the_application : public agg::platform_support
 {
-    agg::rbox_ctrl<agg::rgba8>   m_close;
-    agg::slider_ctrl<agg::rgba8> m_width;
-    agg::cbox_ctrl<agg::rgba8>   m_auto_detect;
+    agg::rbox_ctrl<color_type>   m_close;
+    agg::slider_ctrl<color_type> m_width;
+    agg::cbox_ctrl<color_type>   m_auto_detect;
     agg::path_storage            m_path;
 
 public:

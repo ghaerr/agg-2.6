@@ -665,7 +665,7 @@ namespace agg
 
                 do 
                 {
-                    copy_or_blend_pix(pdst, color, src_color_type::scale_cover(cover, *psrc));
+                    copy_or_blend_pix(pdst, color, src_color_type::scale_cover(cover, psrc->c[0]));
                     psrc = psrc->next();
                     pdst = pdst->next();
                 }
@@ -705,18 +705,22 @@ namespace agg
     };
 
     typedef blender_gray<gray8> blender_gray8;
+    typedef blender_gray<sgray8> blender_sgray8;
     typedef blender_gray<gray16> blender_gray16;
     typedef blender_gray<gray32> blender_gray32;
 
     typedef blender_gray_pre<gray8> blender_gray8_pre;
+    typedef blender_gray_pre<sgray8> blender_sgray8_pre;
     typedef blender_gray_pre<gray16> blender_gray16_pre;
     typedef blender_gray_pre<gray32> blender_gray32_pre;
 
     typedef pixfmt_alpha_blend_gray<blender_gray8, rendering_buffer> pixfmt_gray8;
+    typedef pixfmt_alpha_blend_gray<blender_sgray8, rendering_buffer> pixfmt_sgray8;
     typedef pixfmt_alpha_blend_gray<blender_gray16, rendering_buffer> pixfmt_gray16;
     typedef pixfmt_alpha_blend_gray<blender_gray32, rendering_buffer> pixfmt_gray32;
 
     typedef pixfmt_alpha_blend_gray<blender_gray8_pre, rendering_buffer> pixfmt_gray8_pre;
+    typedef pixfmt_alpha_blend_gray<blender_sgray8_pre, rendering_buffer> pixfmt_sgray8_pre;
     typedef pixfmt_alpha_blend_gray<blender_gray16_pre, rendering_buffer> pixfmt_gray16_pre;
     typedef pixfmt_alpha_blend_gray<blender_gray32_pre, rendering_buffer> pixfmt_gray32_pre;
 }

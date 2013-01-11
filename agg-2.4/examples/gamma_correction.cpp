@@ -9,33 +9,22 @@
 #include "ctrl/agg_slider_ctrl.h"
 #include "platform/agg_platform_support.h"
 
-// Set LINEAR_RGB=1 to use a linear format. 
-// In that case the rendering is already gamma-correct, 
-// so we'll hide the gamma slider control.
-#define LINEAR_RGB 0
+// Only 8-bit formats support gamma, so here's a way to turn it off.
+#define ENABLE_GAMMA_CTRL 1
 
-#if LINEAR_RGB
-#define AGG_BGR96
-//#define AGG_BGRA128
-#else
+// Corrected sRGB, should look right with gamma at 1.0.
 #define AGG_BGR24 
-//#define AGG_RGB24
-//#define AGG_BGRA32 
-//#define AGG_RGBA32 
-//#define AGG_ARGB32 
-//#define AGG_ABGR32
-//#define AGG_RGB565
-//#define AGG_RGB555
-#endif
+// Uncorrected sRGB, should look right with gamma at ~2.2.
+//#define AGG_SBGR24
 #include "pixel_formats.h"
 
 enum flip_y_e { flip_y = true };
 
 class the_application : public agg::platform_support
 {
-    agg::slider_ctrl<agg::rgba8> m_thickness;
-    agg::slider_ctrl<agg::rgba8> m_contrast;
-    agg::slider_ctrl<agg::rgba8> m_gamma;
+    agg::slider_ctrl<color_type> m_thickness;
+    agg::slider_ctrl<color_type> m_contrast;
+    agg::slider_ctrl<color_type> m_gamma;
     double m_rx;
     double m_ry;
 
@@ -56,7 +45,7 @@ public:
         m_contrast.range(0.0, 1.0);
         m_contrast.value(1.0);
 
-#if !LINEAR_RGB
+#if ENABLE_GAMMA_CTRL
         add_ctrl(m_gamma);
         m_gamma.label("Gamma=%3.2f");
         m_gamma.range(0.5, 3.0);
@@ -72,10 +61,7 @@ public:
 
     virtual void on_draw()
     {
-#if LINEAR_RGB
-        typedef agg::renderer_base<pixfmt> ren_base;
-        pixfmt pixf(rbuf_window());
-#else
+#if ENABLE_GAMMA_CTRL
         typedef agg::gamma_lut<agg::int8u, agg::int8u, 8, 8> gamma_type;
         typedef pixfmt_gamma<gamma_type> pixfmt_type;
         typedef agg::renderer_base<pixfmt_type> ren_base;
@@ -83,6 +69,9 @@ public:
         double g = m_gamma.value();
         gamma_type gamma(g);
         pixfmt_type pixf(rbuf_window(), gamma);
+#else
+        typedef agg::renderer_base<pixfmt> ren_base;
+        pixfmt pixf(rbuf_window());
 #endif
         ren_base renb(pixf);
         renb.clear(agg::rgba(1, 1, 1));
@@ -99,7 +88,7 @@ public:
         agg::scanline_u8 sl;
         agg::path_storage path;
 
-#if !LINEAR_RGB
+#if ENABLE_GAMMA_CTRL
         unsigned i;
         double x = (width() - 256.0) / 2.0;
         double y = 50.0;
@@ -117,7 +106,7 @@ public:
         gpoly.width(2.0);
         ras.reset();
         ras.add_path(gpoly);
-        agg::render_scanlines_aa_solid(ras, sl, renb, agg::rgba8(80,127,80));
+        agg::render_scanlines_aa_solid(ras, sl, renb, agg::srgba8(80,127,80));
 #endif
 
         agg::ellipse ell(width() / 2, height() / 2, m_rx, m_ry, 150);
@@ -125,31 +114,31 @@ public:
         poly.width(m_thickness.value());
         ras.reset();
         ras.add_path(poly);
-        agg::render_scanlines_aa_solid(ras, sl, renb, agg::rgba8(255,0,0));
+        agg::render_scanlines_aa_solid(ras, sl, renb, agg::srgba8(255,0,0));
 
         ell.init(width() / 2, height() / 2, m_rx-5.0, m_ry-5.0, 150);
         ras.reset();
         ras.add_path(poly);
-        agg::render_scanlines_aa_solid(ras, sl, renb, agg::rgba8(0,255,0));
+        agg::render_scanlines_aa_solid(ras, sl, renb, agg::srgba8(0,255,0));
 
         ell.init(width() / 2, height() / 2, m_rx-10.0, m_ry-10.0, 150);
         ras.reset();
         ras.add_path(poly);
-        agg::render_scanlines_aa_solid(ras, sl, renb, agg::rgba8(0,0,255));
+        agg::render_scanlines_aa_solid(ras, sl, renb, agg::srgba8(0,0,255));
 
         ell.init(width() / 2, height() / 2, m_rx-15.0, m_ry-15.0, 150);
         ras.reset();
         ras.add_path(poly);
-        agg::render_scanlines_aa_solid(ras, sl, renb, agg::rgba8(0,0,0));
+        agg::render_scanlines_aa_solid(ras, sl, renb, agg::srgba8(0,0,0));
 
         ell.init(width() / 2, height() / 2, m_rx-20.0, m_ry-20.0, 150);
         ras.reset();
         ras.add_path(poly);
-        agg::render_scanlines_aa_solid(ras, sl, renb, agg::rgba8(255,255,255));
+        agg::render_scanlines_aa_solid(ras, sl, renb, agg::srgba8(255,255,255));
 
         agg::render_ctrl(ras, sl, renb, m_thickness);
         agg::render_ctrl(ras, sl, renb, m_contrast);
-#if !LINEAR_RGB
+#if ENABLE_GAMMA_CTRL
         agg::render_ctrl(ras, sl, renb, m_gamma);
 #endif
     }

@@ -166,7 +166,7 @@ class the_application : public agg::platform_support
 {
     agg::slider_ctrl<color>    m_alpha_src;
     agg::slider_ctrl<color>    m_alpha_dst;
-    agg::rbox_ctrl<agg::rgba8> m_comp_op;
+    agg::rbox_ctrl<color_type> m_comp_op;
 
 public:
     the_application(agg::pix_format_e format, bool flip_y) :
@@ -241,21 +241,21 @@ public:
                       agg::cover_type(m_alpha_dst.value() * agg::cover_full));
 
         circle(rb, 
-               agg::rgba8(0xFD, 0xF0, 0x6F, unsigned(m_alpha_dst.value() * 255)), 
-               agg::rgba8(0xFE, 0x9F, 0x34, unsigned(m_alpha_dst.value() * 255)),
+               agg::srgba8(0xFD, 0xF0, 0x6F, unsigned(m_alpha_dst.value() * 255)), 
+               agg::srgba8(0xFE, 0x9F, 0x34, unsigned(m_alpha_dst.value() * 255)),
                70*3, 100+24*3, 37*3, 100+79*3,
                m_alpha_dst.value());
 
         ren_pixf.comp_op(m_comp_op.cur_item());
 
         src_shape(renderer, 
-                    agg::rgba8(0x7F, 0xC1, 0xFF, unsigned(m_alpha_src.value() * 255)), 
-                    agg::rgba8(0x05, 0x00, 0x5F, unsigned(m_alpha_src.value() * 255)),
+                    agg::srgba8(0x7F, 0xC1, 0xFF, unsigned(m_alpha_src.value() * 255)), 
+                    agg::srgba8(0x05, 0x00, 0x5F, unsigned(m_alpha_src.value() * 255)),
                     300+50, 100+24*3, 107+50, 100+79*3);
 /*
         src_shape(renderer, 
-                    agg::rgba8(0xFF, 0xFF, 0xFF, unsigned(m_alpha_src.value() * 255)), 
-                    agg::rgba8(0xFF, 0xFF, 0xFF, unsigned(m_alpha_src.value() * 255)),
+                    agg::srgba8(0xFF, 0xFF, 0xFF, unsigned(m_alpha_src.value() * 255)), 
+                    agg::srgba8(0xFF, 0xFF, 0xFF, unsigned(m_alpha_src.value() * 255)),
                     300+50, 100+24*3, 107+50, 100+79*3);
 */
     }
@@ -265,7 +265,7 @@ public:
     {
         prim_pixfmt_type pixf(rbuf_window());
         prim_ren_base_type rb(pixf);
-        rb.clear(agg::rgba8(255, 255, 255));
+        rb.clear(agg::srgba8(255, 255, 255));
 
         unsigned y;
         for(y = 0; y < rb.height(); y += 8)
@@ -273,7 +273,7 @@ public:
             unsigned x;
             for(x = ((y >> 3) & 1) << 3; x < rb.width(); x += 16)
             {
-                rb.copy_bar(x, y, x+7, y+7, agg::rgba8(0xdf, 0xdf, 0xdf));
+                rb.copy_bar(x, y, x+7, y+7, agg::srgba8(0xdf, 0xdf, 0xdf));
             }
         }
 
@@ -281,8 +281,8 @@ public:
 
         prim_pixfmt_type pixf2(rbuf_img(0));
         prim_ren_base_type rb2(pixf2);
-        rb2.clear(agg::rgba8(0,0,0,0));
-        //rb2.clear(agg::rgba8(255,255,255,255));
+        rb2.clear(agg::srgba8(0,0,0,0));
+        //rb2.clear(agg::srgba8(255,255,255,255));
 
         typedef agg::blender_rgba_pre<color, order> blender_type_pre; 
         typedef agg::pixfmt_alpha_blend_rgba<blender_type_pre, rbuf_type> pixfmt_pre;

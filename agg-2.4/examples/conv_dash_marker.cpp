@@ -34,11 +34,11 @@ class the_application : public agg::platform_support
     double m_dx;
     double m_dy;
     int    m_idx;
-    agg::rbox_ctrl<agg::rgba8>   m_cap;
-    agg::slider_ctrl<agg::rgba8> m_width;
-    agg::slider_ctrl<agg::rgba8> m_smooth;
-    agg::cbox_ctrl<agg::rgba8>   m_close;
-    agg::cbox_ctrl<agg::rgba8>   m_even_odd;
+    agg::rbox_ctrl<color_type>   m_cap;
+    agg::slider_ctrl<color_type> m_width;
+    agg::slider_ctrl<color_type> m_smooth;
+    agg::cbox_ctrl<color_type>   m_close;
+    agg::cbox_ctrl<color_type>   m_even_odd;
 
 
 public:

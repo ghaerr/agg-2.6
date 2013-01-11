@@ -20,16 +20,9 @@
 #include "platform/agg_platform_support.h"
 #include "interactive_polygon.h"
 
-// Set LINEAR_RGB=1 to use a linear format. 
-// In that case the rendering is already gamma-correct, 
-// so we'll hide the gamma slider control.
-#define LINEAR_RGB 0
-
-#if LINEAR_RGB
-#define AGG_BGRA128
-#else
-#define AGG_BGRA32 
-#endif
+#define AGG_BGRA32
+//#define AGG_BGRA64
+//#define AGG_BGRA128
 #include "pixel_formats.h"
 
 int global_offset = 0;
@@ -57,11 +50,6 @@ typedef agg::renderer_scanline_aa_solid<renderer_base> renderer_solid;
 class the_application : public agg::platform_support
 {
 public:
-#if !LINEAR_RGB
-    enum base_scale_e { base_shift = color_type::base_shift };
-    agg::gamma_lut<value_type, value_type, base_shift, base_shift> m_gamma_lut;
-    double m_old_gamma;
-#endif
     agg::interactive_polygon     m_quad;
     agg::rbox_ctrl<agg::rgba>    m_trans_type;
     agg::slider_ctrl<agg::rgba>  m_blur;
@@ -69,10 +57,6 @@ public:
 
     the_application(agg::pix_format_e format, bool flip_y) :
         agg::platform_support(format, flip_y),
-#if !LINEAR_RGB
-        m_gamma_lut(2.0),
-        m_old_gamma(2.0),
-#endif
         m_quad(4, 5.0),
         m_trans_type(400, 5.0, 430+170.0, 100.0, !flip_y),
         m_blur (5.0, 5.0+15*0, 400-5, 10.0+15*0, !flip_y),
@@ -87,13 +71,6 @@ public:
         m_trans_type.add_item("Perspective Resample Exact");
         m_trans_type.cur_item(4);
         add_ctrl(m_trans_type);
-
-#if !LINEAR_RGB
-        m_gamma.range(0.5, 3.0);
-        m_gamma.value(2.0);
-        m_gamma.label("Gamma=%.3f");
-        add_ctrl(m_gamma);
-#endif
 
         m_blur.range(0.5, 5.0);
         m_blur.value(1.0);
@@ -124,25 +101,10 @@ public:
         m_quad.yn(2) = floor(y2 + dy);// - 300;
         m_quad.xn(3) = floor(x1 + dx);
         m_quad.yn(3) = floor(y2 + dy);// - 200;
-
-#if !LINEAR_RGB
-        pixfmt pixf(rbuf_img(0));
-        pixf.apply_gamma_dir(m_gamma_lut);
-#endif
     }
 
     virtual void on_draw()
     {
-#if !LINEAR_RGB
-        if(m_gamma.value() != m_old_gamma)
-        {
-            m_gamma_lut.gamma(m_gamma.value());
-            load_img(0, "spheres");
-            pixfmt pixf(rbuf_img(0));
-            pixf.apply_gamma_dir(m_gamma_lut);
-            m_old_gamma = m_gamma.value();
-        }
-#endif
         pixfmt            pixf(rbuf_window());
         pixfmt_pre        pixf_pre(rbuf_window());
         renderer_base     rb(pixf);
@@ -163,7 +125,7 @@ public:
         //--------------------------
         // Render the "quad" tool and controls
         g_rasterizer.add_path(m_quad);
-        r.color(agg::rgba(0, 0.3, 0.5, 0.1));
+        r.color(agg::rgba(0, 0.3, 0.5, 0.5));
         agg::render_scanlines(g_rasterizer, g_scanline, r);
 
         // Prepare the polygon to rasterize. Here we need to fill
@@ -287,9 +249,6 @@ public:
             }
         }
         double tm = elapsed_time();
-#if !LINEAR_RGB
-        pixf.apply_gamma_inv(m_gamma_lut);
-#endif
 
         char buf[64]; 
         agg::gsv_text t;
@@ -309,9 +268,6 @@ public:
         //--------------------------
         agg::render_ctrl(g_rasterizer, g_scanline, rb, m_trans_type);
         agg::render_ctrl(g_rasterizer, g_scanline, rb, m_blur);
-#if !LINEAR_RGB
-        agg::render_ctrl(g_rasterizer, g_scanline, rb, m_gamma);
-#endif
     }
 
 

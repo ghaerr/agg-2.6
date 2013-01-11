@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include "agg_basics.h"
 #include "agg_ellipse.h"
-#include "agg_gamma_lut.h"
 #include "agg_rendering_buffer.h"
 #include "agg_rasterizer_scanline_aa.h"
 #include "agg_rasterizer_compound_aa.h"
@@ -17,14 +16,7 @@
 #include "platform/agg_platform_support.h"
 
 
-// Set LINEAR_RGB=1 to use a linear format. 
-#define LINEAR_RGB 0
-
-#if LINEAR_RGB
-#define AGG_BGRA128
-#else
 #define AGG_BGRA32
-#endif
 #include "pixel_formats.h"
 
 enum flip_y_e { flip_y = true };
@@ -63,12 +55,12 @@ private:
 
 class the_application : public agg::platform_support
 {
-    agg::slider_ctrl<agg::rgba8> m_width;
-    agg::slider_ctrl<agg::rgba8> m_alpha1;
-    agg::slider_ctrl<agg::rgba8> m_alpha2;
-    agg::slider_ctrl<agg::rgba8> m_alpha3;
-    agg::slider_ctrl<agg::rgba8> m_alpha4;
-    agg::cbox_ctrl<agg::rgba8>   m_invert_order;
+    agg::slider_ctrl<color_type> m_width;
+    agg::slider_ctrl<color_type> m_alpha1;
+    agg::slider_ctrl<color_type> m_alpha2;
+    agg::slider_ctrl<color_type> m_alpha3;
+    agg::slider_ctrl<color_type> m_alpha4;
+    agg::cbox_ctrl<color_type>   m_invert_order;
     agg::path_storage            m_path;
 
 public:
@@ -165,12 +157,6 @@ public:
         typedef agg::renderer_base<pixfmt>     ren_base;
         typedef agg::renderer_base<pixfmt_pre> ren_base_pre;
 
-        agg::gamma_lut<agg::int8u, agg::int8u> lut;
-
-#if !LINEAR_RGB
-        lut.gamma(2.2);
-#endif
-
         pixfmt pixf(rbuf_window());
         ren_base renb(pixf);
 
@@ -182,16 +168,13 @@ public:
         unsigned i;
         for(i = 0; i < pixf.width(); i++)
         {
-            gr.add(agg::rgba8(255, 255, 0).gradient(agg::rgba8(0, 255, 255), 
+            gr.add(agg::srgba8(255, 255, 0).gradient(agg::srgba8(0, 255, 255), 
                                                     double(i) / pixf.width()));
         }
         for(i = 0; i < pixf.height(); i++)
         {
             renb.copy_color_hspan(0, i, pixf.width(), &gr[0]);
         }
-#if !LINEAR_RGB
-        pixf.apply_gamma_dir(lut);
-#endif
 
         agg::rasterizer_scanline_aa<> ras;
         agg::rasterizer_compound_aa<agg::rasterizer_sl_clip_dbl> rasc;
@@ -202,18 +185,12 @@ public:
         ras.move_to_d(0, 0);
         ras.line_to_d(width(), 0);
         ras.line_to_d(width(), height());
-        agg::render_scanlines_aa_solid(ras, sl, renb, 
-                                       agg::rgba8(lut.dir(0), 
-                                                  lut.dir(100), 
-                                                  lut.dir(0)));
+        agg::render_scanlines_aa_solid(ras, sl, renb, agg::srgba8(0, 100, 0));
 
         ras.move_to_d(0, 0);
         ras.line_to_d(0, height());
         ras.line_to_d(width(), 0);
-        agg::render_scanlines_aa_solid(ras, sl, renb, 
-                                       agg::rgba8(lut.dir(0), 
-                                                  lut.dir(100), 
-                                                  lut.dir(100)));
+        agg::render_scanlines_aa_solid(ras, sl, renb, agg::srgba8(0, 100, 100));
 
         agg::trans_affine mtx;
         mtx *= agg::trans_affine_scaling(4.0);
@@ -240,25 +217,10 @@ public:
             rasc.layer_order(agg::layer_direct);
         }
 
-        styles[3] = agg::rgba8(lut.dir(255),
-                               lut.dir(0),
-                               lut.dir(108),
-                               200).premultiply();
-
-        styles[2] = agg::rgba8(lut.dir(51),
-                               lut.dir(0),
-                               lut.dir(151),
-                               180).premultiply();
-
-        styles[1] = agg::rgba8(lut.dir(143),
-                               lut.dir(90),
-                               lut.dir(6),
-                               200).premultiply();
-
-        styles[0] = agg::rgba8(lut.dir(0),
-                               lut.dir(0),
-                               lut.dir(255),
-                               220).premultiply();
+        styles[3] = agg::srgba8(255, 0, 108, 200).premultiply();
+        styles[2] = agg::srgba8(51, 0, 151, 180).premultiply();
+        styles[1] = agg::srgba8(143, 90, 6, 200).premultiply();
+        styles[0] = agg::srgba8(0, 0, 255, 220).premultiply();
 
         style_handler sh(styles, 4);
 
@@ -293,10 +255,6 @@ public:
         agg::render_ctrl(ras, sl, renb, m_alpha3);
         agg::render_ctrl(ras, sl, renb, m_alpha4);
         agg::render_ctrl(ras, sl, renb, m_invert_order);
-
-#if !LINEAR_RGB
-        pixf.apply_gamma_inv(lut);
-#endif
     }
 
 };

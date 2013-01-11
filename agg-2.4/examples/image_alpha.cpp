@@ -69,7 +69,7 @@ namespace agg
 
 class the_application : public agg::platform_support
 {
-    agg::spline_ctrl<agg::rgba8> m_alpha;
+    agg::spline_ctrl<color_type> m_alpha;
     double     m_x[50];
     double     m_y[50];
     double     m_rx[50];
@@ -105,7 +105,7 @@ public:
             m_y[i]  = rand() % int(height());
             m_rx[i] = rand() % 60 + 10;
             m_ry[i] = rand() % 60 + 10;
-            m_colors[i] = agg::rgba8(rand() & 0xFF, 
+            m_colors[i] = agg::srgba8(rand() & 0xFF, 
                                      rand() & 0xFF, 
                                      rand() & 0xFF, 
                                      rand() & 0xFF);

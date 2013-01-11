@@ -395,17 +395,17 @@ class distortion_wave_swirl : public periodic_distortion
 
 class the_application : public agg::platform_support
 {
-    agg::slider_ctrl<agg::rgba8> m_angle;
-    agg::slider_ctrl<agg::rgba8> m_scale;
-    agg::slider_ctrl<agg::rgba8> m_amplitude;
-    agg::slider_ctrl<agg::rgba8> m_period;
-    agg::rbox_ctrl<agg::rgba8>   m_distortion;
+    agg::slider_ctrl<color_type> m_angle;
+    agg::slider_ctrl<color_type> m_scale;
+    agg::slider_ctrl<color_type> m_amplitude;
+    agg::slider_ctrl<color_type> m_period;
+    agg::rbox_ctrl<color_type>   m_distortion;
 
     double m_center_x;
     double m_center_y;
     double m_phase;
 
-    typedef agg::pod_auto_array<agg::rgba8, 256> color_array_type;
+    typedef agg::pod_auto_array<color_type, 256> color_array_type;
     color_array_type m_gradient_colors;
 
 public:
@@ -450,7 +450,7 @@ public:
         const agg::int8u* p = g_gradient_colors;
         for(i = 0; i < 256; i++)
         {
-            m_gradient_colors[i] = agg::rgba8(p[0], p[1], p[2], p[3]);
+            m_gradient_colors[i] = agg::srgba8(p[0], p[1], p[2], p[3]);
             p += 4;
         }
     }
@@ -495,7 +495,7 @@ public:
         img_mtx.invert();
 
 
-        typedef agg::span_allocator<agg::rgba8> span_alloc_type;
+        typedef agg::span_allocator<color_type> span_alloc_type;
 
         span_alloc_type sa;
         
@@ -586,9 +586,9 @@ public:
         src_mtx *= trans_affine_resizing();
 
         ras.add_path(tr);
-        agg::render_scanlines_aa_solid(ras, sl, rb, agg::rgba8(0,0,0));
+        agg::render_scanlines_aa_solid(ras, sl, rb, agg::srgba8(0,0,0));
 
-        typedef agg::span_gradient<agg::rgba8, 
+        typedef agg::span_gradient<color_type, 
                                    interpolator_type,
                                    agg::gradient_circle,
                                    color_array_type> gradient_span_gen;

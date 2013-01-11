@@ -33,7 +33,7 @@ enum flip_y_e { flip_y = true };
 agg::rasterizer_scanline_aa<> g_rasterizer;
 agg::scanline_p8  g_scanline;
 agg::path_storage g_path;
-agg::rgba8        g_colors[100];
+agg::srgba8        g_colors[100];
 unsigned          g_path_idx[100];
 unsigned          g_npaths = 0;
 double            g_x1 = 0;
@@ -49,7 +49,7 @@ double            g_skew_y = 0;
 int               g_nclick = 0;
 
 
-unsigned parse_lion(agg::path_storage& ps, agg::rgba8* colors, unsigned* path_idx);
+unsigned parse_lion(agg::path_storage& ps, agg::srgba8* colors, unsigned* path_idx);
 void parse_lion()
 {
     g_npaths = parse_lion(g_path, g_colors, g_path_idx);
@@ -62,8 +62,8 @@ void parse_lion()
 
 class the_application : public agg::platform_support
 {
-    agg::slider_ctrl<agg::rgba8> m_width_slider;
-    agg::cbox_ctrl<agg::rgba8>   m_scanline;
+    agg::slider_ctrl<color_type> m_width_slider;
+    agg::cbox_ctrl<color_type>   m_scanline;
 
 public:
     the_application(agg::pix_format_e format, bool flip_y) :

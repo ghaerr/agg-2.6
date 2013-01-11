@@ -122,8 +122,8 @@ void make_arrows(agg::path_storage& ps);
 
 class the_application : public agg::platform_support
 {
-    agg::rbox_ctrl<agg::rgba8> m_polygons;
-    agg::rbox_ctrl<agg::rgba8> m_operation;
+    agg::rbox_ctrl<color_type> m_polygons;
+    agg::rbox_ctrl<color_type> m_operation;
     double m_x;
     double m_y;
 

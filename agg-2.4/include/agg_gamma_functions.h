@@ -117,12 +117,12 @@ namespace agg
 
     inline double sRGB_to_linear(double x)
     {
-	    return (x <= 0.04045) ? (x / 12.92) : pow((x + 0.055) / (1.055), 2.4);
+        return (x <= 0.04045) ? (x / 12.92) : pow((x + 0.055) / (1.055), 2.4);
     }
 
     inline double linear_to_sRGB(double x)
     {
-	    return (x <= 0.0031308) ? (x * 12.92) : (1.055 * pow(x, 1 / 2.4) - 0.055);
+        return (x <= 0.0031308) ? (x * 12.92) : (1.055 * pow(x, 1 / 2.4) - 0.055);
     }
 }
 

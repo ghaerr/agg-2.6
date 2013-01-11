@@ -162,10 +162,10 @@ namespace agg
                 fg[2] += weight * *fg_ptr++;
                 fg[3] += weight * *fg_ptr;
 
-                span->r = color_type::downshift(fg[order_type::R], image_subpixel_shift * 2);
-                span->g = color_type::downshift(fg[order_type::G], image_subpixel_shift * 2);
-                span->b = color_type::downshift(fg[order_type::B], image_subpixel_shift * 2);
-                span->a = color_type::downshift(fg[order_type::A], image_subpixel_shift * 2);
+                span->r = value_type(color_type::downshift(fg[order_type::R], image_subpixel_shift * 2));
+                span->g = value_type(color_type::downshift(fg[order_type::G], image_subpixel_shift * 2));
+                span->b = value_type(color_type::downshift(fg[order_type::B], image_subpixel_shift * 2));
+                span->a = value_type(color_type::downshift(fg[order_type::A], image_subpixel_shift * 2));
 
                 ++span;
                 ++base_type::interpolator();

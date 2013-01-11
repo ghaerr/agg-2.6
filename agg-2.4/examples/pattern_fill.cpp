@@ -173,11 +173,11 @@ public:
         rb.clear(agg::rgba_pre(0.4, 0.0, 0.1, m_pattern_alpha.value())); // Pattern background color
 
         m_ras.add_path(smooth);
-        rs.color(agg::rgba8(110,130,50));
+        rs.color(agg::srgba8(110,130,50));
         agg::render_scanlines(m_ras, m_sl, rs);
 
         m_ras.add_path(stroke);
-        rs.color(agg::rgba8(0,50,80));
+        rs.color(agg::srgba8(0,50,80));
         agg::render_scanlines(m_ras, m_sl, rs);
     }
 

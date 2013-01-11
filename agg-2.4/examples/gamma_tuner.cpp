@@ -12,28 +12,19 @@
 
 #include "agg_pixfmt_rgb.h"
 
-// Set LINEAR_RGB=1 to use a linear format. 
-// In that case the rendering is already gamma-correct, 
-// so we'll hide the gamma slider control.
-#define LINEAR_RGB 0
-
-#if LINEAR_RGB
-#define AGG_BGR96
-//#define AGG_BGRA128
-#else
-#define AGG_BGR24
-#endif
+// This example only makes any sense in uncorrected sRGB.
+#define AGG_SBGR24
 #include "pixel_formats.h"
 
 enum flip_y_e { flip_y = true };
 
 class the_application : public agg::platform_support
 {
-    agg::slider_ctrl<agg::rgba8> m_gamma;
-    agg::slider_ctrl<agg::rgba8> m_r;
-    agg::slider_ctrl<agg::rgba8> m_g;
-    agg::slider_ctrl<agg::rgba8> m_b;
-    agg::rbox_ctrl  <agg::rgba8> m_pattern;
+    agg::slider_ctrl<color_type> m_gamma;
+    agg::slider_ctrl<color_type> m_r;
+    agg::slider_ctrl<color_type> m_g;
+    agg::slider_ctrl<color_type> m_b;
+    agg::rbox_ctrl  <agg::srgba8> m_pattern;
 
 
 public:
@@ -57,14 +48,10 @@ public:
         m_b.value(1.0);
         m_b.label("B=%.2f");
 
-#if LINEAR_RGB
-        m_gamma.value(1.0);
-#else
         add_ctrl(m_gamma);
         m_gamma.range(0.5, 4.0);
         m_gamma.value(2.2);
         m_gamma.label("Gamma=%.2f");
-#endif
 
         m_pattern.text_size(8);
         m_pattern.add_item("Horizontal");
@@ -80,11 +67,6 @@ public:
 
     virtual void on_draw()
     {
-#if LINEAR_RGB
-        typedef agg::renderer_base<pixfmt> ren_base;
-
-        pixfmt pixf(rbuf_window());
-#else
         typedef agg::gamma_lut<color_type::value_type, color_type::value_type, 
                                color_type::base_shift, color_type::base_shift> gamma_type;
 
@@ -95,7 +77,6 @@ public:
         gamma_type gamma(g);
 
         pixfmt_type pixf(rbuf_window(), gamma);
-#endif
 
         ren_base renb(pixf);
 
@@ -219,9 +200,7 @@ public:
             }
         }
 
-#if !LINEAR_RGB
         agg::render_ctrl(ras, sl, renb, m_gamma);
-#endif
         agg::render_ctrl(ras, sl, renb, m_r);
         agg::render_ctrl(ras, sl, renb, m_g);
         agg::render_ctrl(ras, sl, renb, m_b);

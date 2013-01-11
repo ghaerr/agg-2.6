@@ -105,18 +105,18 @@ private:
 
 class the_application : public agg::platform_support
 {
-    agg::rgba8 m_ctrl_color;
-    agg::bezier_ctrl<agg::rgba8> m_curve1;
-    agg::bezier_ctrl<agg::rgba8> m_curve2;
-    agg::bezier_ctrl<agg::rgba8> m_curve3;
-    agg::bezier_ctrl<agg::rgba8> m_curve4;
-    agg::bezier_ctrl<agg::rgba8> m_curve5;
-    agg::bezier_ctrl<agg::rgba8> m_curve6;
-    agg::bezier_ctrl<agg::rgba8> m_curve7;
-    agg::bezier_ctrl<agg::rgba8> m_curve8;
-    agg::bezier_ctrl<agg::rgba8> m_curve9;
-    agg::slider_ctrl<agg::rgba8> m_scale_x;
-    agg::slider_ctrl<agg::rgba8> m_start_x;
+    agg::srgba8 m_ctrl_color;
+    agg::bezier_ctrl<color_type> m_curve1;
+    agg::bezier_ctrl<color_type> m_curve2;
+    agg::bezier_ctrl<color_type> m_curve3;
+    agg::bezier_ctrl<color_type> m_curve4;
+    agg::bezier_ctrl<color_type> m_curve5;
+    agg::bezier_ctrl<color_type> m_curve6;
+    agg::bezier_ctrl<color_type> m_curve7;
+    agg::bezier_ctrl<color_type> m_curve8;
+    agg::bezier_ctrl<color_type> m_curve9;
+    agg::slider_ctrl<color_type> m_scale_x;
+    agg::slider_ctrl<color_type> m_start_x;
 
 public:
     typedef agg::renderer_base<pixfmt> renderer_base;

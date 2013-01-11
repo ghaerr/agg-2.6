@@ -64,9 +64,9 @@ class the_application : public agg::platform_support
     unsigned       m_num_points;
     scatter_point* m_points;
 
-    agg::scale_ctrl<agg::rgba8>  m_scale_ctrl_z;
-    agg::slider_ctrl<agg::rgba8> m_slider_ctrl_sel;
-    agg::slider_ctrl<agg::rgba8> m_slider_ctrl_size;
+    agg::scale_ctrl<color_type>  m_scale_ctrl_z;
+    agg::slider_ctrl<color_type> m_slider_ctrl_sel;
+    agg::slider_ctrl<color_type> m_slider_ctrl_size;
 
     agg::bspline m_spline_r;
     agg::bspline m_spline_g;

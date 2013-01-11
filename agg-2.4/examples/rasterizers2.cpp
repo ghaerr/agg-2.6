@@ -51,17 +51,17 @@ namespace agg
     class pattern_pixmap_argb32
     {
     public:
-        typedef rgba8 color_type;
+        typedef srgba8 color_type;
 
         pattern_pixmap_argb32(const int32u* pixmap) : m_pixmap(pixmap) {}
 
         unsigned width()  const { return m_pixmap[0]; }
         unsigned height() const { return m_pixmap[1]; }
 
-        rgba8 pixel(int x, int y) const
+        srgba8 pixel(int x, int y) const
         {
             int32u p = m_pixmap[y * width() + x + 2];
-            return rgba8((p >> 16) & 0xFF, (p >> 8) & 0xFF, p & 0xFF, p >> 24);
+            return srgba8((p >> 16) & 0xFF, (p >> 8) & 0xFF, p & 0xFF, p >> 24);
         }
     private:
         const int32u* m_pixmap;
@@ -137,12 +137,12 @@ struct roundoff
 
 class the_application : public agg::platform_support
 {
-    agg::slider_ctrl<agg::rgba8> m_step;
-    agg::slider_ctrl<agg::rgba8> m_width;
-    agg::cbox_ctrl<agg::rgba8>   m_test;
-    agg::cbox_ctrl<agg::rgba8>   m_rotate;
-    agg::cbox_ctrl<agg::rgba8>   m_accurate_joins;
-    agg::cbox_ctrl<agg::rgba8>   m_scale_pattern;
+    agg::slider_ctrl<color_type> m_step;
+    agg::slider_ctrl<color_type> m_width;
+    agg::cbox_ctrl<color_type>   m_test;
+    agg::cbox_ctrl<color_type>   m_rotate;
+    agg::cbox_ctrl<color_type>   m_accurate_joins;
+    agg::cbox_ctrl<color_type>   m_scale_pattern;
     double m_start_angle;
 
 
@@ -154,7 +154,7 @@ public:
     typedef agg::rasterizer_scanline_aa<> rasterizer_scanline;
     typedef agg::scanline_p8 scanline;
     typedef agg::renderer_outline_aa<renderer_base> renderer_oaa;
-    typedef agg::pattern_filter_bilinear_rgba8 pattern_filter;
+    typedef agg::pattern_filter_bilinear_rgba<color_type> pattern_filter;
     typedef agg::line_image_pattern_pow2<pattern_filter> image_pattern;
     typedef agg::renderer_outline_image<renderer_base, image_pattern> renderer_img;
     typedef agg::rasterizer_outline_aa<renderer_oaa> rasterizer_outline_aa;
@@ -355,7 +355,7 @@ profile.width(width);                  //mandatory!
 agg::pixfmt_bgr24 pixf(rbuf_window()); //or another
 base_ren_type base_ren(pixf);
 renderer_type ren(base_ren, profile);
-ren.color(agg::rgba8(0,0,0));          //mandatory!
+ren.color(agg::srgba8(0,0,0));          //mandatory!
 rasterizer_type ras(ren);
 ras.round_cap(true);                   //optional
 ras.accurate_join(true);               //optional

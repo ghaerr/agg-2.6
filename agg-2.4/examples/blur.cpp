@@ -20,16 +20,11 @@
 #include "ctrl/agg_polygon_ctrl.h"
 #include "platform/agg_platform_support.h"
 
-// Set LINEAR_RGB=1 to use a linear format. 
 // Stack blur is limited to integer pixel formats, so we 
-// can't offer it for floating-point formats.
-#define LINEAR_RGB 0
+// can't use it for floating-point formats.
+#define USE_STACK_BLUR 1
 
-#if LINEAR_RGB
-#define AGG_BGR96
-#else
 #define AGG_BGR24
-#endif
 #include "pixel_formats.h"
 
 enum flip_y_e { flip_y = true };
@@ -37,12 +32,12 @@ enum flip_y_e { flip_y = true };
 
 class the_application : public agg::platform_support
 {
-    agg::rbox_ctrl<agg::rgba8>    m_method;
-    agg::slider_ctrl<agg::rgba8>  m_radius;
-    agg::polygon_ctrl<agg::rgba8> m_shadow_ctrl;
-    agg::cbox_ctrl<agg::rgba8>    m_channel_r;
-    agg::cbox_ctrl<agg::rgba8>    m_channel_g;
-    agg::cbox_ctrl<agg::rgba8>    m_channel_b;
+    agg::rbox_ctrl<color_type>    m_method;
+    agg::slider_ctrl<color_type>  m_radius;
+    agg::polygon_ctrl<color_type> m_shadow_ctrl;
+    agg::cbox_ctrl<color_type>    m_channel_r;
+    agg::cbox_ctrl<color_type>    m_channel_g;
+    agg::cbox_ctrl<color_type>    m_channel_b;
 
     agg::path_storage             m_path;
     typedef agg::conv_curve<agg::path_storage> shape_type;
@@ -71,10 +66,10 @@ public:
     {
         add_ctrl(m_method);
         m_method.text_size(8);
-#if LINEAR_RGB
-        m_method.add_item("No blur");
-#else
+#if USE_STACK_BLUR
         m_method.add_item("Stack blur");
+#else
+        m_method.add_item("No blur");
 #endif
         m_method.add_item("Recursive blur");
         m_method.add_item("Channels");
@@ -147,14 +142,14 @@ public:
                                   &m_shape_bounds.x1, &m_shape_bounds.y1, 
                                   &m_shape_bounds.x2, &m_shape_bounds.y2);
 
-        m_shadow_ctrl.xn(0) = m_shape_bounds.x1;
-        m_shadow_ctrl.yn(0) = m_shape_bounds.y1;
-        m_shadow_ctrl.xn(1) = m_shape_bounds.x2;
-        m_shadow_ctrl.yn(1) = m_shape_bounds.y1;
-        m_shadow_ctrl.xn(2) = m_shape_bounds.x2;
-        m_shadow_ctrl.yn(2) = m_shape_bounds.y2;
-        m_shadow_ctrl.xn(3) = m_shape_bounds.x1;
-        m_shadow_ctrl.yn(3) = m_shape_bounds.y2;
+        m_shadow_ctrl.xn(0) = m_shape_bounds.x1 + 10;
+        m_shadow_ctrl.yn(0) = m_shape_bounds.y1 - 10;
+        m_shadow_ctrl.xn(1) = m_shape_bounds.x2 + 10;
+        m_shadow_ctrl.yn(1) = m_shape_bounds.y1 - 10;
+        m_shadow_ctrl.xn(2) = m_shape_bounds.x2 + 10;
+        m_shadow_ctrl.yn(2) = m_shape_bounds.y2 - 10;
+        m_shadow_ctrl.xn(3) = m_shape_bounds.x1 + 10;
+        m_shadow_ctrl.yn(3) = m_shape_bounds.y2 - 10;
         m_shadow_ctrl.line_color(agg::rgba(0, 0.3, 0.5, 0.3));
     }
 
@@ -179,7 +174,7 @@ public:
 
         // Render shadow
         m_ras.add_path(shadow_trans);
-        agg::render_scanlines_aa_solid(m_ras, m_sl, renb, agg::rgba(0.2,0.3,0));
+        agg::render_scanlines_aa_solid(m_ras, m_sl, renb, agg::rgba(0.1, 0.1, 0.1));
 
         // Calculate the bounding box and extend it by the blur radius
         agg::rect_d bbox;
@@ -212,7 +207,7 @@ public:
                 // Blur it
                 if(m_method.cur_item() == 0)
                 {
-#if !LINEAR_RGB
+#if USE_STACK_BLUR
                     // More general method, but 30-40% slower.
                     //------------------
                     m_stack_blur.blur(pixf2, agg::uround(m_radius.value()));
@@ -289,7 +284,7 @@ public:
         // Render the shape itself
         //------------------
         m_ras.add_path(m_shape);
-        agg::render_scanlines_aa_solid(m_ras, m_sl, renb, agg::rgba(0.6,0.9,0.7, 0.8));
+        agg::render_scanlines_aa_solid(m_ras, m_sl, renb, agg::rgba(0.6, 0.9, 0.7, 0.8));
 
         char buf[64]; 
         agg::gsv_text t;

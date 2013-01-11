@@ -831,6 +831,8 @@ namespace agg
     //-----------------------------------------------------------------------
     typedef blender_rgb<rgba8, order_rgb> blender_rgb24;
     typedef blender_rgb<rgba8, order_bgr> blender_bgr24;
+    typedef blender_rgb<srgba8, order_rgb> blender_srgb24;
+    typedef blender_rgb<srgba8, order_bgr> blender_sbgr24;
     typedef blender_rgb<rgba16, order_rgb> blender_rgb48;
     typedef blender_rgb<rgba16, order_bgr> blender_bgr48;
     typedef blender_rgb<rgba32, order_rgb> blender_rgb96;
@@ -838,6 +840,8 @@ namespace agg
 
     typedef blender_rgb_pre<rgba8, order_rgb> blender_rgb24_pre;
     typedef blender_rgb_pre<rgba8, order_bgr> blender_bgr24_pre;
+    typedef blender_rgb_pre<srgba8, order_rgb> blender_srgb24_pre;
+    typedef blender_rgb_pre<srgba8, order_bgr> blender_sbgr24_pre;
     typedef blender_rgb_pre<rgba16, order_rgb> blender_rgb48_pre;
     typedef blender_rgb_pre<rgba16, order_bgr> blender_bgr48_pre;
     typedef blender_rgb_pre<rgba32, order_rgb> blender_rgb96_pre;
@@ -845,6 +849,8 @@ namespace agg
 
     typedef pixfmt_alpha_blend_rgb<blender_rgb24, rendering_buffer, 3> pixfmt_rgb24;
     typedef pixfmt_alpha_blend_rgb<blender_bgr24, rendering_buffer, 3> pixfmt_bgr24;
+    typedef pixfmt_alpha_blend_rgb<blender_srgb24, rendering_buffer, 3> pixfmt_srgb24;
+    typedef pixfmt_alpha_blend_rgb<blender_sbgr24, rendering_buffer, 3> pixfmt_sbgr24;
     typedef pixfmt_alpha_blend_rgb<blender_rgb48, rendering_buffer, 3> pixfmt_rgb48;
     typedef pixfmt_alpha_blend_rgb<blender_bgr48, rendering_buffer, 3> pixfmt_bgr48;
     typedef pixfmt_alpha_blend_rgb<blender_rgb96, rendering_buffer, 3> pixfmt_rgb96;
@@ -852,6 +858,8 @@ namespace agg
 
     typedef pixfmt_alpha_blend_rgb<blender_rgb24_pre, rendering_buffer, 3> pixfmt_rgb24_pre;
     typedef pixfmt_alpha_blend_rgb<blender_bgr24_pre, rendering_buffer, 3> pixfmt_bgr24_pre;
+    typedef pixfmt_alpha_blend_rgb<blender_srgb24_pre, rendering_buffer, 3> pixfmt_srgb24_pre;
+    typedef pixfmt_alpha_blend_rgb<blender_sbgr24_pre, rendering_buffer, 3> pixfmt_sbgr24_pre;
     typedef pixfmt_alpha_blend_rgb<blender_rgb48_pre, rendering_buffer, 3> pixfmt_rgb48_pre;
     typedef pixfmt_alpha_blend_rgb<blender_bgr48_pre, rendering_buffer, 3> pixfmt_bgr48_pre;
     typedef pixfmt_alpha_blend_rgb<blender_rgb96_pre, rendering_buffer, 3> pixfmt_rgb96_pre;
@@ -861,6 +869,10 @@ namespace agg
     typedef pixfmt_alpha_blend_rgb<blender_rgb24, rendering_buffer, 4, 1> pixfmt_xrgb32;
     typedef pixfmt_alpha_blend_rgb<blender_bgr24, rendering_buffer, 4, 1> pixfmt_xbgr32;
     typedef pixfmt_alpha_blend_rgb<blender_bgr24, rendering_buffer, 4, 0> pixfmt_bgrx32;
+    typedef pixfmt_alpha_blend_rgb<blender_srgb24, rendering_buffer, 4, 0> pixfmt_srgbx32;
+    typedef pixfmt_alpha_blend_rgb<blender_srgb24, rendering_buffer, 4, 1> pixfmt_sxrgb32;
+    typedef pixfmt_alpha_blend_rgb<blender_sbgr24, rendering_buffer, 4, 1> pixfmt_sxbgr32;
+    typedef pixfmt_alpha_blend_rgb<blender_sbgr24, rendering_buffer, 4, 0> pixfmt_sbgrx32;
     typedef pixfmt_alpha_blend_rgb<blender_rgb48, rendering_buffer, 4, 0> pixfmt_rgbx64;
     typedef pixfmt_alpha_blend_rgb<blender_rgb48, rendering_buffer, 4, 1> pixfmt_xrgb64;
     typedef pixfmt_alpha_blend_rgb<blender_bgr48, rendering_buffer, 4, 1> pixfmt_xbgr64;
@@ -874,6 +886,10 @@ namespace agg
     typedef pixfmt_alpha_blend_rgb<blender_rgb24_pre, rendering_buffer, 4, 1> pixfmt_xrgb32_pre;
     typedef pixfmt_alpha_blend_rgb<blender_bgr24_pre, rendering_buffer, 4, 1> pixfmt_xbgr32_pre;
     typedef pixfmt_alpha_blend_rgb<blender_bgr24_pre, rendering_buffer, 4, 0> pixfmt_bgrx32_pre;
+    typedef pixfmt_alpha_blend_rgb<blender_srgb24_pre, rendering_buffer, 4, 0> pixfmt_srgbx32_pre;
+    typedef pixfmt_alpha_blend_rgb<blender_srgb24_pre, rendering_buffer, 4, 1> pixfmt_sxrgb32_pre;
+    typedef pixfmt_alpha_blend_rgb<blender_sbgr24_pre, rendering_buffer, 4, 1> pixfmt_sxbgr32_pre;
+    typedef pixfmt_alpha_blend_rgb<blender_sbgr24_pre, rendering_buffer, 4, 0> pixfmt_sbgrx32_pre;
     typedef pixfmt_alpha_blend_rgb<blender_rgb48_pre, rendering_buffer, 4, 0> pixfmt_rgbx64_pre;
     typedef pixfmt_alpha_blend_rgb<blender_rgb48_pre, rendering_buffer, 4, 1> pixfmt_xrgb64_pre;
     typedef pixfmt_alpha_blend_rgb<blender_bgr48_pre, rendering_buffer, 4, 1> pixfmt_xbgr64_pre;
@@ -896,6 +912,18 @@ namespace agg
         }
     };
         
+    //-----------------------------------------------------pixfmt_srgb24_gamma
+    template<class Gamma> class pixfmt_srgb24_gamma : 
+    public pixfmt_alpha_blend_rgb<blender_rgb_gamma<srgba8, order_rgb, Gamma>, rendering_buffer, 3>
+    {
+    public:
+        pixfmt_srgb24_gamma(rendering_buffer& rb, const Gamma& g) :
+            pixfmt_alpha_blend_rgb<blender_rgb_gamma<srgba8, order_rgb, Gamma>, rendering_buffer, 3>(rb) 
+        {
+            this->blender().gamma(g);
+        }
+    };
+        
     //-----------------------------------------------------pixfmt_bgr24_gamma
     template<class Gamma> class pixfmt_bgr24_gamma : 
     public pixfmt_alpha_blend_rgb<blender_rgb_gamma<rgba8, order_bgr, Gamma>, rendering_buffer, 3>
@@ -903,6 +931,18 @@ namespace agg
     public:
         pixfmt_bgr24_gamma(rendering_buffer& rb, const Gamma& g) :
             pixfmt_alpha_blend_rgb<blender_rgb_gamma<rgba8, order_bgr, Gamma>, rendering_buffer, 3>(rb) 
+        {
+            this->blender().gamma(g);
+        }
+    };
+
+    //-----------------------------------------------------pixfmt_sbgr24_gamma
+    template<class Gamma> class pixfmt_sbgr24_gamma : 
+    public pixfmt_alpha_blend_rgb<blender_rgb_gamma<srgba8, order_bgr, Gamma>, rendering_buffer, 3>
+    {
+    public:
+        pixfmt_sbgr24_gamma(rendering_buffer& rb, const Gamma& g) :
+            pixfmt_alpha_blend_rgb<blender_rgb_gamma<srgba8, order_bgr, Gamma>, rendering_buffer, 3>(rb) 
         {
             this->blender().gamma(g);
         }

@@ -19,10 +19,10 @@ class the_application : public agg::platform_support
 {
     agg::svg::path_renderer m_path;
 
-    agg::slider_ctrl<agg::rgba8> m_expand;
-    agg::slider_ctrl<agg::rgba8> m_gamma;
-    agg::slider_ctrl<agg::rgba8> m_scale;
-    agg::slider_ctrl<agg::rgba8> m_rotate;
+    agg::slider_ctrl<color_type> m_expand;
+    agg::slider_ctrl<color_type> m_gamma;
+    agg::slider_ctrl<color_type> m_scale;
+    agg::slider_ctrl<color_type> m_rotate;
 
     double m_min_x;
     double m_min_y;

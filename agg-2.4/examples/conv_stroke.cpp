@@ -33,10 +33,10 @@ class the_application : public agg::platform_support
     double m_dx;
     double m_dy;
     int    m_idx;
-    agg::rbox_ctrl<agg::rgba8> m_join;
-    agg::rbox_ctrl<agg::rgba8> m_cap;
-    agg::slider_ctrl<agg::rgba8> m_width;
-    agg::slider_ctrl<agg::rgba8> m_miter_limit;
+    agg::rbox_ctrl<color_type> m_join;
+    agg::rbox_ctrl<color_type> m_cap;
+    agg::slider_ctrl<color_type> m_width;
+    agg::slider_ctrl<color_type> m_miter_limit;
 
 
 public:
