@@ -83,22 +83,22 @@ namespace agg
             dst.a = src.a;
         }
 
-        static void convert(gray8T<sRGB>& dst, const srgba8& src)
+        static void convert(gray8T<linear>& dst, const srgba8& src)
         {
             // The RGB weights are only valid for linear values.
             convert(dst, rgba8(src));
-        }
-
-        static void convert(gray8T<linear>& dst, const srgba8& src)
-        {
-            dst.v = luminance(src);
-            dst.a = src.a;
         }
 
         static void convert(gray8T<sRGB>& dst, const rgba8& src)
         {
             dst.v = sRGB_conv<value_type>::rgb_to_sRGB(luminance(src));
             dst.a = src.a;
+        }
+
+        static void convert(gray8T<sRGB>& dst, const srgba8& src)
+        {
+            // The RGB weights are only valid for linear values.
+            convert(dst, rgba8(src));
         }
 
         //--------------------------------------------------------------------

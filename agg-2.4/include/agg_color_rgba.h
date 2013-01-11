@@ -267,6 +267,23 @@ namespace agg
             dst.a = sRGB_conv<float>::alpha_to_sRGB(float(src.a));
         }
 
+        static void convert(rgba& dst, const rgba8T<linear>& src)
+        {
+            dst.r = src.r / 255.0;
+            dst.g = src.g / 255.0;
+            dst.b = src.b / 255.0;
+            dst.a = src.a / 255.0;
+        }
+
+        static void convert(rgba& dst, const rgba8T<sRGB>& src)
+        {
+            // Use the "float" table.
+            dst.r = sRGB_conv<float>::rgb_from_sRGB(src.r);
+            dst.g = sRGB_conv<float>::rgb_from_sRGB(src.g);
+            dst.b = sRGB_conv<float>::rgb_from_sRGB(src.b);
+            dst.a = sRGB_conv<float>::alpha_from_sRGB(src.a);
+        }
+
         //--------------------------------------------------------------------
         rgba8T() {}
 
@@ -292,6 +309,14 @@ namespace agg
         rgba8T(const rgba8T<T>& c)
         {
             convert(*this, c);
+        }
+
+        //--------------------------------------------------------------------
+        operator rgba() const 
+        {
+            rgba c;
+            convert(c, *this);
+            return c;
         }
 
         //--------------------------------------------------------------------
@@ -638,6 +663,16 @@ namespace agg
             a(sRGB_conv<value_type>::alpha_from_sRGB(c.a)) {}
 
         //--------------------------------------------------------------------
+        operator rgba() const 
+        {
+            return rgba(
+                r / 65535.0, 
+                g / 65535.0, 
+                b / 65535.0, 
+                a / 65535.0);
+        }
+
+        //--------------------------------------------------------------------
         operator rgba8() const 
         {
             return rgba8(r >> 8, g >> 8, b >> 8, a >> 8);
@@ -962,6 +997,13 @@ namespace agg
             a(sRGB_conv<value_type>::alpha_from_sRGB(c.a)) {}
 
         //--------------------------------------------------------------------
+        rgba32(const rgba16& c) :
+            r(value_type(c.r / 65535.0)), 
+            g(value_type(c.g / 65535.0)), 
+            b(value_type(c.b / 65535.0)), 
+            a(value_type(c.a / 65535.0)) {}
+
+        //--------------------------------------------------------------------
         operator rgba() const 
         {
             return rgba(r, g, b, a);
@@ -985,6 +1027,16 @@ namespace agg
                 sRGB_conv<value_type>::rgb_to_sRGB(g), 
                 sRGB_conv<value_type>::rgb_to_sRGB(b), 
                 sRGB_conv<value_type>::alpha_to_sRGB(a));
+        }
+
+        //--------------------------------------------------------------------
+        operator rgba16() const 
+        {
+            return rgba8(
+                uround(r * 65535.0), 
+                uround(g * 65535.0), 
+                uround(b * 65535.0), 
+                uround(a * 65535.0));
         }
 
         //--------------------------------------------------------------------
