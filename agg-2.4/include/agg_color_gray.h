@@ -135,15 +135,15 @@ namespace agg
         template<class T> 
         T convert_from_sRGB() const 
         {
-            T::value_type y = sRGB_conv<T::value_type>::rgb_from_sRGB(v);
-            return T(y, y, y, sRGB_conv<T::value_type>::alpha_from_sRGB(a));
+            typename T::value_type y = sRGB_conv<typename T::value_type>::rgb_from_sRGB(v);
+            return T(y, y, y, sRGB_conv<typename T::value_type>::alpha_from_sRGB(a));
         }
 
         template<class T> 
         T convert_to_sRGB() const 
         {
-            T::value_type y = sRGB_conv<T::value_type>::rgb_to_sRGB(v);
-            return T(y, y, y, sRGB_conv<T::value_type>::alpha_to_sRGB(a));
+            typename T::value_type y = sRGB_conv<typename T::value_type>::rgb_to_sRGB(v);
+            return T(y, y, y, sRGB_conv<typename T::value_type>::alpha_to_sRGB(a));
         }
 
         //--------------------------------------------------------------------

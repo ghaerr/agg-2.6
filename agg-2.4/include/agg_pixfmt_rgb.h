@@ -74,8 +74,14 @@ namespace agg
 
     //=========================================================blender_rgb
     template<class ColorT, class Order> 
-    struct blender_rgb : blender_base<ColorT, Order>
+    struct blender_rgb
     {
+        typedef ColorT color_type;
+        typedef Order order_type;
+        typedef typename color_type::value_type value_type;
+        typedef typename color_type::calc_type calc_type;
+        typedef typename color_type::long_type long_type;
+
         // Blend pixels using the non-premultiplied form of Alvy-Ray Smith's
         // compositing function. Since the render buffer is opaque we skip the
         // initial premultiply and final demultiply.
@@ -84,23 +90,29 @@ namespace agg
         static AGG_INLINE void blend_pix(value_type* p, 
             value_type cr, value_type cg, value_type cb, value_type alpha, cover_type cover)
         {
-            blend_pix(p, cr, cg, cb, mult_cover(alpha, cover));
+            blend_pix(p, cr, cg, cb, color_type::mult_cover(alpha, cover));
         }
         
         //--------------------------------------------------------------------
         static AGG_INLINE void blend_pix(value_type* p, 
             value_type cr, value_type cg, value_type cb, value_type alpha)
         {
-            p[Order::R] = lerp(p[Order::R], cr, alpha);
-            p[Order::G] = lerp(p[Order::G], cg, alpha);
-            p[Order::B] = lerp(p[Order::B], cb, alpha);
+            p[Order::R] = color_type::lerp(p[Order::R], cr, alpha);
+            p[Order::G] = color_type::lerp(p[Order::G], cg, alpha);
+            p[Order::B] = color_type::lerp(p[Order::B], cb, alpha);
         }
     };
 
     //======================================================blender_rgb_pre
     template<class ColorT, class Order> 
-    struct blender_rgb_pre : blender_base<ColorT, Order>
+    struct blender_rgb_pre
     {
+        typedef ColorT color_type;
+        typedef Order order_type;
+        typedef typename color_type::value_type value_type;
+        typedef typename color_type::calc_type calc_type;
+        typedef typename color_type::long_type long_type;
+
         // Blend pixels using the premultiplied form of Alvy-Ray Smith's
         // compositing function. 
 
@@ -109,19 +121,19 @@ namespace agg
             value_type cr, value_type cg, value_type cb, value_type alpha, cover_type cover)
         {
             blend_pix(p, 
-                mult_cover(cr, cover), 
-                mult_cover(cg, cover), 
-                mult_cover(cb, cover), 
-                mult_cover(alpha, cover));
+                color_type::mult_cover(cr, cover), 
+                color_type::mult_cover(cg, cover), 
+                color_type::mult_cover(cb, cover), 
+                color_type::mult_cover(alpha, cover));
         }
 
         //--------------------------------------------------------------------
         static AGG_INLINE void blend_pix(value_type* p, 
             value_type cr, value_type cg, value_type cb, value_type alpha)
         {
-            p[Order::R] = prelerp(p[Order::R], cr, alpha);
-            p[Order::G] = prelerp(p[Order::G], cg, alpha);
-            p[Order::B] = prelerp(p[Order::B], cb, alpha);
+            p[Order::R] = color_type::prelerp(p[Order::R], cr, alpha);
+            p[Order::G] = color_type::prelerp(p[Order::G], cg, alpha);
+            p[Order::B] = color_type::prelerp(p[Order::B], cb, alpha);
         }
     };
 
@@ -130,7 +142,12 @@ namespace agg
     class blender_rgb_gamma : public blender_base<ColorT, Order>
     {
     public:
+        typedef ColorT color_type;
+        typedef Order order_type;
         typedef Gamma gamma_type;
+        typedef typename color_type::value_type value_type;
+        typedef typename color_type::calc_type calc_type;
+        typedef typename color_type::long_type long_type;
 
         //--------------------------------------------------------------------
         blender_rgb_gamma() : m_gamma(0) {}
@@ -140,7 +157,7 @@ namespace agg
         AGG_INLINE void blend_pix(value_type* p, 
             value_type cr, value_type cg, value_type cb, value_type alpha, cover_type cover)
         {
-            blend_pix(p, cr, cg, cb, mult_cover(alpha, cover));
+            blend_pix(p, cr, cg, cb, color_type::mult_cover(alpha, cover));
         }
         
         //--------------------------------------------------------------------
@@ -150,9 +167,9 @@ namespace agg
             calc_type r = m_gamma->dir(p[Order::R]);
             calc_type g = m_gamma->dir(p[Order::G]);
             calc_type b = m_gamma->dir(p[Order::B]);
-            p[Order::R] = m_gamma->inv(lerp(r, m_gamma->dir(cr), alpha));
-            p[Order::G] = m_gamma->inv(lerp(g, m_gamma->dir(cg), alpha));
-            p[Order::B] = m_gamma->inv(lerp(b, m_gamma->dir(cb), alpha));
+            p[Order::R] = m_gamma->inv(color_type::lerp(r, m_gamma->dir(cr), alpha));
+            p[Order::G] = m_gamma->inv(color_type::lerp(g, m_gamma->dir(cg), alpha));
+            p[Order::B] = m_gamma->inv(color_type::lerp(b, m_gamma->dir(cb), alpha));
         }
         
     private:
@@ -720,9 +737,9 @@ namespace agg
                     do 
                     {
                         value_type alpha = psrc->c[src_order::A];
-                        if (!color_type::is_empty(alpha))
+                        if (alpha <= color_type::empty_value())
                         {
-                            if (color_type::is_full(alpha))
+                            if (alpha >= color_type::full_value())
                             {
                                 pdst->c[order_type::R] = psrc->c[src_order::R];
                                 pdst->c[order_type::G] = psrc->c[src_order::G];

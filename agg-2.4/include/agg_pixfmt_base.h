@@ -41,78 +41,16 @@ namespace agg
         typedef ColorT color_type;
         typedef Order order_type;
         typedef typename color_type::value_type value_type;
-        typedef typename color_type::calc_type calc_type;
-        typedef typename color_type::long_type long_type;
-
-        static value_type invert(value_type a)
-        {
-            return color_type::invert(a);
-        }
-
-        static value_type multiply(value_type a, value_type b)
-        {
-            return color_type::multiply(a, b);
-        }
-
-        static value_type demultiply(value_type a, value_type b)
-        {
-            return color_type::demultiply(a, b);
-        }
-
-        static value_type mult_cover(value_type a, cover_type b) 
-        {
-            return color_type::mult_cover(a, b);
-        }
-
-        static value_type prelerp(value_type p, value_type q, value_type a) 
-        {
-            return color_type::prelerp(p, q, a);
-        }
-        
-        static value_type lerp(value_type p, value_type q, value_type a) 
-        {
-            return color_type::lerp(p, q, a);
-        }
-
-        static value_type empty_value()
-        {
-            return color_type::empty_value();
-        }
-
-        static value_type full_value()
-        {
-            return color_type::full_value();
-        }
-
-        static bool is_empty(value_type a)
-        {
-            return a <= empty_value();
-        }
-
-        static bool is_full(value_type a)
-        {
-            return a >= full_value();
-        }
-
-        static double to_double(value_type a)
-        {
-            return color_type::to_double(a);
-        }
-
-        static value_type from_double(double a)
-        {
-            return color_type::from_double(a);
-        }
 
         static rgba get(value_type r, value_type g, value_type b, value_type a, cover_type cover = cover_full)
         {
             if (cover > cover_none)
             {
                 rgba c(
-                    to_double(r), 
-                    to_double(g), 
-                    to_double(b), 
-                    to_double(a));
+                    color_type::to_double(r), 
+                    color_type::to_double(g), 
+                    color_type::to_double(b), 
+                    color_type::to_double(a));
 
                 if (cover < cover_full)
                 {
@@ -140,18 +78,18 @@ namespace agg
 
         static void set(value_type* p, value_type r, value_type g, value_type b, value_type a)
         {
-            p[Order::R] = r;
-            p[Order::G] = g;
-            p[Order::B] = b;
-            p[Order::A] = a;
+            p[order_type::R] = r;
+            p[order_type::G] = g;
+            p[order_type::B] = b;
+            p[order_type::A] = a;
         }
 
         static void set(value_type* p, const rgba& c)
         {
-            p[order_type::R] = from_double(c.r);
-            p[order_type::G] = from_double(c.g);
-            p[order_type::B] = from_double(c.b);
-            p[order_type::A] = from_double(c.a);
+            p[order_type::R] = color_type::from_double(c.r);
+            p[order_type::G] = color_type::from_double(c.g);
+            p[order_type::B] = color_type::from_double(c.b);
+            p[order_type::A] = color_type::from_double(c.a);
         }
     };
 }

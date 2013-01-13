@@ -32,8 +32,13 @@ namespace agg
 {
  
     //============================================================blender_gray
-    template<class ColorT> struct blender_gray : blender_base<ColorT>
+    template<class ColorT> struct blender_gray
     {
+        typedef ColorT color_type;
+        typedef typename color_type::value_type value_type;
+        typedef typename color_type::calc_type calc_type;
+        typedef typename color_type::long_type long_type;
+
         // Blend pixels using the non-premultiplied form of Alvy-Ray Smith's
         // compositing function. Since the render buffer is opaque we skip the
         // initial premultiply and final demultiply.
@@ -41,33 +46,38 @@ namespace agg
         static AGG_INLINE void blend_pix(value_type* p, 
             value_type cv, value_type alpha, cover_type cover)
         {
-            blend_pix(p, cv, mult_cover(alpha, cover));
+            blend_pix(p, cv, color_type::mult_cover(alpha, cover));
         }
 
         static AGG_INLINE void blend_pix(value_type* p, 
             value_type cv, value_type alpha)
         {
-            *p = lerp(*p, cv, alpha);
+            *p = color_type::lerp(*p, cv, alpha);
         }
     };
 
 
     //======================================================blender_gray_pre
-    template<class ColorT> struct blender_gray_pre : blender_base<ColorT>
+    template<class ColorT> struct blender_gray_pre
     {
+        typedef ColorT color_type;
+        typedef typename color_type::value_type value_type;
+        typedef typename color_type::calc_type calc_type;
+        typedef typename color_type::long_type long_type;
+
         // Blend pixels using the premultiplied form of Alvy-Ray Smith's
         // compositing function. 
 
         static AGG_INLINE void blend_pix(value_type* p, 
             value_type cv, value_type alpha, cover_type cover)
         {
-            blend_pix(p, mult_cover(cv, cover), mult_cover(alpha, cover));
+            blend_pix(p, color_type::mult_cover(cv, cover), color_type::mult_cover(alpha, cover));
         }
 
         static AGG_INLINE void blend_pix(value_type* p, 
             value_type cv, value_type alpha)
         {
-            *p = prelerp(*p, cv, alpha);
+            *p = color_type::prelerp(*p, cv, alpha);
         }
     };
     
@@ -145,7 +155,7 @@ namespace agg
                 set(color.v);
             }
 
-            void get(value_type& r, value_type& g, value_type& b) const
+            void get(value_type& v) const
             {
                 v = c[0];
             }
@@ -186,8 +196,7 @@ namespace agg
         }
 
         //--------------------------------------------------------------------
-        AGG_INLINE void blend_pix(pixel_type* p, 
-            value_type r, value_type g, value_type b, value_type a)
+        AGG_INLINE void blend_pix(pixel_type* p, value_type v, value_type a)
         {
             blender_type::blend_pix(p->c, v, a);
         }

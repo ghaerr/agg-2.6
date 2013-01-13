@@ -45,15 +45,18 @@ namespace agg
 
     //=========================================================multiplier_rgba
     template<class ColorT, class Order> 
-    struct multiplier_rgba : blender_base<ColorT, Order>
+    struct multiplier_rgba
     {
+        typedef ColorT color_type;
+        typedef typename color_type::value_type value_type;
+
         //--------------------------------------------------------------------
         static AGG_INLINE void premultiply(value_type* p)
         {
             value_type a = p[Order::A];
-            p[Order::R] = multiply(p[Order::R], a);
-            p[Order::G] = multiply(p[Order::G], a);
-            p[Order::B] = multiply(p[Order::B], a);
+            p[Order::R] = color_type::multiply(p[Order::R], a);
+            p[Order::G] = color_type::multiply(p[Order::G], a);
+            p[Order::B] = color_type::multiply(p[Order::B], a);
         }
 
 
@@ -61,9 +64,9 @@ namespace agg
         static AGG_INLINE void demultiply(value_type* p)
         {
             value_type a = p[Order::A];
-            p[Order::R] = blender_base::demultiply(p[Order::R], a);
-            p[Order::G] = blender_base::demultiply(p[Order::G], a);
-            p[Order::B] = blender_base::demultiply(p[Order::B], a);
+            p[Order::R] = color_type::demultiply(p[Order::R], a);
+            p[Order::G] = color_type::demultiply(p[Order::G], a);
+            p[Order::B] = color_type::demultiply(p[Order::B], a);
         }
     };
 
@@ -72,7 +75,8 @@ namespace agg
     class apply_gamma_dir_rgba
     {
     public:
-        typedef typename ColorT::value_type value_type;
+        typedef ColorT color_type;
+        typedef typename color_type::value_type value_type;
 
         apply_gamma_dir_rgba(const GammaLut& gamma) : m_gamma(gamma) {}
 
@@ -91,7 +95,8 @@ namespace agg
     template<class ColorT, class Order, class GammaLut> class apply_gamma_inv_rgba
     {
     public:
-        typedef typename ColorT::value_type value_type;
+        typedef ColorT color_type;
+        typedef typename color_type::value_type value_type;
 
         apply_gamma_inv_rgba(const GammaLut& gamma) : m_gamma(gamma) {}
 
@@ -110,8 +115,14 @@ namespace agg
     //=============================================================blender_rgba
     // Blends "plain" (i.e. non-premultiplied) colors into a premultiplied buffer.
     template<class ColorT, class Order> 
-    struct blender_rgba : blender_base<ColorT, Order>
+    struct blender_rgba
     {
+        typedef ColorT color_type;
+        typedef Order order_type;
+        typedef typename color_type::value_type value_type;
+        typedef typename color_type::calc_type calc_type;
+        typedef typename color_type::long_type long_type;
+
         // Blend pixels using the non-premultiplied form of Alvy-Ray Smith's
         // compositing function. Since the render buffer is in fact premultiplied
         // we omit the initial premultiplication and final demultiplication.
@@ -121,20 +132,20 @@ namespace agg
             value_type cr, value_type cg, value_type cb, value_type alpha, cover_type cover)
         {
             alpha = color_type::mult_cover(alpha, cover);
-            p[Order::R] = lerp(p[Order::R], cr, alpha);
-            p[Order::G] = lerp(p[Order::G], cg, alpha);
-            p[Order::B] = lerp(p[Order::B], cb, alpha);
-            p[Order::A] = prelerp(p[Order::A], alpha, alpha);
+            p[Order::R] = color_type::lerp(p[Order::R], cr, alpha);
+            p[Order::G] = color_type::lerp(p[Order::G], cg, alpha);
+            p[Order::B] = color_type::lerp(p[Order::B], cb, alpha);
+            p[Order::A] = color_type::prelerp(p[Order::A], alpha, alpha);
         }
         
         //--------------------------------------------------------------------
         static AGG_INLINE void blend_pix(value_type* p, 
             value_type cr, value_type cg, value_type cb, value_type alpha)
         {
-            p[Order::R] = lerp(p[Order::R], cr, alpha);
-            p[Order::G] = lerp(p[Order::G], cg, alpha);
-            p[Order::B] = lerp(p[Order::B], cb, alpha);
-            p[Order::A] = prelerp(p[Order::A], alpha, alpha);
+            p[Order::R] = color_type::lerp(p[Order::R], cr, alpha);
+            p[Order::G] = color_type::lerp(p[Order::G], cg, alpha);
+            p[Order::B] = color_type::lerp(p[Order::B], cb, alpha);
+            p[Order::A] = color_type::prelerp(p[Order::A], alpha, alpha);
         }
 
         //--------------------------------------------------------------------
@@ -162,8 +173,14 @@ namespace agg
     //========================================================blender_rgba_pre
     // Blends premultiplied colors into a premultiplied buffer.
     template<class ColorT, class Order> 
-    struct blender_rgba_pre : blender_base<ColorT, Order>
+    struct blender_rgba_pre
     {
+        typedef ColorT color_type;
+        typedef Order order_type;
+        typedef typename color_type::value_type value_type;
+        typedef typename color_type::calc_type calc_type;
+        typedef typename color_type::long_type long_type;
+
         // Blend pixels using the premultiplied form of Alvy-Ray Smith's
         // compositing function. 
 
@@ -172,20 +189,20 @@ namespace agg
             value_type cr, value_type cg, value_type cb, value_type alpha, cover_type cover)
         {
             blend_pix(p, 
-                mult_cover(cr, cover), 
-                mult_cover(cg, cover), 
-                mult_cover(cb, cover), 
-                mult_cover(alpha, cover));
+                color_type::mult_cover(cr, cover), 
+                color_type::mult_cover(cg, cover), 
+                color_type::mult_cover(cb, cover), 
+                color_type::mult_cover(alpha, cover));
         }
         
         //--------------------------------------------------------------------
         static AGG_INLINE void blend_pix(value_type* p, 
             value_type cr, value_type cg, value_type cb, value_type alpha)
         {
-            p[Order::R] = prelerp(p[Order::R], cr, alpha);
-            p[Order::G] = prelerp(p[Order::G], cg, alpha);
-            p[Order::B] = prelerp(p[Order::B], cb, alpha);
-            p[Order::A] = prelerp(p[Order::A], alpha, alpha);
+            p[Order::R] = color_type::prelerp(p[Order::R], cr, alpha);
+            p[Order::G] = color_type::prelerp(p[Order::G], cg, alpha);
+            p[Order::B] = color_type::prelerp(p[Order::B], cb, alpha);
+            p[Order::A] = color_type::prelerp(p[Order::A], alpha, alpha);
         }
 
         //--------------------------------------------------------------------
@@ -212,8 +229,14 @@ namespace agg
     //======================================================blender_rgba_plain
     // Blends "plain" (non-premultiplied) colors into a plain (non-premultiplied) buffer.
     template<class ColorT, class Order> 
-    struct blender_rgba_plain : blender_base<ColorT, Order>
+    struct blender_rgba_plain
     {
+        typedef ColorT color_type;
+        typedef Order order_type;
+        typedef typename color_type::value_type value_type;
+        typedef typename color_type::calc_type calc_type;
+        typedef typename color_type::long_type long_type;
+
         // Blend pixels using the non-premultiplied form of Alvy-Ray Smith's
         // compositing function. 
 
@@ -228,16 +251,16 @@ namespace agg
         static AGG_INLINE void blend_pix(value_type* p, 
             value_type cr, value_type cg, value_type cb, value_type alpha)
         {
-            if (!is_empty(alpha))
+            if (alpha > color_type::empty_value())
             {
                 calc_type a = p[Order::A];
-                calc_type r = multiply(p[Order::R], a);
-                calc_type g =multiply(p[Order::G], a);
-                calc_type b =multiply(p[Order::B], a);
-                p[Order::R] = lerp(r, cr, alpha);
-                p[Order::G] = lerp(g, cg, alpha);
-                p[Order::B] = lerp(b, cb, alpha);
-                p[Order::A] = prelerp(a, alpha, alpha);
+                calc_type r = color_type::multiply(p[Order::R], a);
+                calc_type g = color_type::multiply(p[Order::G], a);
+                calc_type b = color_type::multiply(p[Order::B], a);
+                p[Order::R] = color_type::lerp(r, cr, alpha);
+                p[Order::G] = color_type::lerp(g, cg, alpha);
+                p[Order::B] = color_type::lerp(b, cb, alpha);
+                p[Order::A] = color_type::prelerp(a, alpha, alpha);
                 multiplier_rgba<ColorT, Order>::demultiply(p);
             }
         }
@@ -269,6 +292,11 @@ namespace agg
     template<class ColorT, class Order> 
     struct comp_op_rgba_clear : blender_base<ColorT, Order>
     {
+        typedef ColorT color_type;
+        typedef typename color_type::value_type value_type;
+        using blender_base<ColorT, Order>::get;
+        using blender_base<ColorT, Order>::set;
+
         // Dca' = 0
         // Da'  = 0
         static AGG_INLINE void blend_pix(value_type* p, 
@@ -276,7 +304,7 @@ namespace agg
         {
             if (cover >= cover_full)
             {
-                p[0] = p[1] = p[2] = p[3] = empty_value(); 
+                p[0] = p[1] = p[2] = p[3] = color_type::empty_value(); 
             }
             else if (cover > cover_none)
             {
@@ -289,6 +317,11 @@ namespace agg
     template<class ColorT, class Order> 
     struct comp_op_rgba_src : blender_base<ColorT, Order>
     {
+        typedef ColorT color_type;
+        typedef typename color_type::value_type value_type;
+        using blender_base<ColorT, Order>::get;
+        using blender_base<ColorT, Order>::set;
+
         // Dca' = Sca
         // Da'  = Sa
         static AGG_INLINE void blend_pix(value_type* p, 
@@ -315,6 +348,9 @@ namespace agg
     template<class ColorT, class Order> 
     struct comp_op_rgba_dst : blender_base<ColorT, Order>
     {
+        typedef ColorT color_type;
+        typedef typename color_type::value_type value_type;
+
         // Dca' = Dca.Sa + Dca.(1 - Sa) = Dca
         // Da'  = Da.Sa + Da.(1 - Sa) = Da
         static AGG_INLINE void blend_pix(value_type* p, 
@@ -328,6 +364,11 @@ namespace agg
     template<class ColorT, class Order> 
     struct comp_op_rgba_src_over : blender_base<ColorT, Order>
     {
+        typedef ColorT color_type;
+        typedef typename color_type::value_type value_type;
+        using blender_base<ColorT, Order>::get;
+        using blender_base<ColorT, Order>::set;
+
         // Dca' = Sca + Dca.(1 - Sa) = Dca + Sca - Dca.Sa
         // Da'  = Sa + Da - Sa.Da 
         static AGG_INLINE void blend_pix(value_type* p, 
@@ -351,6 +392,11 @@ namespace agg
     template<class ColorT, class Order> 
     struct comp_op_rgba_dst_over : blender_base<ColorT, Order>
     {
+        typedef ColorT color_type;
+        typedef typename color_type::value_type value_type;
+        using blender_base<ColorT, Order>::get;
+        using blender_base<ColorT, Order>::set;
+
         // Dca' = Dca + Sca.(1 - Da)
         // Da'  = Sa + Da - Sa.Da = Da + Sa.(1 - Da)
         static AGG_INLINE void blend_pix(value_type* p, 
@@ -371,12 +417,17 @@ namespace agg
     template<class ColorT, class Order> 
     struct comp_op_rgba_src_in : blender_base<ColorT, Order>
     {
+        typedef ColorT color_type;
+        typedef typename color_type::value_type value_type;
+        using blender_base<ColorT, Order>::get;
+        using blender_base<ColorT, Order>::set;
+
         // Dca' = Sca.Da
         // Da'  = Sa.Da 
         static AGG_INLINE void blend_pix(value_type* p, 
             value_type r, value_type g, value_type b, value_type a, cover_type cover)
         {
-            double da = to_double(p[Order::A]);
+            double da = ColorT::to_double(p[Order::A]);
             if (da > 0)
             {
                 rgba s = get(r, g, b, a, cover);
@@ -394,12 +445,17 @@ namespace agg
     template<class ColorT, class Order> 
     struct comp_op_rgba_dst_in : blender_base<ColorT, Order>
     {
+        typedef ColorT color_type;
+        typedef typename color_type::value_type value_type;
+        using blender_base<ColorT, Order>::get;
+        using blender_base<ColorT, Order>::set;
+
         // Dca' = Dca.Sa
         // Da'  = Sa.Da 
         static AGG_INLINE void blend_pix(value_type* p, 
             value_type r, value_type g, value_type b, value_type a, cover_type cover)
         {
-            double sa = to_double(a);
+            double sa = ColorT::to_double(a);
             rgba d = get(p, cover_full - cover);
             rgba d2 = get(p, cover);
             d.r += d2.r * sa;
@@ -414,6 +470,11 @@ namespace agg
     template<class ColorT, class Order> 
     struct comp_op_rgba_src_out : blender_base<ColorT, Order>
     {
+        typedef ColorT color_type;
+        typedef typename color_type::value_type value_type;
+        using blender_base<ColorT, Order>::get;
+        using blender_base<ColorT, Order>::set;
+
         // Dca' = Sca.(1 - Da)
         // Da'  = Sa.(1 - Da) 
         static AGG_INLINE void blend_pix(value_type* p, 
@@ -421,7 +482,7 @@ namespace agg
         {
             rgba s = get(r, g, b, a, cover);
             rgba d = get(p, cover_full - cover);
-            double d1a = 1 - to_double(p[Order::A]);
+            double d1a = 1 - ColorT::to_double(p[Order::A]);
             d.r += s.r * d1a;
             d.g += s.g * d1a;
             d.b += s.b * d1a;
@@ -434,6 +495,11 @@ namespace agg
     template<class ColorT, class Order> 
     struct comp_op_rgba_dst_out : blender_base<ColorT, Order>
     {
+        typedef ColorT color_type;
+        typedef typename color_type::value_type value_type;
+        using blender_base<ColorT, Order>::get;
+        using blender_base<ColorT, Order>::set;
+
         // Dca' = Dca.(1 - Sa) 
         // Da'  = Da.(1 - Sa) 
         static AGG_INLINE void blend_pix(value_type* p, 
@@ -441,7 +507,7 @@ namespace agg
         {
             rgba d = get(p, cover_full - cover);
             rgba dc = get(p, cover);
-            double s1a = 1 - to_double(a);
+            double s1a = 1 - ColorT::to_double(a);
             d.r += dc.r * s1a;
             d.g += dc.g * s1a;
             d.b += dc.b * s1a;
@@ -454,6 +520,11 @@ namespace agg
     template<class ColorT, class Order> 
     struct comp_op_rgba_src_atop : blender_base<ColorT, Order>
     {
+        typedef ColorT color_type;
+        typedef typename color_type::value_type value_type;
+        using blender_base<ColorT, Order>::get;
+        using blender_base<ColorT, Order>::set;
+
         // Dca' = Sca.Da + Dca.(1 - Sa)
         // Da'  = Da
         static AGG_INLINE void blend_pix(value_type* p, 
@@ -473,6 +544,11 @@ namespace agg
     template<class ColorT, class Order> 
     struct comp_op_rgba_dst_atop : blender_base<ColorT, Order>
     {
+        typedef ColorT color_type;
+        typedef typename color_type::value_type value_type;
+        using blender_base<ColorT, Order>::get;
+        using blender_base<ColorT, Order>::set;
+
         // Dca' = Dca.Sa + Sca.(1 - Da)
         // Da'  = Sa 
         static AGG_INLINE void blend_pix(value_type* p, 
@@ -481,8 +557,8 @@ namespace agg
             rgba sc = get(r, g, b, a, cover);
             rgba dc = get(p, cover);
             rgba d = get(p, cover_full - cover);
-            double sa = to_double(a);
-            double d1a = 1 - to_double(p[Order::A]);
+            double sa = ColorT::to_double(a);
+            double d1a = 1 - ColorT::to_double(p[Order::A]);
             d.r += dc.r * sa + sc.r * d1a;
             d.g += dc.g * sa + sc.g * d1a;
             d.b += dc.b * sa + sc.b * d1a;
@@ -495,6 +571,11 @@ namespace agg
     template<class ColorT, class Order> 
     struct comp_op_rgba_xor : blender_base<ColorT, Order>
     {
+        typedef ColorT color_type;
+        typedef typename color_type::value_type value_type;
+        using blender_base<ColorT, Order>::get;
+        using blender_base<ColorT, Order>::set;
+
         // Dca' = Sca.(1 - Da) + Dca.(1 - Sa)
         // Da'  = Sa + Da - 2.Sa.Da 
         static AGG_INLINE void blend_pix(value_type* p, 
@@ -503,7 +584,7 @@ namespace agg
             rgba s = get(r, g, b, a, cover);
             rgba d = get(p);
             double s1a = 1 - s.a;
-            double d1a = 1 - to_double(p[Order::A]);
+            double d1a = 1 - ColorT::to_double(p[Order::A]);
             d.r = s.r * d1a + d.r * s1a;
             d.g = s.g * d1a + d.g * s1a;
             d.b = s.b * d1a + d.b * s1a;
@@ -516,6 +597,11 @@ namespace agg
     template<class ColorT, class Order> 
     struct comp_op_rgba_plus : blender_base<ColorT, Order>
     {
+        typedef ColorT color_type;
+        typedef typename color_type::value_type value_type;
+        using blender_base<ColorT, Order>::get;
+        using blender_base<ColorT, Order>::set;
+
         // Dca' = Sca + Dca
         // Da'  = Sa + Da 
         static AGG_INLINE void blend_pix(value_type* p, 
@@ -539,6 +625,11 @@ namespace agg
     template<class ColorT, class Order> 
     struct comp_op_rgba_minus : blender_base<ColorT, Order>
     {
+        typedef ColorT color_type;
+        typedef typename color_type::value_type value_type;
+        using blender_base<ColorT, Order>::get;
+        using blender_base<ColorT, Order>::set;
+
         // Dca' = Dca - Sca
         // Da' = 1 - (1 - Sa).(1 - Da) = Da + Sa - Sa.Da
         static AGG_INLINE void blend_pix(value_type* p, 
@@ -561,6 +652,11 @@ namespace agg
     template<class ColorT, class Order> 
     struct comp_op_rgba_multiply : blender_base<ColorT, Order>
     {
+        typedef ColorT color_type;
+        typedef typename color_type::value_type value_type;
+        using blender_base<ColorT, Order>::get;
+        using blender_base<ColorT, Order>::set;
+
         // Dca' = Sca.Dca + Sca.(1 - Da) + Dca.(1 - Sa)
         // Da'  = Sa + Da - Sa.Da 
         static AGG_INLINE void blend_pix(value_type* p, 
@@ -585,6 +681,11 @@ namespace agg
     template<class ColorT, class Order> 
     struct comp_op_rgba_screen : blender_base<ColorT, Order>
     {
+        typedef ColorT color_type;
+        typedef typename color_type::value_type value_type;
+        using blender_base<ColorT, Order>::get;
+        using blender_base<ColorT, Order>::set;
+
         // Dca' = Sca + Dca - Sca.Dca
         // Da'  = Sa + Da - Sa.Da 
         static AGG_INLINE void blend_pix(value_type* p, 
@@ -607,6 +708,11 @@ namespace agg
     template<class ColorT, class Order> 
     struct comp_op_rgba_overlay : blender_base<ColorT, Order>
     {
+        typedef ColorT color_type;
+        typedef typename color_type::value_type value_type;
+        using blender_base<ColorT, Order>::get;
+        using blender_base<ColorT, Order>::set;
+
         // if 2.Dca <= Da
         //   Dca' = 2.Sca.Dca + Sca.(1 - Da) + Dca.(1 - Sa)
         // otherwise
@@ -643,6 +749,11 @@ namespace agg
     template<class ColorT, class Order> 
     struct comp_op_rgba_darken : blender_base<ColorT, Order>
     {
+        typedef ColorT color_type;
+        typedef typename color_type::value_type value_type;
+        using blender_base<ColorT, Order>::get;
+        using blender_base<ColorT, Order>::set;
+
         // Dca' = min(Sca.Da, Dca.Sa) + Sca.(1 - Da) + Dca.(1 - Sa)
         // Da'  = Sa + Da - Sa.Da 
         static AGG_INLINE void blend_pix(value_type* p, 
@@ -667,6 +778,11 @@ namespace agg
     template<class ColorT, class Order> 
     struct comp_op_rgba_lighten : blender_base<ColorT, Order>
     {
+        typedef ColorT color_type;
+        typedef typename color_type::value_type value_type;
+        using blender_base<ColorT, Order>::get;
+        using blender_base<ColorT, Order>::set;
+
         // Dca' = max(Sca.Da, Dca.Sa) + Sca.(1 - Da) + Dca.(1 - Sa)
         // Da'  = Sa + Da - Sa.Da 
         static AGG_INLINE void blend_pix(value_type* p, 
@@ -691,6 +807,11 @@ namespace agg
     template<class ColorT, class Order> 
     struct comp_op_rgba_color_dodge : blender_base<ColorT, Order>
     {
+        typedef ColorT color_type;
+        typedef typename color_type::value_type value_type;
+        using blender_base<ColorT, Order>::get;
+        using blender_base<ColorT, Order>::set;
+
         // if Sca == Sa and Dca == 0
         //     Dca' = Sca.(1 - Da) + Dca.(1 - Sa) = Sca.(1 - Da)
         // otherwise if Sca == Sa
@@ -733,6 +854,11 @@ namespace agg
     template<class ColorT, class Order> 
     struct comp_op_rgba_color_burn : blender_base<ColorT, Order>
     {
+        typedef ColorT color_type;
+        typedef typename color_type::value_type value_type;
+        using blender_base<ColorT, Order>::get;
+        using blender_base<ColorT, Order>::set;
+
         // if Sca == 0 and Dca == Da
         //   Dca' = Sa.Da + Dca.(1 - Sa)
         // otherwise if Sca == 0
@@ -773,6 +899,11 @@ namespace agg
     template<class ColorT, class Order> 
     struct comp_op_rgba_hard_light : blender_base<ColorT, Order>
     {
+        typedef ColorT color_type;
+        typedef typename color_type::value_type value_type;
+        using blender_base<ColorT, Order>::get;
+        using blender_base<ColorT, Order>::set;
+
         // if 2.Sca < Sa
         //    Dca' = 2.Sca.Dca + Sca.(1 - Da) + Dca.(1 - Sa)
         // otherwise
@@ -809,6 +940,11 @@ namespace agg
     template<class ColorT, class Order> 
     struct comp_op_rgba_soft_light : blender_base<ColorT, Order>
     {
+        typedef ColorT color_type;
+        typedef typename color_type::value_type value_type;
+        using blender_base<ColorT, Order>::get;
+        using blender_base<ColorT, Order>::set;
+
         // if 2.Sca <= Sa
         //   Dca' = Dca.Sa - (Sa.Da - 2.Sca.Da).Dca.Sa.(Sa.Da - Dca.Sa) + Sca.(1 - Da) + Dca.(1 - Sa)
         // otherwise if 2.Sca > Sa and 4.Dca <= Da
@@ -852,6 +988,11 @@ namespace agg
     template<class ColorT, class Order> 
     struct comp_op_rgba_difference : blender_base<ColorT, Order>
     {
+        typedef ColorT color_type;
+        typedef typename color_type::value_type value_type;
+        using blender_base<ColorT, Order>::get;
+        using blender_base<ColorT, Order>::set;
+
         // Dca' = Sca + Dca - 2.min(Sca.Da, Dca.Sa)
         // Da'  = Sa + Da - Sa.Da 
         static AGG_INLINE void blend_pix(value_type* p, 
@@ -874,6 +1015,11 @@ namespace agg
     template<class ColorT, class Order> 
     struct comp_op_rgba_exclusion : blender_base<ColorT, Order>
     {
+        typedef ColorT color_type;
+        typedef typename color_type::value_type value_type;
+        using blender_base<ColorT, Order>::get;
+        using blender_base<ColorT, Order>::set;
+
         // Dca' = (Sca.Da + Dca.Sa - 2.Sca.Dca) + Sca.(1 - Da) + Dca.(1 - Sa)
         // Da'  = Sa + Da - Sa.Da 
         static AGG_INLINE void blend_pix(value_type* p, 
@@ -1116,36 +1262,60 @@ namespace agg
 
     //====================================================comp_op_adaptor_rgba
     template<class ColorT, class Order> 
-    struct comp_op_adaptor_rgba : blender_base<ColorT, Order>
+    struct comp_op_adaptor_rgba
     {
+        typedef ColorT color_type;
+        typedef Order order_type;
+        typedef typename color_type::value_type value_type;
+        typedef typename color_type::calc_type calc_type;
+        typedef typename color_type::long_type long_type;
+
         static AGG_INLINE void blend_pix(unsigned op, value_type* p, 
             value_type r, value_type g, value_type b, value_type a, cover_type cover)
         {
-            comp_op_table_rgba<ColorT, Order>::g_comp_op_func[op]
-                (p, multiply(r, a), multiply(g, a), multiply(b, a), a, cover);
+            comp_op_table_rgba<ColorT, Order>::g_comp_op_func[op](p, 
+                color_type::multiply(r, a), 
+                color_type::multiply(g, a), 
+                color_type::multiply(b, a), 
+                a, cover);
         }
     };
 
     //=========================================comp_op_adaptor_clip_to_dst_rgba
     template<class ColorT, class Order> 
-    struct comp_op_adaptor_clip_to_dst_rgba : blender_base<ColorT, Order>
+    struct comp_op_adaptor_clip_to_dst_rgba
     {
+        typedef ColorT color_type;
+        typedef Order order_type;
+        typedef typename color_type::value_type value_type;
+        typedef typename color_type::calc_type calc_type;
+        typedef typename color_type::long_type long_type;
+
         static AGG_INLINE void blend_pix(unsigned op, value_type* p, 
             value_type r, value_type g, value_type b, value_type a, cover_type cover)
         {
-            r = multiply(r, a);
-            g = multiply(g, a);
-            b = multiply(b, a);
+            r = color_type::multiply(r, a);
+            g = color_type::multiply(g, a);
+            b = color_type::multiply(b, a);
             value_type da = p[Order::A];
             comp_op_table_rgba<ColorT, Order>::g_comp_op_func[op](p, 
-                multiply(r, da), multiply(g, da), multiply(b, da), multiply(a, da), cover);
+                color_type::multiply(r, da), 
+                color_type::multiply(g, da), 
+                color_type::multiply(b, da), 
+                color_type::multiply(a, da), cover);
         }
     };
 
     //================================================comp_op_adaptor_rgba_pre
     template<class ColorT, class Order> 
-    struct comp_op_adaptor_rgba_pre : blender_base<ColorT, Order>
+    struct comp_op_adaptor_rgba_pre
     {
+        typedef ColorT color_type;
+        typedef Order order_type;
+        typedef typename color_type::value_type value_type;
+        typedef typename color_type::calc_type calc_type;
+        typedef typename color_type::long_type long_type;
+
         static AGG_INLINE void blend_pix(unsigned op, value_type* p, 
             value_type r, value_type g, value_type b, value_type a, cover_type cover)
         {
@@ -1155,60 +1325,92 @@ namespace agg
 
     //=====================================comp_op_adaptor_clip_to_dst_rgba_pre
     template<class ColorT, class Order> 
-    struct comp_op_adaptor_clip_to_dst_rgba_pre : blender_base<ColorT, Order>
+    struct comp_op_adaptor_clip_to_dst_rgba_pre
     {
+        typedef ColorT color_type;
+        typedef Order order_type;
+        typedef typename color_type::value_type value_type;
+        typedef typename color_type::calc_type calc_type;
+        typedef typename color_type::long_type long_type;
+
         static AGG_INLINE void blend_pix(unsigned op, value_type* p, 
             value_type r, value_type g, value_type b, value_type a, cover_type cover)
         {
             value_type da = p[Order::A];
             comp_op_table_rgba<ColorT, Order>::g_comp_op_func[op](p, 
-                multiply(r, da), multiply(g, da), multiply(b, da), multiply(a, da), cover);
+                color_type::multiply(r, da), 
+                color_type::multiply(g, da), 
+                color_type::multiply(b, da), 
+                color_type::multiply(a, da), cover);
         }
-    };
-
-    template<class Base> 
-    struct blender_base2 : 
-        blender_base<
-            typename Base::color_type, 
-            typename Base::order_type>
-    {
     };
 
     //=======================================================comp_adaptor_rgba
     template<class BlenderPre> 
-    struct comp_adaptor_rgba : blender_base2<BlenderPre>
+    struct comp_adaptor_rgba
     {
+        typedef typename BlenderPre::color_type color_type;
+        typedef typename BlenderPre::order_type order_type;
+        typedef typename color_type::value_type value_type;
+        typedef typename color_type::calc_type calc_type;
+        typedef typename color_type::long_type long_type;
+
         static AGG_INLINE void blend_pix(unsigned op, value_type* p, 
-            value_type sr, value_type sg, value_type sb, value_type sa, cover_type cover)
+            value_type r, value_type g, value_type b, value_type a, cover_type cover)
         {
-            BlenderPre::blend_pix(p, multiply(cr, ca), multiply(cg, ca), multiply(cb, ca), ca, cover);
+            BlenderPre::blend_pix(p, 
+                color_type::multiply(r, a), 
+                color_type::multiply(g, a), 
+                color_type::multiply(b, a), 
+                a, cover);
         }
     };
 
     //==========================================comp_adaptor_clip_to_dst_rgba
     template<class BlenderPre> 
-    struct comp_adaptor_clip_to_dst_rgba : blender_base2<BlenderPre>
+    struct comp_adaptor_clip_to_dst_rgba
     {
+        typedef typename BlenderPre::color_type color_type;
+        typedef typename BlenderPre::order_type order_type;
+        typedef typename color_type::value_type value_type;
+        typedef typename color_type::calc_type calc_type;
+        typedef typename color_type::long_type long_type;
+
         static AGG_INLINE void blend_pix(unsigned op, value_type* p, 
             value_type r, value_type g, value_type b, value_type a, cover_type cover)
         {
-            r = multiply(r, a);
-            g = multiply(g, a);
-            b = multiply(b, a);
+            r = color_type::multiply(r, a);
+            g = color_type::multiply(g, a);
+            b = color_type::multiply(b, a);
             value_type da = p[order_type::A];
-            BlenderPre::blend_pix(p, multiply(r, da), multiply(g, da), multiply(b, da), multiply(a, da), cover);
+            BlenderPre::blend_pix(p, 
+                color_type::multiply(r, da), 
+                color_type::multiply(g, da), 
+                color_type::multiply(b, da), 
+                color_type::multiply(a, da), cover);
         }
     };
 
     //======================================comp_adaptor_clip_to_dst_rgba_pre
     template<class BlenderPre> 
-    struct comp_adaptor_clip_to_dst_rgba_pre : blender_base2<BlenderPre>
+    struct comp_adaptor_clip_to_dst_rgba_pre
     {
+        typedef typename BlenderPre::color_type color_type;
+        typedef typename BlenderPre::order_type order_type;
+        typedef typename color_type::value_type value_type;
+        typedef typename color_type::calc_type calc_type;
+        typedef typename color_type::long_type long_type;
+
         static AGG_INLINE void blend_pix(unsigned op, value_type* p, 
             value_type r, value_type g, value_type b, value_type a, cover_type cover)
         {
             unsigned da = p[order_type::A];
-            BlenderPre::blend_pix(p, multiply(r, da), multiply(g, da), multiply(b, da), multiply(a, da), cover);
+            BlenderPre::blend_pix(p, 
+                color_type::multiply(r, da), 
+                color_type::multiply(g, da), 
+                color_type::multiply(b, da), 
+                color_type::multiply(a, da), 
+                cover);
         }
     };
 
