@@ -400,7 +400,7 @@ namespace agg
         // linear interpolate q over p by a, assuming q is pre-muliplied by a
         static AGG_INLINE value_type prelerp(value_type p, value_type q, value_type a) 
         {
-            return (p == q) ? p : p + q - multiply(p, a);
+            return p + q - multiply(p, a);
         }
         
         //--------------------------------------------------------------------
@@ -770,7 +770,7 @@ namespace agg
         // linear interpolate q over p by a, assuming q is pre-muliplied by a
         static AGG_INLINE value_type prelerp(value_type p, value_type q, value_type a) 
         {
-            return (p == q) ? p : p + q - multiply(p, a);
+            return p + q - multiply(p, a);
         }
         
         //--------------------------------------------------------------------

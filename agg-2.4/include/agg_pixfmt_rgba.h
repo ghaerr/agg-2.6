@@ -131,11 +131,7 @@ namespace agg
         static AGG_INLINE void blend_pix(value_type* p, 
             value_type cr, value_type cg, value_type cb, value_type alpha, cover_type cover)
         {
-            alpha = color_type::mult_cover(alpha, cover);
-            p[Order::R] = color_type::lerp(p[Order::R], cr, alpha);
-            p[Order::G] = color_type::lerp(p[Order::G], cg, alpha);
-            p[Order::B] = color_type::lerp(p[Order::B], cb, alpha);
-            p[Order::A] = color_type::prelerp(p[Order::A], alpha, alpha);
+            blend_pix(p, cr, cg, cb, color_type::mult_cover(alpha, cover));
         }
         
         //--------------------------------------------------------------------
