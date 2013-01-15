@@ -239,7 +239,7 @@ public:
         // version agg::line_image_pattern_pow2 because it works about 15-25 percent
         // faster than agg::line_image_pattern (because of using simple masking instead 
         // of expensive '%' operation). 
-        typedef agg::line_image_pattern<agg::pattern_filter_bilinear_rgba<color_type>> pattern_type;
+        typedef agg::line_image_pattern<agg::pattern_filter_bilinear_rgba<color_type> > pattern_type;
         typedef agg::renderer_base<pixfmt> base_ren_type;
         typedef agg::renderer_outline_image<base_ren_type, pattern_type> renderer_type;
         typedef agg::rasterizer_outline_aa<renderer_type>                rasterizer_type;

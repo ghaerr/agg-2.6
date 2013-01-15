@@ -64,7 +64,7 @@ namespace agg
                     base_type::source().span(x >> image_subpixel_shift, 
                                              y >> image_subpixel_shift, 
                                              1);
-                span->a = base_mask;
+                span->a = color_type::full_value();
                 ++span;
                 ++base_type::interpolator();
             } while(--len);
@@ -239,7 +239,7 @@ namespace agg
                         {
                             fg += weight * 
                                 *((const value_type*)base_type::source().row_ptr(y_lr) + x_lr);
-                            src_alpha += weight * base_mask;
+                            src_alpha += weight * color_type::full_value();
                         }
                         else
                         {
@@ -255,7 +255,7 @@ namespace agg
                         {
                             fg += weight * 
                                 *((const value_type*)base_type::source().row_ptr(y_lr) + x_lr);
-                            src_alpha += weight * base_mask;
+                            src_alpha += weight * color_type::full_value();
                         }
                         else
                         {
@@ -272,7 +272,7 @@ namespace agg
                         {
                             fg += weight * 
                                 *((const value_type*)base_type::source().row_ptr(y_lr) + x_lr);
-                            src_alpha += weight * base_mask;
+                            src_alpha += weight * color_type::full_value();
                         }
                         else
                         {
@@ -288,7 +288,7 @@ namespace agg
                         {
                             fg += weight * 
                                 *((const value_type*)base_type::source().row_ptr(y_lr) + x_lr);
-                            src_alpha += weight * base_mask;
+                            src_alpha += weight * color_type::full_value();
                         }
                         else
                         {
@@ -397,7 +397,7 @@ namespace agg
                 fg += weight * *fg_ptr;
 
                 fg >>= image_filter_shift;
-                if(fg > base_mask) fg = base_mask;
+                if(fg > color_type::full_value()) fg = color_type::full_value();
 
                 span->v = (value_type)fg;
                 span->a = color_type::full_value();
@@ -492,7 +492,7 @@ namespace agg
 
                 fg >>= image_filter_shift;
                 if(fg < 0) fg = 0;
-                if(fg > base_mask) fg = base_mask;
+                if(fg > color_type::full_value()) fg = color_type::full_value();
                 span->v = (value_type)fg;
                 span->a = color_type::full_value();
 
@@ -594,7 +594,7 @@ namespace agg
 
                 fg /= total_weight;
                 if(fg < 0) fg = 0;
-                if(fg > base_mask) fg = base_mask;
+                if(fg > color_type::full_value()) fg = color_type::full_value();
 
                 span->v = (value_type)fg;
                 span->a = color_type::full_value();
@@ -665,7 +665,7 @@ namespace agg
                 x += base_type::filter_dx_int() - radius_x;
                 y += base_type::filter_dy_int() - radius_y;
 
-                fg = ;
+                fg = 0;
 
                 int y_lr = y >> image_subpixel_shift;
                 int y_hr = ((image_subpixel_mask - (y & image_subpixel_mask)) * 
