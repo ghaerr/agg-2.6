@@ -10,9 +10,10 @@
 #include "ctrl/agg_slider_ctrl.h"
 #include "ctrl/agg_cbox_ctrl.h"
 
+//#define AGG_GRAY8
 //#define AGG_GRAY32
+//#define AGG_BGR24
 #define AGG_BGR96
-//#define AGG_BGRA128
 #include "pixel_formats.h"
 
 enum flip_y_e { flip_y = true };
@@ -43,7 +44,7 @@ public:
 
         m_slider2.label("Blur radius=%1.2f");
         m_slider2.range(0.0, 2.0);
-        m_slider2.value(1.33);
+        m_slider2.value(1.5);
 
         m_cbox1.status(true);
         m_cbox2.status(false);

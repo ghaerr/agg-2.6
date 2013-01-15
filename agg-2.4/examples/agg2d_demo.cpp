@@ -2,8 +2,6 @@
 #include "platform/agg_platform_support.h"
 #include "agg2d.h"
 
-#define pix_format agg::pix_format_bgra32
-
 enum { flip_y = true };
 
 
@@ -30,7 +28,6 @@ public:
 
     virtual void on_draw()
     {
-
         m_graphics.attach(rbuf_window().buf(),
                           rbuf_window().width(),
                           rbuf_window().height(),
@@ -41,8 +38,6 @@ public:
 
         //m_graphics.blendMode(Agg2D::BlendSub);
         //m_graphics.blendMode(Agg2D::BlendAdd);
-
-        m_graphics.antiAliasGamma(1.4);
 
         // Set flipText(true) if you have the Y axis upside down.
         //m_graphics.flipText(true);
@@ -71,7 +66,7 @@ public:
         m_graphics.lineColor(0, 0, 0);
         m_graphics.noFill();
         m_graphics.roundedRect(0.5, 0.5, 600-0.5, 600-0.5, 20.0);
-
+        
 
         // Reglar Text
 #ifdef AGG2D_USE_FREETYPE
@@ -351,7 +346,7 @@ public:
         m_graphics.ellipse(500, 280, 20, 40);
 
         m_graphics.fillColor(255, 255, 255);
-        m_graphics.blendMode(Agg2D::BlendContrast);
+        m_graphics.blendMode(Agg2D::BlendOverlay);
         m_graphics.ellipse(500+40, 280, 20, 40);
 
 
@@ -384,7 +379,11 @@ public:
 
 int agg_main(int argc, char* argv[])
 {
-    the_application app(pix_format, flip_y);
+#ifdef AGG2D_USE_FLOAT_FORMAT
+    the_application app(agg::pix_format_bgra128, flip_y);
+#else
+    the_application app(agg::pix_format_bgra32, flip_y);
+#endif
     app.caption("Agg2DDemo");
 
     char buf[256];

@@ -11,8 +11,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{6015656F-2EE0-42FD-9EE3-DE54A429EE00}</ProjectGuid>
-    <RootNamespace>agg2d_demo</RootNamespace>
+    <ProjectGuid>{E0009B1E-0D09-4176-A0BF-57A91C82C060}</ProjectGuid>
+    <RootNamespace>image_scaling</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -41,8 +41,9 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>../../include;../../font_win32_tt</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\include</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -54,8 +55,9 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>../../include;../../font_win32_tt</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\include</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -64,19 +66,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\font_win32_tt\agg_font_win32_tt.cpp" />
-    <ClCompile Include="..\..\src\agg_arc.cpp" />
-    <ClCompile Include="..\..\src\agg_bezier_arc.cpp" />
-    <ClCompile Include="..\..\src\agg_curves.cpp" />
-    <ClCompile Include="..\..\src\agg_image_filters.cpp" />
-    <ClCompile Include="..\..\src\agg_rounded_rect.cpp" />
-    <ClCompile Include="..\..\src\agg_sqrt_tables.cpp" />
-    <ClCompile Include="..\..\src\agg_trans_affine.cpp" />
-    <ClCompile Include="..\..\src\agg_vcgen_stroke.cpp" />
-    <ClCompile Include="..\..\src\platform\win32\agg_platform_support.cpp" />
-    <ClCompile Include="..\..\src\platform\win32\agg_win32_bmp.cpp" />
-    <ClCompile Include="..\agg2d.cpp" />
-    <ClCompile Include="agg2d_demo.cpp" />
+    <ClCompile Include="..\..\..\src\agg_gsv_text.cpp" />
+    <ClCompile Include="..\..\..\src\agg_trans_affine.cpp" />
+    <ClCompile Include="..\..\..\src\agg_vcgen_stroke.cpp" />
+    <ClCompile Include="..\..\..\src\platform\win32\agg_platform_support.cpp" />
+    <ClCompile Include="..\..\..\src\platform\win32\agg_win32_bmp.cpp" />
+    <ClCompile Include="..\..\image_scaling.cpp" />
+    <ClCompile Include="..\..\interactive_polygon.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -217,10 +217,10 @@ public:
             rasc.layer_order(agg::layer_direct);
         }
 
-        styles[3] = agg::srgba8(255, 0, 108, 200).premultiply();
-        styles[2] = agg::srgba8(51, 0, 151, 180).premultiply();
-        styles[1] = agg::srgba8(143, 90, 6, 200).premultiply();
-        styles[0] = agg::srgba8(0, 0, 255, 220).premultiply();
+        (styles[3] = agg::srgba8(255, 0, 108, 200)).premultiply();
+        (styles[2] = agg::srgba8(51, 0, 151, 180)).premultiply();
+        (styles[1] = agg::srgba8(143, 90, 6, 200)).premultiply();
+        (styles[0] = agg::srgba8(0, 0, 255, 220)).premultiply();
 
         style_handler sh(styles, 4);
 
