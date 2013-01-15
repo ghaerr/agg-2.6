@@ -10,7 +10,8 @@
 #include "ctrl/agg_slider_ctrl.h"
 #include "agg_svg_parser.h"
 
-//#include "agg_gamma_lut.h"
+#define AGG_BGR24
+#include "../pixel_formats.h"
 
 enum { flip_y = false };
 
