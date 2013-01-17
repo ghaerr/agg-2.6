@@ -64,20 +64,21 @@ namespace agg
         rgba(const rgba& c, double a_) : r(c.r), g(c.g), b(c.b), a(a_) {}
 
         //--------------------------------------------------------------------
-        void clear()
+        rgba& clear()
         {
             r = g = b = a = 0;
+			return *this;
         }
 
         //--------------------------------------------------------------------
-        const rgba& transparent()
+        rgba& transparent()
         {
             a = 0;
             return *this;
         }
 
         //--------------------------------------------------------------------
-        const rgba& opacity(double a_)
+        rgba& opacity(double a_)
         {
             if (a_ < 0) a_ = 0;
             else if (a_ > 1) a_ = 1;
@@ -92,7 +93,7 @@ namespace agg
         }
 
         //--------------------------------------------------------------------
-        const rgba& premultiply()
+        rgba& premultiply()
         {
             r *= a;
             g *= a;
@@ -101,7 +102,7 @@ namespace agg
         }
 
         //--------------------------------------------------------------------
-        const rgba& premultiply(double a_)
+        rgba& premultiply(double a_)
         {
             if (a <= 0 || a_ <= 0)
             {
@@ -119,7 +120,7 @@ namespace agg
         }
 
         //--------------------------------------------------------------------
-        const rgba& demultiply()
+        rgba& demultiply()
         {
             if (a == 0)
             {
@@ -413,20 +414,21 @@ namespace agg
         }
         
         //--------------------------------------------------------------------
-        void clear()
+        self_type&  clear()
         {
             r = g = b = a = 0;
+			return *this;
         }
         
         //--------------------------------------------------------------------
-        const self_type& transparent()
+        self_type& transparent()
         {
             a = 0;
             return *this;
         }
 
         //--------------------------------------------------------------------
-        const self_type& opacity(double a_)
+        self_type& opacity(double a_)
         {
             if (a_ < 0) a_ = 0;
             else if (a_ > 1) a_ = 1;
@@ -441,7 +443,7 @@ namespace agg
         }
 
         //--------------------------------------------------------------------
-        AGG_INLINE const self_type& premultiply()
+        AGG_INLINE self_type& premultiply()
         {
             if (a != base_mask)
             {
@@ -453,7 +455,7 @@ namespace agg
         }
 
         //--------------------------------------------------------------------
-        AGG_INLINE const self_type& premultiply(unsigned a_)
+        AGG_INLINE self_type& premultiply(unsigned a_)
         {
             if (a != base_mask || a_ < base_mask)
             {
@@ -476,7 +478,7 @@ namespace agg
         }
 
         //--------------------------------------------------------------------
-        AGG_INLINE const self_type& demultiply()
+        AGG_INLINE self_type& demultiply()
         {
             if (a < base_mask)
             {
@@ -783,20 +785,21 @@ namespace agg
         }
         
         //--------------------------------------------------------------------
-        void clear()
+        self_type& clear()
         {
             r = g = b = a = 0;
+			return *this;
         }
         
         //--------------------------------------------------------------------
-        const self_type& transparent()
+        self_type& transparent()
         {
             a = 0;
             return *this;
         }
 
         //--------------------------------------------------------------------
-        AGG_INLINE const self_type& opacity(double a_)
+        AGG_INLINE self_type& opacity(double a_)
         {
             if (a_ < 0) a_ = 0;
             if (a_ > 1) a_ = 1;
@@ -811,7 +814,7 @@ namespace agg
         }
 
         //--------------------------------------------------------------------
-        AGG_INLINE const self_type& premultiply()
+        AGG_INLINE self_type& premultiply()
         {
             if (a != base_mask) 
             {
@@ -823,7 +826,7 @@ namespace agg
         }
 
         //--------------------------------------------------------------------
-        AGG_INLINE const self_type& premultiply(unsigned a_)
+        AGG_INLINE self_type& premultiply(unsigned a_)
         {
             if (a < base_mask || a_ < base_mask)
             {
@@ -846,7 +849,7 @@ namespace agg
         }
 
         //--------------------------------------------------------------------
-        AGG_INLINE const self_type& demultiply()
+        AGG_INLINE self_type& demultiply()
         {
             if (a < base_mask)
             {
@@ -1127,20 +1130,21 @@ namespace agg
         }
         
         //--------------------------------------------------------------------
-        void clear()
+        self_type&  clear()
         {
             r = g = b = a = 0;
+			return *this;
         }
         
         //--------------------------------------------------------------------
-        const self_type& transparent()
+        self_type& transparent()
         {
             a = 0;
             return *this;
         }
 
         //--------------------------------------------------------------------
-        AGG_INLINE const self_type& opacity(double a_)
+        AGG_INLINE self_type& opacity(double a_)
         {
             if (a_ < 0) a_ = 0;
             else if (a_ > 1) a_ = 1;
@@ -1155,7 +1159,7 @@ namespace agg
         }
 
         //--------------------------------------------------------------------
-        AGG_INLINE const self_type& premultiply()
+        AGG_INLINE self_type& premultiply()
         {
             if (a < 1)
             {
@@ -1174,7 +1178,7 @@ namespace agg
         }
 
         //--------------------------------------------------------------------
-        AGG_INLINE const self_type& demultiply()
+        AGG_INLINE self_type& demultiply()
         {
             if (a < 1)
             {

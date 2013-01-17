@@ -217,20 +217,19 @@ public:
             rasc.layer_order(agg::layer_direct);
         }
 
-        (styles[3] = agg::srgba8(255, 0, 108, 200)).premultiply();
-        (styles[2] = agg::srgba8(51, 0, 151, 180)).premultiply();
-        (styles[1] = agg::srgba8(143, 90, 6, 200)).premultiply();
-        (styles[0] = agg::srgba8(0, 0, 255, 220)).premultiply();
+        styles[3] = agg::srgba8(255, 0, 108);
+        styles[2] = agg::srgba8(51, 0, 151);
+        styles[1] = agg::srgba8(143, 90, 6);
+        styles[0] = agg::srgba8(0, 0, 255);
 
         style_handler sh(styles, 4);
 
         stroke.width(m_width.value());
 
-        rasc.reset();
-        rasc.master_alpha(3, m_alpha1.value());
-        rasc.master_alpha(2, m_alpha2.value());
-        rasc.master_alpha(1, m_alpha3.value());
-        rasc.master_alpha(0, m_alpha4.value());
+		styles[3].opacity(m_alpha1.value()).premultiply();
+        styles[2].opacity(m_alpha2.value()).premultiply();
+        styles[1].opacity(m_alpha3.value()).premultiply();
+        styles[0].opacity(m_alpha4.value()).premultiply();
 
         agg::ellipse ell(220.0, 180.0, 120.0, 10.0, 128, false);
         agg::conv_stroke<agg::ellipse> str_ell(ell);

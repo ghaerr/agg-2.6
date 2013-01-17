@@ -300,24 +300,26 @@ namespace agg
         }
         
         //--------------------------------------------------------------------
-        void clear()
+        self_type& clear()
         {
             v = a = 0;
+			return *this;
         }
 
         //--------------------------------------------------------------------
-        const self_type& transparent()
+        self_type& transparent()
         {
             a = 0;
             return *this;
         }
 
         //--------------------------------------------------------------------
-        void opacity(double a_)
+        self_type& opacity(double a_)
         {
             if (a_ < 0) a_ = 0;
             else if (a_ > 1) a_ = 1;
             else a = (value_type)uround(a_ * double(base_mask));
+			return *this;
         }
 
         //--------------------------------------------------------------------
@@ -327,7 +329,7 @@ namespace agg
         }
         
         //--------------------------------------------------------------------
-        const self_type& premultiply()
+        self_type& premultiply()
         {
             if (a < base_mask)
             {
@@ -338,7 +340,7 @@ namespace agg
         }
 
         //--------------------------------------------------------------------
-        const self_type& demultiply()
+        self_type& demultiply()
         {
             if (a < base_mask)
             {
@@ -606,24 +608,26 @@ namespace agg
         }
         
         //--------------------------------------------------------------------
-        void clear()
+        self_type& clear()
         {
             v = a = 0;
+			return *this;
         }
 
         //--------------------------------------------------------------------
-        const self_type& transparent()
+        self_type& transparent()
         {
             a = 0;
             return *this;
         }
 
         //--------------------------------------------------------------------
-        void opacity(double a_)
+        self_type& opacity(double a_)
         {
             if (a_ < 0) a_ = 0;
             else if(a_ > 1) a_ = 1;
             else a = (value_type)uround(a_ * double(base_mask));
+			return *this;
         }
 
         //--------------------------------------------------------------------
@@ -634,7 +638,7 @@ namespace agg
 
 
         //--------------------------------------------------------------------
-        const self_type& premultiply()
+        self_type& premultiply()
         {
             if (a < base_mask)
             {
@@ -645,7 +649,7 @@ namespace agg
         }
 
         //--------------------------------------------------------------------
-        const self_type& demultiply()
+        self_type& demultiply()
         {
             if (a < base_mask)
             {
@@ -927,24 +931,26 @@ namespace agg
         }
         
         //--------------------------------------------------------------------
-        void clear()
+        self_type& clear()
         {
             v = a = 0;
+			return *this;
         }
 
         //--------------------------------------------------------------------
-        const self_type& transparent()
+        self_type& transparent()
         {
             a = 0;
             return *this;
         }
 
         //--------------------------------------------------------------------
-        void opacity(double a_)
+        self_type& opacity(double a_)
         {
             if (a_ < 0) a = 0;
             else if (a_ > 1) a = 1;
             else a = value_type(a_);
+			return *this;
         }
 
         //--------------------------------------------------------------------
@@ -955,7 +961,7 @@ namespace agg
 
 
         //--------------------------------------------------------------------
-        const self_type& premultiply()
+        self_type& premultiply()
         {
             if (a < 0) v = 0;
             else if(a < 1) v *= a;
@@ -963,7 +969,7 @@ namespace agg
         }
 
         //--------------------------------------------------------------------
-        const self_type& demultiply()
+        self_type& demultiply()
         {
             if (a < 0) v = 0;
             else if (a < 1) v /= a;
