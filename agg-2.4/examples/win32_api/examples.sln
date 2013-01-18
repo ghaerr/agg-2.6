@@ -131,6 +131,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "line_thickness", "line_thic
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "svg_test", "svg_test\svg_test.vcxproj", "{6C17F9E2-2BC5-CA8F-EC31-588FE2AB9A37}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pattern_resample", "pattern_resample\pattern_resample.vcxproj", "{A113E8F7-2509-229F-D3D1-5ACFB8F27DF0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -726,6 +728,15 @@ Global
 		{6C17F9E2-2BC5-CA8F-EC31-588FE2AB9A37}.Template|Win32.ActiveCfg = Template|Win32
 		{6C17F9E2-2BC5-CA8F-EC31-588FE2AB9A37}.Template|Win32.Build.0 = Template|Win32
 		{6C17F9E2-2BC5-CA8F-EC31-588FE2AB9A37}.Template|x64.ActiveCfg = Template|Win32
+		{A113E8F7-2509-229F-D3D1-5ACFB8F27DF0}.Debug|Win32.ActiveCfg = Debug|Win32
+		{A113E8F7-2509-229F-D3D1-5ACFB8F27DF0}.Debug|Win32.Build.0 = Debug|Win32
+		{A113E8F7-2509-229F-D3D1-5ACFB8F27DF0}.Debug|x64.ActiveCfg = Debug|Win32
+		{A113E8F7-2509-229F-D3D1-5ACFB8F27DF0}.Release|Win32.ActiveCfg = Release|Win32
+		{A113E8F7-2509-229F-D3D1-5ACFB8F27DF0}.Release|Win32.Build.0 = Release|Win32
+		{A113E8F7-2509-229F-D3D1-5ACFB8F27DF0}.Release|x64.ActiveCfg = Release|Win32
+		{A113E8F7-2509-229F-D3D1-5ACFB8F27DF0}.Template|Win32.ActiveCfg = Template|Win32
+		{A113E8F7-2509-229F-D3D1-5ACFB8F27DF0}.Template|Win32.Build.0 = Template|Win32
+		{A113E8F7-2509-229F-D3D1-5ACFB8F27DF0}.Template|x64.ActiveCfg = Template|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
