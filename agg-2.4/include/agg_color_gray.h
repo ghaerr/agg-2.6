@@ -249,7 +249,7 @@ namespace agg
         }
 
         //--------------------------------------------------------------------
-        // fixed-point multiply, exact over uint8
+        // Fixed-point multiply, exact over int8u.
         static AGG_INLINE value_type multiply(value_type a, value_type b) 
         {
             calc_type t = a * b + base_MSB;
@@ -270,8 +270,8 @@ namespace agg
         }
 
         //--------------------------------------------------------------------
-        // fixed-point multiply, exact over uint8
-        // specifically for multiplying a color component by a cover
+        // Fixed-point multiply, exact over int8u.
+        // Specifically for multiplying a color component by a cover.
         static AGG_INLINE value_type mult_cover(value_type a, value_type b) 
         {
             return multiply(a, b);
@@ -284,19 +284,18 @@ namespace agg
         }
         
         //--------------------------------------------------------------------
-        // linear interpolate q over p by a, assuming q is pre-muliplied by a
+        // Interpolate p to q by a, assuming q is premultiplied by a.
         static AGG_INLINE value_type prelerp(value_type p, value_type q, value_type a) 
         {
             return p + q - multiply(p, a);
         }
         
         //--------------------------------------------------------------------
-        // linear interpolate q over p by a
+        // Interpolate p to q by a.
         static AGG_INLINE value_type lerp(value_type p, value_type q, value_type a) 
         {
-            if (p < q) return p + multiply(q - p, a);
-            else if (p > q) return p - multiply(p - q, a);
-            else return p;
+            int t = (q - p) * a + base_MSB - (p > q);
+            return value_type(p + (((t >> base_shift) + t) >> base_shift));
         }
         
         //--------------------------------------------------------------------
@@ -557,7 +556,7 @@ namespace agg
         }
 
         //--------------------------------------------------------------------
-        // fixed-point multiply, exact over uint16
+        // Fixed-point multiply, exact over int16u.
         static AGG_INLINE value_type multiply(value_type a, value_type b) 
         {
             calc_type t = a * b + base_MSB;
@@ -578,8 +577,8 @@ namespace agg
         }
 
         //--------------------------------------------------------------------
-        // fixed-point multiply, almost exact over uint16
-        // specifically for multiplying a color component by a cover
+        // Fixed-point multiply, almost exact over int16u.
+        // Specifically for multiplying a color component by a cover.
         static AGG_INLINE value_type mult_cover(value_type a, cover_type b) 
         {
             return multiply(a, b << 8 | b);
@@ -592,19 +591,18 @@ namespace agg
         }
         
         //--------------------------------------------------------------------
-        // linear interpolate q over p by a, assuming q is pre-muliplied by a
+        // Interpolate p to q by a, assuming q is premultiplied by a.
         static AGG_INLINE value_type prelerp(value_type p, value_type q, value_type a) 
         {
             return p + q - multiply(p, a);
         }
         
         //--------------------------------------------------------------------
-        // linear interpolate q over p by a
+        // Interpolate p to q by a.
         static AGG_INLINE value_type lerp(value_type p, value_type q, value_type a) 
         {
-            if (p < q) return p + multiply(q - p, a);
-            else if (p > q) return p - multiply(p - q, a);
-            else return p;
+            int t = (q - p) * a + base_MSB - (p > q);
+            return value_type(p + (((t >> base_shift) + t) >> base_shift));
         }
         
         //--------------------------------------------------------------------
@@ -917,17 +915,21 @@ namespace agg
         }
         
         //--------------------------------------------------------------------
-        // linear interpolate q over p by a, assuming q is pre-muliplied by a
+        // Interpolate p to q by a, assuming q is premultiplied by a.
         static AGG_INLINE value_type prelerp(value_type p, value_type q, value_type a) 
         {
-            return p + q - multiply(p, a);
+            return (1 - a) * p + q; // more accurate than "p + q - p * a"
         }
         
         //--------------------------------------------------------------------
-        // linear interpolate q over p by a
+        // Interpolate p to q by a.
         static AGG_INLINE value_type lerp(value_type p, value_type q, value_type a) 
         {
-            return p + multiply(q - p, a);
+			// The form "p + a * (q - p)" avoids a multiplication, but may produce an 
+			// inaccurate result. For example, "p + (q - p)" may not be exactly equal 
+			// to q. Therefore, stick to the basic expression, which at least produces 
+			// the correct result at either extreme.
+			return (1 - a) * p + a * q;
         }
         
         //--------------------------------------------------------------------
