@@ -348,7 +348,7 @@ namespace agg
         //--------------------------------------------------------------------
         AGG_INLINE void copy_pixel(int x, int y, const color_type& c)
         {
-            *pix_value_ptr(x, y, 1) = c.v;
+            pix_value_ptr(x, y, 1)->set(c);
         }
 
         //--------------------------------------------------------------------
