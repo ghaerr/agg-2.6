@@ -240,7 +240,7 @@ namespace agg
         static AGG_INLINE void blend_pix(value_type* p, 
             value_type cr, value_type cg, value_type cb, value_type alpha, cover_type cover)
         {
-            blend_pix(p, cr, cg, cb, mult_cover(alpha, cover));
+            blend_pix(p, cr, cg, cb, color_type::mult_cover(alpha, cover));
         }
         
         //--------------------------------------------------------------------
@@ -1651,7 +1651,7 @@ namespace agg
         //--------------------------------------------------------------------
         AGG_INLINE void blend_pixel(int x, int y, const color_type& c, int8u cover)
         {
-            copy_or_blend_pix(pix_value_ptr(x, y, 1), c.r, c.g, c.b, c.a, cover);
+            copy_or_blend_pix(pix_value_ptr(x, y, 1), c, cover);
         }
 
         //--------------------------------------------------------------------
