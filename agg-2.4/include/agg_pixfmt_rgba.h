@@ -1350,6 +1350,7 @@ namespace agg
         static AGG_INLINE void blend_pix(unsigned op, value_type* p, 
             value_type r, value_type g, value_type b, value_type a, cover_type cover)
         {
+            multiplier_rgba<ColorT, Order>::premultiply(p);
             comp_op_adaptor_rgba<ColorT, Order>::blend_pix(op, p, r, g, b, a, cover);
             multiplier_rgba<ColorT, Order>::demultiply(p);
         }
@@ -1368,6 +1369,7 @@ namespace agg
         static AGG_INLINE void blend_pix(unsigned op, value_type* p, 
             value_type r, value_type g, value_type b, value_type a, cover_type cover)
         {
+            multiplier_rgba<ColorT, Order>::premultiply(p);
             comp_op_adaptor_clip_to_dst_rgba<ColorT, Order>::blend_pix(op, p, r, g, b, a, cover);
             multiplier_rgba<ColorT, Order>::demultiply(p);
         }
@@ -1472,6 +1474,7 @@ namespace agg
         static AGG_INLINE void blend_pix(unsigned op, value_type* p, 
             value_type r, value_type g, value_type b, value_type a, cover_type cover)
         {
+            multiplier_rgba<color_type, order_type>::premultiply(p);
             comp_adaptor_rgba<BlenderPre>::blend_pix(op, p, r, g, b, a, cover);
             multiplier_rgba<color_type, order_type>::demultiply(p);
         }
@@ -1490,6 +1493,7 @@ namespace agg
         static AGG_INLINE void blend_pix(unsigned op, value_type* p, 
             value_type r, value_type g, value_type b, value_type a, cover_type cover)
         {
+            multiplier_rgba<color_type, order_type>::premultiply(p);
             comp_adaptor_clip_to_dst_rgba<BlenderPre>::blend_pix(op, p, r, g, b, a, cover);
             multiplier_rgba<color_type, order_type>::demultiply(p);
         }
@@ -1571,21 +1575,6 @@ namespace agg
         };
 
     private:
-        //--------------------------------------------------------------------
-        AGG_INLINE void blend_pix(pixel_type* p, 
-            value_type r, value_type g, value_type b, value_type a, 
-            unsigned cover)
-        {
-            m_blender.blend_pix(p->c, r, g, b, a, cover);
-        }
-
-        //--------------------------------------------------------------------
-        AGG_INLINE void blend_pix(pixel_type* p, 
-            value_type r, value_type g, value_type b, value_type a)
-        {
-            m_blender.blend_pix(p->c, r, g, b, a);
-        }
-
         //--------------------------------------------------------------------
         AGG_INLINE void blend_pix(pixel_type* p, const color_type& c, unsigned cover)
         {
@@ -2282,7 +2271,7 @@ namespace agg
                 }
                 else
                 {
-                    blend_pix(p->c, c.r, c.g, c.b, c.a, cover);
+                    blend_pix(p->c, c, cover);
                 }
             }
         }
