@@ -2271,7 +2271,7 @@ namespace agg
                 }
                 else
                 {
-                    blend_pix(p->c, c, cover);
+                    blend_pix(p, c, cover);
                 }
             }
         }
