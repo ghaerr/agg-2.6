@@ -252,7 +252,7 @@ namespace agg
         AGG_INLINE const int8u* span(int x, int y, unsigned)
         {
             m_x = x;
-            m_row_ptr = m_pixf->row_ptr(m_wrap_y(y));
+            m_row_ptr = m_pixf->pix_ptr(0, m_wrap_y(y));
             return m_row_ptr + m_wrap_x(x) * pix_width;
         }
 
@@ -264,7 +264,7 @@ namespace agg
 
         AGG_INLINE const int8u* next_y()
         {
-            m_row_ptr = m_pixf->row_ptr(++m_wrap_y);
+            m_row_ptr = m_pixf->pix_ptr(0, ++m_wrap_y);
             return m_row_ptr + m_wrap_x(m_x) * pix_width;
         }
 
