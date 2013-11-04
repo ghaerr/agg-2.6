@@ -272,6 +272,13 @@ namespace agg
 
         //--------------------------------------------------------------------
         template<typename T>
+        static AGG_INLINE T downscale(T a) 
+        {
+            return a >> base_shift;
+        }
+
+        //--------------------------------------------------------------------
+        template<typename T>
         static AGG_INLINE T downshift(T a, unsigned n) 
         {
             return a >> n;
@@ -583,6 +590,13 @@ namespace agg
                 return base_mask;
             }
             else return value_type((a * base_mask + (b >> 1)) / b); 
+        }
+
+        //--------------------------------------------------------------------
+        template<typename T>
+        static AGG_INLINE T downscale(T a) 
+        {
+            return a >> base_shift;
         }
 
         //--------------------------------------------------------------------
@@ -909,6 +923,13 @@ namespace agg
         static AGG_INLINE value_type demultiply(value_type a, value_type b) 
         {
             return (b == 0) ? 0 : value_type(a / b);
+        }
+
+        //--------------------------------------------------------------------
+        template<typename T>
+        static AGG_INLINE T downscale(T a) 
+        {
+            return a;
         }
 
         //--------------------------------------------------------------------
