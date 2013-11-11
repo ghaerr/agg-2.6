@@ -45,7 +45,7 @@ namespace agg
         { 
             double src_y = (y + 0.5) * m_scale - 0.5;
             int h  = m_source.height() - 1;
-            int y1 = ufloor(src_y);
+            int y1 = ifloor(src_y);
             int y2 = y1 + 1;
             color_type pix1 = (y1 < 0) ? color_type::no_color() : m_source.pixel(x, y1);
             color_type pix2 = (y2 > h) ? color_type::no_color() : m_source.pixel(x, y2);
