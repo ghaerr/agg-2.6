@@ -108,10 +108,10 @@ namespace agg
             b += weight * ptr->b;
             a += weight * ptr->a;
 
-            p->r = color_type::downshift(r, line_subpixel_shift * 2);
-            p->g = color_type::downshift(g, line_subpixel_shift * 2);
-            p->b = color_type::downshift(b, line_subpixel_shift * 2);
-            p->a = color_type::downshift(a, line_subpixel_shift * 2);
+            p->r = (value_type)color_type::downshift(r, line_subpixel_shift * 2);
+            p->g = (value_type)color_type::downshift(g, line_subpixel_shift * 2);
+            p->b = (value_type)color_type::downshift(b, line_subpixel_shift * 2);
+            p->a = (value_type)color_type::downshift(a, line_subpixel_shift * 2);
         }
     };
 
