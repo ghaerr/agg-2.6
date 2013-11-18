@@ -34,7 +34,8 @@ namespace agg
         line_image_scale(const Source& src, double height) :
             m_source(src), 
             m_height(height),
-            m_scale(src.height() / height)
+            m_scale(src.height() / height),
+            m_scale_inv(height / src.height())
         {
         }
 
@@ -69,7 +70,7 @@ namespace agg
                     if (y1 <= h) c += m_source.pixel(x, y1);
                 }
                 if (y2 <= h) c += rgba(m_source.pixel(x, y2)) *= src_y2 - y2;
-                return c /= m_scale;
+                return c *= m_scale_inv;
             }
         }
 
@@ -80,6 +81,7 @@ namespace agg
         const Source& m_source;
         double        m_height;
         double        m_scale;
+        double        m_scale_inv;
     };
 
 

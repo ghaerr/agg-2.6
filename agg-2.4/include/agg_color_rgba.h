@@ -166,15 +166,6 @@ namespace agg
             return *this;
         }
 
-        rgba& operator/=(double k)
-        {
-            r /= k;
-            g /= k;
-            b /= k;
-            a /= k;
-            return *this;
-        }
-
         //--------------------------------------------------------------------
         static rgba no_color() { return rgba(0,0,0,0); }
 
@@ -197,11 +188,6 @@ namespace agg
     inline rgba operator*(const rgba& a, double b)
     {
         return rgba(a) *= b;
-    }
-
-    inline rgba operator/(const rgba& a, double b)
-    {
-        return rgba(a) /= b;
     }
 
     //------------------------------------------------------------------------
