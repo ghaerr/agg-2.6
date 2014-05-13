@@ -94,7 +94,7 @@ namespace agg
         typedef typename filter_type::color_type color_type;
 
         //--------------------------------------------------------------------
-        line_image_pattern(const Filter& filter) :
+        line_image_pattern(Filter& filter) :
             m_filter(&filter),
             m_dilation(filter.dilation() + 1),
             m_dilation_hr(m_dilation << line_subpixel_shift),
@@ -110,7 +110,7 @@ namespace agg
         // Create
         //--------------------------------------------------------------------
         template<class Source> 
-        line_image_pattern(const Filter& filter, const Source& src) :
+        line_image_pattern(Filter& filter, const Source& src) :
             m_filter(&filter),
             m_dilation(filter.dilation() + 1),
             m_dilation_hr(m_dilation << line_subpixel_shift),
@@ -235,12 +235,12 @@ namespace agg
         typedef line_image_pattern<Filter> base_type;
 
         //--------------------------------------------------------------------
-        line_image_pattern_pow2(const Filter& filter) :
+        line_image_pattern_pow2(Filter& filter) :
             line_image_pattern<Filter>(filter), m_mask(line_subpixel_mask) {}
 
         //--------------------------------------------------------------------
         template<class Source> 
-        line_image_pattern_pow2(const Filter& filter, const Source& src) :
+        line_image_pattern_pow2(Filter& filter, const Source& src) :
             line_image_pattern<Filter>(filter), m_mask(line_subpixel_mask)
         {
             create(src);
@@ -839,7 +839,7 @@ namespace agg
 
 
         //---------------------------------------------------------------------
-        renderer_outline_image(base_ren_type& ren, const pattern_type& patt) :
+        renderer_outline_image(base_ren_type& ren, pattern_type& patt) :
             m_ren(&ren),
             m_pattern(&patt),
             m_start(0),
@@ -850,8 +850,8 @@ namespace agg
         void attach(base_ren_type& ren) { m_ren = &ren; }
 
         //---------------------------------------------------------------------
-        void pattern(const pattern_type& p) { m_pattern = &p; }
-        const pattern_type& pattern() const { return *m_pattern; }
+        void pattern(pattern_type& p) { m_pattern = &p; }
+        pattern_type& pattern() const { return *m_pattern; }
 
         //---------------------------------------------------------------------
         void reset_clipping() { m_clipping = false; }
@@ -1018,7 +1018,7 @@ namespace agg
 
     private:
         base_ren_type*      m_ren;
-        const pattern_type* m_pattern;
+        pattern_type* m_pattern;
         int                 m_start;
         double              m_scale_x;
         rect_i              m_clip_box;

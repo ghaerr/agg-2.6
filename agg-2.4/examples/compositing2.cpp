@@ -144,7 +144,7 @@ public:
 
 
     template<class RenBase, class ColorRamp> 
-    void radial_shape(RenBase& rbase, const ColorRamp& colors,
+    void radial_shape(RenBase& rbase, ColorRamp& colors,
                       double x1, double y1, double x2, double y2)
     {
         typedef RenBase renderer_base_type;

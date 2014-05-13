@@ -252,7 +252,7 @@ namespace agg
         typedef base_type::coord_type coord_type;
 
         scanline_u8_am() : base_type(), m_alpha_mask(0) {}
-        scanline_u8_am(const AlphaMask& am) : base_type(), m_alpha_mask(&am) {}
+        scanline_u8_am(AlphaMask& am) : base_type(), m_alpha_mask(&am) {}
 
         //--------------------------------------------------------------------
         void finalize(int span_y)
@@ -275,7 +275,7 @@ namespace agg
         }
 
     private:
-        const AlphaMask* m_alpha_mask;
+        AlphaMask* m_alpha_mask;
     };
 
 
@@ -465,7 +465,7 @@ namespace agg
 
 
         scanline32_u8_am() : base_type(), m_alpha_mask(0) {}
-        scanline32_u8_am(const AlphaMask& am) : base_type(), m_alpha_mask(&am) {}
+        scanline32_u8_am(AlphaMask& am) : base_type(), m_alpha_mask(&am) {}
 
         //--------------------------------------------------------------------
         void finalize(int span_y)
@@ -488,7 +488,7 @@ namespace agg
         }
 
     private:
-        const AlphaMask* m_alpha_mask;
+        AlphaMask* m_alpha_mask;
     };
 
 

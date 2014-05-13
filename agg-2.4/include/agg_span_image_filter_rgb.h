@@ -411,7 +411,7 @@ namespace agg
         span_image_filter_rgb_2x2() {}
         span_image_filter_rgb_2x2(source_type& src, 
                                   interpolator_type& inter,
-                                  const image_filter_lut& filter) :
+                                  image_filter_lut& filter) :
             base_type(src, inter, &filter) 
         {}
 
@@ -524,7 +524,7 @@ namespace agg
         span_image_filter_rgb() {}
         span_image_filter_rgb(source_type& src, 
                               interpolator_type& inter,
-                              const image_filter_lut& filter) :
+                              image_filter_lut& filter) :
             base_type(src, inter, &filter) 
         {}
 
@@ -639,7 +639,7 @@ namespace agg
         span_image_resample_rgb_affine() {}
         span_image_resample_rgb_affine(source_type& src, 
                                        interpolator_type& inter,
-                                       const image_filter_lut& filter) :
+                                       image_filter_lut& filter) :
             base_type(src, inter, filter) 
         {}
 
@@ -754,7 +754,7 @@ namespace agg
         span_image_resample_rgb() {}
         span_image_resample_rgb(source_type& src, 
                                 interpolator_type& inter,
-                                const image_filter_lut& filter) :
+                                image_filter_lut& filter) :
             base_type(src, inter, filter)
         {}
 

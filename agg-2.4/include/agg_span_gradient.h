@@ -58,8 +58,8 @@ namespace agg
 
         //--------------------------------------------------------------------
         span_gradient(interpolator_type& inter,
-                      const GradientF& gradient_function,
-                      const ColorF& color_function,
+                      GradientF& gradient_function,
+                      ColorF& color_function,
                       double d1, double d2) : 
             m_interpolator(&inter),
             m_gradient_function(&gradient_function),
@@ -77,8 +77,8 @@ namespace agg
 
         //--------------------------------------------------------------------
         void interpolator(interpolator_type& i) { m_interpolator = &i; }
-        void gradient_function(const GradientF& gf) { m_gradient_function = &gf; }
-        void color_function(const ColorF& cf) { m_color_function = &cf; }
+        void gradient_function(GradientF& gf) { m_gradient_function = &gf; }
+        void color_function(ColorF& cf) { m_color_function = &cf; }
         void d1(double v) { m_d1 = iround(v * gradient_subpixel_scale); }
         void d2(double v) { m_d2 = iround(v * gradient_subpixel_scale); }
 
@@ -107,8 +107,8 @@ namespace agg
 
     private:
         interpolator_type* m_interpolator;
-        const GradientF*   m_gradient_function;
-        const ColorF*      m_color_function;
+        GradientF*         m_gradient_function;
+        ColorF*            m_color_function;
         int                m_d1;
         int                m_d2;
     };

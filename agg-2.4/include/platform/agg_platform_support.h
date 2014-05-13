@@ -606,6 +606,7 @@ namespace agg
                     double(height) / double(m_initial_height));
             }
         }
+        trans_affine& trans_affine_resizing() { return m_resize_mtx; }
         const    trans_affine& trans_affine_resizing() const { return m_resize_mtx; }
         double   width()  const { return m_rbuf_window.width(); }
         double   height() const { return m_rbuf_window.height(); }
