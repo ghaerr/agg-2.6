@@ -489,9 +489,16 @@ namespace agg
         {
             if (a != base_mask)
             {
-                r = multiply(r, a);
-                g = multiply(g, a);
-                b = multiply(b, a);
+				if (a == 0)
+				{
+					r = g = b = 0;
+				}
+				else
+				{
+					r = multiply(r, a);
+					g = multiply(g, a);
+					b = multiply(b, a);
+				}
             }
             return *this;
         }
