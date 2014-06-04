@@ -32,9 +32,11 @@ namespace agg
 {
  
     //============================================================blender_gray
-    template<class ColorT> struct blender_gray
+    template<class ColorT, class Order>
+    struct blender_gray
     {
         typedef ColorT color_type;
+        typedef Order order_type;
         typedef typename color_type::value_type value_type;
         typedef typename color_type::calc_type calc_type;
         typedef typename color_type::long_type long_type;
@@ -52,15 +54,17 @@ namespace agg
         static AGG_INLINE void blend_pix(value_type* p, 
             value_type cv, value_type alpha)
         {
-            *p = color_type::lerp(*p, cv, alpha);
+            p[Order::Y] = color_type::lerp(p[Order::Y], cv, alpha);
         }
     };
 
 
     //======================================================blender_gray_pre
-    template<class ColorT> struct blender_gray_pre
+    template<class ColorT, class Order>
+    struct blender_gray_pre
     {
         typedef ColorT color_type;
+        typedef Order order_type;
         typedef typename color_type::value_type value_type;
         typedef typename color_type::calc_type calc_type;
         typedef typename color_type::long_type long_type;
@@ -77,23 +81,26 @@ namespace agg
         static AGG_INLINE void blend_pix(value_type* p, 
             value_type cv, value_type alpha)
         {
-            *p = color_type::prelerp(*p, cv, alpha);
+            p[Order::Y] = color_type::prelerp(p[Order::Y], cv, alpha);
         }
     };
     
 
 
     //=====================================================apply_gamma_dir_gray
-    template<class ColorT, class GammaLut> class apply_gamma_dir_gray
+    template<class ColorT, class Order, class GammaLut>
+    class apply_gamma_dir_gray
     {
     public:
-        typedef typename ColorT::value_type value_type;
+        typedef ColorT color_type;
+        typedef Order order_type;
+        typedef typename color_type::value_type value_type;
 
         apply_gamma_dir_gray(const GammaLut& gamma) : m_gamma(gamma) {}
 
         AGG_INLINE void operator () (value_type* p)
         {
-            *p = m_gamma.dir(*p);
+            p[Order::Y] = m_gamma.dir(p[Order::Y]);
         }
 
     private:
@@ -103,16 +110,19 @@ namespace agg
 
 
     //=====================================================apply_gamma_inv_gray
-    template<class ColorT, class GammaLut> class apply_gamma_inv_gray
+    template<class ColorT, class Order, class GammaLut>
+    class apply_gamma_inv_gray
     {
     public:
-        typedef typename ColorT::value_type value_type;
+        typedef ColorT color_type;
+        typedef Order order_type;
+        typedef typename color_type::value_type value_type;
 
         apply_gamma_inv_gray(const GammaLut& gamma) : m_gamma(gamma) {}
 
         AGG_INLINE void operator () (value_type* p)
         {
-            *p = m_gamma.inv(*p);
+            p[Order::Y] = m_gamma.inv(p[Order::Y]);
         }
 
     private:
@@ -122,7 +132,7 @@ namespace agg
 
 
     //=================================================pixfmt_alpha_blend_gray
-    template<class Blender, class RenBuf, unsigned Step = 1, unsigned Offset = 0>
+    template<class Blender, class RenBuf>
     class pixfmt_alpha_blend_gray
     {
     public:
@@ -131,23 +141,17 @@ namespace agg
         typedef typename rbuf_type::row_data row_data;
         typedef Blender  blender_type;
         typedef typename blender_type::color_type color_type;
-        typedef int                               order_type; // A fake one
+        typedef typename blender_type::order_type order_type;
         typedef typename color_type::value_type   value_type;
         typedef typename color_type::calc_type    calc_type;
-        enum 
-        {
-            num_components = 1,
-            pix_width = sizeof(value_type) * Step,
-            pix_step = Step,
-            pix_offset = Offset,
-        };
+
         struct pixel_type
         {
-            value_type c[num_components];
+            value_type c[order_type::N];
 
             void set(value_type v)
             {
-                c[0] = v;
+                c[order_type::Y] = v;
             }
 
             void set(const color_type& color)
@@ -157,33 +161,19 @@ namespace agg
 
             void get(value_type& v) const
             {
-                v = c[0];
+                v = c[order_type::Y];
             }
 
             color_type get() const
             {
-                return color_type(c[0]);
+                return color_type(c[order_type::Y]);
             }
+        };
 
-            pixel_type* next()
-            {
-                return (pixel_type*)(c + pix_step);
-            }
-
-            const pixel_type* next() const
-            {
-                return (const pixel_type*)(c + pix_step);
-            }
-
-            pixel_type* advance(int n)
-            {
-                return (pixel_type*)(c + n * pix_step);
-            }
-
-            const pixel_type* advance(int n) const
-            {
-                return (const pixel_type*)(c + n * pix_step);
-            }
+        enum 
+        {
+            pix_width = sizeof(pixel_type), 
+            pix_step = order_type::N
         };
 
     private:
@@ -282,37 +272,37 @@ namespace agg
         //--------------------------------------------------------------------
         AGG_INLINE int8u* pix_ptr(int x, int y) 
         { 
-            return m_rbuf->row_ptr(y) + sizeof(value_type) * (x * pix_step + pix_offset);
+            return m_rbuf->row_ptr(y) + pix_width * x;
         }
 
         AGG_INLINE const int8u* pix_ptr(int x, int y) const 
         { 
-            return m_rbuf->row_ptr(y) + sizeof(value_type) * (x * pix_step + pix_offset);
+            return m_rbuf->row_ptr(y) + pix_width * x;
         }
 
         // Return pointer to pixel value, forcing row to be allocated.
         AGG_INLINE pixel_type* pix_value_ptr(int x, int y, unsigned len) 
         {
-            return (pixel_type*)(m_rbuf->row_ptr(x, y, len) + sizeof(value_type) * (x * pix_step + pix_offset));
+            return (pixel_type*)(m_rbuf->row_ptr(x, y, len)) + x;
         }
 
         // Return pointer to pixel value, or null if row not allocated.
         AGG_INLINE const pixel_type* pix_value_ptr(int x, int y) const 
         {
             int8u* p = m_rbuf->row_ptr(y);
-            return p ? (pixel_type*)(p + sizeof(value_type) * (x * pix_step + pix_offset)) : 0;
+            return p ? (pixel_type*)(p) + x : 0;
         }
 
         // Get pixel pointer from raw buffer pointer.
         AGG_INLINE static pixel_type* pix_value_ptr(void* p) 
         {
-            return (pixel_type*)((value_type*)p + pix_offset);
+            return (pixel_type*)p;
         }
 
         // Get pixel pointer from raw buffer pointer.
         AGG_INLINE static const pixel_type* pix_value_ptr(const void* p) 
         {
-            return (const pixel_type*)((const value_type*)p + pix_offset);
+            return (const pixel_type*)p;
         }
 
         //--------------------------------------------------------------------
@@ -365,8 +355,7 @@ namespace agg
             pixel_type* p = pix_value_ptr(x, y, len);
             do
             {
-                p->set(c);
-                p = p->next();
+                (p++)->set(c);
             }
             while(--len);
         }
@@ -399,8 +388,7 @@ namespace agg
                 {
                     do
                     {
-                        p->set(c);
-                        p = p->next();
+                        (p++)->set(c);
                     }
                     while (--len);
                 }
@@ -408,8 +396,7 @@ namespace agg
                 {
                     do
                     {
-                        blend_pix(p, c, cover);
-                        p = p->next();
+                        blend_pix(p++, c, cover);
                     }
                     while (--len);
                 }
@@ -459,13 +446,12 @@ namespace agg
                 {
                     if (c.is_opaque() && *covers == cover_mask)
                     {
-                        p->set(c);
+                        (p++)->set(c);
                     }
                     else
                     {
-                        blend_pix(p, c, *covers);
+                        blend_pix(p++, c, *covers);
                     }
-                    p = p->next();
                     ++covers;
                 }
                 while (--len);
@@ -509,8 +495,7 @@ namespace agg
 
             do 
             {
-                p->set(*colors++);
-                p = p->next();
+                (p++)->set(*colors++);
             }
             while (--len);
         }
@@ -542,8 +527,7 @@ namespace agg
             {
                 do 
                 {
-                    copy_or_blend_pix(p, *colors++, *covers++);
-                    p = p->next();
+                    copy_or_blend_pix(p++, *colors++, *covers++);
                 }
                 while (--len);
             }
@@ -553,8 +537,7 @@ namespace agg
                 {
                     do 
                     {
-                        copy_or_blend_pix(p, *colors++);
-                        p = p->next();
+                        copy_or_blend_pix(p++, *colors++);
                     }
                     while (--len);
                 }
@@ -562,8 +545,7 @@ namespace agg
                 {
                     do 
                     {
-                        copy_or_blend_pix(p, *colors++, cover);
-                        p = p->next();
+                        copy_or_blend_pix(p++, *colors++, cover);
                     }
                     while (--len);
                 }
@@ -620,8 +602,7 @@ namespace agg
                     pixel_type* p = pix_value_ptr(r.x1, y, len);
                     do
                     {
-                        f(p->c);
-                        p = p->next();
+                        f(p++->c);
                     }
                     while (--len);
                 }
@@ -631,13 +612,13 @@ namespace agg
         //--------------------------------------------------------------------
         template<class GammaLut> void apply_gamma_dir(const GammaLut& g)
         {
-            for_each_pixel(apply_gamma_dir_gray<color_type, GammaLut>(g));
+            for_each_pixel(apply_gamma_dir_gray<color_type, order_type, GammaLut>(g));
         }
 
         //--------------------------------------------------------------------
         template<class GammaLut> void apply_gamma_inv(const GammaLut& g)
         {
-            for_each_pixel(apply_gamma_inv_gray<color_type, GammaLut>(g));
+            for_each_pixel(apply_gamma_inv_gray<color_type, order_type, GammaLut>(g));
         }
 
         //--------------------------------------------------------------------
@@ -674,9 +655,7 @@ namespace agg
 
                 do 
                 {
-                    copy_or_blend_pix(pdst, color, src_color_type::scale_cover(cover, psrc->c[0]));
-                    psrc = psrc->next();
-                    pdst = pdst->next();
+                    copy_or_blend_pix(pdst++, color, src_color_type::scale_cover(cover, psrc++->c[0]));
                 }
                 while (--len);
             }
@@ -701,9 +680,7 @@ namespace agg
 
                 do 
                 {
-                    copy_or_blend_pix(pdst, color_lut[psrc->c[0]], cover);
-                    psrc = psrc->next();
-                    pdst = pdst->next();
+                    copy_or_blend_pix(pdst++, color_lut[psrc++->c[0]], cover);
                 }
                 while (--len);
             }
@@ -713,15 +690,15 @@ namespace agg
         rbuf_type* m_rbuf;
     };
 
-    typedef blender_gray<gray8> blender_gray8;
-    typedef blender_gray<sgray8> blender_sgray8;
-    typedef blender_gray<gray16> blender_gray16;
-    typedef blender_gray<gray32> blender_gray32;
+    typedef blender_gray<gray8, order_gray> blender_gray8;
+    typedef blender_gray<sgray8, order_gray> blender_sgray8;
+    typedef blender_gray<gray16, order_gray> blender_gray16;
+    typedef blender_gray<gray32, order_gray> blender_gray32;
 
-    typedef blender_gray_pre<gray8> blender_gray8_pre;
-    typedef blender_gray_pre<sgray8> blender_sgray8_pre;
-    typedef blender_gray_pre<gray16> blender_gray16_pre;
-    typedef blender_gray_pre<gray32> blender_gray32_pre;
+    typedef blender_gray_pre<gray8, order_gray> blender_gray8_pre;
+    typedef blender_gray_pre<sgray8, order_gray> blender_sgray8_pre;
+    typedef blender_gray_pre<gray16, order_gray> blender_gray16_pre;
+    typedef blender_gray_pre<gray32, order_gray> blender_gray32_pre;
 
     typedef pixfmt_alpha_blend_gray<blender_gray8, rendering_buffer> pixfmt_gray8;
     typedef pixfmt_alpha_blend_gray<blender_sgray8, rendering_buffer> pixfmt_sgray8;

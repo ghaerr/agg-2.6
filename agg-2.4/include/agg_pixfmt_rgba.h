@@ -1513,15 +1513,10 @@ namespace agg
         typedef typename blender_type::order_type order_type;
         typedef typename color_type::value_type value_type;
         typedef typename color_type::calc_type calc_type;
-        enum 
-        {
-            num_components = 4,
-            pix_step = 4,
-            pix_width = sizeof(value_type) * pix_step,
-        };
+
         struct pixel_type
         {
-            value_type c[num_components];
+            value_type c[order_type::N];
 
             void set(value_type r, value_type g, value_type b, value_type a)
             {
@@ -1552,26 +1547,12 @@ namespace agg
                     c[order_type::B],
                     c[order_type::A]);
             }
+        };
 
-            pixel_type* next()
-            {
-                return (pixel_type*)(c + pix_step);
-            }
-
-            const pixel_type* next() const
-            {
-                return (const pixel_type*)(c + pix_step);
-            }
-
-            pixel_type* advance(int n)
-            {
-                return (pixel_type*)(c + n * pix_step);
-            }
-
-            const pixel_type* advance(int n) const
-            {
-                return (const pixel_type*)(c + n * pix_step);
-            }
+        enum 
+        {
+            pix_width = sizeof(pixel_type), 
+            pix_step = order_type::N
         };
 
     private:
@@ -1655,25 +1636,25 @@ namespace agg
         //--------------------------------------------------------------------
         AGG_INLINE int8u* pix_ptr(int x, int y) 
         { 
-            return m_rbuf->row_ptr(y) + sizeof(value_type) * (x * pix_step);
+            return m_rbuf->row_ptr(y) + pix_width * x;
         }
 
         AGG_INLINE const int8u* pix_ptr(int x, int y) const 
         { 
-            return m_rbuf->row_ptr(y) + sizeof(value_type) * (x * pix_step);
+            return m_rbuf->row_ptr(y) + pix_width * x;
         }
 
         // Return pointer to pixel value, forcing row to be allocated.
         AGG_INLINE pixel_type* pix_value_ptr(int x, int y, unsigned len) 
         {
-            return (pixel_type*)(m_rbuf->row_ptr(x, y, len) + sizeof(value_type) * (x * pix_step));
+            return (pixel_type*)(m_rbuf->row_ptr(x, y, len)) + x;
         }
 
         // Return pointer to pixel value, or null if row not allocated.
         AGG_INLINE const pixel_type* pix_value_ptr(int x, int y) const 
         {
             int8u* p = m_rbuf->row_ptr(y);
-            return p ? (pixel_type*)(p + sizeof(value_type) * (x * pix_step)) : 0;
+            return p ? (pixel_type*)(p) + x : 0;
         }
 
         // Get pixel pointer from raw buffer pointer.
@@ -1738,8 +1719,7 @@ namespace agg
             pixel_type* p = pix_value_ptr(x, y, len);
             do
             {
-                *p = v;
-                p = p->next();
+                *p++ = v;
             }
             while (--len);
         }
@@ -1774,8 +1754,7 @@ namespace agg
                     v.set(c);
                     do
                     {
-                        *p = v;
-                        p = p->next();
+                        *p++ = v;
                     }
                     while (--len);
                 }
@@ -1785,8 +1764,7 @@ namespace agg
                     {
                         do
                         {
-                            blend_pix(p, c);
-                            p = p->next();
+                            blend_pix(p++, c);
                         }
                         while (--len);
                     }
@@ -1794,8 +1772,7 @@ namespace agg
                     {
                         do
                         {
-                            blend_pix(p, c, cover);
-                            p = p->next();
+                            blend_pix(p++, c, cover);
                         }
                         while (--len);
                     }
@@ -1864,7 +1841,7 @@ namespace agg
                     {
                         blend_pix(p, c, *covers);
                     }
-                    p = p->next();
+                    ++p;
                     ++covers;
                 }
                 while (--len);
@@ -1906,7 +1883,7 @@ namespace agg
             do 
             {
                 p->set(*colors++);
-                p = p->next();
+                ++p;
             }
             while (--len);
         }
@@ -1936,8 +1913,7 @@ namespace agg
             {
                 do 
                 {
-                    copy_or_blend_pix(p, *colors++, *covers++);
-                    p = p->next();
+                    copy_or_blend_pix(p++, *colors++, *covers++);
                 }
                 while (--len);
             }
@@ -1947,8 +1923,7 @@ namespace agg
                 {
                     do 
                     {
-                        copy_or_blend_pix(p, *colors++);
-                        p = p->next();
+                        copy_or_blend_pix(p++, *colors++);
                     }
                     while (--len);
                 }
@@ -1956,8 +1931,7 @@ namespace agg
                 {
                     do 
                     {
-                        copy_or_blend_pix(p, *colors++, cover);
-                        p = p->next();
+                        copy_or_blend_pix(p++, *colors++, cover);
                     }
                     while (--len);
                 }
@@ -2013,7 +1987,7 @@ namespace agg
                     do
                     {
                         f(p->c);
-                        p = p->next();
+                        ++p;
                     }
                     while (--len);
                 }
@@ -2077,8 +2051,8 @@ namespace agg
 
                 if (xdst > xsrc)
                 {
-                    psrc = psrc->advance(len - 1);
-                    pdst = pdst->advance(len - 1);
+                    psrc += len - 1;
+                    pdst += len - 1;
                     srcinc = -1;
                     dstinc = -1;
                 }
@@ -2088,8 +2062,8 @@ namespace agg
                     do 
                     {
                         copy_or_blend_pix(pdst, psrc->get());
-                        psrc = psrc->advance(srcinc);
-                        pdst = pdst->advance(dstinc);
+                        psrc += srcinc;
+                        pdst += dstinc;
                     }
                     while (--len);
                 }
@@ -2098,8 +2072,8 @@ namespace agg
                     do 
                     {
                         copy_or_blend_pix(pdst, psrc->get(), cover);
-                        psrc = psrc->advance(srcinc);
-                        pdst = pdst->advance(dstinc);
+                        psrc += srcinc;
+                        pdst += dstinc;
                     }
                     while (--len);
                 }
@@ -2127,8 +2101,8 @@ namespace agg
                 {
                     copy_or_blend_pix(pdst, color, 
                         src_color_type::scale_cover(cover, psrc->c[0]));
-                    psrc = psrc->next();
-                    pdst = pdst->next();
+                    ++psrc;
+                    ++pdst;
                 }
                 while (--len);
             }
@@ -2156,8 +2130,8 @@ namespace agg
                     do 
                     {
                         copy_or_blend_pix(pdst, color_lut[psrc->c[0]]);
-                        psrc = psrc->next();
-                        pdst = pdst->next();
+                        ++psrc;
+                        ++pdst;
                     }
                     while (--len);
                 }
@@ -2166,8 +2140,8 @@ namespace agg
                     do 
                     {
                         copy_or_blend_pix(pdst, color_lut[psrc->c[0]], cover);
-                        psrc = psrc->next();
-                        pdst = pdst->next();
+                        ++psrc;
+                        ++pdst;
                     }
                     while (--len);
                 }
@@ -2191,15 +2165,10 @@ namespace agg
         typedef typename blender_type::order_type order_type;
         typedef typename color_type::value_type value_type;
         typedef typename color_type::calc_type calc_type;
-        enum 
-        {
-            num_components = 4,
-            pix_step = 4,
-            pix_width  = sizeof(value_type) * pix_step,
-        };
+
         struct pixel_type
         {
-            value_type c[num_components];
+            value_type c[order_type::N];
 
             void set(value_type r, value_type g, value_type b, value_type a)
             {
@@ -2230,28 +2199,13 @@ namespace agg
                     c[order_type::B],
                     c[order_type::A]);
             }
-
-            pixel_type* next()
-            {
-                return (pixel_type*)(c + pix_step);
-            }
-
-            const pixel_type* next() const
-            {
-                return (const pixel_type*)(c + pix_step);
-            }
-
-            pixel_type* advance(int n)
-            {
-                return (pixel_type*)(c + n * pix_step);
-            }
-
-            const pixel_type* advance(int n) const
-            {
-                return (const pixel_type*)(c + n * pix_step);
-            }
         };
 
+        enum 
+        {
+            pix_width = sizeof(pixel_type), 
+            pix_step = order_type::N
+        };
 
     private:
         //--------------------------------------------------------------------
@@ -2319,25 +2273,25 @@ namespace agg
         //--------------------------------------------------------------------
         AGG_INLINE int8u* pix_ptr(int x, int y) 
         { 
-            return m_rbuf->row_ptr(y) + sizeof(value_type) * (x * pix_step);
+            return m_rbuf->row_ptr(y) + pix_width * x;
         }
 
         AGG_INLINE const int8u* pix_ptr(int x, int y) const 
         { 
-            return m_rbuf->row_ptr(y) + sizeof(value_type) * (x * pix_step);
+            return m_rbuf->row_ptr(y) + pix_width * x;
         }
 
         // Return pointer to pixel value, forcing row to be allocated.
         AGG_INLINE pixel_type* pix_value_ptr(int x, int y, unsigned len) 
         {
-            return (pixel_type*)(m_rbuf->row_ptr(x, y, len) + sizeof(value_type) * (x * pix_step));
+            return (pixel_type*)(m_rbuf->row_ptr(x, y, len)) + x;
         }
 
         // Return pointer to pixel value, or null if row not allocated.
         AGG_INLINE const pixel_type* pix_value_ptr(int x, int y) const 
         {
             int8u* p = m_rbuf->row_ptr(y);
-            return p ? (pixel_type*)(p + sizeof(value_type) * (x * pix_step)) : 0;
+            return p ? (pixel_type*)(p) + x : 0;
         }
 
         // Get pixel pointer from raw buffer pointer.
@@ -2390,8 +2344,7 @@ namespace agg
             pixel_type* p = pix_value_ptr(x, y, len);
             do
             {
-                *p = v;
-                p = p->next();
+                *p++ = v;
             }
             while (--len);
         }
@@ -2419,8 +2372,7 @@ namespace agg
             pixel_type* p = pix_value_ptr(x, y, len);
             do
             {
-                blend_pix(p, c, cover);
-                p = p->next();
+                blend_pix(p++, c, cover);
             }
             while (--len);
         }
@@ -2444,8 +2396,7 @@ namespace agg
 
             do 
             {
-                blend_pix(p, c, *covers++);
-                p = p->next();
+                blend_pix(p++, c, *covers++);
             }
             while (--len);
         }
@@ -2470,8 +2421,7 @@ namespace agg
 
             do 
             {
-                p->set(*colors++);
-                p = p->next();
+                (p++)->set(*colors++);
             }
             while (--len);
         }
@@ -2498,8 +2448,7 @@ namespace agg
 
             do 
             {
-                blend_pix(p, *colors++, covers ? *covers++ : cover);
-                p = p->next();
+                blend_pix(p++, *colors++, covers ? *covers++ : cover);
             }
             while (--len);
         }
@@ -2531,8 +2480,7 @@ namespace agg
                     pixel_type* p = pix_value_ptr(r.x1, y, len);
                     do
                     {
-                        f(p->c);
-                        p = p->next();
+                        f((p++)->c);
                     }
                     while (--len);
                 }
@@ -2596,8 +2544,8 @@ namespace agg
 
                 if (xdst > xsrc)
                 {
-                    psrc = psrc->advance(len - 1);
-                    pdst = pdst->advance(len - 1);
+                    psrc += len - 1;
+                    pdst += len - 1;
                     srcinc = -1;
                     dstinc = -1;
                 }
@@ -2605,8 +2553,8 @@ namespace agg
                 do 
                 {
                     blend_pix(pdst, psrc->get(), cover);
-                    psrc = psrc->advance(srcinc);
-                    pdst = pdst->advance(dstinc);
+                    psrc += srcinc;
+                    pdst += dstinc;
                 }
                 while (--len);
             }
@@ -2631,10 +2579,8 @@ namespace agg
 
                 do 
                 {
-                    blend_pix(pdst, color,
-                        src_color_type::scale_cover(cover, psrc->c[0]));
-                    psrc = psrc->next();
-                    pdst = pdst->next();
+                    blend_pix(pdst++, color,
+                        src_color_type::scale_cover(cover, psrc++->c[0]));
                 }
                 while (--len);
             }
@@ -2659,9 +2605,7 @@ namespace agg
 
                 do 
                 {
-                    blend_pix(pdst, color_lut[psrc->c[0]], cover);
-                    psrc = psrc->next();
-                    pdst = pdst->next();
+                    blend_pix(pdst++, color_lut[psrc++->c[0]], cover);
                 }
                 while (--len);
             }
@@ -2715,12 +2659,12 @@ namespace agg
     typedef blender_rgba_pre<rgba16, order_abgr> blender_abgr64_pre;
     typedef blender_rgba_pre<rgba16, order_bgra> blender_bgra64_pre;
 
-	typedef blender_rgba_plain<rgba16, order_rgba> blender_rgba64_plain;
-	typedef blender_rgba_plain<rgba16, order_argb> blender_argb64_plain;
-	typedef blender_rgba_plain<rgba16, order_abgr> blender_abgr64_plain;
-	typedef blender_rgba_plain<rgba16, order_bgra> blender_bgra64_plain;
+    typedef blender_rgba_plain<rgba16, order_rgba> blender_rgba64_plain;
+    typedef blender_rgba_plain<rgba16, order_argb> blender_argb64_plain;
+    typedef blender_rgba_plain<rgba16, order_abgr> blender_abgr64_plain;
+    typedef blender_rgba_plain<rgba16, order_bgra> blender_bgra64_plain;
 
-	typedef blender_rgba<rgba32, order_rgba> blender_rgba128;
+    typedef blender_rgba<rgba32, order_rgba> blender_rgba128;
     typedef blender_rgba<rgba32, order_argb> blender_argb128;
     typedef blender_rgba<rgba32, order_abgr> blender_abgr128;
     typedef blender_rgba<rgba32, order_bgra> blender_bgra128;
@@ -2777,12 +2721,12 @@ namespace agg
     typedef pixfmt_alpha_blend_rgba<blender_abgr64_pre, rendering_buffer> pixfmt_abgr64_pre;
     typedef pixfmt_alpha_blend_rgba<blender_bgra64_pre, rendering_buffer> pixfmt_bgra64_pre;
 
-	typedef pixfmt_alpha_blend_rgba<blender_rgba64_plain, rendering_buffer> pixfmt_rgba64_plain;
-	typedef pixfmt_alpha_blend_rgba<blender_argb64_plain, rendering_buffer> pixfmt_argb64_plain;
-	typedef pixfmt_alpha_blend_rgba<blender_abgr64_plain, rendering_buffer> pixfmt_abgr64_plain;
-	typedef pixfmt_alpha_blend_rgba<blender_bgra64_plain, rendering_buffer> pixfmt_bgra64_plain;
+    typedef pixfmt_alpha_blend_rgba<blender_rgba64_plain, rendering_buffer> pixfmt_rgba64_plain;
+    typedef pixfmt_alpha_blend_rgba<blender_argb64_plain, rendering_buffer> pixfmt_argb64_plain;
+    typedef pixfmt_alpha_blend_rgba<blender_abgr64_plain, rendering_buffer> pixfmt_abgr64_plain;
+    typedef pixfmt_alpha_blend_rgba<blender_bgra64_plain, rendering_buffer> pixfmt_bgra64_plain;
 
-	typedef pixfmt_alpha_blend_rgba<blender_rgba128, rendering_buffer> pixfmt_rgba128;
+    typedef pixfmt_alpha_blend_rgba<blender_rgba128, rendering_buffer> pixfmt_rgba128;
     typedef pixfmt_alpha_blend_rgba<blender_argb128, rendering_buffer> pixfmt_argb128;
     typedef pixfmt_alpha_blend_rgba<blender_abgr128, rendering_buffer> pixfmt_abgr128;
     typedef pixfmt_alpha_blend_rgba<blender_bgra128, rendering_buffer> pixfmt_bgra128;

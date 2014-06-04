@@ -30,14 +30,37 @@
 
 namespace agg
 {
-    // Supported byte orders for RGB and RGBA pixel formats
+    // Supported component orders for RGB and RGBA pixel formats
     //=======================================================================
-    struct order_rgb  { enum rgb_e  { R=0, G=1, B=2, rgb_tag, hasAlpha=false }; };       //----order_rgb
-    struct order_bgr  { enum bgr_e  { B=0, G=1, R=2, rgb_tag, hasAlpha=false }; };       //----order_bgr
-    struct order_rgba { enum rgba_e { R=0, G=1, B=2, A=3, rgba_tag, hasAlpha=true }; }; //----order_rgba
-    struct order_argb { enum argb_e { A=0, R=1, G=2, B=3, rgba_tag, hasAlpha=true }; }; //----order_argb
-    struct order_abgr { enum abgr_e { A=0, B=1, G=2, R=3, rgba_tag, hasAlpha=true }; }; //----order_abgr
-    struct order_bgra { enum bgra_e { B=0, G=1, R=2, A=3, rgba_tag, hasAlpha=true }; }; //----order_bgra
+    struct order_rgb  { enum rgb_e  { R=0, G=1, B=2, N=3 }; };
+    struct order_bgr  { enum bgr_e  { B=0, G=1, R=2, N=3 }; };
+    struct order_rgbx { enum rgbx_e { R=0, G=1, B=2, X=3, N=4 }; };
+    struct order_xrgb { enum xrgb_e { X=0, R=1, G=2, B=3, N=4 }; };
+    struct order_xbgr { enum xbgr_e { X=0, B=1, G=2, R=3, N=4 }; };
+    struct order_bgrx { enum bgrx_e { B=0, G=1, R=2, X=3, N=4 }; };
+    struct order_rgba { enum rgba_e { R=0, G=1, B=2, A=3, N=4 }; };
+    struct order_argb { enum argb_e { A=0, R=1, G=2, B=3, N=4 }; };
+    struct order_abgr { enum abgr_e { A=0, B=1, G=2, R=3, N=4 }; };
+    struct order_bgra { enum bgra_e { B=0, G=1, R=2, A=3, N=4 }; };
+
+    // Component order for grayscale pixel formats
+    //=======================================================================
+    struct order_gray { enum { Y=0, N=1 }; };
+
+    // Adapter to enable a grayscale pixel format to access a single color component.
+    //=======================================================================
+    template<class Order, int Component>
+    struct component_adapter
+    {
+        enum { Y=Component, N=Order::N };
+    };
+
+    // Predefined adapters for RGBA components
+    //=======================================================================
+    template<class Order> struct component_r : component_adapter<Order, Order::R> {};
+    template<class Order> struct component_g : component_adapter<Order, Order::G> {};
+    template<class Order> struct component_b : component_adapter<Order, Order::B> {};
+    template<class Order> struct component_a : component_adapter<Order, Order::A> {};
 
     // Colorspace tag types.
     struct linear {};
@@ -489,16 +512,16 @@ namespace agg
         {
             if (a != base_mask)
             {
-				if (a == 0)
-				{
-					r = g = b = 0;
-				}
-				else
-				{
-					r = multiply(r, a);
-					g = multiply(g, a);
-					b = multiply(b, a);
-				}
+                if (a == 0)
+                {
+                    r = g = b = 0;
+                }
+                else
+                {
+                    r = multiply(r, a);
+                    g = multiply(g, a);
+                    b = multiply(b, a);
+                }
             }
             return *this;
         }
@@ -881,9 +904,16 @@ namespace agg
         {
             if (a != base_mask) 
             {
-                r = multiply(r, a);
-                g = multiply(g, a);
-                b = multiply(b, a);
+                if (a == 0)
+                {
+                    r = g = b = 0;
+                }
+                else
+                {
+                    r = multiply(r, a);
+                    g = multiply(g, a);
+                    b = multiply(b, a);
+                }
             }
             return *this;
         }

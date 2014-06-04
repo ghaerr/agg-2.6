@@ -14,7 +14,13 @@
 //#define AGG_BGR96
 #include "pixel_formats.h"
 
-typedef agg::blender_gray<gray_type> gray_blender;
+typedef agg::component_r<component_order> component_r;
+typedef agg::component_g<component_order> component_g;
+typedef agg::component_b<component_order> component_b;
+
+typedef agg::blender_gray<gray_type, component_r> gray_blender_r;
+typedef agg::blender_gray<gray_type, component_g> gray_blender_g;
+typedef agg::blender_gray<gray_type, component_b> gray_blender_b;
 
 enum flip_y_e { flip_y = true };
 
@@ -38,9 +44,9 @@ public:
     {
         pixfmt pf(rbuf_window());
 
-        typedef agg::pixfmt_alpha_blend_gray<gray_blender, agg::rendering_buffer, 3, 2> pixfmt_r;
-        typedef agg::pixfmt_alpha_blend_gray<gray_blender, agg::rendering_buffer, 3, 1> pixfmt_g;
-        typedef agg::pixfmt_alpha_blend_gray<gray_blender, agg::rendering_buffer, 3, 0> pixfmt_b;
+        typedef agg::pixfmt_alpha_blend_gray<gray_blender_r, agg::rendering_buffer> pixfmt_r;
+        typedef agg::pixfmt_alpha_blend_gray<gray_blender_g, agg::rendering_buffer> pixfmt_g;
+        typedef agg::pixfmt_alpha_blend_gray<gray_blender_b, agg::rendering_buffer> pixfmt_b;
 
         pixfmt_r pfr(rbuf_window());
         pixfmt_g pfg(rbuf_window());

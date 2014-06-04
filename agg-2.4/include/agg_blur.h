@@ -28,6 +28,7 @@
 #define AGG_BLUR_INCLUDED
 
 #include "agg_array.h"
+#include "agg_pixfmt_base.h"
 #include "agg_pixfmt_transposer.h"
 
 namespace agg
@@ -399,7 +400,7 @@ namespace agg
                 }
                 for(i = 1; i <= rx; i++)
                 {
-                    if(i <= wm) src_pix_ptr += Img::pix_step; 
+                    if(i <= wm) src_pix_ptr += Img::pix_width; 
                     pix = *src_pix_ptr; 
                     stack[i + rx] = pix;
                     sum    += pix * (rx + 1 - i);
@@ -414,7 +415,7 @@ namespace agg
                 for(x = 0; x < w; x++)
                 {
                     *dst_pix_ptr = (sum * mul_sum) >> shr_sum;
-                    dst_pix_ptr += Img::pix_step;
+                    dst_pix_ptr += Img::pix_width;
 
                     sum -= sum_out;
        
@@ -424,7 +425,7 @@ namespace agg
 
                     if(xp < wm) 
                     {
-                        src_pix_ptr += Img::pix_step;
+                        src_pix_ptr += Img::pix_width;
                         pix = *src_pix_ptr;
                         ++xp;
                     }
@@ -1302,6 +1303,7 @@ namespace agg
     public:
         typedef typename PixFmt::pixel_type pixel_type;
         typedef typename PixFmt::value_type value_type;
+        typedef typename PixFmt::order_type order_type;
 
         slight_blur(double r = 1.33)
         {
@@ -1388,29 +1390,29 @@ namespace agg
     private:
         void calc_row(PixFmt& img, int x, int y, int w, pixel_type* row)
         {
-            int wm = w - 1;
-            int i0 = 0;
-            int i1 = 1;
-            int i2 = 2;
+            const int wm = w - 1;
 
             pixel_type* p = img.pix_value_ptr(x, y, w);
 
             pixel_type c[3];
-            c[0] = *p;
-            c[1] = c[0];
+            pixel_type* pc0 = c;
+            pixel_type* pc1 = c + 1;
+            pixel_type* pc2 = c + 2;
+            pixel_type* end = c + 3;
+            *pc0 = *pc1 = *p;
 
             for (int x = 0; x < wm; ++x)
             {
-                c[i2] = *(p = p->next());
+                *pc2 = *p++;
 
-                calc_pixel(c[i0++], c[i1++], c[i2++], row[x]);
+                calc_pixel(*pc0++, *pc1++, *pc2++, *row++);
 
-                if (i0 > 2) i0 = 0;
-                else if (i1 > 2) i1 = 0;
-                else if (i2 > 2) i2 = 0;
+                if (pc0 == end) pc0 = c;
+                else if (pc1 == end) pc1 = c;
+                else if (pc2 == end) pc2 = c;
             }
 
-            calc_pixel(c[i0], c[i1], c[i1], row[wm]);
+            calc_pixel(*pc0, *pc1, *pc1, *row);
         }
 
         void calc_pixel(
@@ -1419,10 +1421,45 @@ namespace agg
             pixel_type const & c3,
             pixel_type & x)
         {
-            for (int i = 0; i < PixFmt::num_components; ++i)
-            {
-                x.c[i] = calc_value(c1.c[i], c2.c[i], c3.c[i]);
-            }
+            calc_pixel(c1, c2, c3, x, PixFmt::pixfmt_category());
+        }
+
+        void calc_pixel(
+            pixel_type const & c1,
+            pixel_type const & c2,
+            pixel_type const & c3,
+            pixel_type & x,
+            pixfmt_gray_tag)
+        {
+            enum { Y = order_type::Y };
+            x.c[Y] = calc_value(c1.c[Y], c2.c[Y], c3.c[Y]);
+        }
+
+        void calc_pixel(
+            pixel_type const & c1,
+            pixel_type const & c2,
+            pixel_type const & c3,
+            pixel_type & x,
+            pixfmt_rgb_tag)
+        {
+            enum { R = order_type::R, G = order_type::G, B = order_type::B };
+            x.c[R] = calc_value(c1.c[R], c2.c[R], c3.c[R]);
+            x.c[G] = calc_value(c1.c[G], c2.c[G], c3.c[G]);
+            x.c[B] = calc_value(c1.c[B], c2.c[B], c3.c[B]);
+        }
+
+        void calc_pixel(
+            pixel_type const & c1,
+            pixel_type const & c2,
+            pixel_type const & c3,
+            pixel_type & x,
+            pixfmt_rgba_tag)
+        {
+            enum { R = order_type::R, G = order_type::G, B = order_type::B, A = order_type::A };
+            x.c[R] = calc_value(c1.c[R], c2.c[R], c3.c[R]);
+            x.c[G] = calc_value(c1.c[G], c2.c[G], c3.c[G]);
+            x.c[B] = calc_value(c1.c[B], c2.c[B], c3.c[B]);
+            x.c[A] = calc_value(c1.c[A], c2.c[A], c3.c[A]);
         }
 
         value_type calc_value(value_type v1, value_type v2, value_type v3)

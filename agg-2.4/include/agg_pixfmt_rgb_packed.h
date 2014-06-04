@@ -1143,12 +1143,11 @@ namespace agg
                               unsigned len,
                               int8u cover)
         {
-            typedef typename SrcPixelFormatRenderer::value_type src_value_type;
-            typedef typename SrcPixelFormatRenderer::color_type src_color_type;
-            const src_value_type* psrc = (src_value_type*)from.row_ptr(ysrc);
+            typedef typename SrcPixelFormatRenderer::pixel_type src_pixel_type;
+            const src_pixel_type* psrc = (src_pixel_type*)from.row_ptr(ysrc);
             if(psrc)
             {
-                psrc += xsrc * SrcPixelFormatRenderer::pix_step + SrcPixelFormatRenderer::pix_offset;
+                psrc += xsrc;
                 pixel_type* pdst = 
                     (pixel_type*)m_rbuf->row_ptr(xdst, ydst, len) + xdst;
 
@@ -1157,7 +1156,7 @@ namespace agg
                     m_blender.blend_pix(pdst, 
                                         color.r, color.g, color.b, color.a,
                                         cover);
-                    psrc += SrcPixelFormatRenderer::pix_step;
+                    ++psrc;
                     ++pdst;
                 }
                 while(--len);
@@ -1173,11 +1172,11 @@ namespace agg
                             unsigned len,
                             int8u cover)
         {
-            typedef typename SrcPixelFormatRenderer::value_type src_value_type;
-            const src_value_type* psrc = (src_value_type*)from.row_ptr(ysrc);
+            typedef typename SrcPixelFormatRenderer::pixel_type src_pixel_type;
+            const src_pixel_type* psrc = (src_pixel_type*)from.row_ptr(ysrc);
             if(psrc)
             {
-                psrc += xsrc * SrcPixelFormatRenderer::pix_step + SrcPixelFormatRenderer::pix_offset;
+                psrc += xsrc;
                 pixel_type* pdst = 
                     (pixel_type*)m_rbuf->row_ptr(xdst, ydst, len) + xdst;
 
@@ -1187,7 +1186,7 @@ namespace agg
                     m_blender.blend_pix(pdst, 
                                         color.r, color.g, color.b, color.a,
                                         cover);
-                    psrc += SrcPixelFormatRenderer::pix_step;
+                    ++psrc;
                     ++pdst;
                 }
                 while(--len);
