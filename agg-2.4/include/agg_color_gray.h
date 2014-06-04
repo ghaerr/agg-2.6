@@ -198,8 +198,8 @@ namespace agg
         //--------------------------------------------------------------------
         rgba32 make_rgba32(const linear&) const 
         {
-            rgba32::value_type v32 = v / 255.0;
-            return rgba32(v32, v32, v32, a / 255.0);
+            rgba32::value_type v32 = v / 255.0f;
+            return rgba32(v32, v32, v32, a / 255.0f);
         }
 
         rgba32 make_rgba32(const sRGB&) const 
