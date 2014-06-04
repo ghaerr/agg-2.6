@@ -2715,7 +2715,12 @@ namespace agg
     typedef blender_rgba_pre<rgba16, order_abgr> blender_abgr64_pre;
     typedef blender_rgba_pre<rgba16, order_bgra> blender_bgra64_pre;
 
-    typedef blender_rgba<rgba32, order_rgba> blender_rgba128;
+	typedef blender_rgba_plain<rgba16, order_rgba> blender_rgba64_plain;
+	typedef blender_rgba_plain<rgba16, order_argb> blender_argb64_plain;
+	typedef blender_rgba_plain<rgba16, order_abgr> blender_abgr64_plain;
+	typedef blender_rgba_plain<rgba16, order_bgra> blender_bgra64_plain;
+
+	typedef blender_rgba<rgba32, order_rgba> blender_rgba128;
     typedef blender_rgba<rgba32, order_argb> blender_argb128;
     typedef blender_rgba<rgba32, order_abgr> blender_abgr128;
     typedef blender_rgba<rgba32, order_bgra> blender_bgra128;
@@ -2772,7 +2777,12 @@ namespace agg
     typedef pixfmt_alpha_blend_rgba<blender_abgr64_pre, rendering_buffer> pixfmt_abgr64_pre;
     typedef pixfmt_alpha_blend_rgba<blender_bgra64_pre, rendering_buffer> pixfmt_bgra64_pre;
 
-    typedef pixfmt_alpha_blend_rgba<blender_rgba128, rendering_buffer> pixfmt_rgba128;
+	typedef pixfmt_alpha_blend_rgba<blender_rgba64_plain, rendering_buffer> pixfmt_rgba64_plain;
+	typedef pixfmt_alpha_blend_rgba<blender_argb64_plain, rendering_buffer> pixfmt_argb64_plain;
+	typedef pixfmt_alpha_blend_rgba<blender_abgr64_plain, rendering_buffer> pixfmt_abgr64_plain;
+	typedef pixfmt_alpha_blend_rgba<blender_bgra64_plain, rendering_buffer> pixfmt_bgra64_plain;
+
+	typedef pixfmt_alpha_blend_rgba<blender_rgba128, rendering_buffer> pixfmt_rgba128;
     typedef pixfmt_alpha_blend_rgba<blender_argb128, rendering_buffer> pixfmt_argb128;
     typedef pixfmt_alpha_blend_rgba<blender_abgr128, rendering_buffer> pixfmt_abgr128;
     typedef pixfmt_alpha_blend_rgba<blender_bgra128, rendering_buffer> pixfmt_bgra128;
