@@ -105,7 +105,7 @@ namespace agg
         gray8T() {}
 
         //--------------------------------------------------------------------
-        gray8T(unsigned v_, unsigned a_=base_mask) :
+        explicit gray8T(unsigned v_, unsigned a_ = base_mask) :
             v(int8u(v_)), a(int8u(a_)) {}
 
         //--------------------------------------------------------------------
@@ -464,7 +464,7 @@ namespace agg
         gray16() {}
 
         //--------------------------------------------------------------------
-        gray16(unsigned v_, unsigned a_ = base_mask) :
+        explicit gray16(unsigned v_, unsigned a_ = base_mask) :
             v(int16u(v_)), a(int16u(a_)) {}
 
         //--------------------------------------------------------------------
@@ -783,7 +783,7 @@ namespace agg
         gray32() {}
 
         //--------------------------------------------------------------------
-        gray32(value_type v_, value_type a_ = 1) :
+        explicit gray32(value_type v_, value_type a_ = 1) :
             v(v_), a(a_) {}
 
         //--------------------------------------------------------------------
