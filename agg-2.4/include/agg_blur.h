@@ -1431,8 +1431,7 @@ namespace agg
             pixel_type & x,
             pixfmt_gray_tag)
         {
-            enum { Y = order_type::Y };
-            x.c[Y] = calc_value(c1.c[Y], c2.c[Y], c3.c[Y]);
+            x.c[0] = calc_value(c1.c[0], c2.c[0], c3.c[0]);
         }
 
         void calc_pixel(

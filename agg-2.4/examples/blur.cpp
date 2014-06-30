@@ -231,19 +231,18 @@ public:
         }
         else
         {
-            typedef agg::component_r<component_order> component_r;
-            typedef agg::component_g<component_order> component_g;
-            typedef agg::component_b<component_order> component_b;
-
             typedef agg::pixfmt_alpha_blend_gray<
-                agg::blender_gray<gray_type, component_r>, 
-                agg::rendering_buffer> pixfmt_r;
+                agg::blender_gray<gray_type>, 
+                agg::rendering_buffer, 
+                3, component_order::R> pixfmt_r;
             typedef agg::pixfmt_alpha_blend_gray<
-                agg::blender_gray<gray_type, component_g>, 
-                agg::rendering_buffer> pixfmt_g;
+                agg::blender_gray<gray_type>, 
+                agg::rendering_buffer, 
+                3, component_order::G> pixfmt_g;
             typedef agg::pixfmt_alpha_blend_gray<
-                agg::blender_gray<gray_type, component_b>, 
-                agg::rendering_buffer> pixfmt_b;
+                agg::blender_gray<gray_type>, 
+                agg::rendering_buffer, 
+                3, component_order::B> pixfmt_b;
 
             pixfmt_r pixf2r(m_rbuf2);
             pixfmt_g pixf2g(m_rbuf2);
