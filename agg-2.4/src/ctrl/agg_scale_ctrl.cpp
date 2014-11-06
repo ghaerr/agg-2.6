@@ -415,9 +415,9 @@ namespace agg
                 m_value1 = m_value2 - dv;
             }
             return true;
+        default:
+            return false;
         }
-
-        return false;
     }
 
 

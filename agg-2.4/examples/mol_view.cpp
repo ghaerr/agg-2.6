@@ -706,6 +706,7 @@ public:
                 return flag;
 
             case bond_triple:
+            case bond_single:
                 break;
         }
         return m_line1.vertex(x, y);

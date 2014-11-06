@@ -51,8 +51,8 @@ namespace agg
                 int h  = m_source.height() - 1;
                 int y1 = ifloor(src_y);
                 int y2 = y1 + 1;
-                rgba pix1 = (y1 < 0) ? rgba::no_color() : m_source.pixel(x, y1);
-                rgba pix2 = (y2 > h) ? rgba::no_color() : m_source.pixel(x, y2);
+                rgba pix1 = (y1 < 0) ? rgba::no_color() : rgba(m_source.pixel(x, y1));
+                rgba pix2 = (y2 > h) ? rgba::no_color() : rgba(m_source.pixel(x, y2));
                 return pix1.gradient(pix2, src_y - y1);
             }
             else

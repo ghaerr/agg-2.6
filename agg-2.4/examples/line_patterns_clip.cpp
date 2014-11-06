@@ -337,7 +337,7 @@ int agg_main(int argc, char* argv[])
     if(!app.load_img(0, "1"))
     {
         char buf[256];
-        sprintf(buf, "There must be file 1%s\n", app.img_ext(), app.img_ext());
+        sprintf(buf, "There must be file 1%s\n", app.img_ext());
         app.message(buf);
         return 1;
     }

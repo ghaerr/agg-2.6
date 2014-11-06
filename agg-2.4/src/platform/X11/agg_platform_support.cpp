@@ -702,7 +702,7 @@ namespace agg
         {
             fprintf(stderr,
                    "RGB masks are not compatible with AGG pixel formats:\n"
-                   "R=%08x, R=%08x, B=%08x\n", r_mask, g_mask, b_mask);
+                   "R=%08lx, R=%08lx, B=%08lx\n", r_mask, g_mask, b_mask);
             XCloseDisplay(m_specific->m_display);
             return false;
         }

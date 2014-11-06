@@ -1494,7 +1494,7 @@ public:
 					typedef agg::span_gradient<color_type, 
                             agg::span_interpolator_trans<agg::trans_perspective>, 
 							agg::gradient_image<agg::srgba8>, 
-							color_func_type> span_gradient_type;
+							const color_func_type> span_gradient_type;
 
 					span_gradient_type span_gradient(
 						    span_interpolator, 
