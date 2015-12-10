@@ -136,10 +136,11 @@ namespace agg
 
             base_type::interpolator().transformer().scaling_abs(&scale_x, &scale_y);
 
-            if(scale_x * scale_y > m_scale_limit)
+			double scale_xy = scale_x * scale_y;
+			if (scale_xy > m_scale_limit)
             {
-                scale_x = scale_x * m_scale_limit / (scale_x * scale_y);
-                scale_y = scale_y * m_scale_limit / (scale_x * scale_y);
+				scale_x = scale_x * m_scale_limit / scale_xy;
+				scale_y = scale_y * m_scale_limit / scale_xy;
             }
 
             if(scale_x < 1) scale_x = 1;
