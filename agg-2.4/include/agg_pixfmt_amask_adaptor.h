@@ -109,7 +109,7 @@ namespace agg
         void blend_hline(int x, int y,
                          unsigned len, 
                          const color_type& c,
-                         cover_type cover)
+                         cover_type)
         {
             init_span(len);
             m_mask->combine_hspan(x, y, &m_span[0], len);
@@ -130,7 +130,7 @@ namespace agg
         void blend_vline(int x, int y,
                          unsigned len, 
                          const color_type& c,
-                         cover_type cover)
+                         cover_type)
         {
             init_span(len);
             m_mask->combine_vspan(x, y, &m_span[0], len);

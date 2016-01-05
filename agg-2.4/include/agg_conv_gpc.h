@@ -245,7 +245,7 @@ namespace agg
 
     //------------------------------------------------------------------------
     template<class VSA, class VSB> 
-    void conv_gpc<VSA, VSB>::end_contour(unsigned orientation)
+    void conv_gpc<VSA, VSB>::end_contour(unsigned /*orientation*/)
     {
         if(m_contour_accumulator.size())
         {

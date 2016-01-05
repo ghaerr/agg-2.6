@@ -430,7 +430,7 @@ namespace agg
 
 
     //------------------------------------------------------------------------
-    bool scale_ctrl_impl::on_arrow_keys(bool left, bool right, bool down, bool up)
+    bool scale_ctrl_impl::on_arrow_keys(bool /*left*/, bool /*right*/, bool /*down*/, bool /*up*/)
     {
 /*
         if(right || up)
