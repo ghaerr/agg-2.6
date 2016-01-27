@@ -742,13 +742,14 @@ namespace agg
     }
 
     //------------------------------------------------------------------------
-    bool font_engine_freetype_base::char_map(FT_Encoding char_map)
+    bool font_engine_freetype_base::char_map(FT_Encoding map)
     {
         if(m_cur_face)
         {
-            m_last_error = FT_Select_Charmap(m_cur_face, m_char_map);
+            m_last_error = FT_Select_Charmap(m_cur_face, map);
             if(m_last_error == 0)
             {
+                m_char_map = map;
                 update_signature();
                 return true;
             }
