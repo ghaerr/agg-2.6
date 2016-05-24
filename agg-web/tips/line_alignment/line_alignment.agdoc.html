@@ -1,0 +1,207 @@
+<HTML><HEAD><TITLE>Anti-Grain Geometry - The Problem of Line Alignment</TITLE>
+<META http-equiv="Content-Type" content="text/html"/>
+<LINK rel="stylesheet" type="text/css" href="../../agg.styles.css"/>
+</HEAD>
+<A name="PAGE_LINE_ALIGNMENT"><B></B></A>
+
+
+<TABLE width="640px" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR>
+<TD bgcolor="#583927"></TD>
+</TR>
+</TABLE>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR>
+<TD>
+<TABLE width="170px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR><TD><A href="../../index.html" class="mpmenu">Home/</A></TD></TR>
+<TR><TD><A href="../../tips/index.html" class="mpmenu">Tips &amp; Tricks/</A></TD></TR>
+<TR><TD><A href="" class="mpmenu"></A></TD></TR>
+<TR><TD><A href="" class="mpmenu"></A></TD></TR>
+<TR><TD><A href="" class="mpmenu"></A></TD></TR>
+<TR><TD><A href="" class="mpmenu"></A></TD></TR>
+</TABLE>
+</TD>
+<TD width="1px" bgcolor="#583927"></TD>
+<TD width="450px" valign="top" style="text-align:right">
+<TABLE border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR>
+<TD><IMG src="../../agg_logo.gif" border="0"/></TD>
+</TR>
+<TR>
+<TD>
+<TABLE border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR height="15px">
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../../news/index.html">News</A>&nbsp;&nbsp;</TD>
+<TD width="1px" bgcolor="#8e521d"></TD>
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../../doc/index.html">Docs</A>&nbsp;&nbsp;</TD>
+<TD width="1px" bgcolor="#8e521d"></TD>
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../../download/index.html">Download</A>&nbsp;&nbsp;</TD>
+<TD width="1px" bgcolor="#8e521d"></TD>
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../../maillist/index.html">Mailing List</A>&nbsp;&nbsp;</TD>
+<TD width="1px" bgcolor="#8e521d"></TD>
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../../cvs/index.html">CVS</A>&nbsp;&nbsp;</TD>
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+<TABLE width="640px" height="1px" bgcolor="#583927" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>
+</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD><H1>The Problem of Line Alignment<SPAN class="subtitle"><BR/>The &quot;half-a-pixel&quot; problem when rendering lines</SPAN></H1></TD></TR></TABLE>
+
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><B><NOBR>Anti-Aliasing</NOBR></B> is a tricky thing. If you decided you like <B>AGG</B> and it finally 
+solves all your problems in 2D graphics, it&#039;s a mistake. 
+Nothing of the kind. The more you worry about the quality 
+the more problems there are exposed.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Let us start with a simple rectangle.
+</P></TD></TR></TABLE><TABLE width="640px"><TR><TD><CENTER><IMG src="rect1.gif" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Here we have a rectangle with exact integral coordinates (1,1,4,4).
+Everything looks fine, but to understand and see how the <B><NOBR>Anti-Aliasing</NOBR></B> and <B>Subpixel Accuracy</B>
+work let&#039;s shift it to 0.5 pixel by X and Y:
+</P></TD></TR></TABLE><TABLE width="640px"><TR><TD><CENTER><IMG src="rect2.gif" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The pixels have intensities proportional to the area of the pixel 
+covered by the rectangle. In practice it means that the rectangle 
+looks blur. It&#039;s not a caprice, it&#039;s a necessity because only 
+in this case we can preserve the <B>visual</B> area covered by the 
+rectangle the same, regardless of its subpixel position. The 
+initial rectangle covers 9 pixels. If we just round off the 
+coordinates, the resulting rectangle can be drawn as 4 pixels and
+it can be drawn as 16 pixels, depending on the position and 
+the rounding rules. So that, the &#147;blurness&#148; is much less evil
+than &quot;jitter&quot; because it allows you to keep the image much more
+consistent.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Now let&#039;s try to calculate an outline of one pixel width around
+this square:
+</P></TD></TR></TABLE><TABLE width="640px"><TR><TD><CENTER><IMG src="rect3.gif" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>This is an ideal case. In prcatice we cannot draw anything between
+pixels, so the result will look even more blur:
+</P></TD></TR></TABLE><TABLE width="640px"><TR><TD><CENTER><IMG src="rect4.gif" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>There are no fully covered pixels at all and this fact creates the 
+problem of line alignment. Bad news is that there&#039;s no ideal 
+solution of it, we&#039;ll have to sacrifice something. The good news
+is there are several partial solutions that can be satisfactory.
+First, let&#039;s try to add 0.5 to the coordinates of the <B>outline</B>.
+Remember, if we add 0.5 to the filled rectangle too, the ones 
+without outlines will look blur (see above).
+</P></TD></TR></TABLE><TABLE width="640px"><TR><TD><CENTER><IMG src="rect5.gif" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Looks perfect while the outline is 100% opaque. If we have a 
+translucent boundary it will look worse:
+</P></TD></TR></TABLE><TABLE width="640px"><TR><TD><CENTER><IMG src="rect6.gif" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The translucency can be <B>implicit</B>, for example, if we draw a 
+line of 0.5 pixel width, it&#039;s simulated with translucency! 
+It will look better if we shift both, the fill and its outline.
+</P></TD></TR></TABLE><TABLE width="640px"><TR><TD><CENTER><IMG src="rect61.gif" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>But remember, it will look worse if it&#039;s not outlined. Still, 
+The first solution is to shift everything to 0.5 pixel, which
+can be appropriate when you have outlines in all cases.</P></TD></TR></TABLE> 
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The second solution is to shift only outlines, keeping 
+the filled polygons as they are. In this case you must be 
+sure you always have the outline of at least 1 pixel width. That&#039;s
+not a good restriction. You can do even better, shifting only
+those polygons that have an outline (stroke). But in this case
+you can have some inconsistency between polygons with and without 
+strokes.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The shifting transformer is very simple:</P></TD></TR></TABLE>
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+<SPAN class="kw1">namespace</SPAN> agg
+<SPAN class="op">{</SPAN>
+    <SPAN class="kw1">class</SPAN> trans_shift
+    <SPAN class="op">{</SPAN>
+    <SPAN class="kw1">public</SPAN>:
+        trans_shift<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> : m_shift<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN><SPAN class="op">}</SPAN>
+        trans_shift<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> s<SPAN class="op">)</SPAN> : m_shift<SPAN class="op">(</SPAN>s<SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN><SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">void</SPAN> shift<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> s<SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN> m_shift <SPAN class="op">=</SPAN> s<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">double</SPAN> shift<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_shift<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">void</SPAN> transform<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> y<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="op">*</SPAN>x <SPAN class="op">+=</SPAN> m_shift<SPAN class="op">;</SPAN>
+            <SPAN class="op">*</SPAN>y <SPAN class="op">+=</SPAN> m_shift<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="kw1">private</SPAN>:
+        <SPAN class="kw1">double</SPAN> m_shift<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+<SPAN class="op">}</SPAN></PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>And its use is simple too:</P></TD></TR></TABLE>
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+agg::trans_shift ts<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">5</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+agg::<A href="../../__code/include/agg_conv_transform.h.html#conv_transform">conv_transform</A><SPAN class="op">&lt;</SPAN>source_class<SPAN class="op">,</SPAN> agg::trans_shift<SPAN class="op">&gt;</SPAN> shift<SPAN class="op">(</SPAN>source<SPAN class="op">,</SPAN> ts<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>That is, it&#039;s included into the pipeline as yet another transformer. 
+If you use the affine transformer (most probably you will), you can do
+without this additional converter. Just add the following, after the 
+matrix is formed:
+</P></TD></TR></TABLE><TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>mtx <SPAN class="op">*=</SPAN> agg::trans_affine_translate<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">5</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">5</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN></PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>In this case there will be no additional
+&#147;performance fee&#148;. Of course, you will have to worry about when and 
+where to add this shift (see cases above).</P></TD></TR></TABLE>
+
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>There is one more solution and it can be even better. Nobody says that 
+we need to apply the same shift to all coordinates. In case of our 
+rectangle there can be <B>inner</B> or <B>outer</B> outline:
+</P></TD></TR></TABLE><TABLE width="640px"><TR><TD style="text-align:center"><P><IMG src="rect7.gif" title="" border="0"/><!----> &#160;&#160;&#160;&#160; <IMG src="rect8.gif" title="" border="0"/><!----></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>You can achive this with using <A href="../../__code/include/agg_conv_contour.h.html#conv_contour">conv_contour</A>, see also 
+<A href="../../demo/index.html#PAGE_DEMO_conv_contour">Demo conv_contour.cpp</A>.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>But there are some problems too. First of all, the &#147;insideness&#148;
+becomes important, while <A href="../../__code/include/agg_conv_stroke.h.html#conv_stroke">conv_stroke</A> doesn&#039;t care about it. So that,
+you should preserve or detect the orientation of the contours, not
+to mention that self-intersecting polygons don&#039;t have a univocal
+orientation, they can have only a &#147;prevaling&#148; orientation.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The second problem is where to apply this transformation. It should be 
+definitely done <B>before</B> stroke converter. But there is a
+contradiction with the succeeding affine transformations. Take the
+zoom operation, for example. If you want the line widths to be consistent
+with the transformations, you have to use the affine transformer
+<B>after</B> the outline is calculated. If it&#039;s done before, you can change
+the stroke width respectively, but in this case you breake the 
+integrity if you have different scaling coefficients by X and Y.
+</P></TD></TR></TABLE><TABLE width="640px"><TR><TD><CENTER><IMG src="conv_order.gif" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>If you are absolutely sure you will never use different scaling 
+coefficients by X and Y, you can transform paths before 
+calculating the outline. In other words, the sequence of the 
+conversions is important and it can be contadictive. Besides, 
+you have to decide if you only need to correct the 
+&#147;0.5 problem&#148; or to have the true <B>inner</B> or <B>outer</B> stroke.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The conclusion is that there&#039;s no ideal solution. But the whole 
+idea of <B><NOBR>Anti-Grain</NOBR> Geometry</B> is that it&#039;s you who chooses the neccessary pipelines
+and solve your problem-orinted tasks. Thare are no other APIs that
+allow you to have this flexibility.</P></TD></TR></TABLE> 
+
+<TABLE width="640px" bgcolor="#583927" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0">
+<TR><TD><CENTER><SPAN class="authors">
+Copyright <SPAN class="larger">&#169;</SPAN> 2002-2006
+<A href="../../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+<TR><TD><CENTER><SPAN class="authors">
+Web Design and Programming
+<A href="../../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+</TABLE>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+</HTML>

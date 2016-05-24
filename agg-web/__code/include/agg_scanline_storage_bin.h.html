@@ -1,0 +1,615 @@
+<HTML><HEAD><TITLE>Anti-Grain Geometry - </TITLE>
+<META http-equiv="Content-Type" content="text/html"/>
+<LINK rel="stylesheet" type="text/css" href="../../agg.styles.css"/>
+</HEAD>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE><SPAN class="rem">//----------------------------------------------------------------------------</SPAN>
+<SPAN class="rem">// Anti-Grain Geometry (AGG) - Version 2.5</SPAN>
+<SPAN class="rem">// A high quality rendering engine for C++</SPAN>
+<SPAN class="rem">// Copyright (C) 2002-2006 Maxim Shemanarev</SPAN>
+<SPAN class="rem">// Contact: mcseem@antigrain.com</SPAN>
+<SPAN class="rem">//          mcseemagg@yahoo.com</SPAN>
+<SPAN class="rem">//          http://antigrain.com</SPAN>
+<SPAN class="rem">// </SPAN>
+<SPAN class="rem">// AGG is free software; you can redistribute it and/or</SPAN>
+<SPAN class="rem">// modify it under the terms of the GNU General Public License</SPAN>
+<SPAN class="rem">// as published by the Free Software Foundation; either version 2</SPAN>
+<SPAN class="rem">// of the License, or (at your option) any later version.</SPAN>
+<SPAN class="rem">// </SPAN>
+<SPAN class="rem">// AGG is distributed in the hope that it will be useful,</SPAN>
+<SPAN class="rem">// but WITHOUT ANY WARRANTY; without even the implied warranty of</SPAN>
+<SPAN class="rem">// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</SPAN>
+<SPAN class="rem">// GNU General Public License for more details.</SPAN>
+<SPAN class="rem">// </SPAN>
+<SPAN class="rem">// You should have received a copy of the GNU General Public License</SPAN>
+<SPAN class="rem">// along with AGG; if not, write to the Free Software</SPAN>
+<SPAN class="rem">// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, </SPAN>
+<SPAN class="rem">// MA 02110-1301, USA.</SPAN>
+<SPAN class="rem">//----------------------------------------------------------------------------</SPAN>
+<SPAN class="rem">//</SPAN>
+<SPAN class="rem">// Adaptation for 32-bit screen coordinates has been sponsored by </SPAN>
+<SPAN class="rem">// Liberty Technology Systems, Inc., visit http://lib-sys.com</SPAN>
+<SPAN class="rem">//</SPAN>
+<SPAN class="rem">// Liberty Technology Systems, Inc. is the provider of</SPAN>
+<SPAN class="rem">// PostScript and PDF technology for software developers.</SPAN>
+<SPAN class="rem">// </SPAN>
+<SPAN class="rem">//----------------------------------------------------------------------------</SPAN>
+
+
+<SPAN class="kw2">#ifndef</SPAN> AGG_SCANLINE_STORAGE_BIN_INCLUDED
+<SPAN class="kw2">#define</SPAN> AGG_SCANLINE_STORAGE_BIN_INCLUDED
+
+<SPAN class="kw2">#include</SPAN> <SPAN class="op">&lt;</SPAN>string<SPAN class="op">.</SPAN>h<SPAN class="op">&gt;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="op">&lt;</SPAN>stdlib<SPAN class="op">.</SPAN>h<SPAN class="op">&gt;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="op">&lt;</SPAN>math<SPAN class="op">.</SPAN>h<SPAN class="op">&gt;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="agg_array.h.html">agg_array.h</A>&quot;</SPAN>
+
+
+<SPAN class="kw1">namespace</SPAN> agg
+<SPAN class="op">{</SPAN>
+
+    <SPAN class="rem">//-----------------------------------------------<A name="scanline_storage_bin"><B></B></A><A href="agg_scanline_storage_bin.h.html#scanline_storage_bin">scanline_storage_bin</A></SPAN>
+    <SPAN class="kw1">class</SPAN> <A href="agg_scanline_storage_bin.h.html#scanline_storage_bin">scanline_storage_bin</A>
+    <SPAN class="op">{</SPAN>
+    <SPAN class="kw1">public</SPAN>:
+        <SPAN class="rem">//---------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">struct</SPAN> span_data
+        <SPAN class="op">{</SPAN>
+            <A href="agg_basics.h.html#int32">int32</A> x<SPAN class="op">;</SPAN>
+            <A href="agg_basics.h.html#int32">int32</A> len<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="rem">//---------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">struct</SPAN> scanline_data
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">int</SPAN>      y<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">unsigned</SPAN> num_spans<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">unsigned</SPAN> start_span<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+        <SPAN class="rem">//---------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">class</SPAN> embedded_scanline
+        <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">public</SPAN>:
+
+            <SPAN class="rem">//-----------------------------------------------------------</SPAN>
+            <SPAN class="kw1">class</SPAN> const_iterator
+            <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">public</SPAN>:
+                const_iterator<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> : m_storage<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN><SPAN class="op">}</SPAN>
+                const_iterator<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> embedded_scanline<SPAN class="op">&amp;</SPAN> sl<SPAN class="op">)</SPAN> :
+                    m_storage<SPAN class="op">(</SPAN>sl<SPAN class="op">.</SPAN>m_storage<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+                    m_span_idx<SPAN class="op">(</SPAN>sl<SPAN class="op">.</SPAN>m_scanline<SPAN class="op">.</SPAN>start_span<SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    m_span <SPAN class="op">=</SPAN> m_storage<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>span_by_index<SPAN class="op">(</SPAN>m_span_idx<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+
+                <SPAN class="kw1">const</SPAN> span_data<SPAN class="op">&amp;</SPAN> <SPAN class="kw1">operator</SPAN><SPAN class="op">*</SPAN><SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>  <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_span<SPAN class="op">;</SPAN>  <SPAN class="op">}</SPAN>
+                <SPAN class="kw1">const</SPAN> span_data<SPAN class="op">*</SPAN> <SPAN class="kw1">operator</SPAN><SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN><SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> <SPAN class="op">&amp;</SPAN>m_span<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+
+                <SPAN class="kw1">void</SPAN> <SPAN class="kw1">operator</SPAN> <SPAN class="op">++</SPAN> <SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    <SPAN class="op">++</SPAN>m_span_idx<SPAN class="op">;</SPAN>
+                    m_span <SPAN class="op">=</SPAN> m_storage<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>span_by_index<SPAN class="op">(</SPAN>m_span_idx<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+
+            <SPAN class="kw1">private</SPAN>:
+                <SPAN class="kw1">const</SPAN> <A href="agg_scanline_storage_bin.h.html#scanline_storage_bin">scanline_storage_bin</A><SPAN class="op">*</SPAN> m_storage<SPAN class="op">;</SPAN>
+                <SPAN class="kw1">unsigned</SPAN>                    m_span_idx<SPAN class="op">;</SPAN>
+                span_data                   m_span<SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">friend</SPAN> <SPAN class="kw1">class</SPAN> const_iterator<SPAN class="op">;</SPAN>
+
+
+            <SPAN class="rem">//-----------------------------------------------------------</SPAN>
+            embedded_scanline<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <A href="agg_scanline_storage_bin.h.html#scanline_storage_bin">scanline_storage_bin</A><SPAN class="op">&amp;</SPAN> storage<SPAN class="op">)</SPAN> :
+                m_storage<SPAN class="op">(</SPAN><SPAN class="op">&amp;</SPAN>storage<SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                setup<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+
+            <SPAN class="rem">//-----------------------------------------------------------</SPAN>
+            <SPAN class="kw1">void</SPAN>     reset<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN><SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN><SPAN class="op">)</SPAN>     <SPAN class="op">{</SPAN><SPAN class="op">}</SPAN>
+            <SPAN class="kw1">unsigned</SPAN> num_spans<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>   <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_scanline<SPAN class="op">.</SPAN>num_spans<SPAN class="op">;</SPAN>  <SPAN class="op">}</SPAN>
+            <SPAN class="kw1">int</SPAN>      y<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>           <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_scanline<SPAN class="op">.</SPAN>y<SPAN class="op">;</SPAN>          <SPAN class="op">}</SPAN>
+            const_iterator begin<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> const_iterator<SPAN class="op">(</SPAN><SPAN class="op">*</SPAN><SPAN class="kw1">this</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+
+            <SPAN class="rem">//-----------------------------------------------------------</SPAN>
+            <SPAN class="kw1">void</SPAN> setup<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> scanline_idx<SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                m_scanline_idx <SPAN class="op">=</SPAN> scanline_idx<SPAN class="op">;</SPAN>
+                m_scanline <SPAN class="op">=</SPAN> m_storage<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>scanline_by_index<SPAN class="op">(</SPAN>m_scanline_idx<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">private</SPAN>:
+            <SPAN class="kw1">const</SPAN> <A href="agg_scanline_storage_bin.h.html#scanline_storage_bin">scanline_storage_bin</A><SPAN class="op">*</SPAN> m_storage<SPAN class="op">;</SPAN>
+            scanline_data               m_scanline<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">unsigned</SPAN>                    m_scanline_idx<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+        <SPAN class="rem">//---------------------------------------------------------------</SPAN>
+        <A href="agg_scanline_storage_bin.h.html#scanline_storage_bin">scanline_storage_bin</A><SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> :
+            m_spans<SPAN class="op">(</SPAN><SPAN class="num">256</SPAN><SPAN class="op">-</SPAN><SPAN class="num">2</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>         <SPAN class="rem">// Block increment size</SPAN>
+            m_scanlines<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_min_x<SPAN class="op">(</SPAN> <SPAN class="num">0x7FFFFFFF</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_min_y<SPAN class="op">(</SPAN> <SPAN class="num">0x7FFFFFFF</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_max_x<SPAN class="op">(</SPAN><SPAN class="op">-</SPAN><SPAN class="num">0x7FFFFFFF</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_max_y<SPAN class="op">(</SPAN><SPAN class="op">-</SPAN><SPAN class="num">0x7FFFFFFF</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_cur_scanline<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            m_fake_scanline<SPAN class="op">.</SPAN>y <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+            m_fake_scanline<SPAN class="op">.</SPAN>num_spans <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+            m_fake_scanline<SPAN class="op">.</SPAN>start_span <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+            m_fake_span<SPAN class="op">.</SPAN>x <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+            m_fake_span<SPAN class="op">.</SPAN>len <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">// Renderer Interface</SPAN>
+        <SPAN class="rem">//---------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">void</SPAN> prepare<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            m_scanlines<SPAN class="op">.</SPAN>remove_all<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            m_spans<SPAN class="op">.</SPAN>remove_all<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            m_min_x <SPAN class="op">=</SPAN>  <SPAN class="num">0x7FFFFFFF</SPAN><SPAN class="op">;</SPAN>
+            m_min_y <SPAN class="op">=</SPAN>  <SPAN class="num">0x7FFFFFFF</SPAN><SPAN class="op">;</SPAN>
+            m_max_x <SPAN class="op">=</SPAN> <SPAN class="op">-</SPAN><SPAN class="num">0x7FFFFFFF</SPAN><SPAN class="op">;</SPAN>
+            m_max_y <SPAN class="op">=</SPAN> <SPAN class="op">-</SPAN><SPAN class="num">0x7FFFFFFF</SPAN><SPAN class="op">;</SPAN>
+            m_cur_scanline <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//---------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Scanline<SPAN class="op">&gt;</SPAN> <SPAN class="kw1">void</SPAN> render<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> Scanline<SPAN class="op">&amp;</SPAN> sl<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            scanline_data sl_this<SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">int</SPAN> y <SPAN class="op">=</SPAN> sl<SPAN class="op">.</SPAN>y<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>y <SPAN class="op">&lt;</SPAN> m_min_y<SPAN class="op">)</SPAN> m_min_y <SPAN class="op">=</SPAN> y<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>y <SPAN class="op">&gt;</SPAN> m_max_y<SPAN class="op">)</SPAN> m_max_y <SPAN class="op">=</SPAN> y<SPAN class="op">;</SPAN>
+
+            sl_this<SPAN class="op">.</SPAN>y <SPAN class="op">=</SPAN> y<SPAN class="op">;</SPAN>
+            sl_this<SPAN class="op">.</SPAN>num_spans <SPAN class="op">=</SPAN> sl<SPAN class="op">.</SPAN>num_spans<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            sl_this<SPAN class="op">.</SPAN>start_span <SPAN class="op">=</SPAN> m_spans<SPAN class="op">.</SPAN>size<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">typename</SPAN> Scanline::const_iterator span_iterator <SPAN class="op">=</SPAN> sl<SPAN class="op">.</SPAN>begin<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">unsigned</SPAN> num_spans <SPAN class="op">=</SPAN> sl_this<SPAN class="op">.</SPAN>num_spans<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN><SPAN class="op">;</SPAN><SPAN class="op">;</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                span_data sp<SPAN class="op">;</SPAN>
+                sp<SPAN class="op">.</SPAN>x   <SPAN class="op">=</SPAN> span_iterator<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>x<SPAN class="op">;</SPAN>
+                sp<SPAN class="op">.</SPAN>len <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN><A href="agg_basics.h.html#int32">int32</A><SPAN class="op">)</SPAN>abs<SPAN class="op">(</SPAN><SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN><SPAN class="op">)</SPAN><SPAN class="op">(</SPAN>span_iterator<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>len<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                m_spans<SPAN class="op">.</SPAN>add<SPAN class="op">(</SPAN>sp<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">int</SPAN> x1 <SPAN class="op">=</SPAN> sp<SPAN class="op">.</SPAN>x<SPAN class="op">;</SPAN>
+                <SPAN class="kw1">int</SPAN> x2 <SPAN class="op">=</SPAN> sp<SPAN class="op">.</SPAN>x <SPAN class="op">+</SPAN> sp<SPAN class="op">.</SPAN>len <SPAN class="op">-</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>x1 <SPAN class="op">&lt;</SPAN> m_min_x<SPAN class="op">)</SPAN> m_min_x <SPAN class="op">=</SPAN> x1<SPAN class="op">;</SPAN>
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>x2 <SPAN class="op">&gt;</SPAN> m_max_x<SPAN class="op">)</SPAN> m_max_x <SPAN class="op">=</SPAN> x2<SPAN class="op">;</SPAN>
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN><SPAN class="op">--</SPAN>num_spans <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">++</SPAN>span_iterator<SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            m_scanlines<SPAN class="op">.</SPAN>add<SPAN class="op">(</SPAN>sl_this<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+
+        <SPAN class="rem">//---------------------------------------------------------------</SPAN>
+        <SPAN class="rem">// Iterate scanlines interface</SPAN>
+        <SPAN class="kw1">int</SPAN> min_x<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_min_x<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">int</SPAN> min_y<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_min_y<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">int</SPAN> max_x<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_max_x<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">int</SPAN> max_y<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_max_y<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//---------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">bool</SPAN> rewind_scanlines<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            m_cur_scanline <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">return</SPAN> m_scanlines<SPAN class="op">.</SPAN>size<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">&gt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+
+        <SPAN class="rem">//---------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Scanline<SPAN class="op">&gt;</SPAN> <SPAN class="kw1">bool</SPAN> sweep_scanline<SPAN class="op">(</SPAN>Scanline<SPAN class="op">&amp;</SPAN> sl<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            sl<SPAN class="op">.</SPAN>reset_spans<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN><SPAN class="op">;</SPAN><SPAN class="op">;</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_cur_scanline <SPAN class="op">&gt;=</SPAN> m_scanlines<SPAN class="op">.</SPAN>size<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">return</SPAN> <SPAN class="kw1">false</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">const</SPAN> scanline_data<SPAN class="op">&amp;</SPAN> sl_this <SPAN class="op">=</SPAN> m_scanlines<SPAN class="op">[</SPAN>m_cur_scanline<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+
+                <SPAN class="kw1">unsigned</SPAN> num_spans <SPAN class="op">=</SPAN> sl_this<SPAN class="op">.</SPAN>num_spans<SPAN class="op">;</SPAN>
+                <SPAN class="kw1">unsigned</SPAN> span_idx  <SPAN class="op">=</SPAN> sl_this<SPAN class="op">.</SPAN>start_span<SPAN class="op">;</SPAN>
+                <SPAN class="kw1">do</SPAN>
+                <SPAN class="op">{</SPAN>
+                    <SPAN class="kw1">const</SPAN> span_data<SPAN class="op">&amp;</SPAN> sp <SPAN class="op">=</SPAN> m_spans<SPAN class="op">[</SPAN>span_idx<SPAN class="op">++</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    sl<SPAN class="op">.</SPAN>add_span<SPAN class="op">(</SPAN>sp<SPAN class="op">.</SPAN>x<SPAN class="op">,</SPAN> sp<SPAN class="op">.</SPAN>len<SPAN class="op">,</SPAN> <A href="agg_basics.h.html#cover_full">cover_full</A><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+                <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN><SPAN class="op">--</SPAN>num_spans<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                <SPAN class="op">++</SPAN>m_cur_scanline<SPAN class="op">;</SPAN>
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>sl<SPAN class="op">.</SPAN>num_spans<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    sl<SPAN class="op">.</SPAN>finalize<SPAN class="op">(</SPAN>sl_this<SPAN class="op">.</SPAN>y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="kw1">return</SPAN> <SPAN class="kw1">true</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+
+        <SPAN class="rem">//---------------------------------------------------------------</SPAN>
+        <SPAN class="rem">// Specialization for embedded_scanline</SPAN>
+        <SPAN class="kw1">bool</SPAN> sweep_scanline<SPAN class="op">(</SPAN>embedded_scanline<SPAN class="op">&amp;</SPAN> sl<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">do</SPAN>
+            <SPAN class="op">{</SPAN>
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_cur_scanline <SPAN class="op">&gt;=</SPAN> m_scanlines<SPAN class="op">.</SPAN>size<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">return</SPAN> <SPAN class="kw1">false</SPAN><SPAN class="op">;</SPAN>
+                sl<SPAN class="op">.</SPAN>setup<SPAN class="op">(</SPAN>m_cur_scanline<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">++</SPAN>m_cur_scanline<SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN>sl<SPAN class="op">.</SPAN>num_spans<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">return</SPAN> <SPAN class="kw1">true</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+
+        <SPAN class="rem">//---------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> byte_size<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">unsigned</SPAN> i<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">unsigned</SPAN> size <SPAN class="op">=</SPAN> <SPAN class="kw1">sizeof</SPAN><SPAN class="op">(</SPAN><A href="agg_basics.h.html#int32">int32</A><SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> <SPAN class="num">4</SPAN><SPAN class="op">;</SPAN> <SPAN class="rem">// min_x, min_y, max_x, max_y</SPAN>
+
+            <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;</SPAN> m_scanlines<SPAN class="op">.</SPAN>size<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">++</SPAN>i<SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                size <SPAN class="op">+=</SPAN> <SPAN class="kw1">sizeof</SPAN><SPAN class="op">(</SPAN><A href="agg_basics.h.html#int32">int32</A><SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> <SPAN class="num">2</SPAN> <SPAN class="op">+</SPAN> <SPAN class="rem">// Y, num_spans</SPAN>
+                        <SPAN class="kw1">unsigned</SPAN><SPAN class="op">(</SPAN>m_scanlines<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">.</SPAN>num_spans<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> <SPAN class="kw1">sizeof</SPAN><SPAN class="op">(</SPAN><A href="agg_basics.h.html#int32">int32</A><SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN> <SPAN class="rem">// X, span_len</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="kw1">return</SPAN> size<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+
+        <SPAN class="rem">//---------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">static</SPAN> <SPAN class="kw1">void</SPAN> write_int32<SPAN class="op">(</SPAN><A href="agg_basics.h.html#int8u">int8u</A><SPAN class="op">*</SPAN> dst<SPAN class="op">,</SPAN> <A href="agg_basics.h.html#int32">int32</A> val<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            dst<SPAN class="op">[</SPAN><SPAN class="num">0</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN><SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <A href="agg_basics.h.html#int8u">int8u</A><SPAN class="op">*</SPAN><SPAN class="op">)</SPAN><SPAN class="op">&amp;</SPAN>val<SPAN class="op">)</SPAN><SPAN class="op">[</SPAN><SPAN class="num">0</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+            dst<SPAN class="op">[</SPAN><SPAN class="num">1</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN><SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <A href="agg_basics.h.html#int8u">int8u</A><SPAN class="op">*</SPAN><SPAN class="op">)</SPAN><SPAN class="op">&amp;</SPAN>val<SPAN class="op">)</SPAN><SPAN class="op">[</SPAN><SPAN class="num">1</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+            dst<SPAN class="op">[</SPAN><SPAN class="num">2</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN><SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <A href="agg_basics.h.html#int8u">int8u</A><SPAN class="op">*</SPAN><SPAN class="op">)</SPAN><SPAN class="op">&amp;</SPAN>val<SPAN class="op">)</SPAN><SPAN class="op">[</SPAN><SPAN class="num">2</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+            dst<SPAN class="op">[</SPAN><SPAN class="num">3</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN><SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <A href="agg_basics.h.html#int8u">int8u</A><SPAN class="op">*</SPAN><SPAN class="op">)</SPAN><SPAN class="op">&amp;</SPAN>val<SPAN class="op">)</SPAN><SPAN class="op">[</SPAN><SPAN class="num">3</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+
+        <SPAN class="rem">//---------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">void</SPAN> serialize<SPAN class="op">(</SPAN><A href="agg_basics.h.html#int8u">int8u</A><SPAN class="op">*</SPAN> data<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">unsigned</SPAN> i<SPAN class="op">;</SPAN>
+
+            write_int32<SPAN class="op">(</SPAN>data<SPAN class="op">,</SPAN> min_x<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> <SPAN class="rem">// min_x</SPAN>
+            data <SPAN class="op">+=</SPAN> <SPAN class="kw1">sizeof</SPAN><SPAN class="op">(</SPAN><A href="agg_basics.h.html#int32">int32</A><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            write_int32<SPAN class="op">(</SPAN>data<SPAN class="op">,</SPAN> min_y<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> <SPAN class="rem">// min_y</SPAN>
+            data <SPAN class="op">+=</SPAN> <SPAN class="kw1">sizeof</SPAN><SPAN class="op">(</SPAN><A href="agg_basics.h.html#int32">int32</A><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            write_int32<SPAN class="op">(</SPAN>data<SPAN class="op">,</SPAN> max_x<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> <SPAN class="rem">// max_x</SPAN>
+            data <SPAN class="op">+=</SPAN> <SPAN class="kw1">sizeof</SPAN><SPAN class="op">(</SPAN><A href="agg_basics.h.html#int32">int32</A><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            write_int32<SPAN class="op">(</SPAN>data<SPAN class="op">,</SPAN> max_y<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> <SPAN class="rem">// max_y</SPAN>
+            data <SPAN class="op">+=</SPAN> <SPAN class="kw1">sizeof</SPAN><SPAN class="op">(</SPAN><A href="agg_basics.h.html#int32">int32</A><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;</SPAN> m_scanlines<SPAN class="op">.</SPAN>size<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">++</SPAN>i<SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                <SPAN class="kw1">const</SPAN> scanline_data<SPAN class="op">&amp;</SPAN> sl_this <SPAN class="op">=</SPAN> m_scanlines<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+
+                write_int32<SPAN class="op">(</SPAN>data<SPAN class="op">,</SPAN> sl_this<SPAN class="op">.</SPAN>y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>            <SPAN class="rem">// Y</SPAN>
+                data <SPAN class="op">+=</SPAN> <SPAN class="kw1">sizeof</SPAN><SPAN class="op">(</SPAN><A href="agg_basics.h.html#int32">int32</A><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                write_int32<SPAN class="op">(</SPAN>data<SPAN class="op">,</SPAN> sl_this<SPAN class="op">.</SPAN>num_spans<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>    <SPAN class="rem">// num_spans</SPAN>
+                data <SPAN class="op">+=</SPAN> <SPAN class="kw1">sizeof</SPAN><SPAN class="op">(</SPAN><A href="agg_basics.h.html#int32">int32</A><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                <SPAN class="kw1">unsigned</SPAN> num_spans <SPAN class="op">=</SPAN> sl_this<SPAN class="op">.</SPAN>num_spans<SPAN class="op">;</SPAN>
+                <SPAN class="kw1">unsigned</SPAN> span_idx  <SPAN class="op">=</SPAN> sl_this<SPAN class="op">.</SPAN>start_span<SPAN class="op">;</SPAN>
+                <SPAN class="kw1">do</SPAN>
+                <SPAN class="op">{</SPAN>
+                    <SPAN class="kw1">const</SPAN> span_data<SPAN class="op">&amp;</SPAN> sp <SPAN class="op">=</SPAN> m_spans<SPAN class="op">[</SPAN>span_idx<SPAN class="op">++</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+
+                    write_int32<SPAN class="op">(</SPAN>data<SPAN class="op">,</SPAN> sp<SPAN class="op">.</SPAN>x<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>             <SPAN class="rem">// X</SPAN>
+                    data <SPAN class="op">+=</SPAN> <SPAN class="kw1">sizeof</SPAN><SPAN class="op">(</SPAN><A href="agg_basics.h.html#int32">int32</A><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                    write_int32<SPAN class="op">(</SPAN>data<SPAN class="op">,</SPAN> sp<SPAN class="op">.</SPAN>len<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>           <SPAN class="rem">// len</SPAN>
+                    data <SPAN class="op">+=</SPAN> <SPAN class="kw1">sizeof</SPAN><SPAN class="op">(</SPAN><A href="agg_basics.h.html#int32">int32</A><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+                <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN><SPAN class="op">--</SPAN>num_spans<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+
+
+        <SPAN class="rem">//---------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">const</SPAN> scanline_data<SPAN class="op">&amp;</SPAN> scanline_by_index<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> i<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">return</SPAN> <SPAN class="op">(</SPAN>i <SPAN class="op">&lt;</SPAN> m_scanlines<SPAN class="op">.</SPAN>size<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> ? m_scanlines<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN> : m_fake_scanline<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//---------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">const</SPAN> span_data<SPAN class="op">&amp;</SPAN> span_by_index<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> i<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">return</SPAN> <SPAN class="op">(</SPAN>i <SPAN class="op">&lt;</SPAN> m_spans<SPAN class="op">.</SPAN>size<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> ? m_spans<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN> : m_fake_span<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="kw1">private</SPAN>:
+        <A href="agg_array.h.html#pod_bvector">pod_bvector</A><SPAN class="op">&lt;</SPAN>span_data<SPAN class="op">,</SPAN> <SPAN class="num">10</SPAN><SPAN class="op">&gt;</SPAN>    m_spans<SPAN class="op">;</SPAN>
+        <A href="agg_array.h.html#pod_bvector">pod_bvector</A><SPAN class="op">&lt;</SPAN>scanline_data<SPAN class="op">,</SPAN> <SPAN class="num">8</SPAN><SPAN class="op">&gt;</SPAN> m_scanlines<SPAN class="op">;</SPAN>
+        span_data     m_fake_span<SPAN class="op">;</SPAN>
+        scanline_data m_fake_scanline<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN>           m_min_x<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN>           m_min_y<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN>           m_max_x<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN>           m_max_y<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN>      m_cur_scanline<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <SPAN class="rem">//---------------------------------------<A name="serialized_scanlines_adaptor_bin"><B></B></A><A href="agg_scanline_storage_bin.h.html#serialized_scanlines_adaptor_bin">serialized_scanlines_adaptor_bin</A></SPAN>
+    <SPAN class="kw1">class</SPAN> <A href="agg_scanline_storage_bin.h.html#serialized_scanlines_adaptor_bin">serialized_scanlines_adaptor_bin</A>
+    <SPAN class="op">{</SPAN>
+    <SPAN class="kw1">public</SPAN>:
+        <SPAN class="kw1">typedef</SPAN> <SPAN class="kw1">bool</SPAN> <A href="agg_basics.h.html#cover_type">cover_type</A><SPAN class="op">;</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">class</SPAN> embedded_scanline
+        <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">public</SPAN>:
+
+            <SPAN class="rem">//----------------------------------------------------------------</SPAN>
+            <SPAN class="kw1">class</SPAN> const_iterator
+            <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">public</SPAN>:
+                <SPAN class="kw1">struct</SPAN> span
+                <SPAN class="op">{</SPAN>
+                    <A href="agg_basics.h.html#int32">int32</A> x<SPAN class="op">;</SPAN>
+                    <A href="agg_basics.h.html#int32">int32</A> len<SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+                const_iterator<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> : m_ptr<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN><SPAN class="op">}</SPAN>
+                const_iterator<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> embedded_scanline<SPAN class="op">&amp;</SPAN> sl<SPAN class="op">)</SPAN> :
+                    m_ptr<SPAN class="op">(</SPAN>sl<SPAN class="op">.</SPAN>m_ptr<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+                    m_dx<SPAN class="op">(</SPAN>sl<SPAN class="op">.</SPAN>m_dx<SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    m_span<SPAN class="op">.</SPAN>x   <SPAN class="op">=</SPAN> read_int32<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> m_dx<SPAN class="op">;</SPAN>
+                    m_span<SPAN class="op">.</SPAN>len <SPAN class="op">=</SPAN> read_int32<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+
+                <SPAN class="kw1">const</SPAN> span<SPAN class="op">&amp;</SPAN> <SPAN class="kw1">operator</SPAN><SPAN class="op">*</SPAN><SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>  <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_span<SPAN class="op">;</SPAN>  <SPAN class="op">}</SPAN>
+                <SPAN class="kw1">const</SPAN> span<SPAN class="op">*</SPAN> <SPAN class="kw1">operator</SPAN><SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN><SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> <SPAN class="op">&amp;</SPAN>m_span<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+
+                <SPAN class="kw1">void</SPAN> <SPAN class="kw1">operator</SPAN> <SPAN class="op">++</SPAN> <SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    m_span<SPAN class="op">.</SPAN>x   <SPAN class="op">=</SPAN> read_int32<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> m_dx<SPAN class="op">;</SPAN>
+                    m_span<SPAN class="op">.</SPAN>len <SPAN class="op">=</SPAN> read_int32<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+
+            <SPAN class="kw1">private</SPAN>:
+                <SPAN class="kw1">int</SPAN> read_int32<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    <A href="agg_basics.h.html#int32">int32</A> val<SPAN class="op">;</SPAN>
+                    <SPAN class="op">(</SPAN><SPAN class="op">(</SPAN><A href="agg_basics.h.html#int8u">int8u</A><SPAN class="op">*</SPAN><SPAN class="op">)</SPAN><SPAN class="op">&amp;</SPAN>val<SPAN class="op">)</SPAN><SPAN class="op">[</SPAN><SPAN class="num">0</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> <SPAN class="op">*</SPAN>m_ptr<SPAN class="op">++</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="op">(</SPAN><SPAN class="op">(</SPAN><A href="agg_basics.h.html#int8u">int8u</A><SPAN class="op">*</SPAN><SPAN class="op">)</SPAN><SPAN class="op">&amp;</SPAN>val<SPAN class="op">)</SPAN><SPAN class="op">[</SPAN><SPAN class="num">1</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> <SPAN class="op">*</SPAN>m_ptr<SPAN class="op">++</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="op">(</SPAN><SPAN class="op">(</SPAN><A href="agg_basics.h.html#int8u">int8u</A><SPAN class="op">*</SPAN><SPAN class="op">)</SPAN><SPAN class="op">&amp;</SPAN>val<SPAN class="op">)</SPAN><SPAN class="op">[</SPAN><SPAN class="num">2</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> <SPAN class="op">*</SPAN>m_ptr<SPAN class="op">++</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="op">(</SPAN><SPAN class="op">(</SPAN><A href="agg_basics.h.html#int8u">int8u</A><SPAN class="op">*</SPAN><SPAN class="op">)</SPAN><SPAN class="op">&amp;</SPAN>val<SPAN class="op">)</SPAN><SPAN class="op">[</SPAN><SPAN class="num">3</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> <SPAN class="op">*</SPAN>m_ptr<SPAN class="op">++</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="kw1">return</SPAN> val<SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+
+                <SPAN class="kw1">const</SPAN> <A href="agg_basics.h.html#int8u">int8u</A><SPAN class="op">*</SPAN> m_ptr<SPAN class="op">;</SPAN>
+                span         m_span<SPAN class="op">;</SPAN>
+                <SPAN class="kw1">int</SPAN>          m_dx<SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">friend</SPAN> <SPAN class="kw1">class</SPAN> const_iterator<SPAN class="op">;</SPAN>
+
+
+            <SPAN class="rem">//----------------------------------------------------------------</SPAN>
+            embedded_scanline<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> : m_ptr<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> m_y<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> m_num_spans<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN><SPAN class="op">}</SPAN>
+
+            <SPAN class="rem">//----------------------------------------------------------------</SPAN>
+            <SPAN class="kw1">void</SPAN>     reset<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN><SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN><SPAN class="op">)</SPAN>     <SPAN class="op">{</SPAN><SPAN class="op">}</SPAN>
+            <SPAN class="kw1">unsigned</SPAN> num_spans<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>   <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_num_spans<SPAN class="op">;</SPAN>  <SPAN class="op">}</SPAN>
+            <SPAN class="kw1">int</SPAN>      y<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>           <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_y<SPAN class="op">;</SPAN>          <SPAN class="op">}</SPAN>
+            const_iterator begin<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> const_iterator<SPAN class="op">(</SPAN><SPAN class="op">*</SPAN><SPAN class="kw1">this</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+
+
+        <SPAN class="kw1">private</SPAN>:
+            <SPAN class="rem">//----------------------------------------------------------------</SPAN>
+            <SPAN class="kw1">int</SPAN> read_int32<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                <A href="agg_basics.h.html#int32">int32</A> val<SPAN class="op">;</SPAN>
+                <SPAN class="op">(</SPAN><SPAN class="op">(</SPAN><A href="agg_basics.h.html#int8u">int8u</A><SPAN class="op">*</SPAN><SPAN class="op">)</SPAN><SPAN class="op">&amp;</SPAN>val<SPAN class="op">)</SPAN><SPAN class="op">[</SPAN><SPAN class="num">0</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> <SPAN class="op">*</SPAN>m_ptr<SPAN class="op">++</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">(</SPAN><SPAN class="op">(</SPAN><A href="agg_basics.h.html#int8u">int8u</A><SPAN class="op">*</SPAN><SPAN class="op">)</SPAN><SPAN class="op">&amp;</SPAN>val<SPAN class="op">)</SPAN><SPAN class="op">[</SPAN><SPAN class="num">1</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> <SPAN class="op">*</SPAN>m_ptr<SPAN class="op">++</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">(</SPAN><SPAN class="op">(</SPAN><A href="agg_basics.h.html#int8u">int8u</A><SPAN class="op">*</SPAN><SPAN class="op">)</SPAN><SPAN class="op">&amp;</SPAN>val<SPAN class="op">)</SPAN><SPAN class="op">[</SPAN><SPAN class="num">2</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> <SPAN class="op">*</SPAN>m_ptr<SPAN class="op">++</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">(</SPAN><SPAN class="op">(</SPAN><A href="agg_basics.h.html#int8u">int8u</A><SPAN class="op">*</SPAN><SPAN class="op">)</SPAN><SPAN class="op">&amp;</SPAN>val<SPAN class="op">)</SPAN><SPAN class="op">[</SPAN><SPAN class="num">3</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> <SPAN class="op">*</SPAN>m_ptr<SPAN class="op">++</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">return</SPAN> val<SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">public</SPAN>:
+            <SPAN class="rem">//----------------------------------------------------------------</SPAN>
+            <SPAN class="kw1">void</SPAN> init<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <A href="agg_basics.h.html#int8u">int8u</A><SPAN class="op">*</SPAN> ptr<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> dx<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> dy<SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                m_ptr       <SPAN class="op">=</SPAN> ptr<SPAN class="op">;</SPAN>
+                m_y         <SPAN class="op">=</SPAN> read_int32<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> dy<SPAN class="op">;</SPAN>
+                m_num_spans <SPAN class="op">=</SPAN> <SPAN class="kw1">unsigned</SPAN><SPAN class="op">(</SPAN>read_int32<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                m_dx        <SPAN class="op">=</SPAN> dx<SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">private</SPAN>:
+            <SPAN class="kw1">const</SPAN> <A href="agg_basics.h.html#int8u">int8u</A><SPAN class="op">*</SPAN> m_ptr<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">int</SPAN>          m_y<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">unsigned</SPAN>     m_num_spans<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">int</SPAN>          m_dx<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+
+    <SPAN class="kw1">public</SPAN>:
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <A href="agg_scanline_storage_bin.h.html#serialized_scanlines_adaptor_bin">serialized_scanlines_adaptor_bin</A><SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> :
+            m_data<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_end<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_ptr<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_dx<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_dy<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_min_x<SPAN class="op">(</SPAN><SPAN class="num">0x7FFFFFFF</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_min_y<SPAN class="op">(</SPAN><SPAN class="num">0x7FFFFFFF</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_max_x<SPAN class="op">(</SPAN><SPAN class="op">-</SPAN><SPAN class="num">0x7FFFFFFF</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_max_y<SPAN class="op">(</SPAN><SPAN class="op">-</SPAN><SPAN class="num">0x7FFFFFFF</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN><SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <A href="agg_scanline_storage_bin.h.html#serialized_scanlines_adaptor_bin">serialized_scanlines_adaptor_bin</A><SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <A href="agg_basics.h.html#int8u">int8u</A><SPAN class="op">*</SPAN> data<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> size<SPAN class="op">,</SPAN>
+                                         <SPAN class="kw1">double</SPAN> dx<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> dy<SPAN class="op">)</SPAN> :
+            m_data<SPAN class="op">(</SPAN>data<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_end<SPAN class="op">(</SPAN>data <SPAN class="op">+</SPAN> size<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_ptr<SPAN class="op">(</SPAN>data<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_dx<SPAN class="op">(</SPAN><A href="agg_basics.h.html#iround">iround</A><SPAN class="op">(</SPAN>dx<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_dy<SPAN class="op">(</SPAN><A href="agg_basics.h.html#iround">iround</A><SPAN class="op">(</SPAN>dy<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_min_x<SPAN class="op">(</SPAN><SPAN class="num">0x7FFFFFFF</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_min_y<SPAN class="op">(</SPAN><SPAN class="num">0x7FFFFFFF</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_max_x<SPAN class="op">(</SPAN><SPAN class="op">-</SPAN><SPAN class="num">0x7FFFFFFF</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_max_y<SPAN class="op">(</SPAN><SPAN class="op">-</SPAN><SPAN class="num">0x7FFFFFFF</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN><SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">void</SPAN> init<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <A href="agg_basics.h.html#int8u">int8u</A><SPAN class="op">*</SPAN> data<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> size<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> dx<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> dy<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            m_data  <SPAN class="op">=</SPAN> data<SPAN class="op">;</SPAN>
+            m_end   <SPAN class="op">=</SPAN> data <SPAN class="op">+</SPAN> size<SPAN class="op">;</SPAN>
+            m_ptr   <SPAN class="op">=</SPAN> data<SPAN class="op">;</SPAN>
+            m_dx    <SPAN class="op">=</SPAN> <A href="agg_basics.h.html#iround">iround</A><SPAN class="op">(</SPAN>dx<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            m_dy    <SPAN class="op">=</SPAN> <A href="agg_basics.h.html#iround">iround</A><SPAN class="op">(</SPAN>dy<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            m_min_x <SPAN class="op">=</SPAN> <SPAN class="num">0x7FFFFFFF</SPAN><SPAN class="op">;</SPAN>
+            m_min_y <SPAN class="op">=</SPAN> <SPAN class="num">0x7FFFFFFF</SPAN><SPAN class="op">;</SPAN>
+            m_max_x <SPAN class="op">=</SPAN> <SPAN class="op">-</SPAN><SPAN class="num">0x7FFFFFFF</SPAN><SPAN class="op">;</SPAN>
+            m_max_y <SPAN class="op">=</SPAN> <SPAN class="op">-</SPAN><SPAN class="num">0x7FFFFFFF</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+    <SPAN class="kw1">private</SPAN>:
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">int</SPAN> read_int32<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <A href="agg_basics.h.html#int32">int32</A> val<SPAN class="op">;</SPAN>
+            <SPAN class="op">(</SPAN><SPAN class="op">(</SPAN><A href="agg_basics.h.html#int8u">int8u</A><SPAN class="op">*</SPAN><SPAN class="op">)</SPAN><SPAN class="op">&amp;</SPAN>val<SPAN class="op">)</SPAN><SPAN class="op">[</SPAN><SPAN class="num">0</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> <SPAN class="op">*</SPAN>m_ptr<SPAN class="op">++</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">(</SPAN><SPAN class="op">(</SPAN><A href="agg_basics.h.html#int8u">int8u</A><SPAN class="op">*</SPAN><SPAN class="op">)</SPAN><SPAN class="op">&amp;</SPAN>val<SPAN class="op">)</SPAN><SPAN class="op">[</SPAN><SPAN class="num">1</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> <SPAN class="op">*</SPAN>m_ptr<SPAN class="op">++</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">(</SPAN><SPAN class="op">(</SPAN><A href="agg_basics.h.html#int8u">int8u</A><SPAN class="op">*</SPAN><SPAN class="op">)</SPAN><SPAN class="op">&amp;</SPAN>val<SPAN class="op">)</SPAN><SPAN class="op">[</SPAN><SPAN class="num">2</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> <SPAN class="op">*</SPAN>m_ptr<SPAN class="op">++</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">(</SPAN><SPAN class="op">(</SPAN><A href="agg_basics.h.html#int8u">int8u</A><SPAN class="op">*</SPAN><SPAN class="op">)</SPAN><SPAN class="op">&amp;</SPAN>val<SPAN class="op">)</SPAN><SPAN class="op">[</SPAN><SPAN class="num">3</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> <SPAN class="op">*</SPAN>m_ptr<SPAN class="op">++</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">return</SPAN> val<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+       
+    <SPAN class="kw1">public</SPAN>:
+        <SPAN class="rem">// Iterate scanlines interface</SPAN>
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">bool</SPAN> rewind_scanlines<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            m_ptr <SPAN class="op">=</SPAN> m_data<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_ptr <SPAN class="op">&lt;</SPAN> m_end<SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                m_min_x <SPAN class="op">=</SPAN> read_int32<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> m_dx<SPAN class="op">;</SPAN> 
+                m_min_y <SPAN class="op">=</SPAN> read_int32<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> m_dy<SPAN class="op">;</SPAN>
+                m_max_x <SPAN class="op">=</SPAN> read_int32<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> m_dx<SPAN class="op">;</SPAN>
+                m_max_y <SPAN class="op">=</SPAN> read_int32<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> m_dy<SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="kw1">return</SPAN> m_ptr <SPAN class="op">&lt;</SPAN> m_end<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">int</SPAN> min_x<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_min_x<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">int</SPAN> min_y<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_min_y<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">int</SPAN> max_x<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_max_x<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">int</SPAN> max_y<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_max_y<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Scanline<SPAN class="op">&gt;</SPAN> <SPAN class="kw1">bool</SPAN> sweep_scanline<SPAN class="op">(</SPAN>Scanline<SPAN class="op">&amp;</SPAN> sl<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            sl<SPAN class="op">.</SPAN>reset_spans<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN><SPAN class="op">;</SPAN><SPAN class="op">;</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_ptr <SPAN class="op">&gt;=</SPAN> m_end<SPAN class="op">)</SPAN> <SPAN class="kw1">return</SPAN> <SPAN class="kw1">false</SPAN><SPAN class="op">;</SPAN>
+
+                <SPAN class="kw1">int</SPAN> y <SPAN class="op">=</SPAN> read_int32<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> m_dy<SPAN class="op">;</SPAN>
+                <SPAN class="kw1">unsigned</SPAN> num_spans <SPAN class="op">=</SPAN> read_int32<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                <SPAN class="kw1">do</SPAN>
+                <SPAN class="op">{</SPAN>
+                    <SPAN class="kw1">int</SPAN> x <SPAN class="op">=</SPAN> read_int32<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> m_dx<SPAN class="op">;</SPAN>
+                    <SPAN class="kw1">int</SPAN> len <SPAN class="op">=</SPAN> read_int32<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>len <SPAN class="op">&lt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> len <SPAN class="op">=</SPAN> <SPAN class="op">-</SPAN>len<SPAN class="op">;</SPAN>
+                    sl<SPAN class="op">.</SPAN>add_span<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN><SPAN class="op">(</SPAN>len<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> <A href="agg_basics.h.html#cover_full">cover_full</A><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+                <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN><SPAN class="op">--</SPAN>num_spans<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>sl<SPAN class="op">.</SPAN>num_spans<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    sl<SPAN class="op">.</SPAN>finalize<SPAN class="op">(</SPAN>y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="kw1">return</SPAN> <SPAN class="kw1">true</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="rem">// Specialization for embedded_scanline</SPAN>
+        <SPAN class="kw1">bool</SPAN> sweep_scanline<SPAN class="op">(</SPAN>embedded_scanline<SPAN class="op">&amp;</SPAN> sl<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">do</SPAN>
+            <SPAN class="op">{</SPAN>
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_ptr <SPAN class="op">&gt;=</SPAN> m_end<SPAN class="op">)</SPAN> <SPAN class="kw1">return</SPAN> <SPAN class="kw1">false</SPAN><SPAN class="op">;</SPAN>
+
+                sl<SPAN class="op">.</SPAN>init<SPAN class="op">(</SPAN>m_ptr<SPAN class="op">,</SPAN> m_dx<SPAN class="op">,</SPAN> m_dy<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                <SPAN class="rem">// Jump to the next scanline</SPAN>
+                <SPAN class="rem">//--------------------------</SPAN>
+                read_int32<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>                    <SPAN class="rem">// Y</SPAN>
+                <SPAN class="kw1">int</SPAN> num_spans <SPAN class="op">=</SPAN> read_int32<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>    <SPAN class="rem">// num_spans</SPAN>
+                m_ptr <SPAN class="op">+=</SPAN> num_spans <SPAN class="op">*</SPAN> <SPAN class="kw1">sizeof</SPAN><SPAN class="op">(</SPAN><A href="agg_basics.h.html#int32">int32</A><SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN>sl<SPAN class="op">.</SPAN>num_spans<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">return</SPAN> <SPAN class="kw1">true</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+    <SPAN class="kw1">private</SPAN>:
+        <SPAN class="kw1">const</SPAN> <A href="agg_basics.h.html#int8u">int8u</A><SPAN class="op">*</SPAN> m_data<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">const</SPAN> <A href="agg_basics.h.html#int8u">int8u</A><SPAN class="op">*</SPAN> m_end<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">const</SPAN> <A href="agg_basics.h.html#int8u">int8u</A><SPAN class="op">*</SPAN> m_ptr<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN>          m_dx<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN>          m_dy<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN>          m_min_x<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN>          m_min_y<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN>          m_max_x<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN>          m_max_y<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+
+<SPAN class="op">}</SPAN>
+
+<SPAN class="kw2">#endif</SPAN>
+
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT><TABLE width="640px" bgcolor="#583927" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0">
+<TR><TD><CENTER><SPAN class="authors">
+Copyright <SPAN class="larger">&#169;</SPAN> 2002-2006
+<A href="../../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+<TR><TD><CENTER><SPAN class="authors">
+Web Design and Programming
+<A href="../../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+</TABLE>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+</HTML>

@@ -1,0 +1,611 @@
+<HTML><HEAD><TITLE>Anti-Grain Geometry - Version 2.4 Release Notes</TITLE>
+<META http-equiv="Content-Type" content="text/html"/>
+<LINK rel="stylesheet" type="text/css" href="../../agg.styles.css"/>
+</HEAD>
+<A name="PAGE_RELEASE_V24"><B></B></A>
+
+
+<TABLE width="640px" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR>
+<TD bgcolor="#583927"></TD>
+</TR>
+</TABLE>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR>
+<TD>
+<TABLE width="170px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR><TD><A href="../../index.html" class="mpmenu">Home/</A></TD></TR>
+<TR><TD><A href="../index.html" class="mpmenu">News/</A></TD></TR>
+<TR><TD><A href="" class="mpmenu"></A></TD></TR>
+<TR><TD><A href="" class="mpmenu"></A></TD></TR>
+<TR><TD><A href="" class="mpmenu"></A></TD></TR>
+<TR><TD><A href="" class="mpmenu"></A></TD></TR>
+</TABLE>
+</TD>
+<TD width="1px" bgcolor="#583927"></TD>
+<TD width="450px" valign="top" style="text-align:right">
+<TABLE border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR>
+<TD><IMG src="../../agg_logo.gif" border="0"/></TD>
+</TR>
+<TR>
+<TD>
+<TABLE border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR height="15px">
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../../news/index.html">News</A>&nbsp;&nbsp;</TD>
+<TD width="1px" bgcolor="#8e521d"></TD>
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../../doc/index.html">Docs</A>&nbsp;&nbsp;</TD>
+<TD width="1px" bgcolor="#8e521d"></TD>
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../../download/index.html">Download</A>&nbsp;&nbsp;</TD>
+<TD width="1px" bgcolor="#8e521d"></TD>
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../../maillist/index.html">Mailing List</A>&nbsp;&nbsp;</TD>
+<TD width="1px" bgcolor="#8e521d"></TD>
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../../cvs/index.html">CVS</A>&nbsp;&nbsp;</TD>
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+<TABLE width="640px" height="1px" bgcolor="#583927" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>
+</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD><H1>Version 2.4 Release Notes</H1></TD></TR></TABLE>
+
+<TABLE class="toc" width="640px"><TR><TD>
+    <DIV style="margin-left:2em; padding:3px; font-size:14px;"><A href="#toc0001"><B>Include Files</B></A></DIV>
+    <DIV style="margin-left:2em; padding:3px; font-size:14px;"><A href="#toc0002"><B>Source Files</B></A></DIV>
+    <DIV style="margin-left:2em; padding:3px; font-size:14px;"><A href="#toc0003"><B>Renames</B></A></DIV>
+    <DIV style="margin-left:2em; padding:3px; font-size:14px;"><A href="#toc0004"><B>Span Generators and Scanline Renderers</B></A></DIV>
+    <DIV style="margin-left:2em; padding:3px; font-size:14px;"><A href="#toc0005"><B>Low Level (pixfmt) Renderers</B></A></DIV>
+    <DIV style="margin-left:2em; padding:3px; font-size:14px;"><A href="#toc0006"><B>Image and Pattern Transformers</B></A></DIV>
+    <DIV style="margin-left:2em; padding:3px; font-size:14px;"><A href="#toc0007"><B>Compound Shape Rasterizer</B></A></DIV>
+    <DIV style="margin-left:2em; padding:3px; font-size:14px;"><A href="#toc0008"><B>Path Storage</B></A></DIV>
+    <DIV style="margin-left:2em; padding:3px; font-size:14px;"><A href="#toc0009"><B>Custom Clippers in the Rasterizers</B></A></DIV>
+
+</TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>There are changes in the design, files, and interfaces are made, so that, 
+you will have to spend some time for migratintg your applications. I tried
+to maintain is as painless as possible, but still some concepts have changed.
+There some files were removed from the package, but <B>not</B> functionality.</P></TD></TR></TABLE>
+
+<H2>Include Files<A name="toc0001"></A></H2>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><UL type="disc">
+<LI>Removed Files</LI>
+<UL type="disc">
+<LI>include/agg_render_scanlines.h</LI>
+<LI>include/agg_span_generator.h</LI>
+<LI>include/agg_span_image_resample.h</LI>
+<LI>include/agg_span_image_resample_gray.h</LI>
+<LI>include/agg_span_image_resample_rgb.h</LI>
+<LI>include/agg_span_image_resample_rgba.h</LI>
+<LI>include/agg_span_pattern.h</LI>
+<LI>include/agg_span_pattern_filter_gray.h</LI>
+<LI>include/agg_span_pattern_filter_rgb.h</LI>
+<LI>include/agg_span_pattern_filter_rgba.h</LI>
+<LI>include/agg_span_pattern_resample_gray.h</LI>
+<LI>include/agg_span_pattern_resample_rgb.h</LI>
+<LI>include/agg_span_pattern_resample_rgba.h</LI></UL></UL></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><UL type="disc">
+<LI>New Files</LI>
+<UL type="disc">
+<LI>include/<A href="../../__code/include/agg_image_accessors.h.html">agg_image_accessors.h</A></LI>
+<LI>include/<A href="../../__code/include/agg_path_length.h.html">agg_path_length.h</A></LI>
+<LI>include/<A href="../../__code/include/agg_rasterizer_cells_aa.h.html">agg_rasterizer_cells_aa.h</A></LI>
+<LI>include/<A href="../../__code/include/agg_rasterizer_compound_aa.h.html">agg_rasterizer_compound_aa.h</A></LI>
+<LI>include/<A href="../../__code/include/agg_rasterizer_sl_clip.h.html">agg_rasterizer_sl_clip.h</A></LI>
+<LI>include/<A href="../../__code/include/agg_span_pattern_gray.h.html">agg_span_pattern_gray.h</A></LI></UL></UL></P></TD></TR></TABLE>
+
+
+<BR/><H2>Source Files<A name="toc0002"></A></H2>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><UL type="disc">
+<LI>Removed Files</LI>
+<UL type="disc">
+<LI>src/agg_path_storage.cpp</LI>
+<LI>src/agg_rasterizer_scanline_aa.cpp</LI></UL></UL></P></TD></TR></TABLE>
+
+<BR/><H2>Renames<A name="toc0003"></A></H2>
+
+<TABLE class="tbl" width="640px" border="0" cellspacing="1px" cellpadding="5px">
+<TH>Old Name</TH><TH>New Name</TH>
+<TR><TD>rect</TD><TD><A href="../../__code/include/agg_basics.h.html#rect_i">rect_i</A></TD></TR>
+<TR><TD><A href="../../__code/include/agg_array.h.html#pod_array">pod_array</A></TD><TD><A href="../../__code/include/agg_array.h.html#pod_vector">pod_vector</A></TD></TR>
+<TR><TD>pod_deque</TD><TD><A href="../../__code/include/agg_array.h.html#pod_bvector">pod_bvector</A></TD></TR>
+</TABLE><FONT style="margin-left:1em"><I></I></FONT>
+
+
+<BR/><H2>Span Generators and Scanline Renderers<A name="toc0004"></A></H2>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Removed files include/agg_render_scanlines.h and include/agg_span_generator.h. 
+The major change is: In <B>AGG</B> v2.3 it was the responsibility of the span 
+generator to allocate and provide an array of colors, which was conceptually
+wrong. That is, the function was:
+</P></TD></TR></TABLE><TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>color_type<SPAN class="op">*</SPAN> generate<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> len<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN></PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Now it is:
+</P></TD></TR></TABLE><TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE><SPAN class="kw1">void</SPAN> generate<SPAN class="op">(</SPAN>color_type<SPAN class="op">*</SPAN> span<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> len<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN></PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>It means that the space for the color array is provided externally. 
+This approach has more consistency and simplifies span generators
+and converters.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>It also means that the span generators don&#039;t need to have span allocators
+inside, which simplified their creation. Span allocators are now passed to
+the scanline rendering functions and classes. That is, before (for example):
+</P></TD></TR></TABLE><TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+<SPAN class="rem">// AGG v2.3</SPAN>
+<SPAN class="kw1">typedef</SPAN> agg::<A href="../../__code/include/agg_span_allocator.h.html#span_allocator">span_allocator</A><SPAN class="op">&lt;</SPAN>color_type<SPAN class="op">&gt;</SPAN> span_alloc_type<SPAN class="op">;</SPAN>
+<SPAN class="kw1">typedef</SPAN> agg::<A href="../../__code/include/agg_span_gouraud_rgba.h.html#span_gouraud_rgba">span_gouraud_rgba</A><SPAN class="op">&lt;</SPAN>color_type<SPAN class="op">&gt;</SPAN> span_gen_type<SPAN class="op">;</SPAN>
+<SPAN class="kw1">typedef</SPAN> agg::<A href="../../__code/include/agg_renderer_scanline.h.html#renderer_scanline_aa">renderer_scanline_aa</A><SPAN class="op">&lt;</SPAN>base_ren_type<SPAN class="op">,</SPAN> span_gen_type<SPAN class="op">&gt;</SPAN> ren_type<SPAN class="op">;</SPAN>
+
+span_alloc_type span_alloc<SPAN class="op">;</SPAN>
+span_gen_type   span_gen<SPAN class="op">(</SPAN>span_alloc<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+ren_type        ren<SPAN class="op">(</SPAN>ren_base<SPAN class="op">,</SPAN> span_gen<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Now:
+</P></TD></TR></TABLE><TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+<SPAN class="rem">// AGG v2.4</SPAN>
+<SPAN class="kw1">typedef</SPAN> agg::<A href="../../__code/include/agg_span_allocator.h.html#span_allocator">span_allocator</A><SPAN class="op">&lt;</SPAN>color_type<SPAN class="op">&gt;</SPAN> span_alloc_type<SPAN class="op">;</SPAN>
+<SPAN class="kw1">typedef</SPAN> agg::<A href="../../__code/include/agg_span_gouraud_rgba.h.html#span_gouraud_rgba">span_gouraud_rgba</A><SPAN class="op">&lt;</SPAN>color_type<SPAN class="op">&gt;</SPAN> span_gen_type<SPAN class="op">;</SPAN>
+<SPAN class="kw1">typedef</SPAN> agg::<A href="../../__code/include/agg_renderer_scanline.h.html#renderer_scanline_aa">renderer_scanline_aa</A><SPAN class="op">&lt;</SPAN>base_ren_type<SPAN class="op">,</SPAN> span_alloc_type<SPAN class="op">,</SPAN> span_gen_type<SPAN class="op">&gt;</SPAN> ren_type<SPAN class="op">;</SPAN>
+
+span_alloc_type span_alloc<SPAN class="op">;</SPAN>
+span_gen_type   span_gen<SPAN class="op">;</SPAN>
+ren_type        ren<SPAN class="op">(</SPAN>ren_base<SPAN class="op">,</SPAN> span_alloc<SPAN class="op">,</SPAN> span_gen<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>It may look more complex, but it isn&#039;t. Now you can simplify it and do without
+the scanline renderer class at all:
+</P></TD></TR></TABLE><TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+<SPAN class="rem">// AGG v2.4</SPAN>
+<SPAN class="kw1">typedef</SPAN> agg::<A href="../../__code/include/agg_span_allocator.h.html#span_allocator">span_allocator</A><SPAN class="op">&lt;</SPAN>color_type<SPAN class="op">&gt;</SPAN> span_alloc_type<SPAN class="op">;</SPAN>
+<SPAN class="kw1">typedef</SPAN> agg::<A href="../../__code/include/agg_span_gouraud_rgba.h.html#span_gouraud_rgba">span_gouraud_rgba</A><SPAN class="op">&lt;</SPAN>color_type<SPAN class="op">&gt;</SPAN> span_gen_type<SPAN class="op">;</SPAN>
+
+span_alloc_type span_alloc<SPAN class="op">;</SPAN>
+span_gen_type   span_gen<SPAN class="op">;</SPAN>
+<SPAN class="op">.</SPAN> <SPAN class="op">.</SPAN> <SPAN class="op">.</SPAN>
+agg::<A href="../../__code/include/agg_renderer_scanline.h.html#render_scanlines_aa">render_scanlines_aa</A><SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> sl<SPAN class="op">,</SPAN> ren_base<SPAN class="op">,</SPAN> span_alloc<SPAN class="op">,</SPAN> span_gen<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>However, the <A href="../../__code/include/agg_renderer_scanline.h.html#renderer_scanline_aa">renderer_scanline_aa</A> class template is still useful, it&#039;s
+left for the sake of compatibility and for creating new function 
+templates, like this:
+</P></TD></TR></TABLE><TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+<SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Ren<SPAN class="op">&gt;</SPAN> 
+<SPAN class="kw1">void</SPAN> render_something<SPAN class="op">(</SPAN>Ren<SPAN class="op">&amp;</SPAN> renderer<SPAN class="op">)</SPAN>
+<SPAN class="op">{</SPAN>
+   <SPAN class="op">.</SPAN> <SPAN class="op">.</SPAN> <SPAN class="op">.</SPAN>
+<SPAN class="op">}</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>This function will work equally well with <A href="../../__code/include/agg_renderer_scanline.h.html#renderer_scanline_aa_solid">renderer_scanline_aa_solid</A> and 
+arbitrary <A href="../../__code/include/agg_renderer_scanline.h.html#renderer_scanline_aa">renderer_scanline_aa</A>.</P></TD></TR></TABLE>
+
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Below is the summary of the scanline renderering function and classes in 
+<A href="../../__code/include/agg_renderer_scanline.h.html">agg_renderer_scanline.h</A>. The names refer to:
+<UL type="disc">
+<LI><B>render_scanline_* </B> - a function that renders a single scanline.</LI>
+<LI><B>render_scanlines_* </B> - a function that renders the content of 
+   a rasterizer or a scanline container, such as </LI>
+<UL type="disc">
+<LI><A href="../../__code/include/agg_rasterizer_scanline_aa.h.html#rasterizer_scanline_aa">rasterizer_scanline_aa</A>, </LI>
+<LI><A href="../../__code/include/agg_scanline_storage_aa.h.html#scanline_storage_aa">scanline_storage_aa</A>, </LI>
+<LI><A href="../../__code/include/agg_scanline_storage_aa.h.html#serialized_scanlines_adaptor_aa">serialized_scanlines_adaptor_aa</A>, </LI>
+<LI>etc.</LI></UL>
+<LI><B>renderer_scanlines_* </B> - a class template with the scanline renderer 
+   interface, basically a simple wrapper over the scanline rendering 
+   function.
+</LI></UL></P></TD></TR></TABLE><TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+    <SPAN class="rem">// Render a single, anti-aliased, solid color scanline</SPAN>
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Scanline<SPAN class="op">,</SPAN> <SPAN class="kw1">class</SPAN> BaseRenderer<SPAN class="op">,</SPAN> <SPAN class="kw1">class</SPAN> ColorT<SPAN class="op">&gt;</SPAN> 
+    <SPAN class="kw1">void</SPAN> <A href="../../__code/include/agg_renderer_scanline.h.html#render_scanline_aa_solid">render_scanline_aa_solid</A><SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> Scanline<SPAN class="op">&amp;</SPAN> sl<SPAN class="op">,</SPAN> 
+                                  BaseRenderer<SPAN class="op">&amp;</SPAN> ren<SPAN class="op">,</SPAN> 
+                                  <SPAN class="kw1">const</SPAN> ColorT<SPAN class="op">&amp;</SPAN> color<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+
+
+    <SPAN class="rem">// Render all scanlines from Rasterizer, as solid color ones,</SPAN>
+    <SPAN class="rem">// with anti-aliasing</SPAN>
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Rasterizer<SPAN class="op">,</SPAN> <SPAN class="kw1">class</SPAN> Scanline<SPAN class="op">,</SPAN> 
+             <SPAN class="kw1">class</SPAN> BaseRenderer<SPAN class="op">,</SPAN> <SPAN class="kw1">class</SPAN> ColorT<SPAN class="op">&gt;</SPAN>
+    <SPAN class="kw1">void</SPAN> <A href="../../__code/include/agg_renderer_scanline.h.html#render_scanlines_aa_solid">render_scanlines_aa_solid</A><SPAN class="op">(</SPAN>Rasterizer<SPAN class="op">&amp;</SPAN> ras<SPAN class="op">,</SPAN> Scanline<SPAN class="op">&amp;</SPAN> sl<SPAN class="op">,</SPAN> 
+                                   BaseRenderer<SPAN class="op">&amp;</SPAN> ren<SPAN class="op">,</SPAN> <SPAN class="kw1">const</SPAN> ColorT<SPAN class="op">&amp;</SPAN> color<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+
+
+    <SPAN class="rem">// Class template for solid color scanline rendering as it was before</SPAN>
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> BaseRenderer<SPAN class="op">&gt;</SPAN> <SPAN class="kw1">class</SPAN> <A href="../../__code/include/agg_renderer_scanline.h.html#renderer_scanline_aa_solid">renderer_scanline_aa_solid</A>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="op">.</SPAN> <SPAN class="op">.</SPAN> <SPAN class="op">.</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+
+    <SPAN class="rem">// Render a single, color span scanline provided by SpanGenerator</SPAN>
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Scanline<SPAN class="op">,</SPAN> <SPAN class="kw1">class</SPAN> BaseRenderer<SPAN class="op">,</SPAN> 
+             <SPAN class="kw1">class</SPAN> SpanAllocator<SPAN class="op">,</SPAN> <SPAN class="kw1">class</SPAN> SpanGenerator<SPAN class="op">&gt;</SPAN> 
+    <SPAN class="kw1">void</SPAN> <A href="../../__code/include/agg_renderer_scanline.h.html#render_scanline_aa">render_scanline_aa</A><SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> Scanline<SPAN class="op">&amp;</SPAN> sl<SPAN class="op">,</SPAN> BaseRenderer<SPAN class="op">&amp;</SPAN> ren<SPAN class="op">,</SPAN> 
+                            SpanAllocator<SPAN class="op">&amp;</SPAN> alloc<SPAN class="op">,</SPAN> SpanGenerator<SPAN class="op">&amp;</SPAN> span_gen<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+
+
+    <SPAN class="rem">// Render all scanlines from Rasterizer, as color span ones</SPAN>
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Rasterizer<SPAN class="op">,</SPAN> <SPAN class="kw1">class</SPAN> Scanline<SPAN class="op">,</SPAN> <SPAN class="kw1">class</SPAN> BaseRenderer<SPAN class="op">,</SPAN> 
+             <SPAN class="kw1">class</SPAN> SpanAllocator<SPAN class="op">,</SPAN> <SPAN class="kw1">class</SPAN> SpanGenerator<SPAN class="op">&gt;</SPAN>
+    <SPAN class="kw1">void</SPAN> <A href="../../__code/include/agg_renderer_scanline.h.html#render_scanlines_aa">render_scanlines_aa</A><SPAN class="op">(</SPAN>Rasterizer<SPAN class="op">&amp;</SPAN> ras<SPAN class="op">,</SPAN> Scanline<SPAN class="op">&amp;</SPAN> sl<SPAN class="op">,</SPAN> BaseRenderer<SPAN class="op">&amp;</SPAN> ren<SPAN class="op">,</SPAN> 
+                             SpanAllocator<SPAN class="op">&amp;</SPAN> alloc<SPAN class="op">,</SPAN> SpanGenerator<SPAN class="op">&amp;</SPAN> span_gen<SPAN class="op">)</SPAN>
+
+
+
+    <SPAN class="rem">// Class template for color span scanline rendering as it was before</SPAN>
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> BaseRenderer<SPAN class="op">,</SPAN> <SPAN class="kw1">class</SPAN> SpanAllocator<SPAN class="op">,</SPAN> <SPAN class="kw1">class</SPAN> SpanGenerator<SPAN class="op">&gt;</SPAN> 
+    <SPAN class="kw1">class</SPAN> <A href="../../__code/include/agg_renderer_scanline.h.html#renderer_scanline_aa">renderer_scanline_aa</A>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="op">.</SPAN> <SPAN class="op">.</SPAN> <SPAN class="op">.</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+
+    <SPAN class="rem">// Render a single, aliased (binary) solid color scanline</SPAN>
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Scanline<SPAN class="op">,</SPAN> <SPAN class="kw1">class</SPAN> BaseRenderer<SPAN class="op">,</SPAN> <SPAN class="kw1">class</SPAN> ColorT<SPAN class="op">&gt;</SPAN> 
+    <SPAN class="kw1">void</SPAN> <A href="../../__code/include/agg_renderer_scanline.h.html#render_scanline_bin_solid">render_scanline_bin_solid</A><SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> Scanline<SPAN class="op">&amp;</SPAN> sl<SPAN class="op">,</SPAN> 
+                                   BaseRenderer<SPAN class="op">&amp;</SPAN> ren<SPAN class="op">,</SPAN> 
+                                   <SPAN class="kw1">const</SPAN> ColorT<SPAN class="op">&amp;</SPAN> color<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+
+
+    <SPAN class="rem">// Render all scanlines from Rasterizer, as solid color ones,</SPAN>
+    <SPAN class="rem">// without anti-aliasing (binary)</SPAN>
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Rasterizer<SPAN class="op">,</SPAN> <SPAN class="kw1">class</SPAN> Scanline<SPAN class="op">,</SPAN> 
+             <SPAN class="kw1">class</SPAN> BaseRenderer<SPAN class="op">,</SPAN> <SPAN class="kw1">class</SPAN> ColorT<SPAN class="op">&gt;</SPAN>
+    <SPAN class="kw1">void</SPAN> <A href="../../__code/include/agg_renderer_scanline.h.html#render_scanlines_bin_solid">render_scanlines_bin_solid</A><SPAN class="op">(</SPAN>Rasterizer<SPAN class="op">&amp;</SPAN> ras<SPAN class="op">,</SPAN> Scanline<SPAN class="op">&amp;</SPAN> sl<SPAN class="op">,</SPAN> 
+                                    BaseRenderer<SPAN class="op">&amp;</SPAN> ren<SPAN class="op">,</SPAN> <SPAN class="kw1">const</SPAN> ColorT<SPAN class="op">&amp;</SPAN> color<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+
+
+    <SPAN class="rem">// Class template for solid color scanline rendering as it was before</SPAN>
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> BaseRenderer<SPAN class="op">&gt;</SPAN> <SPAN class="kw1">class</SPAN> <A href="../../__code/include/agg_renderer_scanline.h.html#renderer_scanline_bin_solid">renderer_scanline_bin_solid</A>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="op">.</SPAN> <SPAN class="op">.</SPAN> <SPAN class="op">.</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+
+    <SPAN class="rem">// Render a single aliased (binary), color span scanline provided </SPAN>
+    <SPAN class="rem">// by SpanGenerator </SPAN>
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Scanline<SPAN class="op">,</SPAN> <SPAN class="kw1">class</SPAN> BaseRenderer<SPAN class="op">,</SPAN> 
+             <SPAN class="kw1">class</SPAN> SpanAllocator<SPAN class="op">,</SPAN> <SPAN class="kw1">class</SPAN> SpanGenerator<SPAN class="op">&gt;</SPAN> 
+    <SPAN class="kw1">void</SPAN> <A href="../../__code/include/agg_renderer_scanline.h.html#render_scanline_bin">render_scanline_bin</A><SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> Scanline<SPAN class="op">&amp;</SPAN> sl<SPAN class="op">,</SPAN> BaseRenderer<SPAN class="op">&amp;</SPAN> ren<SPAN class="op">,</SPAN> 
+                             SpanAllocator<SPAN class="op">&amp;</SPAN> alloc<SPAN class="op">,</SPAN> SpanGenerator<SPAN class="op">&amp;</SPAN> span_gen<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+
+
+    <SPAN class="rem">// Render all scanlines from Rasterizer, as color span ones,</SPAN>
+    <SPAN class="rem">// without anti-aliasing (binary)</SPAN>
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Rasterizer<SPAN class="op">,</SPAN> <SPAN class="kw1">class</SPAN> Scanline<SPAN class="op">,</SPAN> <SPAN class="kw1">class</SPAN> BaseRenderer<SPAN class="op">,</SPAN> 
+             <SPAN class="kw1">class</SPAN> SpanAllocator<SPAN class="op">,</SPAN> <SPAN class="kw1">class</SPAN> SpanGenerator<SPAN class="op">&gt;</SPAN>
+    <SPAN class="kw1">void</SPAN> <A href="../../__code/include/agg_renderer_scanline.h.html#render_scanlines_bin">render_scanlines_bin</A><SPAN class="op">(</SPAN>Rasterizer<SPAN class="op">&amp;</SPAN> ras<SPAN class="op">,</SPAN> Scanline<SPAN class="op">&amp;</SPAN> sl<SPAN class="op">,</SPAN> BaseRenderer<SPAN class="op">&amp;</SPAN> ren<SPAN class="op">,</SPAN> 
+                              SpanAllocator<SPAN class="op">&amp;</SPAN> alloc<SPAN class="op">,</SPAN> SpanGenerator<SPAN class="op">&amp;</SPAN> span_gen<SPAN class="op">)</SPAN>
+
+
+
+    <SPAN class="rem">// Class template for color span scanline rendering as it was before</SPAN>
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> BaseRenderer<SPAN class="op">,</SPAN> <SPAN class="kw1">class</SPAN> SpanAllocator<SPAN class="op">,</SPAN> <SPAN class="kw1">class</SPAN> SpanGenerator<SPAN class="op">&gt;</SPAN> 
+    <SPAN class="kw1">class</SPAN> <A href="../../__code/include/agg_renderer_scanline.h.html#renderer_scanline_bin">renderer_scanline_bin</A>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="op">.</SPAN> <SPAN class="op">.</SPAN> <SPAN class="op">.</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+
+    <SPAN class="rem">// Render an abstract Rasterizer to an abstract Renderer. The Renderer</SPAN>
+    <SPAN class="rem">// can be of the following types:</SPAN>
+    <SPAN class="rem">// <A href="../../__code/include/agg_renderer_scanline.h.html#renderer_scanline_aa_solid">renderer_scanline_aa_solid</A></SPAN>
+    <SPAN class="rem">// <A href="../../__code/include/agg_renderer_scanline.h.html#renderer_scanline_aa">renderer_scanline_aa</A></SPAN>
+    <SPAN class="rem">// <A href="../../__code/include/agg_renderer_scanline.h.html#renderer_scanline_bin_solid">renderer_scanline_bin_solid</A></SPAN>
+    <SPAN class="rem">// <A href="../../__code/include/agg_renderer_scanline.h.html#renderer_scanline_bin">renderer_scanline_bin</A></SPAN>
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Rasterizer<SPAN class="op">,</SPAN> <SPAN class="kw1">class</SPAN> Scanline<SPAN class="op">,</SPAN> <SPAN class="kw1">class</SPAN> Renderer<SPAN class="op">&gt;</SPAN>
+    <SPAN class="kw1">void</SPAN> <A href="../../__code/include/agg_renderer_scanline.h.html#render_scanlines">render_scanlines</A><SPAN class="op">(</SPAN>Rasterizer<SPAN class="op">&amp;</SPAN> ras<SPAN class="op">,</SPAN> Scanline<SPAN class="op">&amp;</SPAN> sl<SPAN class="op">,</SPAN> Renderer<SPAN class="op">&amp;</SPAN> ren<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+
+
+    <SPAN class="rem">// A very simple function to render all paths with solid colors</SPAN>
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Rasterizer<SPAN class="op">,</SPAN> <SPAN class="kw1">class</SPAN> Scanline<SPAN class="op">,</SPAN> <SPAN class="kw1">class</SPAN> Renderer<SPAN class="op">,</SPAN> 
+             <SPAN class="kw1">class</SPAN> VertexSource<SPAN class="op">,</SPAN> <SPAN class="kw1">class</SPAN> ColorStorage<SPAN class="op">,</SPAN> <SPAN class="kw1">class</SPAN> PathId<SPAN class="op">&gt;</SPAN>
+    <SPAN class="kw1">void</SPAN> <A href="../../__code/include/agg_renderer_scanline.h.html#render_all_paths">render_all_paths</A><SPAN class="op">(</SPAN>Rasterizer<SPAN class="op">&amp;</SPAN> ras<SPAN class="op">,</SPAN> 
+                          Scanline<SPAN class="op">&amp;</SPAN> sl<SPAN class="op">,</SPAN>
+                          Renderer<SPAN class="op">&amp;</SPAN> r<SPAN class="op">,</SPAN> 
+                          VertexSource<SPAN class="op">&amp;</SPAN> vs<SPAN class="op">,</SPAN> 
+                          <SPAN class="kw1">const</SPAN> ColorStorage<SPAN class="op">&amp;</SPAN> as<SPAN class="op">,</SPAN> 
+                          <SPAN class="kw1">const</SPAN> PathId<SPAN class="op">&amp;</SPAN> path_id<SPAN class="op">,</SPAN>
+                          <SPAN class="kw1">unsigned</SPAN> num_paths<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+
+
+    <SPAN class="rem">// Render a compound shape from <A href="../../__code/include/agg_rasterizer_compound_aa.h.html#rasterizer_compound_aa">rasterizer_compound_aa</A></SPAN>
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Rasterizer<SPAN class="op">,</SPAN> 
+             <SPAN class="kw1">class</SPAN> ScanlineAA<SPAN class="op">,</SPAN> 
+             <SPAN class="kw1">class</SPAN> ScanlineBin<SPAN class="op">,</SPAN> 
+             <SPAN class="kw1">class</SPAN> BaseRenderer<SPAN class="op">,</SPAN> 
+             <SPAN class="kw1">class</SPAN> SpanAllocator<SPAN class="op">,</SPAN>
+             <SPAN class="kw1">class</SPAN> StyleHandler<SPAN class="op">&gt;</SPAN>
+    <SPAN class="kw1">void</SPAN> <A href="../../__code/include/agg_renderer_scanline.h.html#render_scanlines_compound">render_scanlines_compound</A><SPAN class="op">(</SPAN>Rasterizer<SPAN class="op">&amp;</SPAN> ras<SPAN class="op">,</SPAN> 
+                                   ScanlineAA<SPAN class="op">&amp;</SPAN> sl_aa<SPAN class="op">,</SPAN>
+                                   ScanlineBin<SPAN class="op">&amp;</SPAN> sl_bin<SPAN class="op">,</SPAN>
+                                   BaseRenderer<SPAN class="op">&amp;</SPAN> ren<SPAN class="op">,</SPAN>
+                                   SpanAllocator<SPAN class="op">&amp;</SPAN> alloc<SPAN class="op">,</SPAN>
+                                   StyleHandler<SPAN class="op">&amp;</SPAN> sh<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Span clipping was removed from the scanline renderers, which simplified 
+the design considerably and made it more flexible.
+It means that if the rasterizer produces scanlines from -10000 to 10000 and 
+your window is only 800x600 it will work much slower than before, because 
+the span generator will have to generate the whole 20000 pixels span.
+To prevent from this slowdown just use clipping in the rasterizer:
+</P></TD></TR></TABLE><TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>ras<SPAN class="op">.</SPAN>clip_box<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">800</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">600</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN></PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+
+
+<BR/><H2>Low Level (pixfmt) Renderers<A name="toc0005"></A></H2>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>All low level renderers now can work with custom pixel accessors, 
+instead of former hardcoded <A href="../../doc/basic_renderers/basic_renderers.agdoc.html#rendering_buffer">rendering_buffer</A>. For the sake of 
+compatibility there are <A href="../../__code/include/agg_pixfmt_rgba.h.html#pixfmt_rgba32">pixfmt_rgba32</A> and all other are &#147;typedefed&#148;.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>For example, you can use <A href="../../__code/include/agg_rendering_buffer_dynarow.h.html#rendering_buffer_dynarow">rendering_buffer_dynarow</A> that allocates the pixel 
+rows on demand as needed. You can also write your own pixel accessor 
+provided the interface equivalent to <A href="../../doc/basic_renderers/basic_renderers.agdoc.html#rendering_buffer">rendering_buffer</A> or 
+<A href="../../__code/include/agg_rendering_buffer_dynarow.h.html#rendering_buffer_dynarow">rendering_buffer_dynarow</A>.</P></TD></TR></TABLE> 
+
+<BR/><H2>Image and Pattern Transformers<A name="toc0006"></A></H2>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The image and pattern transformers are now combined. For example, before 
+it was declaration:
+</P></TD></TR></TABLE><TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+    <SPAN class="rem">// AGG v2.3</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> ColorT<SPAN class="op">,</SPAN>
+             <SPAN class="kw1">class</SPAN> Order<SPAN class="op">,</SPAN> 
+             <SPAN class="kw1">class</SPAN> Interpolator<SPAN class="op">,</SPAN>
+             <SPAN class="kw1">class</SPAN> WrapModeX<SPAN class="op">,</SPAN>
+             <SPAN class="kw1">class</SPAN> WrapModeY<SPAN class="op">,</SPAN>
+             <SPAN class="kw1">class</SPAN> Allocator <SPAN class="op">=</SPAN> <A href="../../__code/include/agg_span_allocator.h.html#span_allocator">span_allocator</A><SPAN class="op">&lt;</SPAN>ColorT<SPAN class="op">&gt;</SPAN> <SPAN class="op">&gt;</SPAN> 
+    <SPAN class="kw1">class</SPAN> span_pattern_filter_rgba_bilinear : 
+    <SPAN class="kw1">public</SPAN> <A href="../../__code/include/agg_span_image_filter.h.html#span_image_filter">span_image_filter</A><SPAN class="op">&lt;</SPAN>ColorT<SPAN class="op">,</SPAN> Interpolator<SPAN class="op">,</SPAN> Allocator<SPAN class="op">&gt;</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="op">.</SPAN> <SPAN class="op">.</SPAN> <SPAN class="op">.</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Now it is:
+</P></TD></TR></TABLE><TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+    <SPAN class="rem">// AGG v2.3</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Source<SPAN class="op">,</SPAN> <SPAN class="kw1">class</SPAN> Interpolator<SPAN class="op">&gt;</SPAN> 
+    <SPAN class="kw1">class</SPAN> <A href="../../__code/include/agg_span_image_filter_rgba.h.html#span_image_filter_rgba_bilinear">span_image_filter_rgba_bilinear</A> : 
+    <SPAN class="kw1">public</SPAN> <A href="../../__code/include/agg_span_image_filter.h.html#span_image_filter">span_image_filter</A><SPAN class="op">&lt;</SPAN>Source<SPAN class="op">,</SPAN> Interpolator<SPAN class="op">&gt;</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="op">.</SPAN> <SPAN class="op">.</SPAN> <SPAN class="op">.</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The idea is to move the pixel wrapping functionality into a separate abstract 
+image source. It allows us to get rid of a lot of almost duplicate code and 
+extend the functionality. Template parameter Source can be one of the following
+types (<A href="../../__code/include/agg_image_accessors.h.html">agg_image_accessors.h</A>):
+<UL type="disc">
+<LI><A href="../../__code/include/agg_image_accessors.h.html#image_accessor_clip">image_accessor_clip</A> - image accessor with clipping, works as former 
+   <A href="../../__code/include/agg_span_image_filter_rgba.h.html#span_image_filter_rgba_bilinear">span_image_filter_rgba_bilinear</A>, etc.</LI>
+<LI><A href="../../__code/include/agg_image_accessors.h.html#image_accessor_no_clip">image_accessor_no_clip</A> - no clipping, that is, it can be used only if 
+   you are really-really sure there will be no requests for pixels out of
+   image bounds. If there are, there will be memory access violations. 
+   It&#039;s provided just in case if the performance is really very critical, but
+   not recommended for general use because it&#039;s dangerous.</LI>
+<LI><A href="../../__code/include/agg_image_accessors.h.html#image_accessor_clone">image_accessor_clone</A> - new functionality. If the requested pixel is out 
+   of bounds the boundary pixels are cloned. Very useful to reproduce 
+   functionality of some libraries like PDF.</LI>
+<LI><A href="../../__code/include/agg_image_accessors.h.html#image_accessor_wrap">image_accessor_wrap</A> - provides functionality of the former pattern 
+   transformers. Parameters WrapX, WrapY can be of the following types:</LI>
+<UL type="disc">
+<LI><A href="../../__code/include/agg_image_accessors.h.html#wrap_mode_repeat">wrap_mode_repeat</A></LI>
+<LI><A href="../../__code/include/agg_image_accessors.h.html#wrap_mode_repeat_pow2">wrap_mode_repeat_pow2</A></LI>
+<LI><A href="../../__code/include/agg_image_accessors.h.html#wrap_mode_repeat_auto_pow2">wrap_mode_repeat_auto_pow2</A></LI>
+<LI><A href="../../__code/include/agg_image_accessors.h.html#wrap_mode_reflect">wrap_mode_reflect</A></LI>
+<LI><A href="../../__code/include/agg_image_accessors.h.html#wrap_mode_reflect_pow2">wrap_mode_reflect_pow2</A></LI>
+<LI><A href="../../__code/include/agg_image_accessors.h.html#wrap_mode_reflect_auto_pow2">wrap_mode_reflect_auto_pow2</A></LI></UL></UL></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Below is an example if pattern transformer (texture-like) declarations and
+rendering:</P></TD></TR></TABLE>
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+    <SPAN class="rem">// AGG v2.3</SPAN>
+    <SPAN class="kw1">typedef</SPAN> agg::<A href="../../__code/include/agg_span_allocator.h.html#span_allocator">span_allocator</A><SPAN class="op">&lt;</SPAN>color_type<SPAN class="op">&gt;</SPAN> span_alloc_type<SPAN class="op">;</SPAN>
+    span_alloc_type sa<SPAN class="op">;</SPAN>
+    agg::<A href="../../__code/include/agg_image_filters.h.html#image_filter">image_filter</A><SPAN class="op">&lt;</SPAN>agg::<A href="../../__code/include/agg_image_filters.h.html#image_filter_hanning">image_filter_hanning</A><SPAN class="op">&gt;</SPAN> filter<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">typedef</SPAN> agg::<A href="../../__code/include/agg_image_accessors.h.html#wrap_mode_reflect_auto_pow2">wrap_mode_reflect_auto_pow2</A> remainder_type<SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">typedef</SPAN> agg::<A href="../../__code/include/agg_span_interpolator_linear.h.html#span_interpolator_linear">span_interpolator_linear</A><SPAN class="op">&lt;</SPAN>agg::<A href="../../__code/include/agg_trans_affine.h.html#trans_affine">trans_affine</A><SPAN class="op">&gt;</SPAN> interpolator_type<SPAN class="op">;</SPAN>
+    interpolator_type interpolator<SPAN class="op">(</SPAN>mtx<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">typedef</SPAN> span_pattern_filter_2x2<SPAN class="op">&lt;</SPAN>color_type<SPAN class="op">,</SPAN>
+                                    component_order<SPAN class="op">,</SPAN> 
+                                    interpolator_type<SPAN class="op">,</SPAN>
+                                    remainder_type<SPAN class="op">,</SPAN>
+                                    remainder_type<SPAN class="op">&gt;</SPAN> span_gen_type<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">typedef</SPAN> agg::<A href="../../__code/include/agg_renderer_scanline.h.html#renderer_scanline_aa">renderer_scanline_aa</A><SPAN class="op">&lt;</SPAN>renderer_base_pre<SPAN class="op">,</SPAN> span_gen_type<SPAN class="op">&gt;</SPAN> renderer_type<SPAN class="op">;</SPAN>
+
+    span_gen_type sg<SPAN class="op">(</SPAN>sa<SPAN class="op">,</SPAN> 
+                     rbuf_img<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> 
+                     interpolator<SPAN class="op">,</SPAN>
+                     filter<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    renderer_type ri<SPAN class="op">(</SPAN>rb_pre<SPAN class="op">,</SPAN> sg<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    agg::<A href="../../__code/include/agg_renderer_scanline.h.html#render_scanlines">render_scanlines</A><SPAN class="op">(</SPAN>g_rasterizer<SPAN class="op">,</SPAN> g_scanline<SPAN class="op">,</SPAN> ri<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+    <SPAN class="rem">// AGG v2.4</SPAN>
+    <SPAN class="kw1">typedef</SPAN> agg::<A href="../../__code/include/agg_span_allocator.h.html#span_allocator">span_allocator</A><SPAN class="op">&lt;</SPAN>color_type<SPAN class="op">&gt;</SPAN> span_alloc_type<SPAN class="op">;</SPAN>
+    span_alloc_type sa<SPAN class="op">;</SPAN>
+    agg::<A href="../../__code/include/agg_image_filters.h.html#image_filter">image_filter</A><SPAN class="op">&lt;</SPAN>agg::<A href="../../__code/include/agg_image_filters.h.html#image_filter_hanning">image_filter_hanning</A><SPAN class="op">&gt;</SPAN> filter<SPAN class="op">;</SPAN>
+    
+    <SPAN class="kw1">typedef</SPAN> agg::<A href="../../__code/include/agg_image_accessors.h.html#wrap_mode_reflect_auto_pow2">wrap_mode_reflect_auto_pow2</A> remainder_type<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">typedef</SPAN> agg::<A href="../../__code/include/agg_image_accessors.h.html#image_accessor_wrap">image_accessor_wrap</A><SPAN class="op">&lt;</SPAN><A href="../../doc/basic_renderers/basic_renderers.agdoc.html#pixfmt">pixfmt</A><SPAN class="op">,</SPAN> 
+                                     remainder_type<SPAN class="op">,</SPAN> 
+                                     remainder_type<SPAN class="op">&gt;</SPAN> img_source_type<SPAN class="op">;</SPAN>
+
+    <A href="../../doc/basic_renderers/basic_renderers.agdoc.html#pixfmt">pixfmt</A> img_pixf<SPAN class="op">(</SPAN>rbuf_img<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    img_source_type img_src<SPAN class="op">(</SPAN>img_pixf<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">typedef</SPAN> agg::<A href="../../__code/include/agg_span_interpolator_linear.h.html#span_interpolator_linear">span_interpolator_linear</A><SPAN class="op">&lt;</SPAN>agg::<A href="../../__code/include/agg_trans_affine.h.html#trans_affine">trans_affine</A><SPAN class="op">&gt;</SPAN> interpolator_type<SPAN class="op">;</SPAN>
+    interpolator_type interpolator<SPAN class="op">(</SPAN>mtx<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">typedef</SPAN> span_image_filter_2x2<SPAN class="op">&lt;</SPAN>img_source_type<SPAN class="op">,</SPAN>
+                                  interpolator_type<SPAN class="op">&gt;</SPAN> span_gen_type<SPAN class="op">;</SPAN>
+    span_gen_type sg<SPAN class="op">(</SPAN>img_src<SPAN class="op">,</SPAN> interpolator<SPAN class="op">,</SPAN> filter<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    agg::<A href="../../__code/include/agg_renderer_scanline.h.html#render_scanlines_aa">render_scanlines_aa</A><SPAN class="op">(</SPAN>g_rasterizer<SPAN class="op">,</SPAN> g_scanline<SPAN class="op">,</SPAN> rb_pre<SPAN class="op">,</SPAN> sa<SPAN class="op">,</SPAN> sg<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>For the sake of performance there is <A href="../../__code/include/agg_span_image_filter_rgba.h.html#span_image_filter_rgba_bilinear_clip">span_image_filter_rgba_bilinear_clip</A> 
+is left and it works as former <A href="../../__code/include/agg_span_image_filter_rgba.h.html#span_image_filter_rgba_bilinear">span_image_filter_rgba_bilinear</A>. 
+In all other cases the difference in performance is very little (in some
+cases the performance is even better).</P></TD></TR></TABLE>
+
+
+<BR/><H2>Compound Shape Rasterizer<A name="toc0007"></A></H2>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Added <A href="../../__code/include/agg_rasterizer_compound_aa.h.html#rasterizer_compound_aa">rasterizer_compound_aa</A> and the rasterizers were considerably redesigned.
+Nopw you can render compound shapes such as Flash in one pass. An example 
+is in <A href="../../demo/flash_rasterizer.cpp.html">flash_rasterizer.cpp</A>.
+Below is a very brief explanation of how it works. If you are nor familiar
+with Flash data model you can skip this part.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The <A href="../../__code/include/agg_rasterizer_compound_aa.h.html#rasterizer_compound_aa">rasterizer_compound_aa</A> works similar to the <A href="../../__code/include/agg_rasterizer_scanline_aa.h.html#rasterizer_scanline_aa">rasterizer_scanline_aa</A>,
+but it takes edges with two styles: left and right. Then it poroduces a number
+of scanlines with their own styles and mixes them into a single colored
+scanline. The mixing is done in function <A href="../../__code/include/agg_renderer_scanline.h.html#render_scanlines_compound">render_scanlines_compound</A> mentioned 
+before. 
+</P></TD></TR></TABLE><TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Rasterizer<SPAN class="op">,</SPAN> 
+             <SPAN class="kw1">class</SPAN> ScanlineAA<SPAN class="op">,</SPAN> 
+             <SPAN class="kw1">class</SPAN> ScanlineBin<SPAN class="op">,</SPAN> 
+             <SPAN class="kw1">class</SPAN> BaseRenderer<SPAN class="op">,</SPAN> 
+             <SPAN class="kw1">class</SPAN> SpanAllocator<SPAN class="op">,</SPAN>
+             <SPAN class="kw1">class</SPAN> StyleHandler<SPAN class="op">&gt;</SPAN>
+    <SPAN class="kw1">void</SPAN> <A href="../../__code/include/agg_renderer_scanline.h.html#render_scanlines_compound">render_scanlines_compound</A><SPAN class="op">(</SPAN>Rasterizer<SPAN class="op">&amp;</SPAN> ras<SPAN class="op">,</SPAN> 
+                                   ScanlineAA<SPAN class="op">&amp;</SPAN> sl_aa<SPAN class="op">,</SPAN>
+                                   ScanlineBin<SPAN class="op">&amp;</SPAN> sl_bin<SPAN class="op">,</SPAN>
+                                   BaseRenderer<SPAN class="op">&amp;</SPAN> ren<SPAN class="op">,</SPAN>
+                                   SpanAllocator<SPAN class="op">&amp;</SPAN> alloc<SPAN class="op">,</SPAN>
+                                   StyleHandler<SPAN class="op">&amp;</SPAN> sh<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The main thing here is <CODE>StyleHandler</CODE> that maps styles onto particular 
+colors and/or span generators. It shall have the following interface:
+</P></TD></TR></TABLE><TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+<SPAN class="kw1">bool</SPAN> is_solid<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> style<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN><SPAN class="op">;</SPAN>
+<SPAN class="kw1">const</SPAN> <A href="../../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">&amp;</SPAN> color<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> style<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN><SPAN class="op">;</SPAN>
+<SPAN class="kw1">void</SPAN> generate_span<SPAN class="op">(</SPAN><A href="../../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">*</SPAN> span<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> len<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> style<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>If <CODE>is_solid()</CODE> returns true then function <CODE>color()</CODE> will be called for
+this style, otherwise <CODE>generate_span()</CODE>.</P></TD></TR></TABLE> 
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>A single compound shape can consist of solid areas, images, patterns, 
+and/or gradients (at the same time!). It means that the StyleHandler 
+should contain all possible span generators (such as <A href="../../__code/include/agg_span_gradient.h.html#span_gradient">span_gradient</A>, 
+<A href="../../__code/include/agg_span_image_filter_rgba.h.html#span_image_filter_rgba_bilinear">span_image_filter_rgba_bilinear</A>, etc) and call their <CODE>generate()</CODE> 
+functions accordingly. Before rendering, there can be some
+preparational steps, such as setting the source images, transformation 
+matrices, and so on.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Another example is <A href="../../demo/gouraud_mesh.cpp.html">gouraud_mesh.cpp</A> that handles an array of
+<A href="../../__code/include/agg_span_gouraud_rgba.h.html#span_gouraud_rgba">span_gouraud_rgba</A> objects.</P></TD></TR></TABLE>
+
+
+<BR/><H2>Path Storage<A name="toc0008"></A></H2>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The <A href="../../__code/include/agg_path_storage.h.html#path_storage">path_storage</A> class is now redesigned and its functionality is split
+into the container and path making functions.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Now the declaration of the <A href="../../__code/include/agg_path_storage.h.html#path_storage">path_storage</A> looks like follows:
+</P></TD></TR></TABLE><TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE><SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> VertexContainer<SPAN class="op">&gt;</SPAN> <SPAN class="kw1">class</SPAN> <A href="../../__code/include/agg_path_storage.h.html#path_base">path_base</A> <SPAN class="op">{</SPAN> <SPAN class="op">.</SPAN> <SPAN class="op">.</SPAN> <SPAN class="op">.</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN></PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Where <CODE>VertexContainer</CODE> is one of the following:
+<UL type="disc">
+<LI><A href="../../__code/include/agg_path_storage.h.html#vertex_block_storage">vertex_block_storage</A> - functionality as it was before,</LI>
+<LI><A href="../../__code/include/agg_path_storage.h.html#vertex_stl_storage">vertex_stl_storage</A> - use STL compatible containers, such as 
+   <CODE>std::vector</CODE>, <CODE>std::deque</CODE>, or <B>AGG</B> ones: <A href="../../__code/include/agg_array.h.html#pod_vector">pod_vector</A>, <A href="../../__code/include/agg_array.h.html#pod_bvector">pod_bvector</A>.</LI></UL></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Examples of declarations:
+</P></TD></TR></TABLE><TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+<SPAN class="kw1">typedef</SPAN> <A href="../../__code/include/agg_path_storage.h.html#path_base">path_base</A><SPAN class="op">&lt;</SPAN><A href="../../__code/include/agg_path_storage.h.html#vertex_block_storage">vertex_block_storage</A><SPAN class="op">&lt;</SPAN><SPAN class="kw1">double</SPAN><SPAN class="op">&gt;</SPAN> <SPAN class="op">&gt;</SPAN> <A href="../../__code/include/agg_path_storage.h.html#path_storage">path_storage</A><SPAN class="op">;</SPAN>
+<SPAN class="kw1">typedef</SPAN> <A href="../../__code/include/agg_path_storage.h.html#path_base">path_base</A><SPAN class="op">&lt;</SPAN><A href="../../__code/include/agg_path_storage.h.html#vertex_stl_storage">vertex_stl_storage</A><SPAN class="op">&lt;</SPAN><A href="../../__code/include/agg_array.h.html#pod_bvector">pod_bvector</A><SPAN class="op">&lt;</SPAN><A href="../../__code/include/agg_basics.h.html#vertex_d">vertex_d</A><SPAN class="op">&gt;</SPAN> <SPAN class="op">&gt;</SPAN> <SPAN class="op">&gt;</SPAN> <A href="../../__code/include/agg_path_storage.h.html#path_storage">path_storage</A><SPAN class="op">;</SPAN>
+<SPAN class="kw1">typedef</SPAN> <A href="../../__code/include/agg_path_storage.h.html#path_base">path_base</A><SPAN class="op">&lt;</SPAN><A href="../../__code/include/agg_path_storage.h.html#vertex_stl_storage">vertex_stl_storage</A><SPAN class="op">&lt;</SPAN>std::vector<SPAN class="op">&lt;</SPAN><A href="../../__code/include/agg_basics.h.html#vertex_d">vertex_d</A><SPAN class="op">&gt;</SPAN> <SPAN class="op">&gt;</SPAN> <SPAN class="op">&gt;</SPAN> <A href="../../__code/include/agg_path_storage.h.html#path_storage">path_storage</A><SPAN class="op">;</SPAN> 
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>For compatibility, <A href="../../__code/include/agg_path_storage.h.html#path_storage">path_storage</A> is declared as:
+</P></TD></TR></TABLE><TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE><SPAN class="kw1">typedef</SPAN> <A href="../../__code/include/agg_path_storage.h.html#path_base">path_base</A><SPAN class="op">&lt;</SPAN><A href="../../__code/include/agg_path_storage.h.html#vertex_block_storage">vertex_block_storage</A><SPAN class="op">&lt;</SPAN><SPAN class="kw1">double</SPAN><SPAN class="op">&gt;</SPAN> <SPAN class="op">&gt;</SPAN> <A href="../../__code/include/agg_path_storage.h.html#path_storage">path_storage</A><SPAN class="op">;</SPAN></PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Also, instead of former confusing function <CODE>add_path()</CODE> there are:
+</P></TD></TR></TABLE><TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> VertexSource<SPAN class="op">&gt;</SPAN> 
+    <SPAN class="kw1">void</SPAN> concat_path<SPAN class="op">(</SPAN>VertexSource<SPAN class="op">&amp;</SPAN> vs<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> path_id <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> VertexSource<SPAN class="op">&gt;</SPAN> 
+    <SPAN class="kw1">void</SPAN> join_path<SPAN class="op">(</SPAN>VertexSource<SPAN class="op">&amp;</SPAN> vs<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> path_id <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The first one concatenates a path as is, with all <CODE>move_to</CODE> commands, 
+the second one joins the path, replacing <CODE>move_to</CODE> to <CODE>line_to</CODE> commands,
+that is, as if the pen of a plotter was always down (drawing).</P></TD></TR></TABLE>
+
+
+<BR/><H2>Custom Clippers in the Rasterizers<A name="toc0009"></A></H2>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The rasterizers, <A href="../../__code/include/agg_rasterizer_scanline_aa.h.html#rasterizer_scanline_aa">rasterizer_scanline_aa</A> and <A href="../../__code/include/agg_rasterizer_compound_aa.h.html#rasterizer_compound_aa">rasterizer_compound_aa</A> now 
+have custom clippers that can be:
+<UL type="disc">
+<LI><A href="../../__code/include/agg_rasterizer_sl_clip.h.html#rasterizer_sl_no_clip">rasterizer_sl_no_clip</A></LI>
+<LI><A href="../../__code/include/agg_rasterizer_sl_clip.h.html#rasterizer_sl_clip_int">rasterizer_sl_clip_int</A></LI>
+<LI><A href="../../__code/include/agg_rasterizer_sl_clip.h.html#rasterizer_sl_clip_int_sat">rasterizer_sl_clip_int_sat</A> (clipping with <A href="../../__code/include/agg_basics.h.html#saturation">saturation</A> to avoid overflow)</LI>
+<LI><A href="../../__code/include/agg_rasterizer_sl_clip.h.html#rasterizer_sl_clip_int_3x">rasterizer_sl_clip_int_3x</A> (for future use, LCD optimized rasterization)</LI>
+<LI><A href="../../__code/include/agg_rasterizer_sl_clip.h.html#rasterizer_sl_clip_dbl">rasterizer_sl_clip_dbl</A></LI>
+<LI><A href="../../__code/include/agg_rasterizer_sl_clip.h.html#rasterizer_sl_clip_dbl_3x">rasterizer_sl_clip_dbl_3x</A> (for future use, LCD optimized rasterization)</LI></UL></P></TD></TR></TABLE>
+
+
+
+
+<BR/><TABLE width="640px" bgcolor="#583927" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0">
+<TR><TD><CENTER><SPAN class="authors">
+Copyright <SPAN class="larger">&#169;</SPAN> 2002-2006
+<A href="../../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+<TR><TD><CENTER><SPAN class="authors">
+Web Design and Programming
+<A href="../../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+</TABLE>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+</HTML>

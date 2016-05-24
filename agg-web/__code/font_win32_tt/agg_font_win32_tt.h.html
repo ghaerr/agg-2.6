@@ -1,0 +1,243 @@
+<HTML><HEAD><TITLE>Anti-Grain Geometry - </TITLE>
+<META http-equiv="Content-Type" content="text/html"/>
+<LINK rel="stylesheet" type="text/css" href="../../agg.styles.css"/>
+</HEAD>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE><SPAN class="rem">//----------------------------------------------------------------------------</SPAN>
+<SPAN class="rem">// Anti-Grain Geometry (AGG) - Version 2.5</SPAN>
+<SPAN class="rem">// A high quality rendering engine for C++</SPAN>
+<SPAN class="rem">// Copyright (C) 2002-2006 Maxim Shemanarev</SPAN>
+<SPAN class="rem">// Contact: mcseem@antigrain.com</SPAN>
+<SPAN class="rem">//          mcseemagg@yahoo.com</SPAN>
+<SPAN class="rem">//          http://antigrain.com</SPAN>
+<SPAN class="rem">// </SPAN>
+<SPAN class="rem">// AGG is free software; you can redistribute it and/or</SPAN>
+<SPAN class="rem">// modify it under the terms of the GNU General Public License</SPAN>
+<SPAN class="rem">// as published by the Free Software Foundation; either version 2</SPAN>
+<SPAN class="rem">// of the License, or (at your option) any later version.</SPAN>
+<SPAN class="rem">// </SPAN>
+<SPAN class="rem">// AGG is distributed in the hope that it will be useful,</SPAN>
+<SPAN class="rem">// but WITHOUT ANY WARRANTY; without even the implied warranty of</SPAN>
+<SPAN class="rem">// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</SPAN>
+<SPAN class="rem">// GNU General Public License for more details.</SPAN>
+<SPAN class="rem">// </SPAN>
+<SPAN class="rem">// You should have received a copy of the GNU General Public License</SPAN>
+<SPAN class="rem">// along with AGG; if not, write to the Free Software</SPAN>
+<SPAN class="rem">// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, </SPAN>
+<SPAN class="rem">// MA 02110-1301, USA.</SPAN>
+<SPAN class="rem">//----------------------------------------------------------------------------</SPAN>
+
+<SPAN class="kw2">#ifndef</SPAN> AGG_FONT_WIN32_TT_INCLUDED
+<SPAN class="kw2">#define</SPAN> AGG_FONT_WIN32_TT_INCLUDED
+
+<SPAN class="kw2">#include</SPAN> <SPAN class="op">&lt;</SPAN>windows<SPAN class="op">.</SPAN>h<SPAN class="op">&gt;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../include/agg_scanline_storage_aa.h.html">agg_scanline_storage_aa.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../include/agg_scanline_storage_bin.h.html">agg_scanline_storage_bin.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../include/agg_scanline_u.h.html">agg_scanline_u.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../include/agg_scanline_bin.h.html">agg_scanline_bin.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../include/agg_path_storage_integer.h.html">agg_path_storage_integer.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../include/agg_rasterizer_scanline_aa.h.html">agg_rasterizer_scanline_aa.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../include/agg_conv_curve.h.html">agg_conv_curve.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../include/agg_trans_affine.h.html">agg_trans_affine.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../include/agg_font_cache_manager.h.html">agg_font_cache_manager.h</A>&quot;</SPAN>
+
+<SPAN class="kw1">namespace</SPAN> agg
+<SPAN class="op">{</SPAN>
+
+    <SPAN class="rem">//-----------------------------------------------<A name="font_engine_win32_tt_base"><B></B></A><A href="agg_font_win32_tt.h.html#font_engine_win32_tt_base">font_engine_win32_tt_base</A></SPAN>
+    <SPAN class="kw1">class</SPAN> <A href="agg_font_win32_tt.h.html#font_engine_win32_tt_base">font_engine_win32_tt_base</A>
+    <SPAN class="op">{</SPAN>
+       <SPAN class="kw1">enum</SPAN> <SPAN class="op">{</SPAN> buf_size <SPAN class="op">=</SPAN> <SPAN class="num">32768</SPAN><SPAN class="op">-</SPAN><SPAN class="num">32</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">public</SPAN>:
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">typedef</SPAN> <A href="../include/agg_scanline_storage_aa.h.html#serialized_scanlines_adaptor_aa">serialized_scanlines_adaptor_aa</A><SPAN class="op">&lt;</SPAN><A href="../include/agg_basics.h.html#int8u">int8u</A><SPAN class="op">&gt;</SPAN>    gray8_adaptor_type<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">typedef</SPAN> <A href="../include/agg_scanline_storage_bin.h.html#serialized_scanlines_adaptor_bin">serialized_scanlines_adaptor_bin</A>          mono_adaptor_type<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">typedef</SPAN> <A href="../include/agg_scanline_storage_aa.h.html#scanline_storage_aa8">scanline_storage_aa8</A>                      scanlines_aa_type<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">typedef</SPAN> <A href="../include/agg_scanline_storage_bin.h.html#scanline_storage_bin">scanline_storage_bin</A>                      scanlines_bin_type<SPAN class="op">;</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        ~<A href="agg_font_win32_tt.h.html#font_engine_win32_tt_base">font_engine_win32_tt_base</A><SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <A href="agg_font_win32_tt.h.html#font_engine_win32_tt_base">font_engine_win32_tt_base</A><SPAN class="op">(</SPAN><SPAN class="kw1">bool</SPAN> flag32<SPAN class="op">,</SPAN> HDC dc<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> max_fonts <SPAN class="op">=</SPAN> <SPAN class="num">32</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="rem">// Set font parameters</SPAN>
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">void</SPAN> resolution<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> dpi<SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN> m_resolution <SPAN class="op">=</SPAN> <SPAN class="kw1">unsigned</SPAN><SPAN class="op">(</SPAN>dpi<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">void</SPAN> height<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> h<SPAN class="op">)</SPAN>         <SPAN class="op">{</SPAN> m_height <SPAN class="op">=</SPAN> <SPAN class="kw1">unsigned</SPAN><SPAN class="op">(</SPAN>h<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>  <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">void</SPAN> width<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> w<SPAN class="op">)</SPAN>          <SPAN class="op">{</SPAN> m_width <SPAN class="op">=</SPAN> <SPAN class="kw1">unsigned</SPAN><SPAN class="op">(</SPAN>w<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>   <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">void</SPAN> weight<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> w<SPAN class="op">)</SPAN>            <SPAN class="op">{</SPAN> m_weight <SPAN class="op">=</SPAN> w<SPAN class="op">;</SPAN>            <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">void</SPAN> italic<SPAN class="op">(</SPAN><SPAN class="kw1">bool</SPAN> it<SPAN class="op">)</SPAN>          <SPAN class="op">{</SPAN> m_italic <SPAN class="op">=</SPAN> it<SPAN class="op">;</SPAN>           <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">void</SPAN> char_set<SPAN class="op">(</SPAN>DWORD c<SPAN class="op">)</SPAN>        <SPAN class="op">{</SPAN> m_char_set <SPAN class="op">=</SPAN> c<SPAN class="op">;</SPAN>          <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">void</SPAN> pitch_and_family<SPAN class="op">(</SPAN>DWORD p<SPAN class="op">)</SPAN><SPAN class="op">{</SPAN> m_pitch_and_family <SPAN class="op">=</SPAN> p<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">void</SPAN> flip_y<SPAN class="op">(</SPAN><SPAN class="kw1">bool</SPAN> flip<SPAN class="op">)</SPAN>        <SPAN class="op">{</SPAN> m_flip_y <SPAN class="op">=</SPAN> flip<SPAN class="op">;</SPAN>         <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">void</SPAN> hinting<SPAN class="op">(</SPAN><SPAN class="kw1">bool</SPAN> h<SPAN class="op">)</SPAN>          <SPAN class="op">{</SPAN> m_hinting <SPAN class="op">=</SPAN> h<SPAN class="op">;</SPAN>           <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">bool</SPAN> create_font<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN> typeface_<SPAN class="op">,</SPAN> glyph_rendering ren_type<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">bool</SPAN> create_font<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN> typeface_<SPAN class="op">,</SPAN> 
+                         glyph_rendering ren_type<SPAN class="op">,</SPAN>
+                         <SPAN class="kw1">double</SPAN> height_<SPAN class="op">,</SPAN>
+                         <SPAN class="kw1">double</SPAN> width_<SPAN class="op">=</SPAN><SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN>
+                         <SPAN class="kw1">int</SPAN> weight_<SPAN class="op">=</SPAN>FW_REGULAR<SPAN class="op">,</SPAN>
+                         <SPAN class="kw1">bool</SPAN> italic_<SPAN class="op">=</SPAN><SPAN class="kw1">false</SPAN><SPAN class="op">,</SPAN>
+                         DWORD char_set_<SPAN class="op">=</SPAN>ANSI_CHARSET<SPAN class="op">,</SPAN>
+                         DWORD pitch_and_family_<SPAN class="op">=</SPAN>FF_DONTCARE<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="rem">// Set Gamma</SPAN>
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> GammaF<SPAN class="op">&gt;</SPAN> <SPAN class="kw1">void</SPAN> gamma<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> GammaF<SPAN class="op">&amp;</SPAN> f<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            m_rasterizer<SPAN class="op">.</SPAN>gamma<SPAN class="op">(</SPAN>f<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">void</SPAN> transform<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> agg::<A href="../include/agg_trans_affine.h.html#trans_affine">trans_affine</A><SPAN class="op">&amp;</SPAN> mtx<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            m_affine <SPAN class="op">=</SPAN> mtx<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">// Accessors</SPAN>
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">unsigned</SPAN>    resolution<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>   <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_resolution<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">const</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN> typeface<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>     <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_typeface<SPAN class="op">;</SPAN>   <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">double</SPAN>      height<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>       <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_height<SPAN class="op">;</SPAN>     <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">double</SPAN>      width<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>        <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_width<SPAN class="op">;</SPAN>      <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">int</SPAN>         weight<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>       <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_weight<SPAN class="op">;</SPAN>     <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">bool</SPAN>        italic<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>       <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_italic<SPAN class="op">;</SPAN>     <SPAN class="op">}</SPAN>
+        DWORD       char_set<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>     <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_char_set<SPAN class="op">;</SPAN>   <SPAN class="op">}</SPAN>
+        DWORD       pitch_and_family<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_pitch_and_family<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">bool</SPAN>        hinting<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>      <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_hinting<SPAN class="op">;</SPAN>    <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">bool</SPAN>        flip_y<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>       <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_flip_y<SPAN class="op">;</SPAN>     <SPAN class="op">}</SPAN>
+
+
+        <SPAN class="rem">// Interface mandatory to implement for <A href="../include/agg_font_cache_manager.h.html#font_cache_manager">font_cache_manager</A></SPAN>
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">const</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN>     font_signature<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_signature<SPAN class="op">;</SPAN>    <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">int</SPAN>             change_stamp<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>   <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_change_stamp<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">bool</SPAN>            prepare_glyph<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> glyph_code<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN>        glyph_index<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_glyph_index<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">unsigned</SPAN>        data_size<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>   <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_data_size<SPAN class="op">;</SPAN>   <SPAN class="op">}</SPAN>
+        <A href="../include/agg_font_cache_manager.h.html#glyph_data_type">glyph_data_type</A> data_type<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>   <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_data_type<SPAN class="op">;</SPAN>   <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">const</SPAN> <A href="../include/agg_basics.h.html#rect_i">rect_i</A><SPAN class="op">&amp;</SPAN>   bounds<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>      <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_bounds<SPAN class="op">;</SPAN>      <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">double</SPAN>          advance_x<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>   <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_advance_x<SPAN class="op">;</SPAN>   <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">double</SPAN>          advance_y<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>   <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_advance_y<SPAN class="op">;</SPAN>   <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">void</SPAN>            write_glyph_to<SPAN class="op">(</SPAN><A href="../include/agg_basics.h.html#int8u">int8u</A><SPAN class="op">*</SPAN> data<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">bool</SPAN>            add_kerning<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> first<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> second<SPAN class="op">,</SPAN>
+                                    <SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">private</SPAN>:
+        <A href="agg_font_win32_tt.h.html#font_engine_win32_tt_base">font_engine_win32_tt_base</A><SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <A href="agg_font_win32_tt.h.html#font_engine_win32_tt_base">font_engine_win32_tt_base</A><SPAN class="op">&amp;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">const</SPAN> <A href="agg_font_win32_tt.h.html#font_engine_win32_tt_base">font_engine_win32_tt_base</A><SPAN class="op">&amp;</SPAN> <SPAN class="kw1">operator</SPAN> <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <A href="agg_font_win32_tt.h.html#font_engine_win32_tt_base">font_engine_win32_tt_base</A><SPAN class="op">&amp;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">void</SPAN> update_signature<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">void</SPAN> load_kerning_pairs<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">void</SPAN> sort_kerning_pairs<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN>  find_font<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN> name<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">bool</SPAN>            m_flag32<SPAN class="op">;</SPAN>
+        HDC             m_dc<SPAN class="op">;</SPAN>
+        HFONT           m_old_font<SPAN class="op">;</SPAN>
+        HFONT<SPAN class="op">*</SPAN>          m_fonts<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN>        m_num_fonts<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN>        m_max_fonts<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN><SPAN class="op">*</SPAN>          m_font_names<SPAN class="op">;</SPAN>
+        HFONT           m_cur_font<SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">int</SPAN>             m_change_stamp<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN>           m_typeface<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN>        m_typeface_len<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN>           m_signature<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN>        m_height<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN>        m_width<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN>             m_weight<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">bool</SPAN>            m_italic<SPAN class="op">;</SPAN>
+        DWORD           m_char_set<SPAN class="op">;</SPAN>
+        DWORD           m_pitch_and_family<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">bool</SPAN>            m_hinting<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">bool</SPAN>            m_flip_y<SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">bool</SPAN>            m_font_created<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN>        m_resolution<SPAN class="op">;</SPAN>
+        glyph_rendering m_glyph_rendering<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN>        m_glyph_index<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN>        m_data_size<SPAN class="op">;</SPAN>
+        <A href="../include/agg_font_cache_manager.h.html#glyph_data_type">glyph_data_type</A> m_data_type<SPAN class="op">;</SPAN>
+        <A href="../include/agg_basics.h.html#rect_i">rect_i</A>          m_bounds<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN>          m_advance_x<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN>          m_advance_y<SPAN class="op">;</SPAN>
+        MAT2            m_matrix<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN>           m_gbuf<SPAN class="op">;</SPAN>
+        KERNINGPAIR<SPAN class="op">*</SPAN>    m_kerning_pairs<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN>        m_num_kerning_pairs<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN>        m_max_kerning_pairs<SPAN class="op">;</SPAN>
+        <A href="../include/agg_trans_affine.h.html#trans_affine">trans_affine</A>    m_affine<SPAN class="op">;</SPAN>
+
+        <A href="../include/agg_path_storage_integer.h.html#path_storage_integer">path_storage_integer</A><SPAN class="op">&lt;</SPAN><A href="../include/agg_basics.h.html#int16">int16</A><SPAN class="op">,</SPAN> <SPAN class="num">6</SPAN><SPAN class="op">&gt;</SPAN>              m_path16<SPAN class="op">;</SPAN>
+        <A href="../include/agg_path_storage_integer.h.html#path_storage_integer">path_storage_integer</A><SPAN class="op">&lt;</SPAN><A href="../include/agg_basics.h.html#int32">int32</A><SPAN class="op">,</SPAN> <SPAN class="num">6</SPAN><SPAN class="op">&gt;</SPAN>              m_path32<SPAN class="op">;</SPAN>
+        <A href="../include/agg_conv_curve.h.html#conv_curve">conv_curve</A><SPAN class="op">&lt;</SPAN><A href="../include/agg_path_storage_integer.h.html#path_storage_integer">path_storage_integer</A><SPAN class="op">&lt;</SPAN><A href="../include/agg_basics.h.html#int16">int16</A><SPAN class="op">,</SPAN> <SPAN class="num">6</SPAN><SPAN class="op">&gt;</SPAN> <SPAN class="op">&gt;</SPAN> m_curves16<SPAN class="op">;</SPAN>
+        <A href="../include/agg_conv_curve.h.html#conv_curve">conv_curve</A><SPAN class="op">&lt;</SPAN><A href="../include/agg_path_storage_integer.h.html#path_storage_integer">path_storage_integer</A><SPAN class="op">&lt;</SPAN><A href="../include/agg_basics.h.html#int32">int32</A><SPAN class="op">,</SPAN> <SPAN class="num">6</SPAN><SPAN class="op">&gt;</SPAN> <SPAN class="op">&gt;</SPAN> m_curves32<SPAN class="op">;</SPAN>
+        <A href="../include/agg_scanline_u.h.html#scanline_u8">scanline_u8</A>              m_scanline_aa<SPAN class="op">;</SPAN>
+        <A href="../include/agg_scanline_bin.h.html#scanline_bin">scanline_bin</A>             m_scanline_bin<SPAN class="op">;</SPAN>
+        scanlines_aa_type        m_scanlines_aa<SPAN class="op">;</SPAN>
+        scanlines_bin_type       m_scanlines_bin<SPAN class="op">;</SPAN>
+        <A href="../include/agg_rasterizer_scanline_aa.h.html#rasterizer_scanline_aa">rasterizer_scanline_aa</A><SPAN class="op">&lt;</SPAN><SPAN class="op">&gt;</SPAN> m_rasterizer<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+
+
+    <SPAN class="rem">//------------------------------------------------<A name="font_engine_win32_tt_int16"><B></B></A><A href="agg_font_win32_tt.h.html#font_engine_win32_tt_int16">font_engine_win32_tt_int16</A></SPAN>
+    <SPAN class="rem">// This class uses values of type <A href="../include/agg_basics.h.html#int16">int16</A> (10.6 format) for the vector cache. </SPAN>
+    <SPAN class="rem">// The vector cache is compact, but when rendering glyphs of height</SPAN>
+    <SPAN class="rem">// more that 200 there integer overflow can occur.</SPAN>
+    <SPAN class="rem">//</SPAN>
+    <SPAN class="kw1">class</SPAN> <A href="agg_font_win32_tt.h.html#font_engine_win32_tt_int16">font_engine_win32_tt_int16</A> : <SPAN class="kw1">public</SPAN> <A href="agg_font_win32_tt.h.html#font_engine_win32_tt_base">font_engine_win32_tt_base</A>
+    <SPAN class="op">{</SPAN>
+    <SPAN class="kw1">public</SPAN>:
+        <SPAN class="kw1">typedef</SPAN> <A href="../include/agg_path_storage_integer.h.html#serialized_integer_path_adaptor">serialized_integer_path_adaptor</A><SPAN class="op">&lt;</SPAN><A href="../include/agg_basics.h.html#int16">int16</A><SPAN class="op">,</SPAN> <SPAN class="num">6</SPAN><SPAN class="op">&gt;</SPAN>     path_adaptor_type<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">typedef</SPAN> font_engine_win32_tt_base::gray8_adaptor_type gray8_adaptor_type<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">typedef</SPAN> font_engine_win32_tt_base::mono_adaptor_type  mono_adaptor_type<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">typedef</SPAN> font_engine_win32_tt_base::scanlines_aa_type  scanlines_aa_type<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">typedef</SPAN> font_engine_win32_tt_base::scanlines_bin_type scanlines_bin_type<SPAN class="op">;</SPAN>
+
+        <A href="agg_font_win32_tt.h.html#font_engine_win32_tt_int16">font_engine_win32_tt_int16</A><SPAN class="op">(</SPAN>HDC dc<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> max_fonts <SPAN class="op">=</SPAN> <SPAN class="num">32</SPAN><SPAN class="op">)</SPAN> : 
+            <A href="agg_font_win32_tt.h.html#font_engine_win32_tt_base">font_engine_win32_tt_base</A><SPAN class="op">(</SPAN><SPAN class="kw1">false</SPAN><SPAN class="op">,</SPAN> dc<SPAN class="op">,</SPAN> max_fonts<SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN><SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------<A name="font_engine_win32_tt_int32"><B></B></A><A href="agg_font_win32_tt.h.html#font_engine_win32_tt_int32">font_engine_win32_tt_int32</A></SPAN>
+    <SPAN class="rem">// This class uses values of type <A href="../include/agg_basics.h.html#int32">int32</A> (26.6 format) for the vector cache. </SPAN>
+    <SPAN class="rem">// The vector cache is twice larger than in <A href="agg_font_win32_tt.h.html#font_engine_win32_tt_int16">font_engine_win32_tt_int16</A>, </SPAN>
+    <SPAN class="rem">// but it allows you to render glyphs of very large sizes.</SPAN>
+    <SPAN class="rem">//</SPAN>
+    <SPAN class="kw1">class</SPAN> <A href="agg_font_win32_tt.h.html#font_engine_win32_tt_int32">font_engine_win32_tt_int32</A> : <SPAN class="kw1">public</SPAN> <A href="agg_font_win32_tt.h.html#font_engine_win32_tt_base">font_engine_win32_tt_base</A>
+    <SPAN class="op">{</SPAN>
+    <SPAN class="kw1">public</SPAN>:
+        <SPAN class="kw1">typedef</SPAN> <A href="../include/agg_path_storage_integer.h.html#serialized_integer_path_adaptor">serialized_integer_path_adaptor</A><SPAN class="op">&lt;</SPAN><A href="../include/agg_basics.h.html#int32">int32</A><SPAN class="op">,</SPAN> <SPAN class="num">6</SPAN><SPAN class="op">&gt;</SPAN>     path_adaptor_type<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">typedef</SPAN> font_engine_win32_tt_base::gray8_adaptor_type gray8_adaptor_type<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">typedef</SPAN> font_engine_win32_tt_base::mono_adaptor_type  mono_adaptor_type<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">typedef</SPAN> font_engine_win32_tt_base::scanlines_aa_type  scanlines_aa_type<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">typedef</SPAN> font_engine_win32_tt_base::scanlines_bin_type scanlines_bin_type<SPAN class="op">;</SPAN>
+
+        <A href="agg_font_win32_tt.h.html#font_engine_win32_tt_int32">font_engine_win32_tt_int32</A><SPAN class="op">(</SPAN>HDC dc<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> max_fonts <SPAN class="op">=</SPAN> <SPAN class="num">32</SPAN><SPAN class="op">)</SPAN> : 
+            <A href="agg_font_win32_tt.h.html#font_engine_win32_tt_base">font_engine_win32_tt_base</A><SPAN class="op">(</SPAN><SPAN class="kw1">true</SPAN><SPAN class="op">,</SPAN> dc<SPAN class="op">,</SPAN> max_fonts<SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN><SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+<SPAN class="op">}</SPAN>
+
+<SPAN class="kw2">#endif</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT><TABLE width="640px" bgcolor="#583927" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0">
+<TR><TD><CENTER><SPAN class="authors">
+Copyright <SPAN class="larger">&#169;</SPAN> 2002-2006
+<A href="../../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+<TR><TD><CENTER><SPAN class="authors">
+Web Design and Programming
+<A href="../../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+</TABLE>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+</HTML>

@@ -1,0 +1,76 @@
+<HTML>
+<HEAD>
+<TITLE>Code Listing 19-3</TITLE>
+<SCRIPT LANGUAGE="JavaScript">
+var Xint,Yint,Zint
+
+function SpinItHQ(degX,degY,degZ)
+{ 
+    Idea.HighQuality = 1;
+    Idea.Rotate(degX,degY,degZ) 
+}
+
+function SpinItLQ(degX,degY,degZ)
+{ 
+    Idea.HighQuality = 0;
+    Idea.Rotate(degX,degY,degZ) 
+}
+
+</SCRIPT>
+</HEAD>
+<BODY>
+<INPUT TYPE=button VALUE="Rotate with High Quality"
+  onclick="clearInterval(Zint);Zint=setInterval('SpinItHQ(0,0,0.1)', 1)">
+<INPUT TYPE=button VALUE="Rotate with Low Quality"
+  onclick="clearInterval(Zint);Zint=setInterval('SpinItLQ(0,0,0.1)', 1)">
+<BR>
+<INPUT TYPE=button VALUE=" Stop " onclick="clearInterval(Zint)">
+<INPUT TYPE=button VALUE="Initial Position" onclick="Idea.SetIdentity()">
+<BR>
+<OBJECT ID="Idea" STYLE="width: 250; height: 250"
+  CLASSID="CLSID:369303C2-D7AC-11D0-89D5-00A0C90833E6">
+  <PARAM NAME="Line0001" VALUE="SetLineColor(0,0,0)">
+  <PARAM NAME="Line0002" VALUE="SetFillColor(255,255,0)">
+  <PARAM NAME="Line0003" VALUE="SetLineStyle(1,1,1)">
+
+  <PARAM NAME="Line0004" VALUE="Polygon(20,-6,-67,-6,-71,-7,-74,-8,-76,
+    -10,-79,-10,-82,-9,-84,-6,-86,-4,-87,-2,-86,-1,-86,1,-84,2,-82,2,-79,
+    0,-77,-2,-73,-2,-71,-2,-69,-3,-67,-4,-65)">
+  <PARAM NAME="Line0005" VALUE="SetLineColor(0,0,0)">
+  <PARAM NAME="Line0006" VALUE="SetFillColor(0,0,0)">
+  <PARAM NAME="Line0007" VALUE="SetLineStyle(0,1)">
+  <PARAM NAME="Line0008" VALUE="Polygon(5,-14,-84,-22,-85,-23,-87,-22,
+    -88,-21,-88)">
+  <PARAM NAME="Line0009" VALUE="Polygon(5,-10,-92,-14,-96,-14,-98,-12,
+    -99,-11,-97)">
+  <PARAM NAME="Line0010" VALUE="Polygon(5,-1,-92,-2,-98,0,-100,2,-100,
+    1,-98)">
+  <PARAM NAME="Line0011" VALUE="Polygon(5,5,-89,11,-94,13,-93,13,-92,
+    12,-91)">
+  <PARAM NAME="Line0012" VALUE="Polygon(21,1,-48,-3,-54,-7,-58,-12,-58,
+    -17,-55,-20,-52,-21,-47,-20,-40,-17,-33,-11,-28,-6,-26,-2,-25,2,-26,
+    4,-28,5,-33,5,-39,3,-44,12,-48,12,-50,12,-51,3,-46)">
+  <PARAM NAME="Line0013" VALUE="Polygon(38,11,-27,6,-23,4,-22,3,-19,5,
+    -16,6,-15,11,-17,19,-23,25,-30,32,-38,32,-41,32,-50,30,-64,32,-72,
+    32,-75,31,-77,28,-78,26,-80,28,-87,27,-89,25,-88,24,-79,24,-76,23,
+    -75,20,-76,17,-76,17,-74,19,-73,22,-73,24,-71,26,-69,27,-64,28,-55,
+    28,-47,28,-40,26,-38,20,-33,14,-30)">
+  <PARAM NAME="Line0014" VALUE="Polygon(35,-6,-20,-9,-21,-15,-21,-20,-17,
+    -28,-8,-32,-1,-32,1,-30,6,-26,8,-20,10,-16,12,-14,14,-15,16,-18,20,
+    -22,20,-25,19,-27,20,-26,22,-23,23,-18,23,-14,22,-11,20,-10,17,-9,14,
+    -11,11,-16,9,-22,8,-26,5,-28,2,-27,-2,-23,-8,-19,-11,-12,-14,-6,-15,
+    -6,-18)">
+  <PARAM NAME="Line0015" VALUE="Polygon(20,11,-6,8,-16,5,-21,-1,-23,-7,
+    -22,-10,-17,-9,-10,-8,0,-8,10,-10,18,-11,22,-10,26,-7,28,-3,30,0,31,
+    5,31,10,27,14,18,14,11,11,2)">
+  <PARAM NAME="Line0016" VALUE="Polygon(28,0,22,-5,21,-8,22,-9,26,-8,49,
+    -8,54,-10,64,-10,75,-9,81,-10,84,-16,89,-18,95,-18,97,-13,100,-12,99,
+    -12,95,-10,90,-8,87,-6,86,-4,83,-3,82,-5,80,-6,79,-7,74,-6,63,-3,52,
+    0,42,1,31)">
+  <PARAM NAME="Line0017" VALUE="Polygon(31,12,31,12,24,8,21,3,21,2,24,3,
+    30,5,40,8,47,10,56,11,64,11,71,10,76,8,77,8,79,10,81,13,82,17,82,26,
+    84,28,87,32,86,33,81,32,80,25,79,17,79,14,79,13,76,14,72,14,64,13,55,
+    12,44,12,34)">
+</OBJECT>
+</BODY>
+</HTML>

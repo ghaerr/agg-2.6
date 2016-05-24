@@ -1,0 +1,386 @@
+<HTML><HEAD><TITLE>Anti-Grain Geometry - Image Parallelogram Transformations</TITLE>
+<META http-equiv="Content-Type" content="text/html"/>
+<LINK rel="stylesheet" type="text/css" href="../../agg.styles.css"/>
+</HEAD>
+<A name="PAGE_IMAGE_PLG"><B></B></A>
+
+
+<TABLE width="640px" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR>
+<TD bgcolor="#583927"></TD>
+</TR>
+</TABLE>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR>
+<TD>
+<TABLE width="170px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR><TD><A href="../../index.html" class="mpmenu">Home/</A></TD></TR>
+<TR><TD><A href="../../tips/index.html" class="mpmenu">Tips &amp; Tricks/</A></TD></TR>
+<TR><TD><A href="" class="mpmenu"></A></TD></TR>
+<TR><TD><A href="" class="mpmenu"></A></TD></TR>
+<TR><TD><A href="" class="mpmenu"></A></TD></TR>
+<TR><TD><A href="" class="mpmenu"></A></TD></TR>
+</TABLE>
+</TD>
+<TD width="1px" bgcolor="#583927"></TD>
+<TD width="450px" valign="top" style="text-align:right">
+<TABLE border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR>
+<TD><IMG src="../../agg_logo.gif" border="0"/></TD>
+</TR>
+<TR>
+<TD>
+<TABLE border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR height="15px">
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../../news/index.html">News</A>&nbsp;&nbsp;</TD>
+<TD width="1px" bgcolor="#8e521d"></TD>
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../../doc/index.html">Docs</A>&nbsp;&nbsp;</TD>
+<TD width="1px" bgcolor="#8e521d"></TD>
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../../download/index.html">Download</A>&nbsp;&nbsp;</TD>
+<TD width="1px" bgcolor="#8e521d"></TD>
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../../maillist/index.html">Mailing List</A>&nbsp;&nbsp;</TD>
+<TD width="1px" bgcolor="#8e521d"></TD>
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../../cvs/index.html">CVS</A>&nbsp;&nbsp;</TD>
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+<TABLE width="640px" height="1px" bgcolor="#583927" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>
+</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD><H1>Image Parallelogram Transformations<SPAN class="subtitle"><BR/>Using perspective transformations to simulate the 
+           functionality of WinAPI PlgBlt()</SPAN></H1></TD></TR></TABLE>
+
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The declaration of PlgBlt() is:
+</P></TD></TR></TABLE><TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+BOOL PlgBlt<SPAN class="op">(</SPAN>
+  HDC hdcDest<SPAN class="op">,</SPAN>           <SPAN class="rem">// handle to destination device context</SPAN>
+  CONST POINT <SPAN class="op">*</SPAN>lpPoint<SPAN class="op">,</SPAN>  <SPAN class="rem">// vertices of destination parallelogram</SPAN>
+  HDC hdcSrc<SPAN class="op">,</SPAN>            <SPAN class="rem">// handle to source device context</SPAN>
+  <SPAN class="kw1">int</SPAN> nXSrc<SPAN class="op">,</SPAN>             <SPAN class="rem">// x-coord. of upper-left corner of source rectangle.</SPAN>
+  <SPAN class="kw1">int</SPAN> nYSrc<SPAN class="op">,</SPAN>             <SPAN class="rem">// y-coord. of upper-left corner of source rectangle.</SPAN>
+  <SPAN class="kw1">int</SPAN> nWidth<SPAN class="op">,</SPAN>            <SPAN class="rem">// width of source rectangle</SPAN>
+  <SPAN class="kw1">int</SPAN> nHeight<SPAN class="op">,</SPAN>           <SPAN class="rem">// height of source rectangle</SPAN>
+  HBITMAP hbmMask<SPAN class="op">,</SPAN>       <SPAN class="rem">// handle to bitmask</SPAN>
+  <SPAN class="kw1">int</SPAN> xMask<SPAN class="op">,</SPAN>             <SPAN class="rem">// x-coord. of upper-left corner of bitmask rectangle.</SPAN>
+  <SPAN class="kw1">int</SPAN> yMask              <SPAN class="rem">// y-coord. of upper-left corner of bitmask rectangle.</SPAN>
+<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN></PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Here the most important argument is:</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><B>lpPoint</B>
+<UL type="disc">
+<LI>Pointer to an array of three points in logical space 
+   that identify three corners of the destination parallelogram. 
+   The upper-left corner of the source rectangle is mapped to 
+   the first point in this array, the upper-right corner to the 
+   second point in this array, and the lower-left corner to the 
+   third point. The lower-right corner of the source rectangle is 
+   mapped to the implicit fourth point in the parallelogram. 
+<BR/><BR/></LI></UL></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>It means that this function can apply arbitrary affine transformations
+to the image. <B><NOBR>Anti-Grain</NOBR> Geometry</B> can do that too, but there&#039;s a problem with 
+proper calculating of the affine transformation matrix. It really is 
+tricky.</P></TD></TR></TABLE> 
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>In <B>AGG</B> there are good news, bad news, and then good news again.
+The good news is that you can use the perspective 
+transformations that in general can transform an arbitrary convex
+qudrangle to another convex quadrangle, particularly, a rectangle
+to an arbitrary parallelogram.</P></TD></TR></TABLE> 
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The bad news is that in general case, the perspective 
+transformations work much slower than the affine ones. 
+It&#039;s because the image transformations use the &#147;scanline&#148; 
+approach. You take your destination scanline (a row of pixels 
+in the destination canvas), then apply the <B>reverse</B> 
+transformations to each pixel and pick up the source pixel 
+possibly considering a filter (bilinear, bicubic, etc&#133;). 
+In case of affine transformations we don&#039;t have to calculete
+every point directly. Instead, we can calculate only two points
+for each scanline (begin and end) and use a bresenham-like linear 
+interpolator that works in integer coordinates, thus very fast.
+But the restriction is that the transformations must be linear 
+and parellel. It means that any straight line must remain straight 
+after applying the transformation, and any two parallel lines must 
+remain parallel. In case of perspective transformations it is not so 
+(they are not parallel), and we cannot use linear interpolation.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The good news again is that the parallelogram case of the perspective
+transformations is linear and parallel, so, the the linear 
+interpolation is perfectly applicable and it will work as fast as 
+the image affine transformations.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>To demonstrate it we modify the <B>AGG</B> example <CODE><A href="../../demo/image_perspective.cpp.html">image_perspective.cpp</A></CODE>
+(it can be found in <CODE>agg2/examples/</CODE>). Just replace the code of 
+<CODE><A href="../../demo/image_perspective.cpp.html">image_perspective.cpp</A></CODE> to the following:</P></TD></TR></TABLE>
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+<SPAN class="kw2">#include</SPAN> <SPAN class="op">&lt;</SPAN>stdlib<SPAN class="op">.</SPAN>h<SPAN class="op">&gt;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="op">&lt;</SPAN>ctype<SPAN class="op">.</SPAN>h<SPAN class="op">&gt;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="op">&lt;</SPAN>stdio<SPAN class="op">.</SPAN>h<SPAN class="op">&gt;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../../__code/include/agg_basics.h.html">agg_basics.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../../__code/include/agg_rendering_buffer.h.html">agg_rendering_buffer.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../../__code/include/agg_rasterizer_scanline_aa.h.html">agg_rasterizer_scanline_aa.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../../__code/include/agg_scanline_u.h.html">agg_scanline_u.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../../__code/include/agg_renderer_scanline.h.html">agg_renderer_scanline.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../../__code/include/agg_path_storage.h.html">agg_path_storage.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../../__code/include/agg_conv_transform.h.html">agg_conv_transform.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../../__code/include/agg_trans_bilinear.h.html">agg_trans_bilinear.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../../__code/include/agg_trans_perspective.h.html">agg_trans_perspective.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../../__code/include/agg_span_interpolator_trans.h.html">agg_span_interpolator_trans.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../../__code/include/agg_span_interpolator_linear.h.html">agg_span_interpolator_linear.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;agg_pixfmt_rgb24.h&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;agg_span_image_filter_rgb24.h&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;ctrl/agg_rbox_ctrl.h&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;platform/agg_platform_support.h&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;interactive_polygon.h&quot;</SPAN>
+
+
+<SPAN class="kw1">enum</SPAN> <SPAN class="op">{</SPAN> flip_y <SPAN class="op">=</SPAN> <SPAN class="kw1">true</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+agg::<A href="../../__code/include/agg_rasterizer_scanline_aa.h.html#rasterizer_scanline_aa">rasterizer_scanline_aa</A><SPAN class="op">&lt;</SPAN><SPAN class="op">&gt;</SPAN> g_rasterizer<SPAN class="op">;</SPAN>
+agg::<A href="../../__code/include/agg_scanline_u.h.html#scanline_u8">scanline_u8</A>  g_scanline<SPAN class="op">;</SPAN>
+<SPAN class="kw1">double</SPAN>            g_x1 <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+<SPAN class="kw1">double</SPAN>            g_y1 <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+<SPAN class="kw1">double</SPAN>            g_x2 <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+<SPAN class="kw1">double</SPAN>            g_y2 <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+
+<SPAN class="kw1">class</SPAN> the_application : <SPAN class="kw1">public</SPAN> agg::platform_support
+<SPAN class="op">{</SPAN>
+<SPAN class="kw1">public</SPAN>:
+    <SPAN class="kw1">typedef</SPAN> agg::<A href="../../__code/include/agg_pixfmt_rgb.h.html#pixfmt_bgr24">pixfmt_bgr24</A> <A href="../../doc/basic_renderers/basic_renderers.agdoc.html#pixfmt">pixfmt</A><SPAN class="op">;</SPAN>
+    <SPAN class="kw1">typedef</SPAN> agg::<A href="../../doc/basic_renderers/basic_renderers.agdoc.html#renderer_base">renderer_base</A><SPAN class="op">&lt;</SPAN><A href="../../doc/basic_renderers/basic_renderers.agdoc.html#pixfmt">pixfmt</A><SPAN class="op">&gt;</SPAN> <A href="../../doc/basic_renderers/basic_renderers.agdoc.html#renderer_base">renderer_base</A><SPAN class="op">;</SPAN>
+    <SPAN class="kw1">typedef</SPAN> agg::<A href="../../__code/include/agg_renderer_scanline.h.html#renderer_scanline_aa_solid">renderer_scanline_aa_solid</A><SPAN class="op">&lt;</SPAN><A href="../../doc/basic_renderers/basic_renderers.agdoc.html#renderer_base">renderer_base</A><SPAN class="op">&gt;</SPAN> renderer_solid<SPAN class="op">;</SPAN>
+
+    agg::interactive_polygon   m_triangle<SPAN class="op">;</SPAN>
+
+    the_application<SPAN class="op">(</SPAN>agg::pix_format_e format<SPAN class="op">,</SPAN> <SPAN class="kw1">bool</SPAN> flip_y<SPAN class="op">)</SPAN> :
+        agg::platform_support<SPAN class="op">(</SPAN>format<SPAN class="op">,</SPAN> flip_y<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_triangle<SPAN class="op">(</SPAN><SPAN class="num">4</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">5</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="kw1">virtual</SPAN> <SPAN class="kw1">void</SPAN> on_init<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        g_x1 <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        g_y1 <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        g_x2 <SPAN class="op">=</SPAN> rbuf_img<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">.</SPAN>width<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        g_y2 <SPAN class="op">=</SPAN> rbuf_img<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">.</SPAN>height<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> dx <SPAN class="op">=</SPAN> width<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>  <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">-</SPAN> <SPAN class="op">(</SPAN>g_x2 <SPAN class="op">-</SPAN> g_x1<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> dy <SPAN class="op">=</SPAN> height<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">-</SPAN> <SPAN class="op">(</SPAN>g_y2 <SPAN class="op">-</SPAN> g_y1<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        m_triangle<SPAN class="op">.</SPAN>xn<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">=</SPAN> g_x1 <SPAN class="op">+</SPAN> dx<SPAN class="op">;</SPAN>
+        m_triangle<SPAN class="op">.</SPAN>yn<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">=</SPAN> g_y1 <SPAN class="op">+</SPAN> dy<SPAN class="op">;</SPAN>
+        m_triangle<SPAN class="op">.</SPAN>xn<SPAN class="op">(</SPAN><SPAN class="num">1</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">=</SPAN> g_x2 <SPAN class="op">+</SPAN> dx<SPAN class="op">;</SPAN>
+        m_triangle<SPAN class="op">.</SPAN>yn<SPAN class="op">(</SPAN><SPAN class="num">1</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">=</SPAN> g_y1 <SPAN class="op">+</SPAN> dy<SPAN class="op">;</SPAN>
+        m_triangle<SPAN class="op">.</SPAN>xn<SPAN class="op">(</SPAN><SPAN class="num">2</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">=</SPAN> g_x2 <SPAN class="op">+</SPAN> dx<SPAN class="op">;</SPAN>
+        m_triangle<SPAN class="op">.</SPAN>yn<SPAN class="op">(</SPAN><SPAN class="num">2</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">=</SPAN> g_y2 <SPAN class="op">+</SPAN> dy<SPAN class="op">;</SPAN>
+        m_triangle<SPAN class="op">.</SPAN>xn<SPAN class="op">(</SPAN><SPAN class="num">3</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">=</SPAN> g_x1 <SPAN class="op">+</SPAN> dx<SPAN class="op">;</SPAN>
+        m_triangle<SPAN class="op">.</SPAN>yn<SPAN class="op">(</SPAN><SPAN class="num">3</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">=</SPAN> g_y2 <SPAN class="op">+</SPAN> dy<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="kw1">virtual</SPAN> <SPAN class="kw1">void</SPAN> on_draw<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="rem">// Calculate the 4-th point of the parallelogram</SPAN>
+        m_triangle<SPAN class="op">.</SPAN>xn<SPAN class="op">(</SPAN><SPAN class="num">3</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">=</SPAN> m_triangle<SPAN class="op">.</SPAN>xn<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> 
+                          <SPAN class="op">(</SPAN>m_triangle<SPAN class="op">.</SPAN>xn<SPAN class="op">(</SPAN><SPAN class="num">2</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">-</SPAN> m_triangle<SPAN class="op">.</SPAN>xn<SPAN class="op">(</SPAN><SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        m_triangle<SPAN class="op">.</SPAN>yn<SPAN class="op">(</SPAN><SPAN class="num">3</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">=</SPAN> m_triangle<SPAN class="op">.</SPAN>yn<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> 
+                          <SPAN class="op">(</SPAN>m_triangle<SPAN class="op">.</SPAN>yn<SPAN class="op">(</SPAN><SPAN class="num">2</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">-</SPAN> m_triangle<SPAN class="op">.</SPAN>yn<SPAN class="op">(</SPAN><SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <A href="../../doc/basic_renderers/basic_renderers.agdoc.html#pixfmt">pixfmt</A> pixf<SPAN class="op">(</SPAN>rbuf_window<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <A href="../../doc/basic_renderers/basic_renderers.agdoc.html#renderer_base">renderer_base</A> rb<SPAN class="op">(</SPAN>pixf<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        renderer_solid r<SPAN class="op">(</SPAN>rb<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        rb<SPAN class="op">.</SPAN>clear<SPAN class="op">(</SPAN>agg::<A href="../../__code/include/agg_color_rgba.h.html#rgba">rgba</A><SPAN class="op">(</SPAN><SPAN class="num">1</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        g_rasterizer<SPAN class="op">.</SPAN>clip_box<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> width<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> height<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">typedef</SPAN> agg::<A href="../../__code/include/agg_span_allocator.h.html#span_allocator">span_allocator</A><SPAN class="op">&lt;</SPAN>agg::<A href="../../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">&gt;</SPAN> span_alloc_type<SPAN class="op">;</SPAN>
+        span_alloc_type sa<SPAN class="op">;</SPAN>
+
+        agg::<A href="../../__code/include/agg_trans_perspective.h.html#trans_perspective">trans_perspective</A> tr<SPAN class="op">(</SPAN>m_triangle<SPAN class="op">.</SPAN>polygon<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> 
+                                  g_x1<SPAN class="op">,</SPAN> g_y1<SPAN class="op">,</SPAN> g_x2<SPAN class="op">,</SPAN> g_y2<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>tr<SPAN class="op">.</SPAN>is_valid<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+
+            <SPAN class="rem">//=================== The trick with interpolator.</SPAN>
+            
+            <SPAN class="rem">// ------- Slow variant</SPAN>
+            <SPAN class="rem">// <A href="../../__code/include/agg_span_interpolator_trans.h.html#span_interpolator_trans">span_interpolator_trans</A> is a general purpose interpolator. </SPAN>
+            <SPAN class="rem">// It calls the Transformer::transform() for each point of the </SPAN>
+            <SPAN class="rem">// scanline, thus, it&#039;s slow. But it can be used with any</SPAN>
+            <SPAN class="rem">// kind of transformations, linear or non-linear.</SPAN>
+            <SPAN class="rem">//----------------------------</SPAN>
+            <SPAN class="rem">//typedef agg::<A href="../../__code/include/agg_span_interpolator_trans.h.html#span_interpolator_trans">span_interpolator_trans</A>&lt;agg::<A href="../../__code/include/agg_trans_perspective.h.html#trans_perspective">trans_perspective</A>&gt;</SPAN>
+            <SPAN class="rem">//    interpolator_type;</SPAN>
+
+
+
+            <SPAN class="rem">// ------- Fast variant</SPAN>
+            <SPAN class="rem">// <A href="../../__code/include/agg_span_interpolator_linear.h.html#span_interpolator_linear">span_interpolator_linear</A> is an accelerated version of the general</SPAN>
+            <SPAN class="rem">// purpose one, <A href="../../__code/include/agg_span_interpolator_trans.h.html#span_interpolator_trans">span_interpolator_trans</A>. It calculates</SPAN>
+            <SPAN class="rem">// actual coordinates only for the beginning and the ending points</SPAN>
+            <SPAN class="rem">// of the span. But the transformations must be linear and parallel, </SPAN>
+            <SPAN class="rem">// that is, any straight line must remain straight after applying the </SPAN>
+            <SPAN class="rem">// transformation, and any two parallel lines must remain parallel.</SPAN>
+            <SPAN class="rem">// It&#039;s not sutable for perspective transformations in general </SPAN>
+            <SPAN class="rem">// (they are not parallel), but quite OK for this particular case,</SPAN>
+            <SPAN class="rem">// i.e., parallelogram transformations.</SPAN>
+            <SPAN class="rem">//----------------------------</SPAN>
+            <SPAN class="kw1">typedef</SPAN> agg::<A href="../../__code/include/agg_span_interpolator_linear.h.html#span_interpolator_linear">span_interpolator_linear</A><SPAN class="op">&lt;</SPAN>agg::<A href="../../__code/include/agg_trans_perspective.h.html#trans_perspective">trans_perspective</A><SPAN class="op">&gt;</SPAN>
+                interpolator_type<SPAN class="op">;</SPAN>
+
+            <SPAN class="rem">//===================</SPAN>
+
+
+            interpolator_type interpolator<SPAN class="op">(</SPAN>tr<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+            <SPAN class="rem">// &quot;hardcoded&quot; bilinear filter</SPAN>
+            <SPAN class="rem">//------------------------------------------</SPAN>
+            <SPAN class="kw1">typedef</SPAN> agg::span_image_filter_rgb24_bilinear<SPAN class="op">&lt;</SPAN>agg::order_bgr24<SPAN class="op">,</SPAN> 
+                                                          interpolator_type<SPAN class="op">&gt;</SPAN>
+                span_gen_type<SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">typedef</SPAN> agg::<A href="../../__code/include/agg_renderer_scanline.h.html#renderer_scanline_aa">renderer_scanline_aa</A><SPAN class="op">&lt;</SPAN><A href="../../doc/basic_renderers/basic_renderers.agdoc.html#renderer_base">renderer_base</A><SPAN class="op">,</SPAN> span_gen_type<SPAN class="op">&gt;</SPAN>
+                renderer_type<SPAN class="op">;</SPAN>
+
+            span_gen_type sg<SPAN class="op">(</SPAN>sa<SPAN class="op">,</SPAN> 
+                             rbuf_img<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> 
+                             agg::<A href="../../__code/include/agg_color_rgba.h.html#rgba">rgba</A><SPAN class="op">(</SPAN><SPAN class="num">1</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+                             interpolator<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+            renderer_type ri<SPAN class="op">(</SPAN>rb<SPAN class="op">,</SPAN> sg<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+            g_rasterizer<SPAN class="op">.</SPAN>reset<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            g_rasterizer<SPAN class="op">.</SPAN>move_to_d<SPAN class="op">(</SPAN>m_triangle<SPAN class="op">.</SPAN>xn<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> m_triangle<SPAN class="op">.</SPAN>yn<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            g_rasterizer<SPAN class="op">.</SPAN>line_to_d<SPAN class="op">(</SPAN>m_triangle<SPAN class="op">.</SPAN>xn<SPAN class="op">(</SPAN><SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> m_triangle<SPAN class="op">.</SPAN>yn<SPAN class="op">(</SPAN><SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            g_rasterizer<SPAN class="op">.</SPAN>line_to_d<SPAN class="op">(</SPAN>m_triangle<SPAN class="op">.</SPAN>xn<SPAN class="op">(</SPAN><SPAN class="num">2</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> m_triangle<SPAN class="op">.</SPAN>yn<SPAN class="op">(</SPAN><SPAN class="num">2</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            g_rasterizer<SPAN class="op">.</SPAN>line_to_d<SPAN class="op">(</SPAN>m_triangle<SPAN class="op">.</SPAN>xn<SPAN class="op">(</SPAN><SPAN class="num">3</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> m_triangle<SPAN class="op">.</SPAN>yn<SPAN class="op">(</SPAN><SPAN class="num">3</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+            agg::<A href="../../__code/include/agg_renderer_scanline.h.html#render_scanlines">render_scanlines</A><SPAN class="op">(</SPAN>g_rasterizer<SPAN class="op">,</SPAN> g_scanline<SPAN class="op">,</SPAN> ri<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+
+        <SPAN class="rem">//--------------------------</SPAN>
+        <SPAN class="rem">// Render the &quot;quad&quot; tool and controls</SPAN>
+        g_rasterizer<SPAN class="op">.</SPAN>add_path<SPAN class="op">(</SPAN>m_triangle<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        r<SPAN class="op">.</SPAN>color<SPAN class="op">(</SPAN>agg::<A href="../../__code/include/agg_color_rgba.h.html#rgba">rgba</A><SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">3</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">5</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">6</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        agg::<A href="../../__code/include/agg_renderer_scanline.h.html#render_scanlines">render_scanlines</A><SPAN class="op">(</SPAN>g_rasterizer<SPAN class="op">,</SPAN> g_scanline<SPAN class="op">,</SPAN> r<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="rem">//--------------------------</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+
+    <SPAN class="kw1">virtual</SPAN> <SPAN class="kw1">void</SPAN> on_mouse_button_down<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> flags<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>flags <SPAN class="op">&amp;</SPAN> agg::mouse_left<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_triangle<SPAN class="op">.</SPAN>on_mouse_button_down<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                force_redraw<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="kw1">virtual</SPAN> <SPAN class="kw1">void</SPAN> on_mouse_move<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> flags<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>flags <SPAN class="op">&amp;</SPAN> agg::mouse_left<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_triangle<SPAN class="op">.</SPAN>on_mouse_move<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                force_redraw<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>flags <SPAN class="op">&amp;</SPAN> agg::mouse_left<SPAN class="op">)</SPAN> <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            on_mouse_button_up<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> y<SPAN class="op">,</SPAN> flags<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="kw1">virtual</SPAN> <SPAN class="kw1">void</SPAN> on_mouse_button_up<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> flags<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_triangle<SPAN class="op">.</SPAN>on_mouse_button_up<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            force_redraw<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN>
+
+<SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+<SPAN class="kw1">int</SPAN> agg_main<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> argc<SPAN class="op">,</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN> argv<SPAN class="op">[</SPAN><SPAN class="op">]</SPAN><SPAN class="op">)</SPAN>
+<SPAN class="op">{</SPAN>
+    the_application app<SPAN class="op">(</SPAN>agg::pix_format_bgr24<SPAN class="op">,</SPAN> flip_y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    app<SPAN class="op">.</SPAN>caption<SPAN class="op">(</SPAN><SPAN class="str">&quot;AGG Example. Image Perspective Transformations&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">const</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN> img_name <SPAN class="op">=</SPAN> <SPAN class="str">&quot;spheres&quot;</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>argc <SPAN class="op">&gt;=</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">)</SPAN> img_name <SPAN class="op">=</SPAN> argv<SPAN class="op">[</SPAN><SPAN class="num">1</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN><SPAN class="op">!</SPAN>app<SPAN class="op">.</SPAN>load_img<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> img_name<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> 
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">char</SPAN> buf<SPAN class="op">[</SPAN><SPAN class="num">256</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>strcmp<SPAN class="op">(</SPAN>img_name<SPAN class="op">,</SPAN> <SPAN class="str">&quot;spheres&quot;</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            sprintf<SPAN class="op">(</SPAN>buf<SPAN class="op">,</SPAN> <SPAN class="str">&quot;File not found: %s%s. Download http://www.antigrain.com/%s%s\n&quot;</SPAN>
+                         <SPAN class="str">&quot;or copy it from another directory if available.&quot;</SPAN><SPAN class="op">,</SPAN>
+                    img_name<SPAN class="op">,</SPAN> app<SPAN class="op">.</SPAN>img_ext<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> img_name<SPAN class="op">,</SPAN> app<SPAN class="op">.</SPAN>img_ext<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">else</SPAN>
+        <SPAN class="op">{</SPAN>
+            sprintf<SPAN class="op">(</SPAN>buf<SPAN class="op">,</SPAN> <SPAN class="str">&quot;File not found: %s%s&quot;</SPAN><SPAN class="op">,</SPAN> img_name<SPAN class="op">,</SPAN> app<SPAN class="op">.</SPAN>img_ext<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        app<SPAN class="op">.</SPAN>message<SPAN class="op">(</SPAN>buf<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">return</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+    
+    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>app<SPAN class="op">.</SPAN>init<SPAN class="op">(</SPAN><SPAN class="num">600</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">600</SPAN><SPAN class="op">,</SPAN> agg::window_resize<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">return</SPAN> app<SPAN class="op">.</SPAN>run<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+    <SPAN class="kw1">return</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+<SPAN class="op">}</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><BR/><BR/>
+There is a screenshot:
+</P></TD></TR></TABLE><TABLE width="640px"><TR><TD><CENTER><IMG src="image_plg.png" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+
+<TABLE width="640px" bgcolor="#583927" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+<TABLE class="note" width="640px"><TR><TD><B>NOTE</B><BR/>
+The arcticle is actually outdated. Now class <A href="../../__code/include/agg_trans_affine.h.html#trans_affine">trans_affine</A> has methods to
+calculate an affine matrix that transforms a parellelogram to another one, 
+a rectangle to a parellelogram, and a parellelogram to a rectangle. See 
+<CODE>agg2/examples/<A href="../../demo/image_perspective.cpp.html">image_perspective.cpp</A></CODE>. However, the above material is 
+useful because it helps understand better the <B>AGG</B> concepts.
+</TD></TR></TABLE>
+
+
+
+
+<TABLE width="640px" bgcolor="#583927" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0">
+<TR><TD><CENTER><SPAN class="authors">
+Copyright <SPAN class="larger">&#169;</SPAN> 2002-2006
+<A href="../../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+<TR><TD><CENTER><SPAN class="authors">
+Web Design and Programming
+<A href="../../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+</TABLE>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+</HTML>

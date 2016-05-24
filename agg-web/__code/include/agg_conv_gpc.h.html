@@ -1,0 +1,461 @@
+<HTML><HEAD><TITLE>Anti-Grain Geometry - </TITLE>
+<META http-equiv="Content-Type" content="text/html"/>
+<LINK rel="stylesheet" type="text/css" href="../../agg.styles.css"/>
+</HEAD>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE><SPAN class="rem">//----------------------------------------------------------------------------</SPAN>
+<SPAN class="rem">// Anti-Grain Geometry (AGG) - Version 2.5</SPAN>
+<SPAN class="rem">// A high quality rendering engine for C++</SPAN>
+<SPAN class="rem">// Copyright (C) 2002-2006 Maxim Shemanarev</SPAN>
+<SPAN class="rem">// Contact: mcseem@antigrain.com</SPAN>
+<SPAN class="rem">//          mcseemagg@yahoo.com</SPAN>
+<SPAN class="rem">//          http://antigrain.com</SPAN>
+<SPAN class="rem">// </SPAN>
+<SPAN class="rem">// AGG is free software; you can redistribute it and/or</SPAN>
+<SPAN class="rem">// modify it under the terms of the GNU General Public License</SPAN>
+<SPAN class="rem">// as published by the Free Software Foundation; either version 2</SPAN>
+<SPAN class="rem">// of the License, or (at your option) any later version.</SPAN>
+<SPAN class="rem">// </SPAN>
+<SPAN class="rem">// AGG is distributed in the hope that it will be useful,</SPAN>
+<SPAN class="rem">// but WITHOUT ANY WARRANTY; without even the implied warranty of</SPAN>
+<SPAN class="rem">// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</SPAN>
+<SPAN class="rem">// GNU General Public License for more details.</SPAN>
+<SPAN class="rem">// </SPAN>
+<SPAN class="rem">// You should have received a copy of the GNU General Public License</SPAN>
+<SPAN class="rem">// along with AGG; if not, write to the Free Software</SPAN>
+<SPAN class="rem">// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, </SPAN>
+<SPAN class="rem">// MA 02110-1301, USA.</SPAN>
+<SPAN class="rem">//----------------------------------------------------------------------------</SPAN>
+<SPAN class="rem">//</SPAN>
+<SPAN class="rem">// General Polygon Clipper based on the GPC library by Alan Murta </SPAN>
+<SPAN class="rem">// Union, Intersection, XOR, A-B, B-A</SPAN>
+<SPAN class="rem">// Contact the author if you intend to use it in commercial applications!</SPAN>
+<SPAN class="rem">// http://www.cs.man.ac.uk/aig/staff/alan/software/</SPAN>
+<SPAN class="rem">// Alan Murta (email: gpc@cs.man.ac.uk)</SPAN>
+<SPAN class="rem">//</SPAN>
+<SPAN class="rem">//----------------------------------------------------------------------------</SPAN>
+
+<SPAN class="kw2">#ifndef</SPAN> AGG_CONV_GPC_INCLUDED
+<SPAN class="kw2">#define</SPAN> AGG_CONV_GPC_INCLUDED
+
+<SPAN class="kw2">#include</SPAN> <SPAN class="op">&lt;</SPAN>math<SPAN class="op">.</SPAN>h<SPAN class="op">&gt;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="agg_basics.h.html">agg_basics.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="agg_array.h.html">agg_array.h</A>&quot;</SPAN>
+
+<SPAN class="kw1">extern</SPAN> <SPAN class="str">&quot;C&quot;</SPAN> 
+<SPAN class="op">{</SPAN> 
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;gpc.h&quot;</SPAN> 
+<SPAN class="op">}</SPAN>
+
+<SPAN class="kw1">namespace</SPAN> agg
+<SPAN class="op">{</SPAN>
+    <SPAN class="kw1">enum</SPAN> gpc_op_e
+    <SPAN class="op">{</SPAN>
+        gpc_or<SPAN class="op">,</SPAN>
+        gpc_and<SPAN class="op">,</SPAN>
+        gpc_xor<SPAN class="op">,</SPAN>
+        gpc_a_minus_b<SPAN class="op">,</SPAN>
+        gpc_b_minus_a
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+    <SPAN class="rem">//================================================================<A name="conv_gpc"><B></B></A><A href="agg_conv_gpc.h.html#conv_gpc">conv_gpc</A></SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> VSA<SPAN class="op">,</SPAN> <SPAN class="kw1">class</SPAN> VSB<SPAN class="op">&gt;</SPAN> <SPAN class="kw1">class</SPAN> <A href="agg_conv_gpc.h.html#conv_gpc">conv_gpc</A>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">enum</SPAN> status
+        <SPAN class="op">{</SPAN>
+            status_move_to<SPAN class="op">,</SPAN>
+            status_line_to<SPAN class="op">,</SPAN>
+            status_stop
+        <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">struct</SPAN> contour_header_type
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">int</SPAN> num_vertices<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">int</SPAN> hole_flag<SPAN class="op">;</SPAN>
+            gpc_vertex<SPAN class="op">*</SPAN> vertices<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">typedef</SPAN> <A href="agg_array.h.html#pod_bvector">pod_bvector</A><SPAN class="op">&lt;</SPAN>gpc_vertex<SPAN class="op">,</SPAN> <SPAN class="num">8</SPAN><SPAN class="op">&gt;</SPAN>          vertex_array_type<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">typedef</SPAN> <A href="agg_array.h.html#pod_bvector">pod_bvector</A><SPAN class="op">&lt;</SPAN>contour_header_type<SPAN class="op">,</SPAN> <SPAN class="num">6</SPAN><SPAN class="op">&gt;</SPAN> contour_header_array_type<SPAN class="op">;</SPAN>
+
+
+    <SPAN class="kw1">public</SPAN>:
+        <SPAN class="kw1">typedef</SPAN> VSA source_a_type<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">typedef</SPAN> VSB source_b_type<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">typedef</SPAN> <A href="agg_conv_gpc.h.html#conv_gpc">conv_gpc</A><SPAN class="op">&lt;</SPAN>source_a_type<SPAN class="op">,</SPAN> source_b_type<SPAN class="op">&gt;</SPAN> self_type<SPAN class="op">;</SPAN>
+
+        ~<A href="agg_conv_gpc.h.html#conv_gpc">conv_gpc</A><SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            free_gpc_data<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <A href="agg_conv_gpc.h.html#conv_gpc">conv_gpc</A><SPAN class="op">(</SPAN>source_a_type<SPAN class="op">&amp;</SPAN> a<SPAN class="op">,</SPAN> source_b_type<SPAN class="op">&amp;</SPAN> b<SPAN class="op">,</SPAN> gpc_op_e op <SPAN class="op">=</SPAN> gpc_or<SPAN class="op">)</SPAN> :
+            m_src_a<SPAN class="op">(</SPAN><SPAN class="op">&amp;</SPAN>a<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_src_b<SPAN class="op">(</SPAN><SPAN class="op">&amp;</SPAN>b<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_status<SPAN class="op">(</SPAN>status_move_to<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_vertex<SPAN class="op">(</SPAN><SPAN class="op">-</SPAN><SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_contour<SPAN class="op">(</SPAN><SPAN class="op">-</SPAN><SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_operation<SPAN class="op">(</SPAN>op<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            memset<SPAN class="op">(</SPAN><SPAN class="op">&amp;</SPAN>m_poly_a<SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="kw1">sizeof</SPAN><SPAN class="op">(</SPAN>m_poly_a<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            memset<SPAN class="op">(</SPAN><SPAN class="op">&amp;</SPAN>m_poly_b<SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="kw1">sizeof</SPAN><SPAN class="op">(</SPAN>m_poly_b<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            memset<SPAN class="op">(</SPAN><SPAN class="op">&amp;</SPAN>m_result<SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="kw1">sizeof</SPAN><SPAN class="op">(</SPAN>m_result<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">void</SPAN> attach1<SPAN class="op">(</SPAN>VSA<SPAN class="op">&amp;</SPAN> source<SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN> m_src_a <SPAN class="op">=</SPAN> <SPAN class="op">&amp;</SPAN>source<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">void</SPAN> attach2<SPAN class="op">(</SPAN>VSB<SPAN class="op">&amp;</SPAN> source<SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN> m_src_b <SPAN class="op">=</SPAN> <SPAN class="op">&amp;</SPAN>source<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">void</SPAN> operation<SPAN class="op">(</SPAN>gpc_op_e v<SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN> m_operation <SPAN class="op">=</SPAN> v<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">// Vertex Source Interface</SPAN>
+        <SPAN class="kw1">void</SPAN>     rewind<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> path_id<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> vertex<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">private</SPAN>:
+        <A href="agg_conv_gpc.h.html#conv_gpc">conv_gpc</A><SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <A href="agg_conv_gpc.h.html#conv_gpc">conv_gpc</A><SPAN class="op">&lt;</SPAN>VSA<SPAN class="op">,</SPAN> VSB<SPAN class="op">&gt;</SPAN><SPAN class="op">&amp;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">const</SPAN> <A href="agg_conv_gpc.h.html#conv_gpc">conv_gpc</A><SPAN class="op">&lt;</SPAN>VSA<SPAN class="op">,</SPAN> VSB<SPAN class="op">&gt;</SPAN><SPAN class="op">&amp;</SPAN> <SPAN class="kw1">operator</SPAN> <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <A href="agg_conv_gpc.h.html#conv_gpc">conv_gpc</A><SPAN class="op">&lt;</SPAN>VSA<SPAN class="op">,</SPAN> VSB<SPAN class="op">&gt;</SPAN><SPAN class="op">&amp;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">void</SPAN> free_polygon<SPAN class="op">(</SPAN>gpc_polygon<SPAN class="op">&amp;</SPAN> p<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">void</SPAN> free_result<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">void</SPAN> free_gpc_data<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">void</SPAN> start_contour<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">void</SPAN> add_vertex<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">void</SPAN> end_contour<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> orientation<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">void</SPAN> make_polygon<SPAN class="op">(</SPAN>gpc_polygon<SPAN class="op">&amp;</SPAN> p<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">void</SPAN> start_extracting<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">bool</SPAN> next_contour<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">bool</SPAN> next_vertex<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> VS<SPAN class="op">&gt;</SPAN> <SPAN class="kw1">void</SPAN> add<SPAN class="op">(</SPAN>VS<SPAN class="op">&amp;</SPAN> src<SPAN class="op">,</SPAN> gpc_polygon<SPAN class="op">&amp;</SPAN> p<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">unsigned</SPAN> cmd<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">double</SPAN> x<SPAN class="op">,</SPAN> y<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">double</SPAN> start_x <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">double</SPAN> start_y <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">bool</SPAN> line_to <SPAN class="op">=</SPAN> <SPAN class="kw1">false</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">unsigned</SPAN> orientation <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+
+            m_contour_accumulator<SPAN class="op">.</SPAN>remove_all<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN><SPAN class="op">!</SPAN><A href="agg_basics.h.html#is_stop">is_stop</A><SPAN class="op">(</SPAN>cmd <SPAN class="op">=</SPAN> src<SPAN class="op">.</SPAN>vertex<SPAN class="op">(</SPAN><SPAN class="op">&amp;</SPAN>x<SPAN class="op">,</SPAN> <SPAN class="op">&amp;</SPAN>y<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN><A href="agg_basics.h.html#is_vertex">is_vertex</A><SPAN class="op">(</SPAN>cmd<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN><A href="agg_basics.h.html#is_move_to">is_move_to</A><SPAN class="op">(</SPAN>cmd<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+                    <SPAN class="op">{</SPAN>
+                        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>line_to<SPAN class="op">)</SPAN>
+                        <SPAN class="op">{</SPAN>
+                            end_contour<SPAN class="op">(</SPAN>orientation<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                            orientation <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+                        <SPAN class="op">}</SPAN>
+                        start_contour<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                        start_x <SPAN class="op">=</SPAN> x<SPAN class="op">;</SPAN>
+                        start_y <SPAN class="op">=</SPAN> y<SPAN class="op">;</SPAN>
+                    <SPAN class="op">}</SPAN>
+                    add_vertex<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    line_to <SPAN class="op">=</SPAN> <SPAN class="kw1">true</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+                <SPAN class="kw1">else</SPAN>
+                <SPAN class="op">{</SPAN>
+                    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN><A href="agg_basics.h.html#is_end_poly">is_end_poly</A><SPAN class="op">(</SPAN>cmd<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+                    <SPAN class="op">{</SPAN>
+                        orientation <SPAN class="op">=</SPAN> <A href="agg_basics.h.html#get_orientation">get_orientation</A><SPAN class="op">(</SPAN>cmd<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>line_to <SPAN class="op">&amp;&amp;</SPAN> <A href="agg_basics.h.html#is_closed">is_closed</A><SPAN class="op">(</SPAN>cmd<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+                        <SPAN class="op">{</SPAN>
+                            add_vertex<SPAN class="op">(</SPAN>start_x<SPAN class="op">,</SPAN> start_y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                        <SPAN class="op">}</SPAN>
+                    <SPAN class="op">}</SPAN>
+                <SPAN class="op">}</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>line_to<SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                end_contour<SPAN class="op">(</SPAN>orientation<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            make_polygon<SPAN class="op">(</SPAN>p<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="kw1">private</SPAN>:
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        source_a_type<SPAN class="op">*</SPAN>             m_src_a<SPAN class="op">;</SPAN>
+        source_b_type<SPAN class="op">*</SPAN>             m_src_b<SPAN class="op">;</SPAN>
+        status                     m_status<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN>                        m_vertex<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN>                        m_contour<SPAN class="op">;</SPAN>
+        gpc_op_e                   m_operation<SPAN class="op">;</SPAN>
+        vertex_array_type          m_vertex_accumulator<SPAN class="op">;</SPAN>
+        contour_header_array_type  m_contour_accumulator<SPAN class="op">;</SPAN>
+        gpc_polygon                m_poly_a<SPAN class="op">;</SPAN>
+        gpc_polygon                m_poly_b<SPAN class="op">;</SPAN>
+        gpc_polygon                m_result<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+
+
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> VSA<SPAN class="op">,</SPAN> <SPAN class="kw1">class</SPAN> VSB<SPAN class="op">&gt;</SPAN> 
+    <SPAN class="kw1">void</SPAN> <A href="agg_conv_gpc.h.html#conv_gpc">conv_gpc</A><SPAN class="op">&lt;</SPAN>VSA<SPAN class="op">,</SPAN> VSB<SPAN class="op">&gt;</SPAN>::free_polygon<SPAN class="op">(</SPAN>gpc_polygon<SPAN class="op">&amp;</SPAN> p<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">int</SPAN> i<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;</SPAN> p<SPAN class="op">.</SPAN>num_contours<SPAN class="op">;</SPAN> i<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <A href="agg_basics.h.html#pod_allocator">pod_allocator</A><SPAN class="op">&lt;</SPAN>gpc_vertex<SPAN class="op">&gt;</SPAN>::deallocate<SPAN class="op">(</SPAN>p<SPAN class="op">.</SPAN>contour<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">.</SPAN>vertex<SPAN class="op">,</SPAN> 
+                                                  p<SPAN class="op">.</SPAN>contour<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">.</SPAN>num_vertices<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        <A href="agg_basics.h.html#pod_allocator">pod_allocator</A><SPAN class="op">&lt;</SPAN>gpc_vertex_list<SPAN class="op">&gt;</SPAN>::deallocate<SPAN class="op">(</SPAN>p<SPAN class="op">.</SPAN>contour<SPAN class="op">,</SPAN> p<SPAN class="op">.</SPAN>num_contours<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        memset<SPAN class="op">(</SPAN><SPAN class="op">&amp;</SPAN>p<SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="kw1">sizeof</SPAN><SPAN class="op">(</SPAN>gpc_polygon<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> VSA<SPAN class="op">,</SPAN> <SPAN class="kw1">class</SPAN> VSB<SPAN class="op">&gt;</SPAN> 
+    <SPAN class="kw1">void</SPAN> <A href="agg_conv_gpc.h.html#conv_gpc">conv_gpc</A><SPAN class="op">&lt;</SPAN>VSA<SPAN class="op">,</SPAN> VSB<SPAN class="op">&gt;</SPAN>::free_result<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_result<SPAN class="op">.</SPAN>contour<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            gpc_free_polygon<SPAN class="op">(</SPAN><SPAN class="op">&amp;</SPAN>m_result<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        memset<SPAN class="op">(</SPAN><SPAN class="op">&amp;</SPAN>m_result<SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="kw1">sizeof</SPAN><SPAN class="op">(</SPAN>m_result<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> VSA<SPAN class="op">,</SPAN> <SPAN class="kw1">class</SPAN> VSB<SPAN class="op">&gt;</SPAN> 
+    <SPAN class="kw1">void</SPAN> <A href="agg_conv_gpc.h.html#conv_gpc">conv_gpc</A><SPAN class="op">&lt;</SPAN>VSA<SPAN class="op">,</SPAN> VSB<SPAN class="op">&gt;</SPAN>::free_gpc_data<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        free_polygon<SPAN class="op">(</SPAN>m_poly_a<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        free_polygon<SPAN class="op">(</SPAN>m_poly_b<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        free_result<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> VSA<SPAN class="op">,</SPAN> <SPAN class="kw1">class</SPAN> VSB<SPAN class="op">&gt;</SPAN> 
+    <SPAN class="kw1">void</SPAN> <A href="agg_conv_gpc.h.html#conv_gpc">conv_gpc</A><SPAN class="op">&lt;</SPAN>VSA<SPAN class="op">,</SPAN> VSB<SPAN class="op">&gt;</SPAN>::start_contour<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        contour_header_type h<SPAN class="op">;</SPAN>
+        memset<SPAN class="op">(</SPAN><SPAN class="op">&amp;</SPAN>h<SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="kw1">sizeof</SPAN><SPAN class="op">(</SPAN>h<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_contour_accumulator<SPAN class="op">.</SPAN>add<SPAN class="op">(</SPAN>h<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_vertex_accumulator<SPAN class="op">.</SPAN>remove_all<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> VSA<SPAN class="op">,</SPAN> <SPAN class="kw1">class</SPAN> VSB<SPAN class="op">&gt;</SPAN> 
+    <SPAN class="kw1">inline</SPAN> <SPAN class="kw1">void</SPAN> <A href="agg_conv_gpc.h.html#conv_gpc">conv_gpc</A><SPAN class="op">&lt;</SPAN>VSA<SPAN class="op">,</SPAN> VSB<SPAN class="op">&gt;</SPAN>::add_vertex<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        gpc_vertex v<SPAN class="op">;</SPAN>
+        v<SPAN class="op">.</SPAN>x <SPAN class="op">=</SPAN> x<SPAN class="op">;</SPAN>
+        v<SPAN class="op">.</SPAN>y <SPAN class="op">=</SPAN> y<SPAN class="op">;</SPAN>
+        m_vertex_accumulator<SPAN class="op">.</SPAN>add<SPAN class="op">(</SPAN>v<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> VSA<SPAN class="op">,</SPAN> <SPAN class="kw1">class</SPAN> VSB<SPAN class="op">&gt;</SPAN> 
+    <SPAN class="kw1">void</SPAN> <A href="agg_conv_gpc.h.html#conv_gpc">conv_gpc</A><SPAN class="op">&lt;</SPAN>VSA<SPAN class="op">,</SPAN> VSB<SPAN class="op">&gt;</SPAN>::end_contour<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> orientation<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_contour_accumulator<SPAN class="op">.</SPAN>size<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_vertex_accumulator<SPAN class="op">.</SPAN>size<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">&gt;</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                contour_header_type<SPAN class="op">&amp;</SPAN> h <SPAN class="op">=</SPAN> 
+                    m_contour_accumulator<SPAN class="op">[</SPAN>m_contour_accumulator<SPAN class="op">.</SPAN>size<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">-</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+
+                h<SPAN class="op">.</SPAN>num_vertices <SPAN class="op">=</SPAN> m_vertex_accumulator<SPAN class="op">.</SPAN>size<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                h<SPAN class="op">.</SPAN>hole_flag <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+
+                <SPAN class="rem">// TO DO: Clarify the &quot;holes&quot;</SPAN>
+                <SPAN class="rem">//if(<A href="agg_basics.h.html#is_cw">is_cw</A>(orientation)) h.hole_flag = 1;</SPAN>
+
+                h<SPAN class="op">.</SPAN>vertices <SPAN class="op">=</SPAN> <A href="agg_basics.h.html#pod_allocator">pod_allocator</A><SPAN class="op">&lt;</SPAN>gpc_vertex<SPAN class="op">&gt;</SPAN>::<SPAN class="kw1">allocate</SPAN><SPAN class="op">(</SPAN>h<SPAN class="op">.</SPAN>num_vertices<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                gpc_vertex<SPAN class="op">*</SPAN> d <SPAN class="op">=</SPAN> h<SPAN class="op">.</SPAN>vertices<SPAN class="op">;</SPAN>
+                <SPAN class="kw1">int</SPAN> i<SPAN class="op">;</SPAN>
+                <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;</SPAN> h<SPAN class="op">.</SPAN>num_vertices<SPAN class="op">;</SPAN> i<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    <SPAN class="kw1">const</SPAN> gpc_vertex<SPAN class="op">&amp;</SPAN> s <SPAN class="op">=</SPAN> m_vertex_accumulator<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    d<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>x <SPAN class="op">=</SPAN> s<SPAN class="op">.</SPAN>x<SPAN class="op">;</SPAN>
+                    d<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>y <SPAN class="op">=</SPAN> s<SPAN class="op">.</SPAN>y<SPAN class="op">;</SPAN>
+                    <SPAN class="op">++</SPAN>d<SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="kw1">else</SPAN>
+            <SPAN class="op">{</SPAN>
+                m_vertex_accumulator<SPAN class="op">.</SPAN>remove_last<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> VSA<SPAN class="op">,</SPAN> <SPAN class="kw1">class</SPAN> VSB<SPAN class="op">&gt;</SPAN> 
+    <SPAN class="kw1">void</SPAN> <A href="agg_conv_gpc.h.html#conv_gpc">conv_gpc</A><SPAN class="op">&lt;</SPAN>VSA<SPAN class="op">,</SPAN> VSB<SPAN class="op">&gt;</SPAN>::make_polygon<SPAN class="op">(</SPAN>gpc_polygon<SPAN class="op">&amp;</SPAN> p<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        free_polygon<SPAN class="op">(</SPAN>p<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_contour_accumulator<SPAN class="op">.</SPAN>size<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            p<SPAN class="op">.</SPAN>num_contours <SPAN class="op">=</SPAN> m_contour_accumulator<SPAN class="op">.</SPAN>size<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+            p<SPAN class="op">.</SPAN>hole <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+            p<SPAN class="op">.</SPAN>contour <SPAN class="op">=</SPAN> <A href="agg_basics.h.html#pod_allocator">pod_allocator</A><SPAN class="op">&lt;</SPAN>gpc_vertex_list<SPAN class="op">&gt;</SPAN>::<SPAN class="kw1">allocate</SPAN><SPAN class="op">(</SPAN>p<SPAN class="op">.</SPAN>num_contours<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">int</SPAN> i<SPAN class="op">;</SPAN>
+            gpc_vertex_list<SPAN class="op">*</SPAN> pv <SPAN class="op">=</SPAN> p<SPAN class="op">.</SPAN>contour<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;</SPAN> p<SPAN class="op">.</SPAN>num_contours<SPAN class="op">;</SPAN> i<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                <SPAN class="kw1">const</SPAN> contour_header_type<SPAN class="op">&amp;</SPAN> h <SPAN class="op">=</SPAN> m_contour_accumulator<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                pv<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>num_vertices <SPAN class="op">=</SPAN> h<SPAN class="op">.</SPAN>num_vertices<SPAN class="op">;</SPAN>
+                pv<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>vertex <SPAN class="op">=</SPAN> h<SPAN class="op">.</SPAN>vertices<SPAN class="op">;</SPAN>
+                <SPAN class="op">++</SPAN>pv<SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> VSA<SPAN class="op">,</SPAN> <SPAN class="kw1">class</SPAN> VSB<SPAN class="op">&gt;</SPAN> 
+    <SPAN class="kw1">void</SPAN> <A href="agg_conv_gpc.h.html#conv_gpc">conv_gpc</A><SPAN class="op">&lt;</SPAN>VSA<SPAN class="op">,</SPAN> VSB<SPAN class="op">&gt;</SPAN>::start_extracting<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        m_status <SPAN class="op">=</SPAN> status_move_to<SPAN class="op">;</SPAN>
+        m_contour <SPAN class="op">=</SPAN> <SPAN class="op">-</SPAN><SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+        m_vertex <SPAN class="op">=</SPAN> <SPAN class="op">-</SPAN><SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> VSA<SPAN class="op">,</SPAN> <SPAN class="kw1">class</SPAN> VSB<SPAN class="op">&gt;</SPAN> 
+    <SPAN class="kw1">bool</SPAN> <A href="agg_conv_gpc.h.html#conv_gpc">conv_gpc</A><SPAN class="op">&lt;</SPAN>VSA<SPAN class="op">,</SPAN> VSB<SPAN class="op">&gt;</SPAN>::next_contour<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN><SPAN class="op">++</SPAN>m_contour <SPAN class="op">&lt;</SPAN> m_result<SPAN class="op">.</SPAN>num_contours<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            m_vertex <SPAN class="op">=</SPAN> <SPAN class="op">-</SPAN><SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">return</SPAN> <SPAN class="kw1">true</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">return</SPAN> <SPAN class="kw1">false</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> VSA<SPAN class="op">,</SPAN> <SPAN class="kw1">class</SPAN> VSB<SPAN class="op">&gt;</SPAN> 
+    <SPAN class="kw1">inline</SPAN> <SPAN class="kw1">bool</SPAN> <A href="agg_conv_gpc.h.html#conv_gpc">conv_gpc</A><SPAN class="op">&lt;</SPAN>VSA<SPAN class="op">,</SPAN> VSB<SPAN class="op">&gt;</SPAN>::next_vertex<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> y<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">const</SPAN> gpc_vertex_list<SPAN class="op">&amp;</SPAN> vlist <SPAN class="op">=</SPAN> m_result<SPAN class="op">.</SPAN>contour<SPAN class="op">[</SPAN>m_contour<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN><SPAN class="op">++</SPAN>m_vertex <SPAN class="op">&lt;</SPAN> vlist<SPAN class="op">.</SPAN>num_vertices<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">const</SPAN> gpc_vertex<SPAN class="op">&amp;</SPAN> v <SPAN class="op">=</SPAN> vlist<SPAN class="op">.</SPAN>vertex<SPAN class="op">[</SPAN>m_vertex<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">*</SPAN>x <SPAN class="op">=</SPAN> v<SPAN class="op">.</SPAN>x<SPAN class="op">;</SPAN>
+            <SPAN class="op">*</SPAN>y <SPAN class="op">=</SPAN> v<SPAN class="op">.</SPAN>y<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">return</SPAN> <SPAN class="kw1">true</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">return</SPAN> <SPAN class="kw1">false</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> VSA<SPAN class="op">,</SPAN> <SPAN class="kw1">class</SPAN> VSB<SPAN class="op">&gt;</SPAN> 
+    <SPAN class="kw1">void</SPAN> <A href="agg_conv_gpc.h.html#conv_gpc">conv_gpc</A><SPAN class="op">&lt;</SPAN>VSA<SPAN class="op">,</SPAN> VSB<SPAN class="op">&gt;</SPAN>::rewind<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> path_id<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        free_result<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_src_a<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>rewind<SPAN class="op">(</SPAN>path_id<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_src_b<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>rewind<SPAN class="op">(</SPAN>path_id<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        add<SPAN class="op">(</SPAN><SPAN class="op">*</SPAN>m_src_a<SPAN class="op">,</SPAN> m_poly_a<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        add<SPAN class="op">(</SPAN><SPAN class="op">*</SPAN>m_src_b<SPAN class="op">,</SPAN> m_poly_b<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">switch</SPAN><SPAN class="op">(</SPAN>m_operation<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+           <SPAN class="kw1">case</SPAN> gpc_or:
+                gpc_polygon_clip<SPAN class="op">(</SPAN>GPC_UNION<SPAN class="op">,</SPAN>
+                                 <SPAN class="op">&amp;</SPAN>m_poly_a<SPAN class="op">,</SPAN>
+                                 <SPAN class="op">&amp;</SPAN>m_poly_b<SPAN class="op">,</SPAN>
+                                 <SPAN class="op">&amp;</SPAN>m_result<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+               <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+
+           <SPAN class="kw1">case</SPAN> gpc_and:
+                gpc_polygon_clip<SPAN class="op">(</SPAN>GPC_INT<SPAN class="op">,</SPAN>
+                                 <SPAN class="op">&amp;</SPAN>m_poly_a<SPAN class="op">,</SPAN>
+                                 <SPAN class="op">&amp;</SPAN>m_poly_b<SPAN class="op">,</SPAN>
+                                 <SPAN class="op">&amp;</SPAN>m_result<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+               <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+
+           <SPAN class="kw1">case</SPAN> gpc_xor:
+                gpc_polygon_clip<SPAN class="op">(</SPAN>GPC_XOR<SPAN class="op">,</SPAN>
+                                 <SPAN class="op">&amp;</SPAN>m_poly_a<SPAN class="op">,</SPAN>
+                                 <SPAN class="op">&amp;</SPAN>m_poly_b<SPAN class="op">,</SPAN>
+                                 <SPAN class="op">&amp;</SPAN>m_result<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+               <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+
+           <SPAN class="kw1">case</SPAN> gpc_a_minus_b:
+                gpc_polygon_clip<SPAN class="op">(</SPAN>GPC_DIFF<SPAN class="op">,</SPAN>
+                                 <SPAN class="op">&amp;</SPAN>m_poly_a<SPAN class="op">,</SPAN>
+                                 <SPAN class="op">&amp;</SPAN>m_poly_b<SPAN class="op">,</SPAN>
+                                 <SPAN class="op">&amp;</SPAN>m_result<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+               <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+
+           <SPAN class="kw1">case</SPAN> gpc_b_minus_a:
+                gpc_polygon_clip<SPAN class="op">(</SPAN>GPC_DIFF<SPAN class="op">,</SPAN>
+                                 <SPAN class="op">&amp;</SPAN>m_poly_b<SPAN class="op">,</SPAN>
+                                 <SPAN class="op">&amp;</SPAN>m_poly_a<SPAN class="op">,</SPAN>
+                                 <SPAN class="op">&amp;</SPAN>m_result<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+               <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        start_extracting<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> VSA<SPAN class="op">,</SPAN> <SPAN class="kw1">class</SPAN> VSB<SPAN class="op">&gt;</SPAN> 
+    <SPAN class="kw1">unsigned</SPAN> <A href="agg_conv_gpc.h.html#conv_gpc">conv_gpc</A><SPAN class="op">&lt;</SPAN>VSA<SPAN class="op">,</SPAN> VSB<SPAN class="op">&gt;</SPAN>::vertex<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> y<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_status <SPAN class="op">==</SPAN> status_move_to<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>next_contour<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> 
+            <SPAN class="op">{</SPAN>
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>next_vertex<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    m_status <SPAN class="op">=</SPAN> status_line_to<SPAN class="op">;</SPAN>
+                    <SPAN class="kw1">return</SPAN> <A href="agg_basics.h.html#path_cmd_move_to">path_cmd_move_to</A><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+                m_status <SPAN class="op">=</SPAN> status_stop<SPAN class="op">;</SPAN>
+                <SPAN class="kw1">return</SPAN> <A href="agg_basics.h.html#path_cmd_end_poly">path_cmd_end_poly</A> <SPAN class="op">|</SPAN> <A href="agg_basics.h.html#path_flags_close">path_flags_close</A><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">else</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>next_vertex<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                <SPAN class="kw1">return</SPAN> <A href="agg_basics.h.html#path_cmd_line_to">path_cmd_line_to</A><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="kw1">else</SPAN>
+            <SPAN class="op">{</SPAN>
+                m_status <SPAN class="op">=</SPAN> status_move_to<SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="kw1">return</SPAN> <A href="agg_basics.h.html#path_cmd_end_poly">path_cmd_end_poly</A> <SPAN class="op">|</SPAN> <A href="agg_basics.h.html#path_flags_close">path_flags_close</A><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">return</SPAN> <A href="agg_basics.h.html#path_cmd_stop">path_cmd_stop</A><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+   
+<SPAN class="op">}</SPAN>
+
+
+<SPAN class="kw2">#endif</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT><TABLE width="640px" bgcolor="#583927" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0">
+<TR><TD><CENTER><SPAN class="authors">
+Copyright <SPAN class="larger">&#169;</SPAN> 2002-2006
+<A href="../../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+<TR><TD><CENTER><SPAN class="authors">
+Web Design and Programming
+<A href="../../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+</TABLE>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+</HTML>

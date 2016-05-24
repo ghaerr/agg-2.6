@@ -1,0 +1,569 @@
+<HTML><HEAD><TITLE>Anti-Grain Geometry - </TITLE>
+<META http-equiv="Content-Type" content="text/html"/>
+<LINK rel="stylesheet" type="text/css" href="../agg.styles.css"/>
+</HEAD>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE><SPAN class="kw2">#include</SPAN> <SPAN class="op">&lt;</SPAN>math<SPAN class="op">.</SPAN>h<SPAN class="op">&gt;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="op">&lt;</SPAN>stdio<SPAN class="op">.</SPAN>h<SPAN class="op">&gt;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="op">&lt;</SPAN>time<SPAN class="op">.</SPAN>h<SPAN class="op">&gt;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_basics.h.html">agg_basics.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_rendering_buffer.h.html">agg_rendering_buffer.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_rasterizer_scanline_aa.h.html">agg_rasterizer_scanline_aa.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_rasterizer_outline.h.html">agg_rasterizer_outline.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_conv_transform.h.html">agg_conv_transform.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_conv_stroke.h.html">agg_conv_stroke.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_scanline_p.h.html">agg_scanline_p.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_renderer_scanline.h.html">agg_renderer_scanline.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_renderer_primitives.h.html">agg_renderer_primitives.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_rasterizer_outline.h.html">agg_rasterizer_outline.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_rasterizer_outline_aa.h.html">agg_rasterizer_outline_aa.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_pattern_filters_rgba.h.html">agg_pattern_filters_rgba.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_renderer_outline_aa.h.html">agg_renderer_outline_aa.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_renderer_outline_image.h.html">agg_renderer_outline_image.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;ctrl/agg_slider_ctrl.h&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;ctrl/agg_cbox_ctrl.h&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;platform/agg_platform_support.h&quot;</SPAN>
+
+<SPAN class="kw2">#define</SPAN> AGG_BGR24 
+<SPAN class="rem">//#define AGG_RGB24</SPAN>
+<SPAN class="rem">//#define AGG_BGRA32 </SPAN>
+<SPAN class="rem">//#define AGG_RGBA32 </SPAN>
+<SPAN class="rem">//#define AGG_ARGB32 </SPAN>
+<SPAN class="rem">//#define AGG_ABGR32</SPAN>
+<SPAN class="rem">//#define AGG_RGB565</SPAN>
+<SPAN class="rem">//#define AGG_RGB555</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;pixel_formats.h&quot;</SPAN>
+
+
+<SPAN class="kw1">enum</SPAN> flip_y_e <SPAN class="op">{</SPAN> flip_y <SPAN class="op">=</SPAN> <SPAN class="kw1">true</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+<SPAN class="kw1">static</SPAN> <SPAN class="kw1">const</SPAN> agg::<A href="../__code/include/agg_basics.h.html#int32u">int32u</A> pixmap_chain<SPAN class="op">[</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> 
+<SPAN class="op">{</SPAN>
+    <SPAN class="num">16</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">7</SPAN><SPAN class="op">,</SPAN>
+    <SPAN class="num">0x00ffffff</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0x00ffffff</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0x00ffffff</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0x00ffffff</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0xb4c29999</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0xff9a5757</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0xff9a5757</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0xff9a5757</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0xff9a5757</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0xff9a5757</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0xff9a5757</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0xb4c29999</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0x00ffffff</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0x00ffffff</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0x00ffffff</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0x00ffffff</SPAN><SPAN class="op">,</SPAN>
+    <SPAN class="num">0x00ffffff</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0x00ffffff</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0x0cfbf9f9</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0xff9a5757</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0xff660000</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0xff660000</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0xff660000</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0xff660000</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0xff660000</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0xff660000</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0xff660000</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0xff660000</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0xb4c29999</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0x00ffffff</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0x00ffffff</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0x00ffffff</SPAN><SPAN class="op">,</SPAN> 
+    <SPAN class="num">0x00ffffff</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0x5ae0cccc</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0xffa46767</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0xff660000</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0xff975252</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0x7ed4b8b8</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0x5ae0cccc</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0x5ae0cccc</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0x5ae0cccc</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0x5ae0cccc</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0xa8c6a0a0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0xff7f2929</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0xff670202</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0x9ecaa6a6</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0x5ae0cccc</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0x00ffffff</SPAN><SPAN class="op">,</SPAN> 
+    <SPAN class="num">0xff660000</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0xff660000</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0xff660000</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0xff660000</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0xff660000</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0xff660000</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0xa4c7a2a2</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0x3affff00</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0x3affff00</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0xff975151</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0xff660000</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0xff660000</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0xff660000</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0xff660000</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0xff660000</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0xff660000</SPAN><SPAN class="op">,</SPAN> 
+    <SPAN class="num">0x00ffffff</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0x5ae0cccc</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0xffa46767</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0xff660000</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0xff954f4f</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0x7ed4b8b8</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0x5ae0cccc</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0x5ae0cccc</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0x5ae0cccc</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0x5ae0cccc</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0xa8c6a0a0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0xff7f2929</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0xff670202</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0x9ecaa6a6</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0x5ae0cccc</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0x00ffffff</SPAN><SPAN class="op">,</SPAN> 
+    <SPAN class="num">0x00ffffff</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0x00ffffff</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0x0cfbf9f9</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0xff9a5757</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0xff660000</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0xff660000</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0xff660000</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0xff660000</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0xff660000</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0xff660000</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0xff660000</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0xff660000</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0xb4c29999</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0x00ffffff</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0x00ffffff</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0x00ffffff</SPAN><SPAN class="op">,</SPAN> 
+    <SPAN class="num">0x00ffffff</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0x00ffffff</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0x00ffffff</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0x00ffffff</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0xb4c29999</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0xff9a5757</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0xff9a5757</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0xff9a5757</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0xff9a5757</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0xff9a5757</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0xff9a5757</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0xb4c29999</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0x00ffffff</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0x00ffffff</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0x00ffffff</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0x00ffffff</SPAN>
+<SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+
+<SPAN class="kw1">namespace</SPAN> agg
+<SPAN class="op">{</SPAN>
+    <SPAN class="kw1">class</SPAN> pattern_pixmap_argb32
+    <SPAN class="op">{</SPAN>
+    <SPAN class="kw1">public</SPAN>:
+        <SPAN class="kw1">typedef</SPAN> <A href="../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A> color_type<SPAN class="op">;</SPAN>
+
+        pattern_pixmap_argb32<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <A href="../__code/include/agg_basics.h.html#int32u">int32u</A><SPAN class="op">*</SPAN> pixmap<SPAN class="op">)</SPAN> : m_pixmap<SPAN class="op">(</SPAN>pixmap<SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN><SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">unsigned</SPAN> width<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>  <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_pixmap<SPAN class="op">[</SPAN><SPAN class="num">0</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> height<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_pixmap<SPAN class="op">[</SPAN><SPAN class="num">1</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+
+        <A href="../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A> pixel<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN>
+        <SPAN class="op">{</SPAN>
+            <A href="../__code/include/agg_basics.h.html#int32u">int32u</A> p <SPAN class="op">=</SPAN> m_pixmap<SPAN class="op">[</SPAN>y <SPAN class="op">*</SPAN> width<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> x <SPAN class="op">+</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">return</SPAN> <A href="../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>p <SPAN class="op">&gt;&gt;</SPAN> <SPAN class="num">16</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">&amp;</SPAN> <SPAN class="num">0xFF</SPAN><SPAN class="op">,</SPAN> <SPAN class="op">(</SPAN>p <SPAN class="op">&gt;&gt;</SPAN> <SPAN class="num">8</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">&amp;</SPAN> <SPAN class="num">0xFF</SPAN><SPAN class="op">,</SPAN> p <SPAN class="op">&amp;</SPAN> <SPAN class="num">0xFF</SPAN><SPAN class="op">,</SPAN> p <SPAN class="op">&gt;&gt;</SPAN> <SPAN class="num">24</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="kw1">private</SPAN>:
+        <SPAN class="kw1">const</SPAN> <A href="../__code/include/agg_basics.h.html#int32u">int32u</A><SPAN class="op">*</SPAN> m_pixmap<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+<SPAN class="op">}</SPAN>
+
+
+
+<SPAN class="kw1">class</SPAN> spiral
+<SPAN class="op">{</SPAN>
+<SPAN class="kw1">public</SPAN>:
+    spiral<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> r1<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> r2<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> step<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> start_angle<SPAN class="op">=</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> :
+        m_x<SPAN class="op">(</SPAN>x<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> 
+        m_y<SPAN class="op">(</SPAN>y<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> 
+        m_r1<SPAN class="op">(</SPAN>r1<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> 
+        m_r2<SPAN class="op">(</SPAN>r2<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> 
+        m_step<SPAN class="op">(</SPAN>step<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> 
+        m_start_angle<SPAN class="op">(</SPAN>start_angle<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_angle<SPAN class="op">(</SPAN>start_angle<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_da<SPAN class="op">(</SPAN>agg::<A href="../__code/include/agg_basics.h.html#deg2rad">deg2rad</A><SPAN class="op">(</SPAN><SPAN class="num">8</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_dr<SPAN class="op">(</SPAN>m_step <SPAN class="op">/</SPAN> <SPAN class="num">45</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="kw1">void</SPAN> rewind<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN><SPAN class="op">)</SPAN> 
+    <SPAN class="op">{</SPAN> 
+        m_angle <SPAN class="op">=</SPAN> m_start_angle<SPAN class="op">;</SPAN> 
+        m_curr_r <SPAN class="op">=</SPAN> m_r1<SPAN class="op">;</SPAN> 
+        m_start <SPAN class="op">=</SPAN> <SPAN class="kw1">true</SPAN><SPAN class="op">;</SPAN> 
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="kw1">unsigned</SPAN> vertex<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> y<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_curr_r <SPAN class="op">&gt;</SPAN> m_r2<SPAN class="op">)</SPAN> <SPAN class="kw1">return</SPAN> agg::<A href="../__code/include/agg_basics.h.html#path_cmd_stop">path_cmd_stop</A><SPAN class="op">;</SPAN>
+
+        <SPAN class="op">*</SPAN>x <SPAN class="op">=</SPAN> m_x <SPAN class="op">+</SPAN> cos<SPAN class="op">(</SPAN>m_angle<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> m_curr_r<SPAN class="op">;</SPAN>
+        <SPAN class="op">*</SPAN>y <SPAN class="op">=</SPAN> m_y <SPAN class="op">+</SPAN> sin<SPAN class="op">(</SPAN>m_angle<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> m_curr_r<SPAN class="op">;</SPAN>
+        m_curr_r <SPAN class="op">+=</SPAN> m_dr<SPAN class="op">;</SPAN>
+        m_angle <SPAN class="op">+=</SPAN> m_da<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_start<SPAN class="op">)</SPAN> 
+        <SPAN class="op">{</SPAN>
+            m_start <SPAN class="op">=</SPAN> <SPAN class="kw1">false</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">return</SPAN> agg::<A href="../__code/include/agg_basics.h.html#path_cmd_move_to">path_cmd_move_to</A><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">return</SPAN> agg::<A href="../__code/include/agg_basics.h.html#path_cmd_line_to">path_cmd_line_to</A><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+<SPAN class="kw1">private</SPAN>:
+    <SPAN class="kw1">double</SPAN> m_x<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN> m_y<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN> m_r1<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN> m_r2<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN> m_step<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN> m_start_angle<SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">double</SPAN> m_angle<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN> m_curr_r<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN> m_da<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN> m_dr<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">bool</SPAN>   m_start<SPAN class="op">;</SPAN>
+<SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+<SPAN class="kw1">struct</SPAN> roundoff
+<SPAN class="op">{</SPAN>
+    <SPAN class="kw1">void</SPAN> transform<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> y<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN>
+    <SPAN class="op">{</SPAN> 
+        <SPAN class="op">*</SPAN>x <SPAN class="op">=</SPAN> floor<SPAN class="op">(</SPAN><SPAN class="op">*</SPAN>x<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">*</SPAN>y <SPAN class="op">=</SPAN> floor<SPAN class="op">(</SPAN><SPAN class="op">*</SPAN>y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+<SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+<SPAN class="kw1">class</SPAN> the_application : <SPAN class="kw1">public</SPAN> agg::platform_support
+<SPAN class="op">{</SPAN>
+    agg::slider_ctrl<SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">&gt;</SPAN> m_step<SPAN class="op">;</SPAN>
+    agg::slider_ctrl<SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">&gt;</SPAN> m_width<SPAN class="op">;</SPAN>
+    agg::cbox_ctrl<SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">&gt;</SPAN>   m_test<SPAN class="op">;</SPAN>
+    agg::cbox_ctrl<SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">&gt;</SPAN>   m_rotate<SPAN class="op">;</SPAN>
+    agg::cbox_ctrl<SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">&gt;</SPAN>   m_accurate_joins<SPAN class="op">;</SPAN>
+    agg::cbox_ctrl<SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">&gt;</SPAN>   m_scale_pattern<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN> m_start_angle<SPAN class="op">;</SPAN>
+
+
+<SPAN class="kw1">public</SPAN>:
+    <SPAN class="kw1">typedef</SPAN> agg::<A href="../doc/basic_renderers/basic_renderers.agdoc.html#renderer_base">renderer_base</A><SPAN class="op">&lt;</SPAN><A href="../doc/basic_renderers/basic_renderers.agdoc.html#pixfmt">pixfmt</A><SPAN class="op">&gt;</SPAN> <A href="../doc/basic_renderers/basic_renderers.agdoc.html#renderer_base">renderer_base</A><SPAN class="op">;</SPAN>
+    <SPAN class="kw1">typedef</SPAN> agg::<A href="../__code/include/agg_renderer_scanline.h.html#renderer_scanline_aa_solid">renderer_scanline_aa_solid</A><SPAN class="op">&lt;</SPAN><A href="../doc/basic_renderers/basic_renderers.agdoc.html#renderer_base">renderer_base</A><SPAN class="op">&gt;</SPAN> renderer_aa<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">typedef</SPAN> agg::<A href="../doc/basic_renderers/basic_renderers.agdoc.html#renderer_primitives">renderer_primitives</A><SPAN class="op">&lt;</SPAN><A href="../doc/basic_renderers/basic_renderers.agdoc.html#renderer_base">renderer_base</A><SPAN class="op">&gt;</SPAN> renderer_prim<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">typedef</SPAN> agg::<A href="../__code/include/agg_rasterizer_outline.h.html#rasterizer_outline">rasterizer_outline</A><SPAN class="op">&lt;</SPAN>renderer_prim<SPAN class="op">&gt;</SPAN> <A href="../__code/include/agg_rasterizer_outline.h.html#rasterizer_outline">rasterizer_outline</A><SPAN class="op">;</SPAN>
+    <SPAN class="kw1">typedef</SPAN> agg::<A href="../__code/include/agg_rasterizer_scanline_aa.h.html#rasterizer_scanline_aa">rasterizer_scanline_aa</A><SPAN class="op">&lt;</SPAN><SPAN class="op">&gt;</SPAN> rasterizer_scanline<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">typedef</SPAN> agg::<A href="../__code/include/agg_scanline_p.h.html#scanline_p8">scanline_p8</A> scanline<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">typedef</SPAN> agg::<A href="../__code/include/agg_renderer_outline_aa.h.html#renderer_outline_aa">renderer_outline_aa</A><SPAN class="op">&lt;</SPAN><A href="../doc/basic_renderers/basic_renderers.agdoc.html#renderer_base">renderer_base</A><SPAN class="op">&gt;</SPAN> renderer_oaa<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">typedef</SPAN> agg::pattern_filter_bilinear_rgba8 pattern_filter<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">typedef</SPAN> agg::<A href="../__code/include/agg_renderer_outline_image.h.html#line_image_pattern_pow2">line_image_pattern_pow2</A><SPAN class="op">&lt;</SPAN>pattern_filter<SPAN class="op">&gt;</SPAN> image_pattern<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">typedef</SPAN> agg::<A href="../__code/include/agg_renderer_outline_image.h.html#renderer_outline_image">renderer_outline_image</A><SPAN class="op">&lt;</SPAN><A href="../doc/basic_renderers/basic_renderers.agdoc.html#renderer_base">renderer_base</A><SPAN class="op">,</SPAN> image_pattern<SPAN class="op">&gt;</SPAN> renderer_img<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">typedef</SPAN> agg::<A href="../__code/include/agg_rasterizer_outline_aa.h.html#rasterizer_outline_aa">rasterizer_outline_aa</A><SPAN class="op">&lt;</SPAN>renderer_oaa<SPAN class="op">&gt;</SPAN> <A href="../__code/include/agg_rasterizer_outline_aa.h.html#rasterizer_outline_aa">rasterizer_outline_aa</A><SPAN class="op">;</SPAN>
+    <SPAN class="kw1">typedef</SPAN> agg::<A href="../__code/include/agg_rasterizer_outline_aa.h.html#rasterizer_outline_aa">rasterizer_outline_aa</A><SPAN class="op">&lt;</SPAN>renderer_img<SPAN class="op">&gt;</SPAN> rasterizer_outline_img<SPAN class="op">;</SPAN>
+    
+
+
+    the_application<SPAN class="op">(</SPAN>agg::pix_format_e format<SPAN class="op">,</SPAN> <SPAN class="kw1">bool</SPAN> flip_y<SPAN class="op">)</SPAN> :
+        agg::platform_support<SPAN class="op">(</SPAN>format<SPAN class="op">,</SPAN> flip_y<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_step<SPAN class="op">(</SPAN><SPAN class="num">10</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">10</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">+</SPAN> <SPAN class="num">4</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">150</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">10</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">+</SPAN> <SPAN class="num">8</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">+</SPAN> <SPAN class="num">4</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="op">!</SPAN>flip_y<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_width<SPAN class="op">(</SPAN><SPAN class="num">150</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">+</SPAN> <SPAN class="num">10</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">10</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">+</SPAN> <SPAN class="num">4</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">400</SPAN> <SPAN class="op">-</SPAN> <SPAN class="num">10</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">10</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">+</SPAN> <SPAN class="num">8</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">+</SPAN> <SPAN class="num">4</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="op">!</SPAN>flip_y<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_test<SPAN class="op">(</SPAN><SPAN class="num">10</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">10</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">+</SPAN> <SPAN class="num">4</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">+</SPAN> <SPAN class="num">16</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN>    <SPAN class="str">&quot;Test Performance&quot;</SPAN><SPAN class="op">,</SPAN> <SPAN class="op">!</SPAN>flip_y<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_rotate<SPAN class="op">(</SPAN><SPAN class="num">130</SPAN> <SPAN class="op">+</SPAN> <SPAN class="num">10</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">10</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">+</SPAN> <SPAN class="num">4</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">+</SPAN> <SPAN class="num">16</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN>    <SPAN class="str">&quot;Rotate&quot;</SPAN><SPAN class="op">,</SPAN> <SPAN class="op">!</SPAN>flip_y<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_accurate_joins<SPAN class="op">(</SPAN><SPAN class="num">200</SPAN> <SPAN class="op">+</SPAN> <SPAN class="num">10</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">10</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">+</SPAN> <SPAN class="num">4</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">+</SPAN> <SPAN class="num">16</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="str">&quot;Accurate Joins&quot;</SPAN><SPAN class="op">,</SPAN> <SPAN class="op">!</SPAN>flip_y<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_scale_pattern<SPAN class="op">(</SPAN><SPAN class="num">310</SPAN> <SPAN class="op">+</SPAN> <SPAN class="num">10</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">10</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">+</SPAN> <SPAN class="num">4</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">+</SPAN> <SPAN class="num">16</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="str">&quot;Scale Pattern&quot;</SPAN><SPAN class="op">,</SPAN> <SPAN class="op">!</SPAN>flip_y<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_start_angle<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        add_ctrl<SPAN class="op">(</SPAN>m_step<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_step<SPAN class="op">.</SPAN>range<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_step<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_step<SPAN class="op">.</SPAN>label<SPAN class="op">(</SPAN><SPAN class="str">&quot;Step=%1.2f&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_step<SPAN class="op">.</SPAN>no_transform<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        add_ctrl<SPAN class="op">(</SPAN>m_width<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_width<SPAN class="op">.</SPAN>range<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">7</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_width<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="num">3</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_width<SPAN class="op">.</SPAN>label<SPAN class="op">(</SPAN><SPAN class="str">&quot;Width=%1.2f&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_width<SPAN class="op">.</SPAN>no_transform<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        add_ctrl<SPAN class="op">(</SPAN>m_test<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_test<SPAN class="op">.</SPAN>text_size<SPAN class="op">(</SPAN><SPAN class="num">9</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">7</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_test<SPAN class="op">.</SPAN>no_transform<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        add_ctrl<SPAN class="op">(</SPAN>m_rotate<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_rotate<SPAN class="op">.</SPAN>text_size<SPAN class="op">(</SPAN><SPAN class="num">9</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">7</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_rotate<SPAN class="op">.</SPAN>no_transform<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        add_ctrl<SPAN class="op">(</SPAN>m_accurate_joins<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_accurate_joins<SPAN class="op">.</SPAN>text_size<SPAN class="op">(</SPAN><SPAN class="num">9</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">7</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_accurate_joins<SPAN class="op">.</SPAN>no_transform<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        add_ctrl<SPAN class="op">(</SPAN>m_scale_pattern<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_scale_pattern<SPAN class="op">.</SPAN>text_size<SPAN class="op">(</SPAN><SPAN class="num">9</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">7</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_scale_pattern<SPAN class="op">.</SPAN>no_transform<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_scale_pattern<SPAN class="op">.</SPAN>status<SPAN class="op">(</SPAN><SPAN class="kw1">true</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+
+    <SPAN class="kw1">void</SPAN> draw_aliased_pix_accuracy<SPAN class="op">(</SPAN><A href="../__code/include/agg_rasterizer_outline.h.html#rasterizer_outline">rasterizer_outline</A><SPAN class="op">&amp;</SPAN> ras<SPAN class="op">,</SPAN> renderer_prim<SPAN class="op">&amp;</SPAN> prim<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        spiral s1<SPAN class="op">(</SPAN>width<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">/</SPAN><SPAN class="num">5</SPAN><SPAN class="op">,</SPAN> height<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">/</SPAN><SPAN class="num">4</SPAN><SPAN class="op">+</SPAN><SPAN class="num">50</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">5</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">70</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">8</SPAN><SPAN class="op">,</SPAN> m_start_angle<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        roundoff rn<SPAN class="op">;</SPAN>
+        agg::<A href="../__code/include/agg_conv_transform.h.html#conv_transform">conv_transform</A><SPAN class="op">&lt;</SPAN>spiral<SPAN class="op">,</SPAN> roundoff<SPAN class="op">&gt;</SPAN> trans<SPAN class="op">(</SPAN>s1<SPAN class="op">,</SPAN> rn<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        prim<SPAN class="op">.</SPAN>line_color<SPAN class="op">(</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba">rgba</A><SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">4</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">3</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        ras<SPAN class="op">.</SPAN>add_path<SPAN class="op">(</SPAN>trans<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="kw1">void</SPAN> draw_aliased_subpix_accuracy<SPAN class="op">(</SPAN><A href="../__code/include/agg_rasterizer_outline.h.html#rasterizer_outline">rasterizer_outline</A><SPAN class="op">&amp;</SPAN> ras<SPAN class="op">,</SPAN> renderer_prim<SPAN class="op">&amp;</SPAN> prim<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        spiral s2<SPAN class="op">(</SPAN>width<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">/</SPAN><SPAN class="num">2</SPAN><SPAN class="op">,</SPAN> height<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">/</SPAN><SPAN class="num">4</SPAN><SPAN class="op">+</SPAN><SPAN class="num">50</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">5</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">70</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">8</SPAN><SPAN class="op">,</SPAN> m_start_angle<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        prim<SPAN class="op">.</SPAN>line_color<SPAN class="op">(</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba">rgba</A><SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">4</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">3</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        ras<SPAN class="op">.</SPAN>add_path<SPAN class="op">(</SPAN>s2<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="kw1">void</SPAN> draw_anti_aliased_outline<SPAN class="op">(</SPAN><A href="../__code/include/agg_rasterizer_outline_aa.h.html#rasterizer_outline_aa">rasterizer_outline_aa</A><SPAN class="op">&amp;</SPAN> ras<SPAN class="op">,</SPAN> renderer_oaa<SPAN class="op">&amp;</SPAN> ren<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        spiral s3<SPAN class="op">(</SPAN>width<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">/</SPAN><SPAN class="num">5</SPAN><SPAN class="op">,</SPAN> height<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">-</SPAN> height<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">/</SPAN><SPAN class="num">4</SPAN> <SPAN class="op">+</SPAN> <SPAN class="num">20</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">5</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">70</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">8</SPAN><SPAN class="op">,</SPAN> m_start_angle<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        ren<SPAN class="op">.</SPAN>color<SPAN class="op">(</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba">rgba</A><SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">4</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">3</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        ras<SPAN class="op">.</SPAN>add_path<SPAN class="op">(</SPAN>s3<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+    
+    <SPAN class="kw1">void</SPAN> draw_anti_aliased_scanline<SPAN class="op">(</SPAN>rasterizer_scanline<SPAN class="op">&amp;</SPAN> ras<SPAN class="op">,</SPAN> scanline<SPAN class="op">&amp;</SPAN> sl<SPAN class="op">,</SPAN> renderer_aa<SPAN class="op">&amp;</SPAN> ren<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        spiral s4<SPAN class="op">(</SPAN>width<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">/</SPAN><SPAN class="num">2</SPAN><SPAN class="op">,</SPAN> height<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">-</SPAN> height<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">/</SPAN><SPAN class="num">4</SPAN> <SPAN class="op">+</SPAN> <SPAN class="num">20</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">5</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">70</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">8</SPAN><SPAN class="op">,</SPAN> m_start_angle<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        agg::<A href="../__code/include/agg_conv_stroke.h.html#conv_stroke">conv_stroke</A><SPAN class="op">&lt;</SPAN>spiral<SPAN class="op">&gt;</SPAN> stroke<SPAN class="op">(</SPAN>s4<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        stroke<SPAN class="op">.</SPAN>width<SPAN class="op">(</SPAN>m_width<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        stroke<SPAN class="op">.</SPAN>line_cap<SPAN class="op">(</SPAN>agg::round_cap<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        ren<SPAN class="op">.</SPAN>color<SPAN class="op">(</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba">rgba</A><SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">4</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">3</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        ras<SPAN class="op">.</SPAN>add_path<SPAN class="op">(</SPAN>stroke<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        agg::<A href="../__code/include/agg_renderer_scanline.h.html#render_scanlines">render_scanlines</A><SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> sl<SPAN class="op">,</SPAN> ren<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="kw1">void</SPAN> draw_anti_aliased_outline_img<SPAN class="op">(</SPAN>rasterizer_outline_img<SPAN class="op">&amp;</SPAN> ras<SPAN class="op">,</SPAN> renderer_img<SPAN class="op">&amp;</SPAN> ren<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        spiral s5<SPAN class="op">(</SPAN>width<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">-</SPAN> width<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">/</SPAN><SPAN class="num">5</SPAN><SPAN class="op">,</SPAN> height<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">-</SPAN> height<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">/</SPAN><SPAN class="num">4</SPAN> <SPAN class="op">+</SPAN> <SPAN class="num">20</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">5</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">70</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">8</SPAN><SPAN class="op">,</SPAN> m_start_angle<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        ras<SPAN class="op">.</SPAN>add_path<SPAN class="op">(</SPAN>s5<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+    
+
+
+    <SPAN class="kw1">void</SPAN> text<SPAN class="op">(</SPAN>rasterizer_scanline<SPAN class="op">&amp;</SPAN> ras<SPAN class="op">,</SPAN> 
+              scanline<SPAN class="op">&amp;</SPAN> sl<SPAN class="op">,</SPAN>
+              renderer_aa<SPAN class="op">&amp;</SPAN> ren<SPAN class="op">,</SPAN> 
+              <SPAN class="kw1">double</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN> txt<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        agg::<A href="../__code/include/agg_gsv_text.h.html#gsv_text">gsv_text</A> t<SPAN class="op">;</SPAN>
+        t<SPAN class="op">.</SPAN>size<SPAN class="op">(</SPAN><SPAN class="num">8</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        t<SPAN class="op">.</SPAN>text<SPAN class="op">(</SPAN>txt<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        t<SPAN class="op">.</SPAN>start_point<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        agg::<A href="../__code/include/agg_conv_stroke.h.html#conv_stroke">conv_stroke</A><SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_gsv_text.h.html#gsv_text">gsv_text</A><SPAN class="op">&gt;</SPAN> stroke<SPAN class="op">(</SPAN>t<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        stroke<SPAN class="op">.</SPAN>width<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">7</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        ras<SPAN class="op">.</SPAN>add_path<SPAN class="op">(</SPAN>stroke<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        ren<SPAN class="op">.</SPAN>color<SPAN class="op">(</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba">rgba</A><SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        agg::<A href="../__code/include/agg_renderer_scanline.h.html#render_scanlines">render_scanlines</A><SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> sl<SPAN class="op">,</SPAN> ren<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+
+
+    <SPAN class="kw1">virtual</SPAN> <SPAN class="kw1">void</SPAN> on_draw<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <A href="../doc/basic_renderers/basic_renderers.agdoc.html#pixfmt">pixfmt</A> pf<SPAN class="op">(</SPAN>rbuf_window<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <A href="../doc/basic_renderers/basic_renderers.agdoc.html#renderer_base">renderer_base</A> ren_base<SPAN class="op">(</SPAN>pf<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        renderer_aa ren_aa<SPAN class="op">(</SPAN>ren_base<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        renderer_prim ren_prim<SPAN class="op">(</SPAN>ren_base<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        rasterizer_scanline ras_aa<SPAN class="op">;</SPAN>
+        scanline sl<SPAN class="op">;</SPAN>
+        <A href="../__code/include/agg_rasterizer_outline.h.html#rasterizer_outline">rasterizer_outline</A> ras_al<SPAN class="op">(</SPAN>ren_prim<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        agg::<A href="../__code/include/agg_renderer_outline_aa.h.html#line_profile_aa">line_profile_aa</A> prof<SPAN class="op">;</SPAN>
+        prof<SPAN class="op">.</SPAN>width<SPAN class="op">(</SPAN>m_width<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        renderer_oaa ren_oaa<SPAN class="op">(</SPAN>ren_base<SPAN class="op">,</SPAN> prof<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <A href="../__code/include/agg_rasterizer_outline_aa.h.html#rasterizer_outline_aa">rasterizer_outline_aa</A> ras_oaa<SPAN class="op">(</SPAN>ren_oaa<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        ras_oaa<SPAN class="op">.</SPAN>line_join<SPAN class="op">(</SPAN>m_accurate_joins<SPAN class="op">.</SPAN>status<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> ? 
+                              agg::outline_miter_accurate_join :
+                              agg::<A href="../__code/include/agg_rasterizer_outline_aa.h.html#outline_round_join">outline_round_join</A><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> 
+        ras_oaa<SPAN class="op">.</SPAN>round_cap<SPAN class="op">(</SPAN><SPAN class="kw1">true</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        pattern_filter filter<SPAN class="op">;</SPAN>
+        agg::pattern_pixmap_argb32 src<SPAN class="op">(</SPAN>pixmap_chain<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        agg::<A href="../__code/include/agg_renderer_outline_image.h.html#line_image_scale">line_image_scale</A><SPAN class="op">&lt;</SPAN>agg::pattern_pixmap_argb32<SPAN class="op">&gt;</SPAN> src_scaled<SPAN class="op">(</SPAN>src<SPAN class="op">,</SPAN> m_width<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        image_pattern pattern<SPAN class="op">(</SPAN>filter<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_scale_pattern<SPAN class="op">.</SPAN>status<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            pattern<SPAN class="op">.</SPAN>create<SPAN class="op">(</SPAN>src_scaled<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">else</SPAN>
+        <SPAN class="op">{</SPAN>
+            pattern<SPAN class="op">.</SPAN>create<SPAN class="op">(</SPAN>src<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        renderer_img ren_img<SPAN class="op">(</SPAN>ren_base<SPAN class="op">,</SPAN> pattern<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_scale_pattern<SPAN class="op">.</SPAN>status<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            ren_img<SPAN class="op">.</SPAN>scale_x<SPAN class="op">(</SPAN>m_width<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> src<SPAN class="op">.</SPAN>height<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        rasterizer_outline_img ras_img<SPAN class="op">(</SPAN>ren_img<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        ren_base<SPAN class="op">.</SPAN>clear<SPAN class="op">(</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba">rgba</A><SPAN class="op">(</SPAN><SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">95</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        draw_aliased_pix_accuracy<SPAN class="op">(</SPAN>ras_al<SPAN class="op">,</SPAN> ren_prim<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        draw_aliased_subpix_accuracy<SPAN class="op">(</SPAN>ras_al<SPAN class="op">,</SPAN> ren_prim<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        draw_anti_aliased_outline<SPAN class="op">(</SPAN>ras_oaa<SPAN class="op">,</SPAN> ren_oaa<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        draw_anti_aliased_scanline<SPAN class="op">(</SPAN>ras_aa<SPAN class="op">,</SPAN> sl<SPAN class="op">,</SPAN> ren_aa<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        draw_anti_aliased_outline_img<SPAN class="op">(</SPAN>ras_img<SPAN class="op">,</SPAN> ren_img<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        text<SPAN class="op">(</SPAN>ras_aa<SPAN class="op">,</SPAN> sl<SPAN class="op">,</SPAN> ren_aa<SPAN class="op">,</SPAN> <SPAN class="num">50</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">80</SPAN><SPAN class="op">,</SPAN> <SPAN class="str">&quot;Bresenham lines,\n\nregular accuracy&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        text<SPAN class="op">(</SPAN>ras_aa<SPAN class="op">,</SPAN> sl<SPAN class="op">,</SPAN> ren_aa<SPAN class="op">,</SPAN> width<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">/</SPAN><SPAN class="num">2</SPAN><SPAN class="op">-</SPAN><SPAN class="num">50</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">80</SPAN><SPAN class="op">,</SPAN> <SPAN class="str">&quot;Bresenham lines,\n\nsubpixel accuracy&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        text<SPAN class="op">(</SPAN>ras_aa<SPAN class="op">,</SPAN> sl<SPAN class="op">,</SPAN> ren_aa<SPAN class="op">,</SPAN> <SPAN class="num">50</SPAN><SPAN class="op">,</SPAN> height<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">/</SPAN><SPAN class="num">2</SPAN><SPAN class="op">+</SPAN><SPAN class="num">50</SPAN><SPAN class="op">,</SPAN> <SPAN class="str">&quot;Anti-aliased lines&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        text<SPAN class="op">(</SPAN>ras_aa<SPAN class="op">,</SPAN> sl<SPAN class="op">,</SPAN> ren_aa<SPAN class="op">,</SPAN> width<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">/</SPAN><SPAN class="num">2</SPAN><SPAN class="op">-</SPAN><SPAN class="num">50</SPAN><SPAN class="op">,</SPAN> height<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">/</SPAN><SPAN class="num">2</SPAN><SPAN class="op">+</SPAN><SPAN class="num">50</SPAN><SPAN class="op">,</SPAN> <SPAN class="str">&quot;Scanline rasterizer&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        text<SPAN class="op">(</SPAN>ras_aa<SPAN class="op">,</SPAN> sl<SPAN class="op">,</SPAN> ren_aa<SPAN class="op">,</SPAN> width<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">-</SPAN> width<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">/</SPAN><SPAN class="num">5</SPAN> <SPAN class="op">-</SPAN> <SPAN class="num">50</SPAN><SPAN class="op">,</SPAN> height<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">/</SPAN><SPAN class="num">2</SPAN><SPAN class="op">+</SPAN><SPAN class="num">50</SPAN><SPAN class="op">,</SPAN> <SPAN class="str">&quot;Arbitrary Image Pattern&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+
+        agg::render_ctrl<SPAN class="op">(</SPAN>ras_aa<SPAN class="op">,</SPAN> sl<SPAN class="op">,</SPAN> ren_base<SPAN class="op">,</SPAN> m_step<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        agg::render_ctrl<SPAN class="op">(</SPAN>ras_aa<SPAN class="op">,</SPAN> sl<SPAN class="op">,</SPAN> ren_base<SPAN class="op">,</SPAN> m_width<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        agg::render_ctrl<SPAN class="op">(</SPAN>ras_aa<SPAN class="op">,</SPAN> sl<SPAN class="op">,</SPAN> ren_base<SPAN class="op">,</SPAN> m_test<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        agg::render_ctrl<SPAN class="op">(</SPAN>ras_aa<SPAN class="op">,</SPAN> sl<SPAN class="op">,</SPAN> ren_base<SPAN class="op">,</SPAN> m_rotate<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        agg::render_ctrl<SPAN class="op">(</SPAN>ras_aa<SPAN class="op">,</SPAN> sl<SPAN class="op">,</SPAN> ren_base<SPAN class="op">,</SPAN> m_accurate_joins<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        agg::render_ctrl<SPAN class="op">(</SPAN>ras_aa<SPAN class="op">,</SPAN> sl<SPAN class="op">,</SPAN> ren_base<SPAN class="op">,</SPAN> m_scale_pattern<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+
+
+<SPAN class="rem">/*
+// An example of using anti-aliased outline rasterizer. 
+// Uncomment it to see the result
+//
+
+// Includes:
+//#include &quot;<A href="../__code/include/agg_pixfmt_rgb.h.html">agg_pixfmt_rgb.h</A>&quot;           // or another
+//#include &quot;<A href="../__code/include/agg_renderer_outline_aa.h.html">agg_renderer_outline_aa.h</A>&quot;
+//#include &quot;<A href="../__code/include/agg_rasterizer_outline_aa.h.html">agg_rasterizer_outline_aa.h</A>&quot;
+
+typedef agg::<A href="../doc/basic_renderers/basic_renderers.agdoc.html#renderer_base">renderer_base</A>&lt;agg::<A href="../__code/include/agg_pixfmt_rgb.h.html#pixfmt_bgr24">pixfmt_bgr24</A>&gt; base_ren_type;
+typedef agg::<A href="../__code/include/agg_renderer_outline_aa.h.html#renderer_outline_aa">renderer_outline_aa</A>&lt;base_ren_type&gt; renderer_type;
+typedef agg::<A href="../__code/include/agg_rasterizer_outline_aa.h.html#rasterizer_outline_aa">rasterizer_outline_aa</A>&lt;renderer_type&gt; rasterizer_type;
+
+double width = 5.0;
+//-- create with specifying width
+//-- min_width=1.0, smoother_width=1.0
+//agg::<A href="../__code/include/agg_renderer_outline_aa.h.html#line_profile_aa">line_profile_aa</A>(width, agg::<A href="../__code/include/agg_gamma_functions.h.html#gamma_none">gamma_none</A>()); 
+
+//-- create uninitialized and set parameters
+agg::<A href="../__code/include/agg_renderer_outline_aa.h.html#line_profile_aa">line_profile_aa</A> profile;
+profile.gamma(agg::<A href="../__code/include/agg_gamma_functions.h.html#gamma_power">gamma_power</A>(1.2));  //optional
+profile.min_width(0.75);               //optional
+profile.smoother_width(3.0);           //optional
+profile.width(width);                  //mandatory!
+
+agg::<A href="../__code/include/agg_pixfmt_rgb.h.html#pixfmt_bgr24">pixfmt_bgr24</A> pixf(rbuf_window()); //or another
+base_ren_type base_ren(pixf);
+renderer_type ren(base_ren, profile);
+ren.color(agg::<A href="../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A>(0,0,0));          //mandatory!
+rasterizer_type ras(ren);
+ras.round_cap(true);                   //optional
+ras.accurate_join(true);               //optional
+
+//-- move_to/line_to interface
+ras.move_to_d(100, 100);
+ras.line_to_d(150, 200);
+ras.render(false);     //false means &quot;don&#039;t close 
+                       //the polygon&quot;, i.e. polyline
+
+//-- add_path interface
+//-- doesn&#039;t require invoking render()
+//ras.add_path(some_path);
+*/</SPAN>
+
+
+
+
+<SPAN class="rem">/*
+// An example of using image pattern outline rasterizer
+// Uncomment it to see the result
+//
+
+// Includes:
+//#include &quot;<A href="../__code/include/agg_pixfmt_rgb.h.html">agg_pixfmt_rgb.h</A>&quot;           // or another
+//#include &quot;<A href="../__code/include/agg_pattern_filters_rgba.h.html">agg_pattern_filters_rgba.h</A>&quot;  // for all <A href="../__code/include/agg_color_rgba.h.html#rgba">rgba</A>-8-bit color formats
+//#include &quot;<A href="../__code/include/agg_renderer_outline_image.h.html">agg_renderer_outline_image.h</A>&quot;
+//#include &quot;<A href="../__code/include/agg_rasterizer_outline_aa.h.html">agg_rasterizer_outline_aa.h</A>&quot;
+
+
+agg::pattern_filter_bilinear_rgba8 fltr;          // Filtering functor
+
+agg::pattern_pixmap_argb32 patt_src(pixmap_chain); // Source. Must have an interface:
+                                                   // width() const
+                                                   // height() const
+                                                   // pixel(int x, int y) const
+                                                   // Any agg::<A href="../doc/basic_renderers/basic_renderers.agdoc.html#renderer_base">renderer_base</A>&lt;&gt; or derived
+                                                   // is good for the use as a source.
+
+// agg::<A href="../__code/include/agg_renderer_outline_image.h.html#line_image_pattern">line_image_pattern</A> is the main container for the patterns. It creates
+// a copy of the patterns extended according to the needs of the filter.
+// agg::<A href="../__code/include/agg_renderer_outline_image.h.html#line_image_pattern">line_image_pattern</A> can operate with arbitrary image width, but if the 
+// width of the pattern is power of 2, it&#039;s better to use the modified
+// version agg::<A href="../__code/include/agg_renderer_outline_image.h.html#line_image_pattern_pow2">line_image_pattern_pow2</A> because it works about 15-25 percent
+// faster than agg::<A href="../__code/include/agg_renderer_outline_image.h.html#line_image_pattern">line_image_pattern</A> (because of using simple masking instead 
+// of expensive &#039;%&#039; operation). 
+typedef agg::<A href="../__code/include/agg_renderer_outline_image.h.html#line_image_pattern_pow2">line_image_pattern_pow2</A>&lt;agg::pattern_filter_bilinear_rgba8&gt; pattern_type;
+
+typedef agg::<A href="../doc/basic_renderers/basic_renderers.agdoc.html#renderer_base">renderer_base</A>&lt;agg::<A href="../__code/include/agg_pixfmt_rgb.h.html#pixfmt_bgr24">pixfmt_bgr24</A>&gt; base_ren_type;
+typedef agg::<A href="../__code/include/agg_renderer_outline_image.h.html#renderer_outline_image">renderer_outline_image</A>&lt;base_ren_type, pattern_type&gt; renderer_type;
+typedef agg::<A href="../__code/include/agg_rasterizer_outline_aa.h.html#rasterizer_outline_aa">rasterizer_outline_aa</A>&lt;renderer_type&gt;                rasterizer_type;
+
+//-- Create with specifying the source
+pattern_type patt(fltr, src);   
+
+//-- Create uninitialized and set the source
+//pattern_type patt(fltr);        
+//patt.create(src);
+
+agg::<A href="../__code/include/agg_pixfmt_rgb.h.html#pixfmt_bgr24">pixfmt_bgr24</A> pixf(rbuf_window()); //or another
+base_ren_type base_ren(pixf);
+renderer_type ren(base_ren, patt);
+//ren.scale_x(1.3);                    // Optional
+rasterizer_type ras(ren);
+
+//-- move_to/line_to interface
+ras.move_to_d(100, 150);
+ras.line_to_d(0, 0);
+ras.line_to_d(300, 200);
+//ras.line_to_d(10, 10);
+ras.render(false);     //false means &quot;don&#039;t close 
+                       //the polygon&quot;, i.e. polyline
+
+//-- add_path interface
+//-- doesn&#039;t require invoking render()
+//ras.add_path(some_path);
+*/</SPAN>
+
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="kw1">virtual</SPAN> <SPAN class="kw1">void</SPAN> on_idle<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        m_start_angle <SPAN class="op">+=</SPAN> agg::<A href="../__code/include/agg_basics.h.html#deg2rad">deg2rad</A><SPAN class="op">(</SPAN>m_step<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_start_angle <SPAN class="op">&gt;</SPAN> agg::<A href="../__code/include/agg_basics.h.html#deg2rad">deg2rad</A><SPAN class="op">(</SPAN><SPAN class="num">360</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> m_start_angle <SPAN class="op">-=</SPAN> agg::<A href="../__code/include/agg_basics.h.html#deg2rad">deg2rad</A><SPAN class="op">(</SPAN><SPAN class="num">360</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        force_redraw<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="kw1">virtual</SPAN> <SPAN class="kw1">void</SPAN> on_ctrl_change<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        wait_mode<SPAN class="op">(</SPAN><SPAN class="op">!</SPAN>m_rotate<SPAN class="op">.</SPAN>status<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_test<SPAN class="op">.</SPAN>status<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            on_draw<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            update_window<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+            <A href="../doc/basic_renderers/basic_renderers.agdoc.html#pixfmt">pixfmt</A> pf<SPAN class="op">(</SPAN>rbuf_window<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <A href="../doc/basic_renderers/basic_renderers.agdoc.html#renderer_base">renderer_base</A> ren_base<SPAN class="op">(</SPAN>pf<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            renderer_aa ren_aa<SPAN class="op">(</SPAN>ren_base<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            renderer_prim ren_prim<SPAN class="op">(</SPAN>ren_base<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            rasterizer_scanline ras_aa<SPAN class="op">;</SPAN>
+            scanline sl<SPAN class="op">;</SPAN>
+            <A href="../__code/include/agg_rasterizer_outline.h.html#rasterizer_outline">rasterizer_outline</A> ras_al<SPAN class="op">(</SPAN>ren_prim<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            agg::<A href="../__code/include/agg_renderer_outline_aa.h.html#line_profile_aa">line_profile_aa</A> prof<SPAN class="op">;</SPAN>
+            prof<SPAN class="op">.</SPAN>width<SPAN class="op">(</SPAN>m_width<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            renderer_oaa ren_oaa<SPAN class="op">(</SPAN>ren_base<SPAN class="op">,</SPAN> prof<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <A href="../__code/include/agg_rasterizer_outline_aa.h.html#rasterizer_outline_aa">rasterizer_outline_aa</A> ras_oaa<SPAN class="op">(</SPAN>ren_oaa<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            ras_oaa<SPAN class="op">.</SPAN>line_join<SPAN class="op">(</SPAN>m_accurate_joins<SPAN class="op">.</SPAN>status<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> ? 
+                                  agg::outline_miter_accurate_join :
+                                  agg::<A href="../__code/include/agg_rasterizer_outline_aa.h.html#outline_round_join">outline_round_join</A><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> 
+            ras_oaa<SPAN class="op">.</SPAN>round_cap<SPAN class="op">(</SPAN><SPAN class="kw1">true</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+            pattern_filter filter<SPAN class="op">;</SPAN>
+            agg::pattern_pixmap_argb32 src<SPAN class="op">(</SPAN>pixmap_chain<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            agg::<A href="../__code/include/agg_renderer_outline_image.h.html#line_image_scale">line_image_scale</A><SPAN class="op">&lt;</SPAN>agg::pattern_pixmap_argb32<SPAN class="op">&gt;</SPAN> src_scaled<SPAN class="op">(</SPAN>src<SPAN class="op">,</SPAN> m_width<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            image_pattern pattern<SPAN class="op">(</SPAN>filter<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_scale_pattern<SPAN class="op">.</SPAN>status<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                pattern<SPAN class="op">.</SPAN>create<SPAN class="op">(</SPAN>src_scaled<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="kw1">else</SPAN>
+            <SPAN class="op">{</SPAN>
+                pattern<SPAN class="op">.</SPAN>create<SPAN class="op">(</SPAN>src<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            renderer_img ren_img<SPAN class="op">(</SPAN>ren_base<SPAN class="op">,</SPAN> pattern<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_scale_pattern<SPAN class="op">.</SPAN>status<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                ren_img<SPAN class="op">.</SPAN>scale_x<SPAN class="op">(</SPAN>src<SPAN class="op">.</SPAN>height<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> m_width<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            rasterizer_outline_img ras_img<SPAN class="op">(</SPAN>ren_img<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">unsigned</SPAN> i<SPAN class="op">;</SPAN>
+
+            start_timer<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;</SPAN> <SPAN class="num">200</SPAN><SPAN class="op">;</SPAN> i<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                draw_aliased_subpix_accuracy<SPAN class="op">(</SPAN>ras_al<SPAN class="op">,</SPAN> ren_prim<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                m_start_angle <SPAN class="op">+=</SPAN> agg::<A href="../__code/include/agg_basics.h.html#deg2rad">deg2rad</A><SPAN class="op">(</SPAN>m_step<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="kw1">double</SPAN> t2 <SPAN class="op">=</SPAN> elapsed_time<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+            start_timer<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;</SPAN> <SPAN class="num">200</SPAN><SPAN class="op">;</SPAN> i<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                draw_anti_aliased_outline<SPAN class="op">(</SPAN>ras_oaa<SPAN class="op">,</SPAN> ren_oaa<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                m_start_angle <SPAN class="op">+=</SPAN> agg::<A href="../__code/include/agg_basics.h.html#deg2rad">deg2rad</A><SPAN class="op">(</SPAN>m_step<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="kw1">double</SPAN> t3 <SPAN class="op">=</SPAN> elapsed_time<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+            start_timer<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;</SPAN> <SPAN class="num">200</SPAN><SPAN class="op">;</SPAN> i<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                draw_anti_aliased_scanline<SPAN class="op">(</SPAN>ras_aa<SPAN class="op">,</SPAN> sl<SPAN class="op">,</SPAN> ren_aa<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                m_start_angle <SPAN class="op">+=</SPAN> agg::<A href="../__code/include/agg_basics.h.html#deg2rad">deg2rad</A><SPAN class="op">(</SPAN>m_step<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="kw1">double</SPAN> t4 <SPAN class="op">=</SPAN> elapsed_time<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+            start_timer<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;</SPAN> <SPAN class="num">200</SPAN><SPAN class="op">;</SPAN> i<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                draw_anti_aliased_outline_img<SPAN class="op">(</SPAN>ras_img<SPAN class="op">,</SPAN> ren_img<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                m_start_angle <SPAN class="op">+=</SPAN> agg::<A href="../__code/include/agg_basics.h.html#deg2rad">deg2rad</A><SPAN class="op">(</SPAN>m_step<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="kw1">double</SPAN> t5 <SPAN class="op">=</SPAN> elapsed_time<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+            m_test<SPAN class="op">.</SPAN>status<SPAN class="op">(</SPAN><SPAN class="kw1">false</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            force_redraw<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">char</SPAN> buf<SPAN class="op">[</SPAN><SPAN class="num">256</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+            sprintf<SPAN class="op">(</SPAN>buf<SPAN class="op">,</SPAN> <SPAN class="str">&quot;Aliased=%1.2fms, Anti-Aliased=%1.2fms, Scanline=%1.2fms, Image-Pattern=%1.2fms&quot;</SPAN><SPAN class="op">,</SPAN> 
+                          t2<SPAN class="op">,</SPAN> t3<SPAN class="op">,</SPAN> t4<SPAN class="op">,</SPAN> t5<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            message<SPAN class="op">(</SPAN>buf<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN>
+<SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+<SPAN class="kw1">int</SPAN> agg_main<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> argc<SPAN class="op">,</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN> argv<SPAN class="op">[</SPAN><SPAN class="op">]</SPAN><SPAN class="op">)</SPAN>
+<SPAN class="op">{</SPAN>
+    the_application app<SPAN class="op">(</SPAN>pix_format<SPAN class="op">,</SPAN> flip_y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    app<SPAN class="op">.</SPAN>caption<SPAN class="op">(</SPAN><SPAN class="str">&quot;AGG Example. Line Join&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>app<SPAN class="op">.</SPAN>init<SPAN class="op">(</SPAN><SPAN class="num">500</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">450</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">return</SPAN> app<SPAN class="op">.</SPAN>run<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="kw1">return</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+<SPAN class="op">}</SPAN>
+
+
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT><TABLE width="640px" bgcolor="#583927" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0">
+<TR><TD><CENTER><SPAN class="authors">
+Copyright <SPAN class="larger">&#169;</SPAN> 2002-2006
+<A href="../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+<TR><TD><CENTER><SPAN class="authors">
+Web Design and Programming
+<A href="../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+</TABLE>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+</HTML>

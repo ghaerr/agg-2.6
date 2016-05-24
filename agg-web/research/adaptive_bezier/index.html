@@ -1,0 +1,1210 @@
+<HTML><HEAD><TITLE>Anti-Grain Geometry - Adaptive Subdivision of Bezier Curves</TITLE>
+<META http-equiv="Content-Type" content="text/html"/>
+<LINK rel="stylesheet" type="text/css" href="../../agg.styles.css"/>
+</HEAD>
+<A name="PAGE_ADAPTIVE_BEZIER"><B></B></A>
+
+
+<TABLE width="640px" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR>
+<TD bgcolor="#583927"></TD>
+</TR>
+</TABLE>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR>
+<TD>
+<TABLE width="170px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR><TD><A href="../../index.html" class="mpmenu">Home/</A></TD></TR>
+<TR><TD><A href="../index.html" class="mpmenu">Research/</A></TD></TR>
+<TR><TD><A href="" class="mpmenu"></A></TD></TR>
+<TR><TD><A href="" class="mpmenu"></A></TD></TR>
+<TR><TD><A href="" class="mpmenu"></A></TD></TR>
+<TR><TD><A href="" class="mpmenu"></A></TD></TR>
+</TABLE>
+</TD>
+<TD width="1px" bgcolor="#583927"></TD>
+<TD width="450px" valign="top" style="text-align:right">
+<TABLE border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR>
+<TD><IMG src="../../agg_logo.gif" border="0"/></TD>
+</TR>
+<TR>
+<TD>
+<TABLE border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR height="15px">
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../../news/index.html">News</A>&nbsp;&nbsp;</TD>
+<TD width="1px" bgcolor="#8e521d"></TD>
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../../doc/index.html">Docs</A>&nbsp;&nbsp;</TD>
+<TD width="1px" bgcolor="#8e521d"></TD>
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../../download/index.html">Download</A>&nbsp;&nbsp;</TD>
+<TD width="1px" bgcolor="#8e521d"></TD>
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../../maillist/index.html">Mailing List</A>&nbsp;&nbsp;</TD>
+<TD width="1px" bgcolor="#8e521d"></TD>
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../../cvs/index.html">CVS</A>&nbsp;&nbsp;</TD>
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+<TABLE width="640px" height="1px" bgcolor="#583927" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>
+</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD><H1>Adaptive Subdivision of Bezier Curves<SPAN class="subtitle"><BR/>An attempt to achieve perfect result in Bezier curve approximation</SPAN></H1></TD></TR></TABLE>
+
+
+<TABLE width="640px"><TR><TD style="text-align:center"><P><B><I>First published in July, 2005</I></B></P></TD></TR></TABLE>
+
+<TABLE class="toc" width="640px"><TR><TD>
+    <DIV style="margin-left:2em; padding:3px; font-size:14px;"><A href="#toc0001"><B>Introduction</B></A></DIV>
+    <DIV style="margin-left:2em; padding:3px; font-size:14px;"><A href="#toc0002"><B>Problems of the Incremental method</B></A></DIV>
+    <DIV style="margin-left:2em; padding:3px; font-size:14px;"><A href="#toc0003"><B>Paul de Casteljau Divides and Conquers </B></A></DIV>
+    <DIV style="margin-left:2em; padding:3px; font-size:14px;"><A href="#toc0004"><B>Estimation of the Distance Error</B></A></DIV>
+    <DIV style="margin-left:2em; padding:3px; font-size:14px;"><A href="#toc0005"><B>Estimation of Tangent Error</B></A></DIV>
+    <DIV style="margin-left:2em; padding:3px; font-size:14px;"><A href="#toc0006"><B>Processing of the Cusps</B></A></DIV>
+    <DIV style="margin-left:2em; padding:3px; font-size:14px;"><A href="#toc0007"><B>The Devil is in the Details</B></A></DIV>
+    <DIV style="margin-left:2em; padding:3px; font-size:14px;"><A href="#toc0008"><B>Collinear Case</B></A></DIV>
+    <DIV style="margin-left:2em; padding:3px; font-size:14px;"><A href="#toc0009"><B>The Full Code</B></A></DIV>
+    <DIV style="margin-left:2em; padding:3px; font-size:14px;"><A href="#toc0010"><B>Quadric Curves</B></A></DIV>
+    <DIV style="margin-left:2em; padding:3px; font-size:14px;"><A href="#toc0011"><B>Demo Application</B></A></DIV>
+    <DIV style="margin-left:2em; padding:3px; font-size:14px;"><A href="#toc0012"><B>Update 1</B></A></DIV>
+    <DIV style="margin-left:2em; padding:3px; font-size:14px;"><A href="#toc0013"><B>Update 2</B></A></DIV>
+
+</TD></TR></TABLE>
+
+<H2>Introduction<A name="toc0001"></A></H2>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Bezier curves are widely used in modern 2D and 3D graphics. In most applications
+it&#039;s quite enough to use only quadric and cubic curves. There is a huge 
+number of explanations in the Internet about Bezier curves and I believe
+if you read it you know the topic. 
+The main question is is how we can actually <B>draw</B> the curve.</P></TD></TR></TABLE> 
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>It&#039;s a common practice that the curves are approximated with a number of short
+line segments and it&#039;s the only efficient way to draw them. In this article 
+I will try to explain a method of almost perfect approximation keeping 
+the minimal number of points.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>First of all, we have a look at the very basic method <B>Paul Bourke</B>
+described here: <BR/>
+<A href="http://astronomy.swin.edu.au/~pbourke/curves/bezier"><IMG src="../../link.gif" border="0"/>http://astronomy.swin.edu.au/~pbourke/curves/bezier</A></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Below is a piece of code for calculation of the arbitrary point of a cubic
+curve (an exact copy from Paul&#039;s web-site):</P></TD></TR></TABLE>
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+<SPAN class="rem">/*
+   Four control point Bezier interpolation
+   mu ranges from 0 to 1, start to end of curve
+*/</SPAN>
+XYZ Bezier4<SPAN class="op">(</SPAN>XYZ p1<SPAN class="op">,</SPAN>XYZ p2<SPAN class="op">,</SPAN>XYZ p3<SPAN class="op">,</SPAN>XYZ p4<SPAN class="op">,</SPAN><SPAN class="kw1">double</SPAN> mu<SPAN class="op">)</SPAN>
+<SPAN class="op">{</SPAN>
+   <SPAN class="kw1">double</SPAN> mum1<SPAN class="op">,</SPAN>mum13<SPAN class="op">,</SPAN>mu3<SPAN class="op">;</SPAN>
+   XYZ p<SPAN class="op">;</SPAN>
+
+   mum1 <SPAN class="op">=</SPAN> <SPAN class="num">1</SPAN> <SPAN class="op">-</SPAN> mu<SPAN class="op">;</SPAN>
+   mum13 <SPAN class="op">=</SPAN> mum1 <SPAN class="op">*</SPAN> mum1 <SPAN class="op">*</SPAN> mum1<SPAN class="op">;</SPAN>
+   mu3 <SPAN class="op">=</SPAN> mu <SPAN class="op">*</SPAN> mu <SPAN class="op">*</SPAN> mu<SPAN class="op">;</SPAN>
+
+   p<SPAN class="op">.</SPAN>x <SPAN class="op">=</SPAN> mum13<SPAN class="op">*</SPAN>p1<SPAN class="op">.</SPAN>x <SPAN class="op">+</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">*</SPAN>mu<SPAN class="op">*</SPAN>mum1<SPAN class="op">*</SPAN>mum1<SPAN class="op">*</SPAN>p2<SPAN class="op">.</SPAN>x <SPAN class="op">+</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">*</SPAN>mu<SPAN class="op">*</SPAN>mu<SPAN class="op">*</SPAN>mum1<SPAN class="op">*</SPAN>p3<SPAN class="op">.</SPAN>x <SPAN class="op">+</SPAN> mu3<SPAN class="op">*</SPAN>p4<SPAN class="op">.</SPAN>x<SPAN class="op">;</SPAN>
+   p<SPAN class="op">.</SPAN>y <SPAN class="op">=</SPAN> mum13<SPAN class="op">*</SPAN>p1<SPAN class="op">.</SPAN>y <SPAN class="op">+</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">*</SPAN>mu<SPAN class="op">*</SPAN>mum1<SPAN class="op">*</SPAN>mum1<SPAN class="op">*</SPAN>p2<SPAN class="op">.</SPAN>y <SPAN class="op">+</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">*</SPAN>mu<SPAN class="op">*</SPAN>mu<SPAN class="op">*</SPAN>mum1<SPAN class="op">*</SPAN>p3<SPAN class="op">.</SPAN>y <SPAN class="op">+</SPAN> mu3<SPAN class="op">*</SPAN>p4<SPAN class="op">.</SPAN>y<SPAN class="op">;</SPAN>
+   p<SPAN class="op">.</SPAN>z <SPAN class="op">=</SPAN> mum13<SPAN class="op">*</SPAN>p1<SPAN class="op">.</SPAN>z <SPAN class="op">+</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">*</SPAN>mu<SPAN class="op">*</SPAN>mum1<SPAN class="op">*</SPAN>mum1<SPAN class="op">*</SPAN>p2<SPAN class="op">.</SPAN>z <SPAN class="op">+</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">*</SPAN>mu<SPAN class="op">*</SPAN>mu<SPAN class="op">*</SPAN>mum1<SPAN class="op">*</SPAN>p3<SPAN class="op">.</SPAN>z <SPAN class="op">+</SPAN> mu3<SPAN class="op">*</SPAN>p4<SPAN class="op">.</SPAN>z<SPAN class="op">;</SPAN>
+
+   <SPAN class="kw1">return</SPAN><SPAN class="op">(</SPAN>p<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+<SPAN class="op">}</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Here we have four control points and parameter &#147;mu&#148; in range from <B>0</B> 
+to <B>1</B>. Technically that&#039;s enough. We simply calculate a number of points
+with increasing &#147;mu&#148; and draw straight line segments between them.</P></TD></TR></TABLE>
+
+<BR/><H2>Problems of the Incremental method<A name="toc0002"></A></H2>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>First of all, the method is expensive; each point in 2D requires 24 
+multiplicatoins with floating point. But this problem can be 
+easily solved if we replace direct calculations by an incremental
+(recurrent) method. It&#039;s described here: <A href="../bezier_interpolation/index.html#PAGE_BEZIER_INTERPOLATION">Interpolation with Bezier Curves</A>, at the
+end of the article. As you can see, the main loop contains only
+six addition operations. And as far as I know this 
+is the fastest method, especially on modern processors, where 
+floating point operations are quite fast.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>But the main problem is how to determine the <B>number of points</B> 
+itself and how to increase that very &#147;mu&#148;. 
+The simplest method is to select a certain step, say, 0.01, so 
+that, any curve will be divided into 99 straight line segments. The 
+disadvantage is obvious, long curves will have too few points, short 
+ones &#151; to many of them.</P></TD></TR></TABLE> 
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Apparently, we need to calculate the step on the basis of the length of 
+the curve. To do that we need to calculate the actual length of the 
+curve, but to calculate the length we need to calculate the curve itself.
+It&#039;s a classical &#147;catch 22&#148; situation. A rather good estimation 
+is the sum of the distances:</P></TD></TR></TABLE> 
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><CODE>(p1,p2)+(p2,p3)+(p3,p4);</CODE></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>So that, experimentally I found out that for typical screen resolutions 
+it&#039;s good enough to have the following estimation:
+</P></TD></TR></TABLE><TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+    dx1 <SPAN class="op">=</SPAN> x2 <SPAN class="op">-</SPAN> x1<SPAN class="op">;</SPAN>
+    dy1 <SPAN class="op">=</SPAN> y2 <SPAN class="op">-</SPAN> y1<SPAN class="op">;</SPAN>
+    dx2 <SPAN class="op">=</SPAN> x3 <SPAN class="op">-</SPAN> x2<SPAN class="op">;</SPAN>
+    dy2 <SPAN class="op">=</SPAN> y3 <SPAN class="op">-</SPAN> y2<SPAN class="op">;</SPAN>
+    dx3 <SPAN class="op">=</SPAN> x4 <SPAN class="op">-</SPAN> x3<SPAN class="op">;</SPAN>
+    dy3 <SPAN class="op">=</SPAN> y4 <SPAN class="op">-</SPAN> y3<SPAN class="op">;</SPAN>
+
+    len <SPAN class="op">=</SPAN> sqrt<SPAN class="op">(</SPAN>dx1 <SPAN class="op">*</SPAN> dx1 <SPAN class="op">+</SPAN> dy1 <SPAN class="op">*</SPAN> dy1<SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> 
+          sqrt<SPAN class="op">(</SPAN>dx2 <SPAN class="op">*</SPAN> dx2 <SPAN class="op">+</SPAN> dy2 <SPAN class="op">*</SPAN> dy2<SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> 
+          sqrt<SPAN class="op">(</SPAN>dx3 <SPAN class="op">*</SPAN> dx3 <SPAN class="op">+</SPAN> dy3 <SPAN class="op">*</SPAN> dy3<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    num_steps <SPAN class="op">=</SPAN> <SPAN class="kw1">int</SPAN><SPAN class="op">(</SPAN>len <SPAN class="op">*</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">25</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Note that we are talking in terms of <A href="../../doc/introduction/introduction.agdoc.html#PAGE_ANTI_ALIASING">Anti-Aliasing and Subpixel Accuracy</A>. 
+It makes a huge difference compared with regular pixel accuracy 
+MoveTo/LineTo interface.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>But even if we estimate the curve step accurately the problems 
+still persist. A cubic curve can have rather sharp turns, narrow
+loops or even cusps. Look at the following picture:
+</P></TD></TR></TABLE><TABLE width="640px"><TR><TD><CENTER><IMG src="bezier01.gif" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Here we have a curve approximated with <B>52</B> line segments. But
+still, after drawing an equidistant outine (stroke) the loop looks 
+rather inaccurate. To achieve good accuracy we have to increase 
+the number of points:
+</P></TD></TR></TABLE><TABLE width="640px"><TR><TD><CENTER><IMG src="bezier02.gif" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Here we have <B>210</B> line segments and it&#039;s clearly seen that most 
+of them are useless. In other words it produces too many points at 
+&#147;flat&#148; parts of the curve and too few of them at sharp turns.</P></TD></TR></TABLE> 
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>But even if we have a tiny step we still have problems:
+</P></TD></TR></TABLE><TABLE width="640px"><TR><TD><CENTER><IMG src="bezier03.gif" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>This curve is approximated with <B>1091</B> line segments (sic!), but 
+still fails at a sharp turn (almost a cusp).</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Ideally we would want to have an <B>adaptive</B> step. Look at the 
+following picture:
+</P></TD></TR></TABLE><TABLE width="640px"><TR><TD><CENTER><IMG src="bezier04.gif" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>It has only <B>40</B> line segments, but almost perfectly approximates
+the curve, considering its outline (stroke). This is the result we 
+really want to achieve and it really <B>is</B> achieved. 
+Note that even with very sharp turns the stroke remains smooth
+and the number of line segments is quite reasonable; in this 
+case it&#039;s only <B>44</B>:
+</P></TD></TR></TABLE><TABLE width="640px"><TR><TD><CENTER><IMG src="bezier05.gif" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+
+<BR/><H2>Paul de Casteljau Divides and Conquers <A name="toc0003"></A></H2>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Paul de Casteljau, a brilliant engineer at Citroen discovered a very 
+interesting property of any Bezier curve. It&#039;s namely that any curve of 
+any degree can be easily divided into two curves of the same degree. 
+The following picture is classical:
+</P></TD></TR></TABLE><TABLE width="640px"><TR><TD><CENTER><IMG src="bezier06.gif" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Here we have control points <B>1,2,3,4</B>. Then we calculate midpoints
+<B>12,23,34</B>, then midpoints <B>123</B> and <B>234</B>, and finally point 
+<B>1234</B> lying on the curve. Instead of midpoint (coefficient 0.5)
+there can be any other coefficient from <B>0</B> to <B>1</B>, but in this article 
+we use namely midpoints. The two new curves exactly coincide
+with the original ones and they are defined by points: <B>1,12,123,1234</B>
+(the left one) and <B>1234,234,34,4</B> (the right one).</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>It&#039;s clearly seen that the new curves are more &#147;flat&#148; than the 
+original one, so, if we repeat the operation a certain numbrer of 
+times we can simply replace the curve with a line segment.</P></TD></TR></TABLE> 
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The recursive program code of subdivision is also classical:
+</P></TD></TR></TABLE><TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+<SPAN class="kw1">void</SPAN> recursive_bezier<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x1<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y1<SPAN class="op">,</SPAN> 
+                      <SPAN class="kw1">double</SPAN> x2<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y2<SPAN class="op">,</SPAN> 
+                      <SPAN class="kw1">double</SPAN> x3<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y3<SPAN class="op">,</SPAN> 
+                      <SPAN class="kw1">double</SPAN> x4<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y4<SPAN class="op">)</SPAN>
+<SPAN class="op">{</SPAN>
+    <SPAN class="rem">// Calculate all the mid-points of the line segments</SPAN>
+    <SPAN class="rem">//----------------------</SPAN>
+    <SPAN class="kw1">double</SPAN> x12   <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>x1 <SPAN class="op">+</SPAN> x2<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN> y12   <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>y1 <SPAN class="op">+</SPAN> y2<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN> x23   <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>x2 <SPAN class="op">+</SPAN> x3<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN> y23   <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>y2 <SPAN class="op">+</SPAN> y3<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN> x34   <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>x3 <SPAN class="op">+</SPAN> x4<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN> y34   <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>y3 <SPAN class="op">+</SPAN> y4<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN> x123  <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>x12 <SPAN class="op">+</SPAN> x23<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN> y123  <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>y12 <SPAN class="op">+</SPAN> y23<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN> x234  <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>x23 <SPAN class="op">+</SPAN> x34<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN> y234  <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>y23 <SPAN class="op">+</SPAN> y34<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN> x1234 <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>x123 <SPAN class="op">+</SPAN> x234<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN> y1234 <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>y123 <SPAN class="op">+</SPAN> y234<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>curve_is_flat<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="rem">// Draw and stop</SPAN>
+        <SPAN class="rem">//----------------------</SPAN>
+        draw_line<SPAN class="op">(</SPAN>x1<SPAN class="op">,</SPAN> y1<SPAN class="op">,</SPAN> x4<SPAN class="op">,</SPAN> y4<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+    <SPAN class="kw1">else</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="rem">// Continue subdivision</SPAN>
+        <SPAN class="rem">//----------------------</SPAN>
+        recursive_bezier<SPAN class="op">(</SPAN>x1<SPAN class="op">,</SPAN> y1<SPAN class="op">,</SPAN> x12<SPAN class="op">,</SPAN> y12<SPAN class="op">,</SPAN> x123<SPAN class="op">,</SPAN> y123<SPAN class="op">,</SPAN> x1234<SPAN class="op">,</SPAN> y1234<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> 
+        recursive_bezier<SPAN class="op">(</SPAN>x1234<SPAN class="op">,</SPAN> y1234<SPAN class="op">,</SPAN> x234<SPAN class="op">,</SPAN> y234<SPAN class="op">,</SPAN> x34<SPAN class="op">,</SPAN> y34<SPAN class="op">,</SPAN> x4<SPAN class="op">,</SPAN> y4<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> 
+    <SPAN class="op">}</SPAN>
+<SPAN class="op">}</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>That&#039;s that! It&#039;s all you need to draw a cubic Bezier curve. But the devil
+is in the condition &#147;<B>curve_is_flat</B>&#148;.</P></TD></TR></TABLE> 
+
+<BR/><H2>Estimation of the Distance Error<A name="toc0004"></A></H2>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The Casteljau&#039;s subdivision method has a great advantage. Really, 
+we can estimate the flatness of the curve because we have 
+information about it &#151; the initial control points plus all other 
+intermediate points. In case of the incremental method all we have 
+is just a point. Well, of course we can take at least two points before 
+and analyze them, but it will complicate the whole thing a lot.</P></TD></TR></TABLE> 
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>There can be many criteria of when to stop subdivision. You can calculate 
+the distance between points <B>1</B> and <B>4</B> in the simplest case. It&#039;s 
+a bad criterion because initially points <B>1</B> and <B>4</B> may coincide.
+Well, there is a workaround, namely that we <B>force</B> the subdivision
+the first time.</P></TD></TR></TABLE> 
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>A better condition would be to calculate the distance between a point 
+and a line. It&#039;s proportional to the actual error of approximation. 
+The main question is what distances we should consider.</P></TD></TR></TABLE> 
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Initially I thought that the distance between point <B>1234</B> and 
+line <B>(1-4)</B> is enough. It can be zero in a &quot;Z&quot; case, for example,
+<NOBR><B>(100, 100, 200, 100, 100, 200, 200, 200)</B></NOBR>.
+</P></TD></TR></TABLE><TABLE width="640px"><TR><TD><CENTER><IMG src="bezier07.gif" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>But this sutuation is solved by forcing the subdivision the first 
+time.</P></TD></TR></TABLE> 
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>But after conducting of many experiments I found out that the sum
+of 3 distances works much better:
+</P></TD></TR></TABLE><TABLE width="640px"><TR><TD><CENTER><IMG src="bezier08.gif" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Here we sum three distances: <B>d123+d1234+d234</B>. This criterion 
+doesn&#039;t require forcing the first subdivision.</P></TD></TR></TABLE> 
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Then, after having even more experiments I discivered that the criterion
+with two distances works even better and it doesn&#039;t require 
+forcing the first subdivision either. It&#039;s the sum of the distances 
+<B>d2+d3</B>:
+</P></TD></TR></TABLE><TABLE width="640px"><TR><TD><CENTER><IMG src="bezier09.gif" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>That&#039;s it, we have a rather good estimation of the approximation 
+error. Calculation of the distance between a point and a line can 
+seem expensive, but it isn&#039;t. We don&#039;t even have to calculate 
+square roots! Remember, all we need is just to estimate and compare
+the error (yes/no).</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>So that, the program code is as follows:
+</P></TD></TR></TABLE><TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+    <SPAN class="kw1">void</SPAN> recursive_bezier<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x1<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y1<SPAN class="op">,</SPAN> 
+                          <SPAN class="kw1">double</SPAN> x2<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y2<SPAN class="op">,</SPAN> 
+                          <SPAN class="kw1">double</SPAN> x3<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y3<SPAN class="op">,</SPAN> 
+                          <SPAN class="kw1">double</SPAN> x4<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y4<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+
+        <SPAN class="rem">// Calculate all the mid-points of the line segments</SPAN>
+        <SPAN class="rem">//----------------------</SPAN>
+        <SPAN class="kw1">double</SPAN> x12   <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>x1 <SPAN class="op">+</SPAN> x2<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> y12   <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>y1 <SPAN class="op">+</SPAN> y2<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> x23   <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>x2 <SPAN class="op">+</SPAN> x3<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> y23   <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>y2 <SPAN class="op">+</SPAN> y3<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> x34   <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>x3 <SPAN class="op">+</SPAN> x4<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> y34   <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>y3 <SPAN class="op">+</SPAN> y4<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> x123  <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>x12 <SPAN class="op">+</SPAN> x23<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> y123  <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>y12 <SPAN class="op">+</SPAN> y23<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> x234  <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>x23 <SPAN class="op">+</SPAN> x34<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> y234  <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>y23 <SPAN class="op">+</SPAN> y34<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> x1234 <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>x123 <SPAN class="op">+</SPAN> x234<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> y1234 <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>y123 <SPAN class="op">+</SPAN> y234<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="rem">// Try to approximate the full cubic curve by a single straight line</SPAN>
+        <SPAN class="rem">//------------------</SPAN>
+        <SPAN class="kw1">double</SPAN> dx <SPAN class="op">=</SPAN> x4<SPAN class="op">-</SPAN>x1<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> dy <SPAN class="op">=</SPAN> y4<SPAN class="op">-</SPAN>y1<SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">double</SPAN> d2 <SPAN class="op">=</SPAN> fabs<SPAN class="op">(</SPAN><SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>x2 <SPAN class="op">-</SPAN> x4<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> dy <SPAN class="op">-</SPAN> <SPAN class="op">(</SPAN>y2 <SPAN class="op">-</SPAN> y4<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> dx<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> d3 <SPAN class="op">=</SPAN> fabs<SPAN class="op">(</SPAN><SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>x3 <SPAN class="op">-</SPAN> x4<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> dy <SPAN class="op">-</SPAN> <SPAN class="op">(</SPAN>y3 <SPAN class="op">-</SPAN> y4<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> dx<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>d2 <SPAN class="op">+</SPAN> d3<SPAN class="op">)</SPAN><SPAN class="op">*</SPAN><SPAN class="op">(</SPAN>d2 <SPAN class="op">+</SPAN> d3<SPAN class="op">)</SPAN> <SPAN class="op">&lt;</SPAN> m_distance_tolerance <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>dx<SPAN class="op">*</SPAN>dx <SPAN class="op">+</SPAN> dy<SPAN class="op">*</SPAN>dy<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            add_point<SPAN class="op">(</SPAN>x1234<SPAN class="op">,</SPAN> y1234<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">return</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">// Continue subdivision</SPAN>
+        <SPAN class="rem">//----------------------</SPAN>
+        recursive_bezier<SPAN class="op">(</SPAN>x1<SPAN class="op">,</SPAN> y1<SPAN class="op">,</SPAN> x12<SPAN class="op">,</SPAN> y12<SPAN class="op">,</SPAN> x123<SPAN class="op">,</SPAN> y123<SPAN class="op">,</SPAN> x1234<SPAN class="op">,</SPAN> y1234<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> 
+        recursive_bezier<SPAN class="op">(</SPAN>x1234<SPAN class="op">,</SPAN> y1234<SPAN class="op">,</SPAN> x234<SPAN class="op">,</SPAN> y234<SPAN class="op">,</SPAN> x34<SPAN class="op">,</SPAN> y34<SPAN class="op">,</SPAN> x4<SPAN class="op">,</SPAN> y4<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> 
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="kw1">void</SPAN> bezier<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x1<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y1<SPAN class="op">,</SPAN> 
+                <SPAN class="kw1">double</SPAN> x2<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y2<SPAN class="op">,</SPAN> 
+                <SPAN class="kw1">double</SPAN> x3<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y3<SPAN class="op">,</SPAN> 
+                <SPAN class="kw1">double</SPAN> x4<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y4<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        add_point<SPAN class="op">(</SPAN>x1<SPAN class="op">,</SPAN> y1<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        recursive_bezier<SPAN class="op">(</SPAN>x1<SPAN class="op">,</SPAN> y1<SPAN class="op">,</SPAN> x2<SPAN class="op">,</SPAN> y2<SPAN class="op">,</SPAN> x3<SPAN class="op">,</SPAN> y3<SPAN class="op">,</SPAN> x4<SPAN class="op">,</SPAN> y4<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        add_point<SPAN class="op">(</SPAN>x4<SPAN class="op">,</SPAN> y4<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Where <CODE>m_distance_tolerance</CODE> is the <B>square</B> of the maximal distance 
+you can afford. In typical screen resolution it&#039;s normally about 
+<NOBR><CODE>0.5*0.5 = 0.25</CODE></NOBR></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>That&#039;s it, we have solved the task of having the minimal number 
+of points with constant maximal error along the entire curve. 
+Note that the incremental method produces much more points, but
+the approximation error at flat parts is too little (no necessary 
+to divide the curve into so many number of points), while the one
+at sharp turns is too high. The subdivision method minimizes the 
+number of points keeping the maximal approximation error about 
+a constant.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>But this methods has more serious problems. If points <B>1</B> and <B>4</B> 
+coincide, both values, <NOBR><CODE>(d2 + d3)*(d2 + d3)</CODE></NOBR> and 
+<NOBR><CODE>(dx*dx + dy*dy)</CODE></NOBR> will be strictly zero. It&#039;s one of the
+rear cases when comparoson &quot;<B>Less</B>&quot; and &quot;<B>LessEqual</B>&quot; makes 
+difference in floating point. The division will continue in this case, 
+and if the condition is &quot;<B>LessEqual</B>&quot; it will stop. But this code 
+will result in stack overflow in cases when 3 or all 4 points coincide. 
+We could solve it using &quot;<B>LessEqual</B>&quot; in the condition and forcing the 
+first subdivision. But more careful analysis showed that it won&#039;t help.
+After one subdivision one of the &quot;subcurves&quot; can still have a loop and 
+in particular, coinciding endpoints. All these difficulties will be
+overcome later, but first let&#039;s talk about estimation by angle.</P></TD></TR></TABLE>
+
+<BR/><H2>Estimation of Tangent Error<A name="toc0005"></A></H2>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The code above solves the task of optimization of the number of points
+keeping the approximation error about a constant along the entire curve.
+But it has the same problem as the incremental method at sharp turns:</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD><CENTER><IMG src="bezier10.gif" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>This approximation has <B>36</B> line segments and the maximal error of 
+<B>0.08</B> pixel.</P></TD></TR></TABLE> 
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Obviously using only estimation by distance is not enough. To keep  
+wide strokes smooth with any conditions we should estimate the curvature 
+by angle, regardless of the actual lengths or distances.</P></TD></TR></TABLE> 
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>When subdividing, the two new curves are more flat than the initial one.
+It also means that the tangents at the start and at the end (points 1 
+and 4) are about the same. If they are considerably different the curve
+has a sharp turn at that point, so that, we should continue subdivision.</P></TD></TR></TABLE>
+
+<TABLE class="note" width="640px"><TR><TD><B>NOTE</B><BR/>
+To calculate the angles I use function <CODE>atan2()</CODE> directly. It&#039;s 
+an expensive operation and considerably slows down the algorithm.
+But note that it&#039;s not always important. It&#039;s important only when
+we want to draw an <B>equidistant curve</B>, that is, a stroke of 
+considerable width. If we don&#039;t need to draw a stroke or the stroke
+width is one pixel or less, the distance criterion works quite well.
+</TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>So that, we introduce another criterion, <CODE>m_angle_tolerance</CODE>:
+</P></TD></TR></TABLE><TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+    <SPAN class="rem">// If the curvature doesn&#039;t exceed the distance_tolerance value</SPAN>
+    <SPAN class="rem">// we tend to finish subdivisions.</SPAN>
+    <SPAN class="rem">//----------------------</SPAN>
+    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_angle_tolerance <SPAN class="op">&lt;</SPAN> curve_angle_tolerance_epsilon<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        m_points<SPAN class="op">.</SPAN>add<SPAN class="op">(</SPAN>point_type<SPAN class="op">(</SPAN>x1234<SPAN class="op">,</SPAN> y1234<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">return</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">// Angle &amp; Cusp Condition</SPAN>
+    <SPAN class="rem">//----------------------</SPAN>
+    <SPAN class="kw1">double</SPAN> a23 <SPAN class="op">=</SPAN> atan2<SPAN class="op">(</SPAN>y3 <SPAN class="op">-</SPAN> y2<SPAN class="op">,</SPAN> x3 <SPAN class="op">-</SPAN> x2<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN> da1 <SPAN class="op">=</SPAN> fabs<SPAN class="op">(</SPAN>a23 <SPAN class="op">-</SPAN> atan2<SPAN class="op">(</SPAN>y2 <SPAN class="op">-</SPAN> y1<SPAN class="op">,</SPAN> x2 <SPAN class="op">-</SPAN> x1<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN> da2 <SPAN class="op">=</SPAN> fabs<SPAN class="op">(</SPAN>atan2<SPAN class="op">(</SPAN>y4 <SPAN class="op">-</SPAN> y3<SPAN class="op">,</SPAN> x4 <SPAN class="op">-</SPAN> x3<SPAN class="op">)</SPAN> <SPAN class="op">-</SPAN> a23<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>da1 <SPAN class="op">&gt;=</SPAN> <A href="../../__code/include/agg_basics.h.html#pi">pi</A><SPAN class="op">)</SPAN> da1 <SPAN class="op">=</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">*</SPAN><A href="../../__code/include/agg_basics.h.html#pi">pi</A> <SPAN class="op">-</SPAN> da1<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>da2 <SPAN class="op">&gt;=</SPAN> <A href="../../__code/include/agg_basics.h.html#pi">pi</A><SPAN class="op">)</SPAN> da2 <SPAN class="op">=</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">*</SPAN><A href="../../__code/include/agg_basics.h.html#pi">pi</A> <SPAN class="op">-</SPAN> da2<SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>da1 <SPAN class="op">+</SPAN> da2 <SPAN class="op">&lt;</SPAN> m_angle_tolerance<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="rem">// Finally we can stop the recursion</SPAN>
+        <SPAN class="rem">//----------------------</SPAN>
+        m_points<SPAN class="op">.</SPAN>add<SPAN class="op">(</SPAN>point_type<SPAN class="op">(</SPAN>x1234<SPAN class="op">,</SPAN> y1234<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">return</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Here we use <CODE>m_angle_tolerance</CODE> also as a flag. If its value is
+less than a certain <B>epsion</B> we do not process angles at all.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The following picture illustrates the calculations:</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD><CENTER><IMG src="bezier11.gif" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Well, technically it would be enough to calculate just one angle between
+the <B>first</B> and the <B>third</B> line segments (<B>1-2</B> and <B>3-4</B>)
+but the two angles will be useful later, when we process the cusps.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>This code guarantees that any two consecutive line segments will 
+be flat enough to calculate smoothly looking strokes. But it has
+problems too, and first of all it&#039;s processing of the cusps.</P></TD></TR></TABLE>
+
+<BR/><H2>Processing of the Cusps<A name="toc0006"></A></H2>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>A cubic curve can have a cusp. A cusp is a point on the curve at 
+which curve tangent is discontinuous. It&#039;s a sharp turn that 
+remains sharp no matter how much you zoom it in.
+In other words there is no way that fat mitter-join stroke can
+ever look as turning smoothly around that point. Tangent is 
+discontinuous so stroke should display sharp turn as well.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>To have a real cusp the control points should be exactly of the 
+form of letter &quot;X&quot;, for example:</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:center"><P><B>(100, 100, 300, 200, 200, 200, 200, 100)</B></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD><CENTER><IMG src="bezier12.gif" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>In this case condition <CODE>da1 + da2 &lt; m_angle_tolerance</CODE>
+will never theoretically occur. In practice it will occur as soon as 
+all 4 control points exactly coincide and all the arguments of all
+calls to <CODE>atan2()</CODE> will be strictly zero. But when it happens the 
+recursion will very very deep and you can even have stack overflow. 
+Thet&#039;s the bad news. The good news is that it has a very simple 
+workaround:
+</P></TD></TR></TABLE><TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>da1 <SPAN class="op">&gt;</SPAN> m_cusp_limit<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        m_points<SPAN class="op">.</SPAN>add<SPAN class="op">(</SPAN>point_type<SPAN class="op">(</SPAN>x2<SPAN class="op">,</SPAN> y2<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">return</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>da2 <SPAN class="op">&gt;</SPAN> m_cusp_limit<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        m_points<SPAN class="op">.</SPAN>add<SPAN class="op">(</SPAN>point_type<SPAN class="op">(</SPAN>x3<SPAN class="op">,</SPAN> y3<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">return</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Note that we usually add point <B>1234</B> that lies on the curve. That&#039;s because
+it allows us to distribute the points symmetrically with regard to the 
+endpoints. But here we add the point at wich we have a sharp angle. I came 
+up with this idea after some experimets. It ensures that the cut of the stroke
+will be perpendicular to the lines at the cusp.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD><CENTER><IMG src="bezier13.gif" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+
+<TABLE class="note" width="640px"><TR><TD><B>NOTE</B><BR/>
+Initially I was experimenting with the angle contition only. It ensures 
+that you will always have smooth turns and nicely looking outlines, but
+it&#039;s too inaccurate at relatively flat parts. And the final conclusion 
+is that only the <B>combibation</B> of distance and angle estimation ensures
+both, minimal number of points plus smoothly looking strokes.
+</TD></TR></TABLE>
+
+<BR/><H2>The Devil is in the Details<A name="toc0007"></A></H2>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>But it all is not enough! There is a lot of different degenerate cases
+when this algorithm fails. And it took me pretty long time to analyze
+it and to compose something that shoots all the cases with one silver bullet.
+It would be huge amount of code to consider all cases separately and
+I hate spaghetti-code. For example, points can coincide and in this
+case calculations of the angles fail. You see, in case of uncertainty, 
+function <CODE>atan2(0,0)</CODE> returns zero, as if the line was horizontal.
+I will skip all my &#147;throes of composition&#148; and just give you 
+the bottom line.</P></TD></TR></TABLE> 
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><B>As my experiments showed all the bad cases can be treated as colliner 
+ones.</B></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>To esimate the distance we calculate the following expressions:
+</P></TD></TR></TABLE><TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+    <SPAN class="kw1">double</SPAN> dx <SPAN class="op">=</SPAN> x4<SPAN class="op">-</SPAN>x1<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN> dy <SPAN class="op">=</SPAN> y4<SPAN class="op">-</SPAN>y1<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN> d2 <SPAN class="op">=</SPAN> fabs<SPAN class="op">(</SPAN><SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>x2 <SPAN class="op">-</SPAN> x4<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> dy <SPAN class="op">-</SPAN> <SPAN class="op">(</SPAN>y2 <SPAN class="op">-</SPAN> y4<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> dx<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN> d3 <SPAN class="op">=</SPAN> fabs<SPAN class="op">(</SPAN><SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>x3 <SPAN class="op">-</SPAN> x4<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> dy <SPAN class="op">-</SPAN> <SPAN class="op">(</SPAN>y3 <SPAN class="op">-</SPAN> y4<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> dx<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Then, if we divide <B>d2</B> by the length of line segment <B>1-4</B> we will 
+have the distance between point <B>2</B> and the line <B>1-4</B>. But 
+as it was mentioned above we don&#039;t need to have a real distance, we only
+need to compare it.
+In particular it means that we can also filter the coinciding points
+and all other collinear cases if we introduce some value of
+<CODE>curve_collinearity_epsilon</CODE>:</P></TD></TR></TABLE>
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+    <SPAN class="kw1">double</SPAN> dx <SPAN class="op">=</SPAN> x4<SPAN class="op">-</SPAN>x1<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN> dy <SPAN class="op">=</SPAN> y4<SPAN class="op">-</SPAN>y1<SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">double</SPAN> d2 <SPAN class="op">=</SPAN> fabs<SPAN class="op">(</SPAN><SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>x2 <SPAN class="op">-</SPAN> x4<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> dy <SPAN class="op">-</SPAN> <SPAN class="op">(</SPAN>y2 <SPAN class="op">-</SPAN> y4<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> dx<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN> d3 <SPAN class="op">=</SPAN> fabs<SPAN class="op">(</SPAN><SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>x3 <SPAN class="op">-</SPAN> x4<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> dy <SPAN class="op">-</SPAN> <SPAN class="op">(</SPAN>y3 <SPAN class="op">-</SPAN> y4<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> dx<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>d2 <SPAN class="op">&gt;</SPAN> curve_collinearity_epsilon <SPAN class="op">&amp;&amp;</SPAN> d3 <SPAN class="op">&gt;</SPAN> curve_collinearity_epsilon<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN> 
+        <SPAN class="rem">// Regular care</SPAN>
+        <SPAN class="op">.</SPAN> <SPAN class="op">.</SPAN> <SPAN class="op">.</SPAN>
+    <SPAN class="op">}</SPAN>
+    <SPAN class="kw1">else</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>d2 <SPAN class="op">&gt;</SPAN> curve_collinearity_epsilon<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="rem">// p1,p3,p4 are collinear (or coincide), p2 is considerable</SPAN>
+            <SPAN class="op">.</SPAN> <SPAN class="op">.</SPAN> <SPAN class="op">.</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">else</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>d3 <SPAN class="op">&gt;</SPAN> curve_collinearity_epsilon<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="rem">// p1,p2,p4 are collinear (or coincide), p3 is considerable</SPAN>
+            <SPAN class="op">.</SPAN> <SPAN class="op">.</SPAN> <SPAN class="op">.</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">else</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="rem">// Collinear case</SPAN>
+            <SPAN class="op">.</SPAN> <SPAN class="op">.</SPAN> <SPAN class="op">.</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>In the collinear (or coinciding points) cases we can do differently. 
+And one of the cases is when all four points are collinear. 
+The most amazing thing is that the collinearity check perfectly protects
+us from very deep recursion in cases when we have real cusps. We 
+can do without limiting the cusps and can remove the code that controls
+the cusp limit. But I still left it as is with an additional condition of 
+whether we should limit cusps or not. Just because in some cases it can be 
+useful.</P></TD></TR></TABLE>
+
+<BR/><H2>Collinear Case<A name="toc0008"></A></H2>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>I would like to thank Timothee Groleau, <A href="http://www.timotheegroleau.com"><IMG src="../../link.gif" border="0"/>http://www.timotheegroleau.com</A> for
+the great and simple idea of estimation of the momentary curvature. It&#039;s simply 
+the distance between point <B>1234</B> and the midpoint of <B>1-4</B>. It&#039;s totally
+different from estimating of the distance between a point and a line. His method
+also gives us quite appropriate result, although it&#039;s still generally worse. 
+But it has a very important advantage. It handles the collinear case, when
+the control points have the following order:</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:center"><P><CODE>2--------1---------4----------3</CODE></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD><CENTER><IMG src="bezier14.gif" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Any method with the criterion of line-point distance will fail in this case. 
+There will be just one line segment <B>1-4</B>, which is obviously wrong. 
+Timothee&#039;s criterion works well in this case and we <B>already have a mechanism
+of detecting the collinearity!</B> So that, the code of handling the collinear
+case is pretty simple:
+</P></TD></TR></TABLE><TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+    <SPAN class="op">.</SPAN> <SPAN class="op">.</SPAN> <SPAN class="op">.</SPAN>
+    <SPAN class="kw1">else</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="rem">// Collinear case</SPAN>
+        <SPAN class="rem">//-----------------</SPAN>
+        dx <SPAN class="op">=</SPAN> x1234 <SPAN class="op">-</SPAN> <SPAN class="op">(</SPAN>x1 <SPAN class="op">+</SPAN> x4<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+        dy <SPAN class="op">=</SPAN> y1234 <SPAN class="op">-</SPAN> <SPAN class="op">(</SPAN>y1 <SPAN class="op">+</SPAN> y4<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>dx<SPAN class="op">*</SPAN>dx <SPAN class="op">+</SPAN> dy<SPAN class="op">*</SPAN>dy <SPAN class="op">&lt;=</SPAN> m_distance_tolerance<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            m_points<SPAN class="op">.</SPAN>add<SPAN class="op">(</SPAN>point_type<SPAN class="op">(</SPAN>x1234<SPAN class="op">,</SPAN> y1234<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">return</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The only thing we need to do is to enforce subdivision one time, because
+There can be a &quot;Z&quot; case mentioned above.</P></TD></TR></TABLE> 
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>So that, the pseudo-code looks as follows:  
+</P></TD></TR></TABLE><TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+<SPAN class="kw1">void</SPAN> recursive_bezier<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x1<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y1<SPAN class="op">,</SPAN> 
+                      <SPAN class="kw1">double</SPAN> x2<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y2<SPAN class="op">,</SPAN> 
+                      <SPAN class="kw1">double</SPAN> x3<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y3<SPAN class="op">,</SPAN> 
+                      <SPAN class="kw1">double</SPAN> x4<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y4<SPAN class="op">,</SPAN>
+                      <SPAN class="kw1">unsigned</SPAN> level<SPAN class="op">)</SPAN>
+<SPAN class="op">{</SPAN>
+    <SPAN class="kw1">double</SPAN> x12   <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>x1 <SPAN class="op">+</SPAN> x2<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN> y12   <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>y1 <SPAN class="op">+</SPAN> y2<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN> x23   <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>x2 <SPAN class="op">+</SPAN> x3<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN> y23   <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>y2 <SPAN class="op">+</SPAN> y3<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN> x34   <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>x3 <SPAN class="op">+</SPAN> x4<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN> y34   <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>y3 <SPAN class="op">+</SPAN> y4<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN> x123  <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>x12 <SPAN class="op">+</SPAN> x23<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN> y123  <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>y12 <SPAN class="op">+</SPAN> y23<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN> x234  <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>x23 <SPAN class="op">+</SPAN> x34<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN> y234  <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>y23 <SPAN class="op">+</SPAN> y34<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN> x1234 <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>x123 <SPAN class="op">+</SPAN> x234<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN> y1234 <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>y123 <SPAN class="op">+</SPAN> y234<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>level<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>curve_is_flat<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            draw_line<SPAN class="op">(</SPAN>x1<SPAN class="op">,</SPAN> y1<SPAN class="op">,</SPAN> x4<SPAN class="op">,</SPAN> y4<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">return</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    recursive_bezier<SPAN class="op">(</SPAN>x1<SPAN class="op">,</SPAN> y1<SPAN class="op">,</SPAN> x12<SPAN class="op">,</SPAN> y12<SPAN class="op">,</SPAN> x123<SPAN class="op">,</SPAN> y123<SPAN class="op">,</SPAN> x1234<SPAN class="op">,</SPAN> y1234<SPAN class="op">,</SPAN> level <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> 
+    recursive_bezier<SPAN class="op">(</SPAN>x1234<SPAN class="op">,</SPAN> y1234<SPAN class="op">,</SPAN> x234<SPAN class="op">,</SPAN> y234<SPAN class="op">,</SPAN> x34<SPAN class="op">,</SPAN> y34<SPAN class="op">,</SPAN> x4<SPAN class="op">,</SPAN> y4<SPAN class="op">,</SPAN> level <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> 
+<SPAN class="op">}</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>It also allows us to limit the recursion. Well, it seems that we don&#039;t 
+have to limit it (it&#039;s already limited by the other criteria), but the 
+strict mathematical proof of it is extremally difficult to me, so, just 
+in case I limit the recursion by <B>32</B>. In practice I have never seen
+deeper than 17 with extremally hard conditions (very long curve, 
+thousands of points, tiny error, plus a cusp).</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Timothee&#039;s criterion produces a number of points when we have another
+collinear case: <NOBR><CODE>1---2---3-------4</CODE></NOBR>. It would be good to 
+detect it too and to produce only two points (<B>1-4</B>), but I think
+it&#039;s not that important because the cases of strict collinearity are
+very rear. So, in practice it won&#039;t affect the performance anyhow.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>There are two other cases of collinearity:
+</P></TD></TR></TABLE><TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>d2 <SPAN class="op">&gt;</SPAN> curve_collinearity_epsilon<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="rem">// p1,p3,p4 are collinear (or coincide), p2 is considerable</SPAN>
+        <SPAN class="op">.</SPAN> <SPAN class="op">.</SPAN> <SPAN class="op">.</SPAN>
+    <SPAN class="op">}</SPAN>
+    <SPAN class="kw1">else</SPAN>
+    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>d3 <SPAN class="op">&gt;</SPAN> curve_collinearity_epsilon<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="rem">// p1,p2,p4 are collinear (or coincide), p3 is considerable</SPAN>
+        <SPAN class="op">.</SPAN> <SPAN class="op">.</SPAN> <SPAN class="op">.</SPAN>
+    <SPAN class="op">}</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>That&#039;s easy. We simply treat points <B>1</B> and <B>3</B> as coinciding 
+(points <B>2</B> and <B>4</B> in the second case). Well, there is still 
+one detail that I&#039;ll tell you about.</P></TD></TR></TABLE>
+
+<BR/><H2>The Full Code<A name="toc0009"></A></H2>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Finally we can publish the full source code.
+</P></TD></TR></TABLE><TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">void</SPAN> curve4_div::init<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x1<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y1<SPAN class="op">,</SPAN> 
+                          <SPAN class="kw1">double</SPAN> x2<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y2<SPAN class="op">,</SPAN> 
+                          <SPAN class="kw1">double</SPAN> x3<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y3<SPAN class="op">,</SPAN>
+                          <SPAN class="kw1">double</SPAN> x4<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y4<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        m_points<SPAN class="op">.</SPAN>remove_all<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_distance_tolerance <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">5</SPAN> <SPAN class="op">/</SPAN> m_approximation_scale<SPAN class="op">;</SPAN>
+        m_distance_tolerance <SPAN class="op">*=</SPAN> m_distance_tolerance<SPAN class="op">;</SPAN>
+        bezier<SPAN class="op">(</SPAN>x1<SPAN class="op">,</SPAN> y1<SPAN class="op">,</SPAN> x2<SPAN class="op">,</SPAN> y2<SPAN class="op">,</SPAN> x3<SPAN class="op">,</SPAN> y3<SPAN class="op">,</SPAN> x4<SPAN class="op">,</SPAN> y4<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_count <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">void</SPAN> curve4_div::recursive_bezier<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x1<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y1<SPAN class="op">,</SPAN> 
+                                      <SPAN class="kw1">double</SPAN> x2<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y2<SPAN class="op">,</SPAN> 
+                                      <SPAN class="kw1">double</SPAN> x3<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y3<SPAN class="op">,</SPAN> 
+                                      <SPAN class="kw1">double</SPAN> x4<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y4<SPAN class="op">,</SPAN>
+                                      <SPAN class="kw1">unsigned</SPAN> level<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>level <SPAN class="op">&gt;</SPAN> curve_recursion_limit<SPAN class="op">)</SPAN> 
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">return</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">// Calculate all the mid-points of the line segments</SPAN>
+        <SPAN class="rem">//----------------------</SPAN>
+        <SPAN class="kw1">double</SPAN> x12   <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>x1 <SPAN class="op">+</SPAN> x2<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> y12   <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>y1 <SPAN class="op">+</SPAN> y2<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> x23   <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>x2 <SPAN class="op">+</SPAN> x3<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> y23   <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>y2 <SPAN class="op">+</SPAN> y3<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> x34   <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>x3 <SPAN class="op">+</SPAN> x4<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> y34   <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>y3 <SPAN class="op">+</SPAN> y4<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> x123  <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>x12 <SPAN class="op">+</SPAN> x23<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> y123  <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>y12 <SPAN class="op">+</SPAN> y23<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> x234  <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>x23 <SPAN class="op">+</SPAN> x34<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> y234  <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>y23 <SPAN class="op">+</SPAN> y34<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> x1234 <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>x123 <SPAN class="op">+</SPAN> x234<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> y1234 <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>y123 <SPAN class="op">+</SPAN> y234<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>level <SPAN class="op">&gt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> <SPAN class="rem">// Enforce subdivision first time</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="rem">// Try to approximate the full cubic curve by a single straight line</SPAN>
+            <SPAN class="rem">//------------------</SPAN>
+            <SPAN class="kw1">double</SPAN> dx <SPAN class="op">=</SPAN> x4<SPAN class="op">-</SPAN>x1<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">double</SPAN> dy <SPAN class="op">=</SPAN> y4<SPAN class="op">-</SPAN>y1<SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">double</SPAN> d2 <SPAN class="op">=</SPAN> fabs<SPAN class="op">(</SPAN><SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>x2 <SPAN class="op">-</SPAN> x4<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> dy <SPAN class="op">-</SPAN> <SPAN class="op">(</SPAN>y2 <SPAN class="op">-</SPAN> y4<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> dx<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">double</SPAN> d3 <SPAN class="op">=</SPAN> fabs<SPAN class="op">(</SPAN><SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>x3 <SPAN class="op">-</SPAN> x4<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> dy <SPAN class="op">-</SPAN> <SPAN class="op">(</SPAN>y3 <SPAN class="op">-</SPAN> y4<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> dx<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">double</SPAN> da1<SPAN class="op">,</SPAN> da2<SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>d2 <SPAN class="op">&gt;</SPAN> curve_collinearity_epsilon <SPAN class="op">&amp;&amp;</SPAN> d3 <SPAN class="op">&gt;</SPAN> curve_collinearity_epsilon<SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN> 
+                <SPAN class="rem">// Regular care</SPAN>
+                <SPAN class="rem">//-----------------</SPAN>
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>d2 <SPAN class="op">+</SPAN> d3<SPAN class="op">)</SPAN><SPAN class="op">*</SPAN><SPAN class="op">(</SPAN>d2 <SPAN class="op">+</SPAN> d3<SPAN class="op">)</SPAN> <SPAN class="op">&lt;=</SPAN> m_distance_tolerance <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>dx<SPAN class="op">*</SPAN>dx <SPAN class="op">+</SPAN> dy<SPAN class="op">*</SPAN>dy<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    <SPAN class="rem">// If the curvature doesn&#039;t exceed the distance_tolerance value</SPAN>
+                    <SPAN class="rem">// we tend to finish subdivisions.</SPAN>
+                    <SPAN class="rem">//----------------------</SPAN>
+                    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_angle_tolerance <SPAN class="op">&lt;</SPAN> curve_angle_tolerance_epsilon<SPAN class="op">)</SPAN>
+                    <SPAN class="op">{</SPAN>
+                        m_points<SPAN class="op">.</SPAN>add<SPAN class="op">(</SPAN>point_type<SPAN class="op">(</SPAN>x1234<SPAN class="op">,</SPAN> y1234<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                        <SPAN class="kw1">return</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="op">}</SPAN>
+
+                    <SPAN class="rem">// Angle &amp; Cusp Condition</SPAN>
+                    <SPAN class="rem">//----------------------</SPAN>
+                    <SPAN class="kw1">double</SPAN> a23 <SPAN class="op">=</SPAN> atan2<SPAN class="op">(</SPAN>y3 <SPAN class="op">-</SPAN> y2<SPAN class="op">,</SPAN> x3 <SPAN class="op">-</SPAN> x2<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    da1 <SPAN class="op">=</SPAN> fabs<SPAN class="op">(</SPAN>a23 <SPAN class="op">-</SPAN> atan2<SPAN class="op">(</SPAN>y2 <SPAN class="op">-</SPAN> y1<SPAN class="op">,</SPAN> x2 <SPAN class="op">-</SPAN> x1<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    da2 <SPAN class="op">=</SPAN> fabs<SPAN class="op">(</SPAN>atan2<SPAN class="op">(</SPAN>y4 <SPAN class="op">-</SPAN> y3<SPAN class="op">,</SPAN> x4 <SPAN class="op">-</SPAN> x3<SPAN class="op">)</SPAN> <SPAN class="op">-</SPAN> a23<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>da1 <SPAN class="op">&gt;=</SPAN> <A href="../../__code/include/agg_basics.h.html#pi">pi</A><SPAN class="op">)</SPAN> da1 <SPAN class="op">=</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">*</SPAN><A href="../../__code/include/agg_basics.h.html#pi">pi</A> <SPAN class="op">-</SPAN> da1<SPAN class="op">;</SPAN>
+                    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>da2 <SPAN class="op">&gt;=</SPAN> <A href="../../__code/include/agg_basics.h.html#pi">pi</A><SPAN class="op">)</SPAN> da2 <SPAN class="op">=</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">*</SPAN><A href="../../__code/include/agg_basics.h.html#pi">pi</A> <SPAN class="op">-</SPAN> da2<SPAN class="op">;</SPAN>
+
+                    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>da1 <SPAN class="op">+</SPAN> da2 <SPAN class="op">&lt;</SPAN> m_angle_tolerance<SPAN class="op">)</SPAN>
+                    <SPAN class="op">{</SPAN>
+                        <SPAN class="rem">// Finally we can stop the recursion</SPAN>
+                        <SPAN class="rem">//----------------------</SPAN>
+                        m_points<SPAN class="op">.</SPAN>add<SPAN class="op">(</SPAN>point_type<SPAN class="op">(</SPAN>x1234<SPAN class="op">,</SPAN> y1234<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                        <SPAN class="kw1">return</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="op">}</SPAN>
+
+                    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_cusp_limit <SPAN class="op">!=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+                    <SPAN class="op">{</SPAN>
+                        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>da1 <SPAN class="op">&gt;</SPAN> m_cusp_limit<SPAN class="op">)</SPAN>
+                        <SPAN class="op">{</SPAN>
+                            m_points<SPAN class="op">.</SPAN>add<SPAN class="op">(</SPAN>point_type<SPAN class="op">(</SPAN>x2<SPAN class="op">,</SPAN> y2<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                            <SPAN class="kw1">return</SPAN><SPAN class="op">;</SPAN>
+                        <SPAN class="op">}</SPAN>
+
+                        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>da2 <SPAN class="op">&gt;</SPAN> m_cusp_limit<SPAN class="op">)</SPAN>
+                        <SPAN class="op">{</SPAN>
+                            m_points<SPAN class="op">.</SPAN>add<SPAN class="op">(</SPAN>point_type<SPAN class="op">(</SPAN>x3<SPAN class="op">,</SPAN> y3<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                            <SPAN class="kw1">return</SPAN><SPAN class="op">;</SPAN>
+                        <SPAN class="op">}</SPAN>
+                    <SPAN class="op">}</SPAN>
+                <SPAN class="op">}</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="kw1">else</SPAN>
+            <SPAN class="op">{</SPAN>
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>d2 <SPAN class="op">&gt;</SPAN> curve_collinearity_epsilon<SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    <SPAN class="rem">// p1,p3,p4 are collinear, p2 is considerable</SPAN>
+                    <SPAN class="rem">//----------------------</SPAN>
+                    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>d2 <SPAN class="op">*</SPAN> d2 <SPAN class="op">&lt;=</SPAN> m_distance_tolerance <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>dx<SPAN class="op">*</SPAN>dx <SPAN class="op">+</SPAN> dy<SPAN class="op">*</SPAN>dy<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+                    <SPAN class="op">{</SPAN>
+                        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_angle_tolerance <SPAN class="op">&lt;</SPAN> curve_angle_tolerance_epsilon<SPAN class="op">)</SPAN>
+                        <SPAN class="op">{</SPAN>
+                            m_points<SPAN class="op">.</SPAN>add<SPAN class="op">(</SPAN>point_type<SPAN class="op">(</SPAN>x1234<SPAN class="op">,</SPAN> y1234<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                            <SPAN class="kw1">return</SPAN><SPAN class="op">;</SPAN>
+                        <SPAN class="op">}</SPAN>
+
+                        <SPAN class="rem">// Angle Condition</SPAN>
+                        <SPAN class="rem">//----------------------</SPAN>
+                        da1 <SPAN class="op">=</SPAN> fabs<SPAN class="op">(</SPAN>atan2<SPAN class="op">(</SPAN>y3 <SPAN class="op">-</SPAN> y2<SPAN class="op">,</SPAN> x3 <SPAN class="op">-</SPAN> x2<SPAN class="op">)</SPAN> <SPAN class="op">-</SPAN> atan2<SPAN class="op">(</SPAN>y2 <SPAN class="op">-</SPAN> y1<SPAN class="op">,</SPAN> x2 <SPAN class="op">-</SPAN> x1<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>da1 <SPAN class="op">&gt;=</SPAN> <A href="../../__code/include/agg_basics.h.html#pi">pi</A><SPAN class="op">)</SPAN> da1 <SPAN class="op">=</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">*</SPAN><A href="../../__code/include/agg_basics.h.html#pi">pi</A> <SPAN class="op">-</SPAN> da1<SPAN class="op">;</SPAN>
+
+                        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>da1 <SPAN class="op">&lt;</SPAN> m_angle_tolerance<SPAN class="op">)</SPAN>
+                        <SPAN class="op">{</SPAN>
+                            m_points<SPAN class="op">.</SPAN>add<SPAN class="op">(</SPAN>point_type<SPAN class="op">(</SPAN>x2<SPAN class="op">,</SPAN> y2<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                            m_points<SPAN class="op">.</SPAN>add<SPAN class="op">(</SPAN>point_type<SPAN class="op">(</SPAN>x3<SPAN class="op">,</SPAN> y3<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                            <SPAN class="kw1">return</SPAN><SPAN class="op">;</SPAN>
+                        <SPAN class="op">}</SPAN>
+
+                        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_cusp_limit <SPAN class="op">!=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+                        <SPAN class="op">{</SPAN>
+                            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>da1 <SPAN class="op">&gt;</SPAN> m_cusp_limit<SPAN class="op">)</SPAN>
+                            <SPAN class="op">{</SPAN>
+                                m_points<SPAN class="op">.</SPAN>add<SPAN class="op">(</SPAN>point_type<SPAN class="op">(</SPAN>x2<SPAN class="op">,</SPAN> y2<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                                <SPAN class="kw1">return</SPAN><SPAN class="op">;</SPAN>
+                            <SPAN class="op">}</SPAN>
+                        <SPAN class="op">}</SPAN>
+                    <SPAN class="op">}</SPAN>
+                <SPAN class="op">}</SPAN>
+                <SPAN class="kw1">else</SPAN>
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>d3 <SPAN class="op">&gt;</SPAN> curve_collinearity_epsilon<SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    <SPAN class="rem">// p1,p2,p4 are collinear, p3 is considerable</SPAN>
+                    <SPAN class="rem">//----------------------</SPAN>
+                    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>d3 <SPAN class="op">*</SPAN> d3 <SPAN class="op">&lt;=</SPAN> m_distance_tolerance <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>dx<SPAN class="op">*</SPAN>dx <SPAN class="op">+</SPAN> dy<SPAN class="op">*</SPAN>dy<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+                    <SPAN class="op">{</SPAN>
+                        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_angle_tolerance <SPAN class="op">&lt;</SPAN> curve_angle_tolerance_epsilon<SPAN class="op">)</SPAN>
+                        <SPAN class="op">{</SPAN>
+                            m_points<SPAN class="op">.</SPAN>add<SPAN class="op">(</SPAN>point_type<SPAN class="op">(</SPAN>x1234<SPAN class="op">,</SPAN> y1234<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                            <SPAN class="kw1">return</SPAN><SPAN class="op">;</SPAN>
+                        <SPAN class="op">}</SPAN>
+
+                        <SPAN class="rem">// Angle Condition</SPAN>
+                        <SPAN class="rem">//----------------------</SPAN>
+                        da1 <SPAN class="op">=</SPAN> fabs<SPAN class="op">(</SPAN>atan2<SPAN class="op">(</SPAN>y4 <SPAN class="op">-</SPAN> y3<SPAN class="op">,</SPAN> x4 <SPAN class="op">-</SPAN> x3<SPAN class="op">)</SPAN> <SPAN class="op">-</SPAN> atan2<SPAN class="op">(</SPAN>y3 <SPAN class="op">-</SPAN> y2<SPAN class="op">,</SPAN> x3 <SPAN class="op">-</SPAN> x2<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>da1 <SPAN class="op">&gt;=</SPAN> <A href="../../__code/include/agg_basics.h.html#pi">pi</A><SPAN class="op">)</SPAN> da1 <SPAN class="op">=</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">*</SPAN><A href="../../__code/include/agg_basics.h.html#pi">pi</A> <SPAN class="op">-</SPAN> da1<SPAN class="op">;</SPAN>
+
+                        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>da1 <SPAN class="op">&lt;</SPAN> m_angle_tolerance<SPAN class="op">)</SPAN>
+                        <SPAN class="op">{</SPAN>
+                            m_points<SPAN class="op">.</SPAN>add<SPAN class="op">(</SPAN>point_type<SPAN class="op">(</SPAN>x2<SPAN class="op">,</SPAN> y2<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                            m_points<SPAN class="op">.</SPAN>add<SPAN class="op">(</SPAN>point_type<SPAN class="op">(</SPAN>x3<SPAN class="op">,</SPAN> y3<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                            <SPAN class="kw1">return</SPAN><SPAN class="op">;</SPAN>
+                        <SPAN class="op">}</SPAN>
+
+                        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_cusp_limit <SPAN class="op">!=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+                        <SPAN class="op">{</SPAN>
+                            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>da1 <SPAN class="op">&gt;</SPAN> m_cusp_limit<SPAN class="op">)</SPAN>
+                            <SPAN class="op">{</SPAN>
+                                m_points<SPAN class="op">.</SPAN>add<SPAN class="op">(</SPAN>point_type<SPAN class="op">(</SPAN>x3<SPAN class="op">,</SPAN> y3<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                                <SPAN class="kw1">return</SPAN><SPAN class="op">;</SPAN>
+                            <SPAN class="op">}</SPAN>
+                        <SPAN class="op">}</SPAN>
+                    <SPAN class="op">}</SPAN>
+                <SPAN class="op">}</SPAN>
+                <SPAN class="kw1">else</SPAN>
+                <SPAN class="op">{</SPAN>
+                    <SPAN class="rem">// Collinear case</SPAN>
+                    <SPAN class="rem">//-----------------</SPAN>
+                    dx <SPAN class="op">=</SPAN> x1234 <SPAN class="op">-</SPAN> <SPAN class="op">(</SPAN>x1 <SPAN class="op">+</SPAN> x4<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+                    dy <SPAN class="op">=</SPAN> y1234 <SPAN class="op">-</SPAN> <SPAN class="op">(</SPAN>y1 <SPAN class="op">+</SPAN> y4<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>dx<SPAN class="op">*</SPAN>dx <SPAN class="op">+</SPAN> dy<SPAN class="op">*</SPAN>dy <SPAN class="op">&lt;=</SPAN> m_distance_tolerance<SPAN class="op">)</SPAN>
+                    <SPAN class="op">{</SPAN>
+                        m_points<SPAN class="op">.</SPAN>add<SPAN class="op">(</SPAN>point_type<SPAN class="op">(</SPAN>x1234<SPAN class="op">,</SPAN> y1234<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                        <SPAN class="kw1">return</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="op">}</SPAN>
+                <SPAN class="op">}</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">// Continue subdivision</SPAN>
+        <SPAN class="rem">//----------------------</SPAN>
+        recursive_bezier<SPAN class="op">(</SPAN>x1<SPAN class="op">,</SPAN> y1<SPAN class="op">,</SPAN> x12<SPAN class="op">,</SPAN> y12<SPAN class="op">,</SPAN> x123<SPAN class="op">,</SPAN> y123<SPAN class="op">,</SPAN> x1234<SPAN class="op">,</SPAN> y1234<SPAN class="op">,</SPAN> level <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> 
+        recursive_bezier<SPAN class="op">(</SPAN>x1234<SPAN class="op">,</SPAN> y1234<SPAN class="op">,</SPAN> x234<SPAN class="op">,</SPAN> y234<SPAN class="op">,</SPAN> x34<SPAN class="op">,</SPAN> y34<SPAN class="op">,</SPAN> x4<SPAN class="op">,</SPAN> y4<SPAN class="op">,</SPAN> level <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> 
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">void</SPAN> curve4_div::bezier<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x1<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y1<SPAN class="op">,</SPAN> 
+                            <SPAN class="kw1">double</SPAN> x2<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y2<SPAN class="op">,</SPAN> 
+                            <SPAN class="kw1">double</SPAN> x3<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y3<SPAN class="op">,</SPAN> 
+                            <SPAN class="kw1">double</SPAN> x4<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y4<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        m_points<SPAN class="op">.</SPAN>add<SPAN class="op">(</SPAN>point_type<SPAN class="op">(</SPAN>x1<SPAN class="op">,</SPAN> y1<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        recursive_bezier<SPAN class="op">(</SPAN>x1<SPAN class="op">,</SPAN> y1<SPAN class="op">,</SPAN> x2<SPAN class="op">,</SPAN> y2<SPAN class="op">,</SPAN> x3<SPAN class="op">,</SPAN> y3<SPAN class="op">,</SPAN> x4<SPAN class="op">,</SPAN> y4<SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_points<SPAN class="op">.</SPAN>add<SPAN class="op">(</SPAN>point_type<SPAN class="op">(</SPAN>x4<SPAN class="op">,</SPAN> y4<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>It&#039;s not full to be honest, but it shows the algorithm. The rest (class
+definition) can be found here:</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Class <A href="../../__code/include/agg_curves.h.html#curve4_div">curve4_div</A>, files <A href="../../__code/include/agg_curves.h.html">agg_curves.h</A>, <A href="../../__code/src/agg_curves.cpp.html">agg_curves.cpp</A>.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The detail I was talking about is the following piece of code when processing
+the collinear cases:
+</P></TD></TR></TABLE><TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>da1 <SPAN class="op">&lt;</SPAN> m_angle_tolerance<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        m_points<SPAN class="op">.</SPAN>add<SPAN class="op">(</SPAN>point_type<SPAN class="op">(</SPAN>x2<SPAN class="op">,</SPAN> y2<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_points<SPAN class="op">.</SPAN>add<SPAN class="op">(</SPAN>point_type<SPAN class="op">(</SPAN>x3<SPAN class="op">,</SPAN> y3<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">return</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>You see, here we also add two points, instead of one (<B>1234</B>). I came up 
+with this also experimentally. Adding just one point (any of them) produces
+wrong cut at the cusp (wrong angle). I&#039;m not quite sure about the mathematical
+meaning of it, but&#133; it just works!</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The class has the following parameters:</P></TD></TR></TABLE> 
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><UL type="disc">
+<LI><B>approximation_scale</B> &#151; Eventually determines the approximation 
+   accuracy. In practice we need to transform points 
+   from the World coordinate system to the Screen one. It always has 
+   some scaling coefficient. The curves are usually processed in the 
+   World coordinates, while the approximation accuracy should be eventually 
+   in pixels. Usually it looks as follows: <BR/>
+   <CODE>m_curved.approximation_scale(m_transform.scale());</CODE> where <CODE>m_transform</CODE>
+   is the affine matrix that includes all the transformations, including viewport 
+   and zoom.</LI>
+<LI><B>angle_tolerance</B> &#151; You set it in radians. The less this value is the more
+   accurate will be the approximation at sharp turns. But 0 means that we don&#039;t
+   consider angle conditions at all. </LI>
+<LI><B>cusp_limit</B> &#151; An angle in radians. If 0, only the real cusps will have 
+   bevel cuts. If more than 0, it will restrict the sharpness. The more this
+   value is the less sharp turns will be cut. Typically it should not exceed
+   10-15 degrees.</LI></UL></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>As I mentioned above estimation by angles is expensive and we not always 
+need it. We need it only in cases of considerable strokes or contours of 
+the curves. To optimize it we can do approximately the following:
+</P></TD></TR></TABLE><TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+    <SPAN class="kw1">double</SPAN> scl <SPAN class="op">=</SPAN> m_transform<SPAN class="op">.</SPAN>scale<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    m_curved<SPAN class="op">.</SPAN>approximation_scale<SPAN class="op">(</SPAN>scl<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="rem">// Turn off processing of curve cusps</SPAN>
+    <SPAN class="rem">//-----------------</SPAN>
+    m_curved<SPAN class="op">.</SPAN>angle_tolerance<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>attr<SPAN class="op">.</SPAN>fill_flag<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="rem">// Process the fill</SPAN>
+        <SPAN class="op">.</SPAN> <SPAN class="op">.</SPAN> <SPAN class="op">.</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>attr<SPAN class="op">.</SPAN>stroke_flag<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="rem">// Process the stroke</SPAN>
+        <SPAN class="rem">//---------------------</SPAN>
+        <SPAN class="rem">// If the *visual* line width is considerable we </SPAN>
+        <SPAN class="rem">// turn on processing of sharp turns and cusps.</SPAN>
+        <SPAN class="rem">//---------------------</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>attr<SPAN class="op">.</SPAN>stroke_width <SPAN class="op">*</SPAN> scl <SPAN class="op">&gt;</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            m_curved<SPAN class="op">.</SPAN>angle_tolerance<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">2</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="op">.</SPAN> <SPAN class="op">.</SPAN> <SPAN class="op">.</SPAN>
+    <SPAN class="op">}</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>It considerably speeds up the overall processing.</P></TD></TR></TABLE>
+
+<BR/><H2>Quadric Curves<A name="toc0010"></A></H2>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Quadric curves are much simpler to handle. We don&#039;t even need 
+the <B>cusp_limit</B> creiterion because the collinearity check
+handles all the degenerate cases.
+</P></TD></TR></TABLE><TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">void</SPAN> curve3_div::init<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x1<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y1<SPAN class="op">,</SPAN> 
+                          <SPAN class="kw1">double</SPAN> x2<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y2<SPAN class="op">,</SPAN> 
+                          <SPAN class="kw1">double</SPAN> x3<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y3<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        m_points<SPAN class="op">.</SPAN>remove_all<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_distance_tolerance <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">5</SPAN> <SPAN class="op">/</SPAN> m_approximation_scale<SPAN class="op">;</SPAN>
+        m_distance_tolerance <SPAN class="op">*=</SPAN> m_distance_tolerance<SPAN class="op">;</SPAN>
+        bezier<SPAN class="op">(</SPAN>x1<SPAN class="op">,</SPAN> y1<SPAN class="op">,</SPAN> x2<SPAN class="op">,</SPAN> y2<SPAN class="op">,</SPAN> x3<SPAN class="op">,</SPAN> y3<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_count <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">void</SPAN> curve3_div::recursive_bezier<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x1<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y1<SPAN class="op">,</SPAN> 
+                                      <SPAN class="kw1">double</SPAN> x2<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y2<SPAN class="op">,</SPAN> 
+                                      <SPAN class="kw1">double</SPAN> x3<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y3<SPAN class="op">,</SPAN>
+                                      <SPAN class="kw1">unsigned</SPAN> level<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>level <SPAN class="op">&gt;</SPAN> curve_recursion_limit<SPAN class="op">)</SPAN> 
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">return</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">// Calculate all the mid-points of the line segments</SPAN>
+        <SPAN class="rem">//----------------------</SPAN>
+        <SPAN class="kw1">double</SPAN> x12   <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>x1 <SPAN class="op">+</SPAN> x2<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>                
+        <SPAN class="kw1">double</SPAN> y12   <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>y1 <SPAN class="op">+</SPAN> y2<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> x23   <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>x2 <SPAN class="op">+</SPAN> x3<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> y23   <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>y2 <SPAN class="op">+</SPAN> y3<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> x123  <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>x12 <SPAN class="op">+</SPAN> x23<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> y123  <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>y12 <SPAN class="op">+</SPAN> y23<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">double</SPAN> dx <SPAN class="op">=</SPAN> x3<SPAN class="op">-</SPAN>x1<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> dy <SPAN class="op">=</SPAN> y3<SPAN class="op">-</SPAN>y1<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> d <SPAN class="op">=</SPAN> fabs<SPAN class="op">(</SPAN><SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>x2 <SPAN class="op">-</SPAN> x3<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> dy <SPAN class="op">-</SPAN> <SPAN class="op">(</SPAN>y2 <SPAN class="op">-</SPAN> y3<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> dx<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>d <SPAN class="op">&gt;</SPAN> curve_collinearity_epsilon<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN> 
+            <SPAN class="rem">// Regular care</SPAN>
+            <SPAN class="rem">//-----------------</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>d <SPAN class="op">*</SPAN> d <SPAN class="op">&lt;=</SPAN> m_distance_tolerance <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>dx<SPAN class="op">*</SPAN>dx <SPAN class="op">+</SPAN> dy<SPAN class="op">*</SPAN>dy<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                <SPAN class="rem">// If the curvature doesn&#039;t exceed the distance_tolerance value</SPAN>
+                <SPAN class="rem">// we tend to finish subdivisions.</SPAN>
+                <SPAN class="rem">//----------------------</SPAN>
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_angle_tolerance <SPAN class="op">&lt;</SPAN> curve_angle_tolerance_epsilon<SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    m_points<SPAN class="op">.</SPAN>add<SPAN class="op">(</SPAN>point_type<SPAN class="op">(</SPAN>x123<SPAN class="op">,</SPAN> y123<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="kw1">return</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+
+                <SPAN class="rem">// Angle &amp; Cusp Condition</SPAN>
+                <SPAN class="rem">//----------------------</SPAN>
+                <SPAN class="kw1">double</SPAN> da <SPAN class="op">=</SPAN> fabs<SPAN class="op">(</SPAN>atan2<SPAN class="op">(</SPAN>y3 <SPAN class="op">-</SPAN> y2<SPAN class="op">,</SPAN> x3 <SPAN class="op">-</SPAN> x2<SPAN class="op">)</SPAN> <SPAN class="op">-</SPAN> atan2<SPAN class="op">(</SPAN>y2 <SPAN class="op">-</SPAN> y1<SPAN class="op">,</SPAN> x2 <SPAN class="op">-</SPAN> x1<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>da <SPAN class="op">&gt;=</SPAN> <A href="../../__code/include/agg_basics.h.html#pi">pi</A><SPAN class="op">)</SPAN> da <SPAN class="op">=</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">*</SPAN><A href="../../__code/include/agg_basics.h.html#pi">pi</A> <SPAN class="op">-</SPAN> da<SPAN class="op">;</SPAN>
+
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>da <SPAN class="op">&lt;</SPAN> m_angle_tolerance<SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    <SPAN class="rem">// Finally we can stop the recursion</SPAN>
+                    <SPAN class="rem">//----------------------</SPAN>
+                    m_points<SPAN class="op">.</SPAN>add<SPAN class="op">(</SPAN>point_type<SPAN class="op">(</SPAN>x123<SPAN class="op">,</SPAN> y123<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="kw1">return</SPAN><SPAN class="op">;</SPAN>                 
+                <SPAN class="op">}</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">else</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="rem">// Collinear case</SPAN>
+            <SPAN class="rem">//-----------------</SPAN>
+            dx <SPAN class="op">=</SPAN> x123 <SPAN class="op">-</SPAN> <SPAN class="op">(</SPAN>x1 <SPAN class="op">+</SPAN> x3<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+            dy <SPAN class="op">=</SPAN> y123 <SPAN class="op">-</SPAN> <SPAN class="op">(</SPAN>y1 <SPAN class="op">+</SPAN> y3<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>dx<SPAN class="op">*</SPAN>dx <SPAN class="op">+</SPAN> dy<SPAN class="op">*</SPAN>dy <SPAN class="op">&lt;=</SPAN> m_distance_tolerance<SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                m_points<SPAN class="op">.</SPAN>add<SPAN class="op">(</SPAN>point_type<SPAN class="op">(</SPAN>x123<SPAN class="op">,</SPAN> y123<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">return</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">// Continue subdivision</SPAN>
+        <SPAN class="rem">//----------------------</SPAN>
+        recursive_bezier<SPAN class="op">(</SPAN>x1<SPAN class="op">,</SPAN> y1<SPAN class="op">,</SPAN> x12<SPAN class="op">,</SPAN> y12<SPAN class="op">,</SPAN> x123<SPAN class="op">,</SPAN> y123<SPAN class="op">,</SPAN> level <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> 
+        recursive_bezier<SPAN class="op">(</SPAN>x123<SPAN class="op">,</SPAN> y123<SPAN class="op">,</SPAN> x23<SPAN class="op">,</SPAN> y23<SPAN class="op">,</SPAN> x3<SPAN class="op">,</SPAN> y3<SPAN class="op">,</SPAN> level <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> 
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">void</SPAN> curve3_div::bezier<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x1<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y1<SPAN class="op">,</SPAN> 
+                            <SPAN class="kw1">double</SPAN> x2<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y2<SPAN class="op">,</SPAN> 
+                            <SPAN class="kw1">double</SPAN> x3<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y3<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        m_points<SPAN class="op">.</SPAN>add<SPAN class="op">(</SPAN>point_type<SPAN class="op">(</SPAN>x1<SPAN class="op">,</SPAN> y1<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        recursive_bezier<SPAN class="op">(</SPAN>x1<SPAN class="op">,</SPAN> y1<SPAN class="op">,</SPAN> x2<SPAN class="op">,</SPAN> y2<SPAN class="op">,</SPAN> x3<SPAN class="op">,</SPAN> y3<SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_points<SPAN class="op">.</SPAN>add<SPAN class="op">(</SPAN>point_type<SPAN class="op">(</SPAN>x3<SPAN class="op">,</SPAN> y3<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+
+
+<BR/><H2>Demo Application<A name="toc0011"></A></H2>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>You can doanload a demo appication for Win32 from
+<A href="../../demo/bezier_div.zip"><IMG src="../../link.gif" border="0"/>here</A>.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Below is the screenshot:
+</P></TD></TR></TABLE><TABLE width="640px"><TR><TD><CENTER><IMG src="../../demo/bezier_div.png" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>It works rather slow, but it&#039;s not a concern. I calculate the maximal 
+distance and angle error for five scales: 0.01, 0.1, 1, 10, and 100 (which
+is rather time consuming).
+The distance error means that we set the <CODE>approximation_scale()</CODE> to the 
+one of the above values, calculate the maximal deviation and then multiply 
+it by the <CODE>approximation_scale()</CODE> value. So that, it will be the
+maximal error normalized to the screen resolution (pixels).</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The reference curve is calculated using the direct method <B>Paul Bourke</B>
+describes (see Introduction) with a very little step (4096 points).</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>You can clearly see the difference in the maximal deviation in the 
+incremental and subdivision methods. In the subdivision method the
+maximal error remains about the same regardless of the scale (or 
+decreases on scales 0.01 and 0.1). But in the incremental method 
+it decreases on the 10x and 100x scales. This behaviour is 
+apparently wrong because we don&#039;t need the error of 0.001 pixel. 
+It means that the curve has too many points.
+We need to keep a balance of the error and the number of 
+points.</P></TD></TR></TABLE> 
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>You can also compare the results of rendering:<BR/>
+<A href="../../stuff/tiger_inc.png"><IMG src="../../link.gif" border="0"/><B>Incremental Tiger</B></A><BR/>
+<A href="../../stuff/tiger_div.png"><IMG src="../../link.gif" border="0"/><B>Subdivided Tiger</B></A></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The difference is seems to be very litte, but if you download 
+these pictures and switch between them in some slideshow program
+you will see it. In these examples I tried to set the approximation
+accuracy in such a way that the eventual number of vertices would 
+be about the same (I even gave the incremental method some extra 
+allowance). If you carefully compare the pictures you will see 
+that the subdivision method gives us much more accurate result.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Still, the incremental method is also nice. It&#039;s simple and fast
+and can be used in cases when the performance is critical. A typical
+case when it&#039;s can be used is font rendering. The fonts usually
+don&#039;t have any complex curves, all curves there are close to arcs
+(TrueType fonts have only quadric curves in most cases).</P></TD></TR></TABLE> 
+
+
+<BR/><H2>Update 1<A name="toc0012"></A></H2>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>While writing this article I&#039;ve got an idea that adding points 
+<B>1234</B> is not that good. In this case the curve is
+<B>circumscribed</B> and the polyline is <B>escribed</B>. 
+If we add points <B>23</B> we will have a better result.
+Suppose we have only one subdivision and compare the results:</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD><CENTER><IMG src="bezier15.gif" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Here the blue polyline is what we will have in case of adding point 
+<B>1234</B>, the green one is when adding points <B>23</B>. It&#039;s 
+obvious that the green line has less deviation. In practice it&#039;s 
+1.5&#133;2 times less.</P></TD></TR></TABLE>
+
+<BR/><H2>Update 2<A name="toc0013"></A></H2>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>In the news group 
+<A href="http://groups-beta.google.com/group/comp.graphics.algorithms"><IMG src="../../link.gif" border="0"/>comp.graphics.algorithms</A> I&#039;ve got fair criticism for not being
+familiar enough with professional articles. The whole discussion 
+is <A href="http://groups-beta.google.com/group/comp.graphics.algorithms/browse_frm/thread/d85ca902fdbd746e/"><IMG src="../../link.gif" border="0"/>here</A>. You can also find it in <A href="http://groups.google.com"><IMG src="../../link.gif" border="0"/>http://groups.google.com</A> by key
+phrase &#147;Adaptive Subdivision of Bezier Curves McSeem&#148;.</P></TD></TR></TABLE> 
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>One of the articles is called 
+&#147;Adaptive forward differencing for rendering curves and surfaces&#148;
+and can be easily found in the Internet. The method described there
+is very nice, but it still doesn&#039;t solve the problem of smoothly 
+looking strokes.</P></TD></TR></TABLE> 
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>But the most interesting was a message from person with nickname 
+<B>Just d&#039; FAQs</B>. Here is the quotation:</P></TD></TR></TABLE>
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+A well-known flatness test is both cheaper and more reliable 
+than the ones you have tried. The essential observation is that 
+when the curve is a uniform speed straight line from end to end,
+the control points are evenly spaced from beginning to end. 
+Therefore, our measure of how far we deviate from that ideal 
+uses distance of the middle controls, not from the line itself, 
+but from their ideal *arrangement*. Point 2 should be halfway 
+between points 1 and 3; point 3 should be halfway between points 
+2 and 4.
+This, too, can be improved. Yes, we can eliminate the square roots 
+in the distance tests, retaining the Euclidean metric; but the 
+taxicab metric is faster, and also safe. The length of displacement 
+(x,y) in this metric is |x|+|y|.
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>In practice it means the following code.
+</P></TD></TR></TABLE><TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>fabs<SPAN class="op">(</SPAN>x1 <SPAN class="op">+</SPAN> x3 <SPAN class="op">-</SPAN> x2 <SPAN class="op">-</SPAN> x2<SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN>
+       fabs<SPAN class="op">(</SPAN>y1 <SPAN class="op">+</SPAN> y3 <SPAN class="op">-</SPAN> y2 <SPAN class="op">-</SPAN> y2<SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN>
+       fabs<SPAN class="op">(</SPAN>x2 <SPAN class="op">+</SPAN> x4 <SPAN class="op">-</SPAN> x3 <SPAN class="op">-</SPAN> x3<SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN>
+       fabs<SPAN class="op">(</SPAN>y2 <SPAN class="op">+</SPAN> y4 <SPAN class="op">-</SPAN> y3 <SPAN class="op">-</SPAN> y3<SPAN class="op">)</SPAN> <SPAN class="op">&lt;=</SPAN> m_distance_tolerance_manhattan<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        m_points<SPAN class="op">.</SPAN>add<SPAN class="op">(</SPAN>point_type<SPAN class="op">(</SPAN>x1234<SPAN class="op">,</SPAN> y1234<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">return</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>It doesn&#039;t require forcing the first subdivision and it&#039;s absolutely
+robust in any case. The author insisted that this criterion is quite 
+enough, but my additional experiments showed that the result is similar
+to what the incremental method produces. This estimation does not 
+provide a good balance between the number of points and the 
+approximation error. But it makes perfect sense to use it in all
+collinear cases. I have incorporated it and it seems that I can 
+stop the research at this point. The method required different 
+metrics, that is &#147;Manhattan&#148; (or &#147;taxicab&#148;), so that we 
+will have to normalize the &#147;tolerance&#148; value like the following:</P></TD></TR></TABLE>
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+    m_distance_tolerance_square <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">5</SPAN> <SPAN class="op">/</SPAN> m_approximation_scale<SPAN class="op">;</SPAN>
+    m_distance_tolerance_square <SPAN class="op">*=</SPAN> m_distance_tolerance_square<SPAN class="op">;</SPAN>
+    m_distance_tolerance_manhattan <SPAN class="op">=</SPAN> <SPAN class="num">4</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">/</SPAN> m_approximation_scale<SPAN class="op">;</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>In all collinear cases it works better than the method 
+Timothee Groleau suggested.</P></TD></TR></TABLE> 
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>So, once again, the full source code is here:
+<A href="../../__code/include/agg_curves.h.html#curve4_div">curve4_div</A>, files <A href="../../__code/include/agg_curves.h.html">agg_curves.h</A>, <A href="../../__code/src/agg_curves.cpp.html">agg_curves.cpp</A>.
+</P></TD></TR></TABLE><BR/><TABLE width="640px" bgcolor="#583927" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0">
+<TR><TD><CENTER><SPAN class="authors">
+Copyright <SPAN class="larger">&#169;</SPAN> 2002-2006
+<A href="../../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+<TR><TD><CENTER><SPAN class="authors">
+Web Design and Programming
+<A href="../../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+</TABLE>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+</HTML>

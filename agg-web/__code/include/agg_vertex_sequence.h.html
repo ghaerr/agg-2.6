@@ -1,0 +1,198 @@
+<HTML><HEAD><TITLE>Anti-Grain Geometry - </TITLE>
+<META http-equiv="Content-Type" content="text/html"/>
+<LINK rel="stylesheet" type="text/css" href="../../agg.styles.css"/>
+</HEAD>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE><SPAN class="rem">//----------------------------------------------------------------------------</SPAN>
+<SPAN class="rem">// Anti-Grain Geometry (AGG) - Version 2.5</SPAN>
+<SPAN class="rem">// A high quality rendering engine for C++</SPAN>
+<SPAN class="rem">// Copyright (C) 2002-2006 Maxim Shemanarev</SPAN>
+<SPAN class="rem">// Contact: mcseem@antigrain.com</SPAN>
+<SPAN class="rem">//          mcseemagg@yahoo.com</SPAN>
+<SPAN class="rem">//          http://antigrain.com</SPAN>
+<SPAN class="rem">// </SPAN>
+<SPAN class="rem">// AGG is free software; you can redistribute it and/or</SPAN>
+<SPAN class="rem">// modify it under the terms of the GNU General Public License</SPAN>
+<SPAN class="rem">// as published by the Free Software Foundation; either version 2</SPAN>
+<SPAN class="rem">// of the License, or (at your option) any later version.</SPAN>
+<SPAN class="rem">// </SPAN>
+<SPAN class="rem">// AGG is distributed in the hope that it will be useful,</SPAN>
+<SPAN class="rem">// but WITHOUT ANY WARRANTY; without even the implied warranty of</SPAN>
+<SPAN class="rem">// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</SPAN>
+<SPAN class="rem">// GNU General Public License for more details.</SPAN>
+<SPAN class="rem">// </SPAN>
+<SPAN class="rem">// You should have received a copy of the GNU General Public License</SPAN>
+<SPAN class="rem">// along with AGG; if not, write to the Free Software</SPAN>
+<SPAN class="rem">// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, </SPAN>
+<SPAN class="rem">// MA 02110-1301, USA.</SPAN>
+<SPAN class="rem">//----------------------------------------------------------------------------</SPAN>
+
+<SPAN class="kw2">#ifndef</SPAN> AGG_VERTEX_SEQUENCE_INCLUDED
+<SPAN class="kw2">#define</SPAN> AGG_VERTEX_SEQUENCE_INCLUDED
+
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="agg_basics.h.html">agg_basics.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="agg_array.h.html">agg_array.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="agg_math.h.html">agg_math.h</A>&quot;</SPAN>
+
+<SPAN class="kw1">namespace</SPAN> agg
+<SPAN class="op">{</SPAN>
+
+    <SPAN class="rem">//----------------------------------------------------------<A name="vertex_sequence"><B></B></A><A href="agg_vertex_sequence.h.html#vertex_sequence">vertex_sequence</A></SPAN>
+    <SPAN class="rem">// Modified agg::<A href="agg_array.h.html#pod_bvector">pod_bvector</A>. The data is interpreted as a sequence </SPAN>
+    <SPAN class="rem">// of vertices. It means that the type T must expose:</SPAN>
+    <SPAN class="rem">//</SPAN>
+    <SPAN class="rem">// bool T::operator() (const T&amp; val)</SPAN>
+    <SPAN class="rem">// </SPAN>
+    <SPAN class="rem">// that is called every time new vertex is being added. The main purpose</SPAN>
+    <SPAN class="rem">// of this operator is the possibility to calculate some values during </SPAN>
+    <SPAN class="rem">// adding and to return true if the vertex fits some criteria or false if</SPAN>
+    <SPAN class="rem">// it doesn&#039;t. In the last case the new vertex is not added. </SPAN>
+    <SPAN class="rem">// </SPAN>
+    <SPAN class="rem">// The simple example is filtering coinciding vertices with calculation </SPAN>
+    <SPAN class="rem">// of the distance between the current and previous ones:</SPAN>
+    <SPAN class="rem">//</SPAN>
+    <SPAN class="rem">//    struct <A href="agg_vertex_sequence.h.html#vertex_dist">vertex_dist</A></SPAN>
+    <SPAN class="rem">//    {</SPAN>
+    <SPAN class="rem">//        double   x;</SPAN>
+    <SPAN class="rem">//        double   y;</SPAN>
+    <SPAN class="rem">//        double   dist;</SPAN>
+    <SPAN class="rem">//</SPAN>
+    <SPAN class="rem">//        <A href="agg_vertex_sequence.h.html#vertex_dist">vertex_dist</A>() {}</SPAN>
+    <SPAN class="rem">//        <A href="agg_vertex_sequence.h.html#vertex_dist">vertex_dist</A>(double x_, double y_) :</SPAN>
+    <SPAN class="rem">//            x(x_),</SPAN>
+    <SPAN class="rem">//            y(y_),</SPAN>
+    <SPAN class="rem">//            dist(0.0)</SPAN>
+    <SPAN class="rem">//        {</SPAN>
+    <SPAN class="rem">//        }</SPAN>
+    <SPAN class="rem">//</SPAN>
+    <SPAN class="rem">//        bool operator () (const <A href="agg_vertex_sequence.h.html#vertex_dist">vertex_dist</A>&amp; val)</SPAN>
+    <SPAN class="rem">//        {</SPAN>
+    <SPAN class="rem">//            return (dist = <A href="agg_math.h.html#calc_distance">calc_distance</A>(x, y, val.x, val.y)) &gt; EPSILON;</SPAN>
+    <SPAN class="rem">//        }</SPAN>
+    <SPAN class="rem">//    };</SPAN>
+    <SPAN class="rem">//</SPAN>
+    <SPAN class="rem">// Function close() calls this operator and removes the last vertex if </SPAN>
+    <SPAN class="rem">// necessary.</SPAN>
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> T<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> S<SPAN class="op">=</SPAN><SPAN class="num">6</SPAN><SPAN class="op">&gt;</SPAN> 
+    <SPAN class="kw1">class</SPAN> <A href="agg_vertex_sequence.h.html#vertex_sequence">vertex_sequence</A> : <SPAN class="kw1">public</SPAN> <A href="agg_array.h.html#pod_bvector">pod_bvector</A><SPAN class="op">&lt;</SPAN>T<SPAN class="op">,</SPAN> S<SPAN class="op">&gt;</SPAN>
+    <SPAN class="op">{</SPAN>
+    <SPAN class="kw1">public</SPAN>:
+        <SPAN class="kw1">typedef</SPAN> <A href="agg_array.h.html#pod_bvector">pod_bvector</A><SPAN class="op">&lt;</SPAN>T<SPAN class="op">,</SPAN> S<SPAN class="op">&gt;</SPAN> base_type<SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">void</SPAN> add<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> T<SPAN class="op">&amp;</SPAN> val<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">void</SPAN> modify_last<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> T<SPAN class="op">&amp;</SPAN> val<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">void</SPAN> close<SPAN class="op">(</SPAN><SPAN class="kw1">bool</SPAN> remove_flag<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> T<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> S<SPAN class="op">&gt;</SPAN> 
+    <SPAN class="kw1">void</SPAN> <A href="agg_vertex_sequence.h.html#vertex_sequence">vertex_sequence</A><SPAN class="op">&lt;</SPAN>T<SPAN class="op">,</SPAN> S<SPAN class="op">&gt;</SPAN>::add<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> T<SPAN class="op">&amp;</SPAN> val<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>base_type::size<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">&gt;</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN><SPAN class="op">!</SPAN><SPAN class="op">(</SPAN><SPAN class="op">*</SPAN><SPAN class="kw1">this</SPAN><SPAN class="op">)</SPAN><SPAN class="op">[</SPAN>base_type::size<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">-</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">]</SPAN><SPAN class="op">(</SPAN><SPAN class="op">(</SPAN><SPAN class="op">*</SPAN><SPAN class="kw1">this</SPAN><SPAN class="op">)</SPAN><SPAN class="op">[</SPAN>base_type::size<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">-</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> 
+            <SPAN class="op">{</SPAN>
+                base_type::remove_last<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+        base_type::add<SPAN class="op">(</SPAN>val<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> T<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> S<SPAN class="op">&gt;</SPAN> 
+    <SPAN class="kw1">void</SPAN> <A href="agg_vertex_sequence.h.html#vertex_sequence">vertex_sequence</A><SPAN class="op">&lt;</SPAN>T<SPAN class="op">,</SPAN> S<SPAN class="op">&gt;</SPAN>::modify_last<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> T<SPAN class="op">&amp;</SPAN> val<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        base_type::remove_last<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        add<SPAN class="op">(</SPAN>val<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> T<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> S<SPAN class="op">&gt;</SPAN> 
+    <SPAN class="kw1">void</SPAN> <A href="agg_vertex_sequence.h.html#vertex_sequence">vertex_sequence</A><SPAN class="op">&lt;</SPAN>T<SPAN class="op">,</SPAN> S<SPAN class="op">&gt;</SPAN>::close<SPAN class="op">(</SPAN><SPAN class="kw1">bool</SPAN> closed<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN>base_type::size<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">&gt;</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN><SPAN class="op">(</SPAN><SPAN class="op">*</SPAN><SPAN class="kw1">this</SPAN><SPAN class="op">)</SPAN><SPAN class="op">[</SPAN>base_type::size<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">-</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">]</SPAN><SPAN class="op">(</SPAN><SPAN class="op">(</SPAN><SPAN class="op">*</SPAN><SPAN class="kw1">this</SPAN><SPAN class="op">)</SPAN><SPAN class="op">[</SPAN>base_type::size<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">-</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+            T t <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN><SPAN class="op">*</SPAN><SPAN class="kw1">this</SPAN><SPAN class="op">)</SPAN><SPAN class="op">[</SPAN>base_type::size<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">-</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+            base_type::remove_last<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            modify_last<SPAN class="op">(</SPAN>t<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>closed<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN>base_type::size<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">&gt;</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN><SPAN class="op">(</SPAN><SPAN class="op">*</SPAN><SPAN class="kw1">this</SPAN><SPAN class="op">)</SPAN><SPAN class="op">[</SPAN>base_type::size<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">-</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">]</SPAN><SPAN class="op">(</SPAN><SPAN class="op">(</SPAN><SPAN class="op">*</SPAN><SPAN class="kw1">this</SPAN><SPAN class="op">)</SPAN><SPAN class="op">[</SPAN><SPAN class="num">0</SPAN><SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+                base_type::remove_last<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="rem">//-------------------------------------------------------------<A name="vertex_dist"><B></B></A><A href="agg_vertex_sequence.h.html#vertex_dist">vertex_dist</A></SPAN>
+    <SPAN class="rem">// Vertex (x, y) with the distance to the next one. The last vertex has </SPAN>
+    <SPAN class="rem">// distance between the last and the first points if the polygon is closed</SPAN>
+    <SPAN class="rem">// and 0.0 if it&#039;s a polyline.</SPAN>
+    <SPAN class="kw1">struct</SPAN> <A href="agg_vertex_sequence.h.html#vertex_dist">vertex_dist</A>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">double</SPAN>   x<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN>   y<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN>   dist<SPAN class="op">;</SPAN>
+
+        <A href="agg_vertex_sequence.h.html#vertex_dist">vertex_dist</A><SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN><SPAN class="op">}</SPAN>
+        <A href="agg_vertex_sequence.h.html#vertex_dist">vertex_dist</A><SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x_<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y_<SPAN class="op">)</SPAN> :
+            x<SPAN class="op">(</SPAN>x_<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            y<SPAN class="op">(</SPAN>y_<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            dist<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">bool</SPAN> <SPAN class="kw1">operator</SPAN> <SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <A href="agg_vertex_sequence.h.html#vertex_dist">vertex_dist</A><SPAN class="op">&amp;</SPAN> val<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">bool</SPAN> ret <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>dist <SPAN class="op">=</SPAN> <A href="agg_math.h.html#calc_distance">calc_distance</A><SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> y<SPAN class="op">,</SPAN> val<SPAN class="op">.</SPAN>x<SPAN class="op">,</SPAN> val<SPAN class="op">.</SPAN>y<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">&gt;</SPAN> <A href="agg_math.h.html#vertex_dist_epsilon">vertex_dist_epsilon</A><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN><SPAN class="op">!</SPAN>ret<SPAN class="op">)</SPAN> dist <SPAN class="op">=</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">/</SPAN> <A href="agg_math.h.html#vertex_dist_epsilon">vertex_dist_epsilon</A><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">return</SPAN> ret<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+
+    <SPAN class="rem">//--------------------------------------------------------<A name="vertex_dist_cmd"><B></B></A><A href="agg_vertex_sequence.h.html#vertex_dist_cmd">vertex_dist_cmd</A></SPAN>
+    <SPAN class="rem">// Save as the above but with additional &quot;command&quot; value</SPAN>
+    <SPAN class="kw1">struct</SPAN> <A href="agg_vertex_sequence.h.html#vertex_dist_cmd">vertex_dist_cmd</A> : <SPAN class="kw1">public</SPAN> <A href="agg_vertex_sequence.h.html#vertex_dist">vertex_dist</A>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> cmd<SPAN class="op">;</SPAN>
+
+        <A href="agg_vertex_sequence.h.html#vertex_dist_cmd">vertex_dist_cmd</A><SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN><SPAN class="op">}</SPAN>
+        <A href="agg_vertex_sequence.h.html#vertex_dist_cmd">vertex_dist_cmd</A><SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x_<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y_<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> cmd_<SPAN class="op">)</SPAN> :
+            <A href="agg_vertex_sequence.h.html#vertex_dist">vertex_dist</A><SPAN class="op">(</SPAN>x_<SPAN class="op">,</SPAN> y_<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            cmd<SPAN class="op">(</SPAN>cmd_<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+<SPAN class="op">}</SPAN>
+
+<SPAN class="kw2">#endif</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT><TABLE width="640px" bgcolor="#583927" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0">
+<TR><TD><CENTER><SPAN class="authors">
+Copyright <SPAN class="larger">&#169;</SPAN> 2002-2006
+<A href="../../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+<TR><TD><CENTER><SPAN class="authors">
+Web Design and Programming
+<A href="../../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+</TABLE>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+</HTML>

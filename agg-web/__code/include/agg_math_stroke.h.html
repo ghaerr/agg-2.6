@@ -1,0 +1,551 @@
+<HTML><HEAD><TITLE>Anti-Grain Geometry - </TITLE>
+<META http-equiv="Content-Type" content="text/html"/>
+<LINK rel="stylesheet" type="text/css" href="../../agg.styles.css"/>
+</HEAD>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE><SPAN class="rem">//----------------------------------------------------------------------------</SPAN>
+<SPAN class="rem">// Anti-Grain Geometry (AGG) - Version 2.5</SPAN>
+<SPAN class="rem">// A high quality rendering engine for C++</SPAN>
+<SPAN class="rem">// Copyright (C) 2002-2006 Maxim Shemanarev</SPAN>
+<SPAN class="rem">// Contact: mcseem@antigrain.com</SPAN>
+<SPAN class="rem">//          mcseemagg@yahoo.com</SPAN>
+<SPAN class="rem">//          http://antigrain.com</SPAN>
+<SPAN class="rem">// </SPAN>
+<SPAN class="rem">// AGG is free software; you can redistribute it and/or</SPAN>
+<SPAN class="rem">// modify it under the terms of the GNU General Public License</SPAN>
+<SPAN class="rem">// as published by the Free Software Foundation; either version 2</SPAN>
+<SPAN class="rem">// of the License, or (at your option) any later version.</SPAN>
+<SPAN class="rem">// </SPAN>
+<SPAN class="rem">// AGG is distributed in the hope that it will be useful,</SPAN>
+<SPAN class="rem">// but WITHOUT ANY WARRANTY; without even the implied warranty of</SPAN>
+<SPAN class="rem">// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</SPAN>
+<SPAN class="rem">// GNU General Public License for more details.</SPAN>
+<SPAN class="rem">// </SPAN>
+<SPAN class="rem">// You should have received a copy of the GNU General Public License</SPAN>
+<SPAN class="rem">// along with AGG; if not, write to the Free Software</SPAN>
+<SPAN class="rem">// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, </SPAN>
+<SPAN class="rem">// MA 02110-1301, USA.</SPAN>
+<SPAN class="rem">//----------------------------------------------------------------------------</SPAN>
+
+<SPAN class="kw2">#ifndef</SPAN> AGG_STROKE_MATH_INCLUDED
+<SPAN class="kw2">#define</SPAN> AGG_STROKE_MATH_INCLUDED
+
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="agg_math.h.html">agg_math.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="agg_vertex_sequence.h.html">agg_vertex_sequence.h</A>&quot;</SPAN>
+
+<SPAN class="kw1">namespace</SPAN> agg
+<SPAN class="op">{</SPAN>
+    <SPAN class="rem">//-------------------------------------------------------------<A name="line_cap_e"><B></B></A><A href="agg_math_stroke.h.html#line_cap_e">line_cap_e</A></SPAN>
+    <SPAN class="kw1">enum</SPAN> <A href="agg_math_stroke.h.html#line_cap_e">line_cap_e</A>
+    <SPAN class="op">{</SPAN>
+        butt_cap<SPAN class="op">,</SPAN>
+        square_cap<SPAN class="op">,</SPAN>
+        round_cap
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------<A name="line_join_e"><B></B></A><A href="agg_math_stroke.h.html#line_join_e">line_join_e</A></SPAN>
+    <SPAN class="kw1">enum</SPAN> <A href="agg_math_stroke.h.html#line_join_e">line_join_e</A>
+    <SPAN class="op">{</SPAN>
+        miter_join         <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">,</SPAN>
+        miter_join_revert  <SPAN class="op">=</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">,</SPAN>
+        round_join         <SPAN class="op">=</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">,</SPAN>
+        bevel_join         <SPAN class="op">=</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">,</SPAN>
+        miter_join_round   <SPAN class="op">=</SPAN> <SPAN class="num">4</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+    <SPAN class="rem">//-----------------------------------------------------------<A name="inner_join_e"><B></B></A><A href="agg_math_stroke.h.html#inner_join_e">inner_join_e</A></SPAN>
+    <SPAN class="kw1">enum</SPAN> <A href="agg_math_stroke.h.html#inner_join_e">inner_join_e</A>
+    <SPAN class="op">{</SPAN>
+        inner_bevel<SPAN class="op">,</SPAN>
+        inner_miter<SPAN class="op">,</SPAN>
+        inner_jag<SPAN class="op">,</SPAN>
+        inner_round
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------<A name="math_stroke"><B></B></A><A href="agg_math_stroke.h.html#math_stroke">math_stroke</A></SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> VertexConsumer<SPAN class="op">&gt;</SPAN> <SPAN class="kw1">class</SPAN> <A href="agg_math_stroke.h.html#math_stroke">math_stroke</A>
+    <SPAN class="op">{</SPAN>
+    <SPAN class="kw1">public</SPAN>:
+        <SPAN class="kw1">typedef</SPAN> <SPAN class="kw1">typename</SPAN> VertexConsumer::value_type coord_type<SPAN class="op">;</SPAN>
+
+        <A href="agg_math_stroke.h.html#math_stroke">math_stroke</A><SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">void</SPAN> line_cap<SPAN class="op">(</SPAN><A href="agg_math_stroke.h.html#line_cap_e">line_cap_e</A> lc<SPAN class="op">)</SPAN>     <SPAN class="op">{</SPAN> m_line_cap <SPAN class="op">=</SPAN> lc<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">void</SPAN> line_join<SPAN class="op">(</SPAN><A href="agg_math_stroke.h.html#line_join_e">line_join_e</A> lj<SPAN class="op">)</SPAN>   <SPAN class="op">{</SPAN> m_line_join <SPAN class="op">=</SPAN> lj<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">void</SPAN> inner_join<SPAN class="op">(</SPAN><A href="agg_math_stroke.h.html#inner_join_e">inner_join_e</A> ij<SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN> m_inner_join <SPAN class="op">=</SPAN> ij<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+
+        <A href="agg_math_stroke.h.html#line_cap_e">line_cap_e</A>   line_cap<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>   <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_line_cap<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <A href="agg_math_stroke.h.html#line_join_e">line_join_e</A>  line_join<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>  <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_line_join<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <A href="agg_math_stroke.h.html#inner_join_e">inner_join_e</A> inner_join<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_inner_join<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">void</SPAN> width<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> w<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">void</SPAN> miter_limit<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> ml<SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN> m_miter_limit <SPAN class="op">=</SPAN> ml<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">void</SPAN> miter_limit_theta<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> t<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">void</SPAN> inner_miter_limit<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> ml<SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN> m_inner_miter_limit <SPAN class="op">=</SPAN> ml<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">void</SPAN> approximation_scale<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> as<SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN> m_approx_scale <SPAN class="op">=</SPAN> as<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">double</SPAN> width<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_width <SPAN class="op">*</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">double</SPAN> miter_limit<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_miter_limit<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">double</SPAN> inner_miter_limit<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_inner_miter_limit<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">double</SPAN> approximation_scale<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_approx_scale<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">void</SPAN> calc_cap<SPAN class="op">(</SPAN>VertexConsumer<SPAN class="op">&amp;</SPAN> vc<SPAN class="op">,</SPAN>
+                      <SPAN class="kw1">const</SPAN> <A href="agg_vertex_sequence.h.html#vertex_dist">vertex_dist</A><SPAN class="op">&amp;</SPAN> v0<SPAN class="op">,</SPAN> 
+                      <SPAN class="kw1">const</SPAN> <A href="agg_vertex_sequence.h.html#vertex_dist">vertex_dist</A><SPAN class="op">&amp;</SPAN> v1<SPAN class="op">,</SPAN> 
+                      <SPAN class="kw1">double</SPAN> len<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">void</SPAN> calc_join<SPAN class="op">(</SPAN>VertexConsumer<SPAN class="op">&amp;</SPAN> vc<SPAN class="op">,</SPAN>
+                       <SPAN class="kw1">const</SPAN> <A href="agg_vertex_sequence.h.html#vertex_dist">vertex_dist</A><SPAN class="op">&amp;</SPAN> v0<SPAN class="op">,</SPAN> 
+                       <SPAN class="kw1">const</SPAN> <A href="agg_vertex_sequence.h.html#vertex_dist">vertex_dist</A><SPAN class="op">&amp;</SPAN> v1<SPAN class="op">,</SPAN> 
+                       <SPAN class="kw1">const</SPAN> <A href="agg_vertex_sequence.h.html#vertex_dist">vertex_dist</A><SPAN class="op">&amp;</SPAN> v2<SPAN class="op">,</SPAN>
+                       <SPAN class="kw1">double</SPAN> len1<SPAN class="op">,</SPAN> 
+                       <SPAN class="kw1">double</SPAN> len2<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">private</SPAN>:
+        AGG_INLINE <SPAN class="kw1">void</SPAN> add_vertex<SPAN class="op">(</SPAN>VertexConsumer<SPAN class="op">&amp;</SPAN> vc<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            vc<SPAN class="op">.</SPAN>add<SPAN class="op">(</SPAN>coord_type<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">void</SPAN> calc_arc<SPAN class="op">(</SPAN>VertexConsumer<SPAN class="op">&amp;</SPAN> vc<SPAN class="op">,</SPAN>
+                      <SPAN class="kw1">double</SPAN> x<SPAN class="op">,</SPAN>   <SPAN class="kw1">double</SPAN> y<SPAN class="op">,</SPAN> 
+                      <SPAN class="kw1">double</SPAN> dx1<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> dy1<SPAN class="op">,</SPAN> 
+                      <SPAN class="kw1">double</SPAN> dx2<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> dy2<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">void</SPAN> calc_miter<SPAN class="op">(</SPAN>VertexConsumer<SPAN class="op">&amp;</SPAN> vc<SPAN class="op">,</SPAN>
+                        <SPAN class="kw1">const</SPAN> <A href="agg_vertex_sequence.h.html#vertex_dist">vertex_dist</A><SPAN class="op">&amp;</SPAN> v0<SPAN class="op">,</SPAN> 
+                        <SPAN class="kw1">const</SPAN> <A href="agg_vertex_sequence.h.html#vertex_dist">vertex_dist</A><SPAN class="op">&amp;</SPAN> v1<SPAN class="op">,</SPAN> 
+                        <SPAN class="kw1">const</SPAN> <A href="agg_vertex_sequence.h.html#vertex_dist">vertex_dist</A><SPAN class="op">&amp;</SPAN> v2<SPAN class="op">,</SPAN>
+                        <SPAN class="kw1">double</SPAN> dx1<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> dy1<SPAN class="op">,</SPAN> 
+                        <SPAN class="kw1">double</SPAN> dx2<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> dy2<SPAN class="op">,</SPAN>
+                        <A href="agg_math_stroke.h.html#line_join_e">line_join_e</A> lj<SPAN class="op">,</SPAN>
+                        <SPAN class="kw1">double</SPAN> mlimit<SPAN class="op">,</SPAN>
+                        <SPAN class="kw1">double</SPAN> dbevel<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">double</SPAN>       m_width<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN>       m_width_abs<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN>       m_width_eps<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN>          m_width_sign<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN>       m_miter_limit<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN>       m_inner_miter_limit<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN>       m_approx_scale<SPAN class="op">;</SPAN>
+        <A href="agg_math_stroke.h.html#line_cap_e">line_cap_e</A>   m_line_cap<SPAN class="op">;</SPAN>
+        <A href="agg_math_stroke.h.html#line_join_e">line_join_e</A>  m_line_join<SPAN class="op">;</SPAN>
+        <A href="agg_math_stroke.h.html#inner_join_e">inner_join_e</A> m_inner_join<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="rem">//-----------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> VC<SPAN class="op">&gt;</SPAN> <A href="agg_math_stroke.h.html#math_stroke">math_stroke</A><SPAN class="op">&lt;</SPAN>VC<SPAN class="op">&gt;</SPAN>::<A href="agg_math_stroke.h.html#math_stroke">math_stroke</A><SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> :
+        m_width<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">5</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_width_abs<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">5</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_width_eps<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">5</SPAN><SPAN class="op">/</SPAN><SPAN class="num">1024</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_width_sign<SPAN class="op">(</SPAN><SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_miter_limit<SPAN class="op">(</SPAN><SPAN class="num">4</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_inner_miter_limit<SPAN class="op">(</SPAN><SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">01</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_approx_scale<SPAN class="op">(</SPAN><SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_line_cap<SPAN class="op">(</SPAN>butt_cap<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_line_join<SPAN class="op">(</SPAN>miter_join<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_inner_join<SPAN class="op">(</SPAN>inner_miter<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//-----------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> VC<SPAN class="op">&gt;</SPAN> <SPAN class="kw1">void</SPAN> <A href="agg_math_stroke.h.html#math_stroke">math_stroke</A><SPAN class="op">&lt;</SPAN>VC<SPAN class="op">&gt;</SPAN>::width<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> w<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN> 
+        m_width <SPAN class="op">=</SPAN> w <SPAN class="op">*</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">5</SPAN><SPAN class="op">;</SPAN> 
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_width <SPAN class="op">&lt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            m_width_abs  <SPAN class="op">=</SPAN> <SPAN class="op">-</SPAN>m_width<SPAN class="op">;</SPAN>
+            m_width_sign <SPAN class="op">=</SPAN> <SPAN class="op">-</SPAN><SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">else</SPAN>
+        <SPAN class="op">{</SPAN>
+            m_width_abs  <SPAN class="op">=</SPAN> m_width<SPAN class="op">;</SPAN>
+            m_width_sign <SPAN class="op">=</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        m_width_eps <SPAN class="op">=</SPAN> m_width <SPAN class="op">/</SPAN> <SPAN class="num">1024</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//-----------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> VC<SPAN class="op">&gt;</SPAN> <SPAN class="kw1">void</SPAN> <A href="agg_math_stroke.h.html#math_stroke">math_stroke</A><SPAN class="op">&lt;</SPAN>VC<SPAN class="op">&gt;</SPAN>::miter_limit_theta<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> t<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN> 
+        m_miter_limit <SPAN class="op">=</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">/</SPAN> sin<SPAN class="op">(</SPAN>t <SPAN class="op">*</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">5</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//-----------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> VC<SPAN class="op">&gt;</SPAN> 
+    <SPAN class="kw1">void</SPAN> <A href="agg_math_stroke.h.html#math_stroke">math_stroke</A><SPAN class="op">&lt;</SPAN>VC<SPAN class="op">&gt;</SPAN>::calc_arc<SPAN class="op">(</SPAN>VC<SPAN class="op">&amp;</SPAN> vc<SPAN class="op">,</SPAN>
+                                   <SPAN class="kw1">double</SPAN> x<SPAN class="op">,</SPAN>   <SPAN class="kw1">double</SPAN> y<SPAN class="op">,</SPAN> 
+                                   <SPAN class="kw1">double</SPAN> dx1<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> dy1<SPAN class="op">,</SPAN> 
+                                   <SPAN class="kw1">double</SPAN> dx2<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> dy2<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">double</SPAN> a1 <SPAN class="op">=</SPAN> atan2<SPAN class="op">(</SPAN>dy1 <SPAN class="op">*</SPAN> m_width_sign<SPAN class="op">,</SPAN> dx1 <SPAN class="op">*</SPAN> m_width_sign<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> a2 <SPAN class="op">=</SPAN> atan2<SPAN class="op">(</SPAN>dy2 <SPAN class="op">*</SPAN> m_width_sign<SPAN class="op">,</SPAN> dx2 <SPAN class="op">*</SPAN> m_width_sign<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> da <SPAN class="op">=</SPAN> a1 <SPAN class="op">-</SPAN> a2<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN> i<SPAN class="op">,</SPAN> n<SPAN class="op">;</SPAN>
+
+        da <SPAN class="op">=</SPAN> acos<SPAN class="op">(</SPAN>m_width_abs <SPAN class="op">/</SPAN> <SPAN class="op">(</SPAN>m_width_abs <SPAN class="op">+</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">125</SPAN> <SPAN class="op">/</SPAN> m_approx_scale<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+
+        add_vertex<SPAN class="op">(</SPAN>vc<SPAN class="op">,</SPAN> x <SPAN class="op">+</SPAN> dx1<SPAN class="op">,</SPAN> y <SPAN class="op">+</SPAN> dy1<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_width_sign <SPAN class="op">&gt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>a1 <SPAN class="op">&gt;</SPAN> a2<SPAN class="op">)</SPAN> a2 <SPAN class="op">+=</SPAN> <SPAN class="num">2</SPAN> <SPAN class="op">*</SPAN> <A href="agg_basics.h.html#pi">pi</A><SPAN class="op">;</SPAN>
+            n <SPAN class="op">=</SPAN> <SPAN class="kw1">int</SPAN><SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>a2 <SPAN class="op">-</SPAN> a1<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> da<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            da <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>a2 <SPAN class="op">-</SPAN> a1<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="op">(</SPAN>n <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            a1 <SPAN class="op">+=</SPAN> da<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;</SPAN> n<SPAN class="op">;</SPAN> i<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                add_vertex<SPAN class="op">(</SPAN>vc<SPAN class="op">,</SPAN> x <SPAN class="op">+</SPAN> cos<SPAN class="op">(</SPAN>a1<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> m_width<SPAN class="op">,</SPAN> y <SPAN class="op">+</SPAN> sin<SPAN class="op">(</SPAN>a1<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> m_width<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                a1 <SPAN class="op">+=</SPAN> da<SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">else</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>a1 <SPAN class="op">&lt;</SPAN> a2<SPAN class="op">)</SPAN> a2 <SPAN class="op">-=</SPAN> <SPAN class="num">2</SPAN> <SPAN class="op">*</SPAN> <A href="agg_basics.h.html#pi">pi</A><SPAN class="op">;</SPAN>
+            n <SPAN class="op">=</SPAN> <SPAN class="kw1">int</SPAN><SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>a1 <SPAN class="op">-</SPAN> a2<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> da<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            da <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>a1 <SPAN class="op">-</SPAN> a2<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="op">(</SPAN>n <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            a1 <SPAN class="op">-=</SPAN> da<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;</SPAN> n<SPAN class="op">;</SPAN> i<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                add_vertex<SPAN class="op">(</SPAN>vc<SPAN class="op">,</SPAN> x <SPAN class="op">+</SPAN> cos<SPAN class="op">(</SPAN>a1<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> m_width<SPAN class="op">,</SPAN> y <SPAN class="op">+</SPAN> sin<SPAN class="op">(</SPAN>a1<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> m_width<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                a1 <SPAN class="op">-=</SPAN> da<SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+        add_vertex<SPAN class="op">(</SPAN>vc<SPAN class="op">,</SPAN> x <SPAN class="op">+</SPAN> dx2<SPAN class="op">,</SPAN> y <SPAN class="op">+</SPAN> dy2<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//-----------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> VC<SPAN class="op">&gt;</SPAN> 
+    <SPAN class="kw1">void</SPAN> <A href="agg_math_stroke.h.html#math_stroke">math_stroke</A><SPAN class="op">&lt;</SPAN>VC<SPAN class="op">&gt;</SPAN>::calc_miter<SPAN class="op">(</SPAN>VC<SPAN class="op">&amp;</SPAN> vc<SPAN class="op">,</SPAN>
+                                     <SPAN class="kw1">const</SPAN> <A href="agg_vertex_sequence.h.html#vertex_dist">vertex_dist</A><SPAN class="op">&amp;</SPAN> v0<SPAN class="op">,</SPAN> 
+                                     <SPAN class="kw1">const</SPAN> <A href="agg_vertex_sequence.h.html#vertex_dist">vertex_dist</A><SPAN class="op">&amp;</SPAN> v1<SPAN class="op">,</SPAN> 
+                                     <SPAN class="kw1">const</SPAN> <A href="agg_vertex_sequence.h.html#vertex_dist">vertex_dist</A><SPAN class="op">&amp;</SPAN> v2<SPAN class="op">,</SPAN>
+                                     <SPAN class="kw1">double</SPAN> dx1<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> dy1<SPAN class="op">,</SPAN> 
+                                     <SPAN class="kw1">double</SPAN> dx2<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> dy2<SPAN class="op">,</SPAN>
+                                     <A href="agg_math_stroke.h.html#line_join_e">line_join_e</A> lj<SPAN class="op">,</SPAN>
+                                     <SPAN class="kw1">double</SPAN> mlimit<SPAN class="op">,</SPAN>
+                                     <SPAN class="kw1">double</SPAN> dbevel<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">double</SPAN> xi  <SPAN class="op">=</SPAN> v1<SPAN class="op">.</SPAN>x<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> yi  <SPAN class="op">=</SPAN> v1<SPAN class="op">.</SPAN>y<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> di  <SPAN class="op">=</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> lim <SPAN class="op">=</SPAN> m_width_abs <SPAN class="op">*</SPAN> mlimit<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">bool</SPAN> miter_limit_exceeded <SPAN class="op">=</SPAN> <SPAN class="kw1">true</SPAN><SPAN class="op">;</SPAN> <SPAN class="rem">// Assume the worst</SPAN>
+        <SPAN class="kw1">bool</SPAN> intersection_failed  <SPAN class="op">=</SPAN> <SPAN class="kw1">true</SPAN><SPAN class="op">;</SPAN> <SPAN class="rem">// Assume the worst</SPAN>
+
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN><A href="agg_math.h.html#calc_intersection">calc_intersection</A><SPAN class="op">(</SPAN>v0<SPAN class="op">.</SPAN>x <SPAN class="op">+</SPAN> dx1<SPAN class="op">,</SPAN> v0<SPAN class="op">.</SPAN>y <SPAN class="op">-</SPAN> dy1<SPAN class="op">,</SPAN>
+                             v1<SPAN class="op">.</SPAN>x <SPAN class="op">+</SPAN> dx1<SPAN class="op">,</SPAN> v1<SPAN class="op">.</SPAN>y <SPAN class="op">-</SPAN> dy1<SPAN class="op">,</SPAN>
+                             v1<SPAN class="op">.</SPAN>x <SPAN class="op">+</SPAN> dx2<SPAN class="op">,</SPAN> v1<SPAN class="op">.</SPAN>y <SPAN class="op">-</SPAN> dy2<SPAN class="op">,</SPAN>
+                             v2<SPAN class="op">.</SPAN>x <SPAN class="op">+</SPAN> dx2<SPAN class="op">,</SPAN> v2<SPAN class="op">.</SPAN>y <SPAN class="op">-</SPAN> dy2<SPAN class="op">,</SPAN>
+                             <SPAN class="op">&amp;</SPAN>xi<SPAN class="op">,</SPAN> <SPAN class="op">&amp;</SPAN>yi<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="rem">// Calculation of the intersection succeeded</SPAN>
+            <SPAN class="rem">//---------------------</SPAN>
+            di <SPAN class="op">=</SPAN> <A href="agg_math.h.html#calc_distance">calc_distance</A><SPAN class="op">(</SPAN>v1<SPAN class="op">.</SPAN>x<SPAN class="op">,</SPAN> v1<SPAN class="op">.</SPAN>y<SPAN class="op">,</SPAN> xi<SPAN class="op">,</SPAN> yi<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>di <SPAN class="op">&lt;=</SPAN> lim<SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                <SPAN class="rem">// Inside the miter limit</SPAN>
+                <SPAN class="rem">//---------------------</SPAN>
+                add_vertex<SPAN class="op">(</SPAN>vc<SPAN class="op">,</SPAN> xi<SPAN class="op">,</SPAN> yi<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                miter_limit_exceeded <SPAN class="op">=</SPAN> <SPAN class="kw1">false</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            intersection_failed <SPAN class="op">=</SPAN> <SPAN class="kw1">false</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">else</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="rem">// Calculation of the intersection failed, most probably</SPAN>
+            <SPAN class="rem">// the three points lie one straight line. </SPAN>
+            <SPAN class="rem">// First check if v0 and v2 lie on the opposite sides of vector: </SPAN>
+            <SPAN class="rem">// (v1.x, v1.y) -&gt; (v1.x+dx1, v1.y-dy1), that is, the perpendicular</SPAN>
+            <SPAN class="rem">// to the line determined by vertices v0 and v1.</SPAN>
+            <SPAN class="rem">// This condition determines whether the next line segments continues</SPAN>
+            <SPAN class="rem">// the previous one or goes back.</SPAN>
+            <SPAN class="rem">//----------------</SPAN>
+            <SPAN class="kw1">double</SPAN> x2 <SPAN class="op">=</SPAN> v1<SPAN class="op">.</SPAN>x <SPAN class="op">+</SPAN> dx1<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">double</SPAN> y2 <SPAN class="op">=</SPAN> v1<SPAN class="op">.</SPAN>y <SPAN class="op">-</SPAN> dy1<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN><SPAN class="op">(</SPAN><A href="agg_math.h.html#cross_product">cross_product</A><SPAN class="op">(</SPAN>v0<SPAN class="op">.</SPAN>x<SPAN class="op">,</SPAN> v0<SPAN class="op">.</SPAN>y<SPAN class="op">,</SPAN> v1<SPAN class="op">.</SPAN>x<SPAN class="op">,</SPAN> v1<SPAN class="op">.</SPAN>y<SPAN class="op">,</SPAN> x2<SPAN class="op">,</SPAN> y2<SPAN class="op">)</SPAN> <SPAN class="op">&lt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">==</SPAN> 
+               <SPAN class="op">(</SPAN><A href="agg_math.h.html#cross_product">cross_product</A><SPAN class="op">(</SPAN>v1<SPAN class="op">.</SPAN>x<SPAN class="op">,</SPAN> v1<SPAN class="op">.</SPAN>y<SPAN class="op">,</SPAN> v2<SPAN class="op">.</SPAN>x<SPAN class="op">,</SPAN> v2<SPAN class="op">.</SPAN>y<SPAN class="op">,</SPAN> x2<SPAN class="op">,</SPAN> y2<SPAN class="op">)</SPAN> <SPAN class="op">&lt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                <SPAN class="rem">// This case means that the next segment continues </SPAN>
+                <SPAN class="rem">// the previous one (straight line)</SPAN>
+                <SPAN class="rem">//-----------------</SPAN>
+                add_vertex<SPAN class="op">(</SPAN>vc<SPAN class="op">,</SPAN> v1<SPAN class="op">.</SPAN>x <SPAN class="op">+</SPAN> dx1<SPAN class="op">,</SPAN> v1<SPAN class="op">.</SPAN>y <SPAN class="op">-</SPAN> dy1<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                miter_limit_exceeded <SPAN class="op">=</SPAN> <SPAN class="kw1">false</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>miter_limit_exceeded<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="rem">// Miter limit exceeded</SPAN>
+            <SPAN class="rem">//------------------------</SPAN>
+            <SPAN class="kw1">switch</SPAN><SPAN class="op">(</SPAN>lj<SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">case</SPAN> miter_join_revert:
+                <SPAN class="rem">// For the compatibility with SVG, PDF, etc, </SPAN>
+                <SPAN class="rem">// we use a simple bevel join instead of</SPAN>
+                <SPAN class="rem">// &quot;smart&quot; bevel</SPAN>
+                <SPAN class="rem">//-------------------</SPAN>
+                add_vertex<SPAN class="op">(</SPAN>vc<SPAN class="op">,</SPAN> v1<SPAN class="op">.</SPAN>x <SPAN class="op">+</SPAN> dx1<SPAN class="op">,</SPAN> v1<SPAN class="op">.</SPAN>y <SPAN class="op">-</SPAN> dy1<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                add_vertex<SPAN class="op">(</SPAN>vc<SPAN class="op">,</SPAN> v1<SPAN class="op">.</SPAN>x <SPAN class="op">+</SPAN> dx2<SPAN class="op">,</SPAN> v1<SPAN class="op">.</SPAN>y <SPAN class="op">-</SPAN> dy2<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">case</SPAN> miter_join_round:
+                calc_arc<SPAN class="op">(</SPAN>vc<SPAN class="op">,</SPAN> v1<SPAN class="op">.</SPAN>x<SPAN class="op">,</SPAN> v1<SPAN class="op">.</SPAN>y<SPAN class="op">,</SPAN> dx1<SPAN class="op">,</SPAN> <SPAN class="op">-</SPAN>dy1<SPAN class="op">,</SPAN> dx2<SPAN class="op">,</SPAN> <SPAN class="op">-</SPAN>dy2<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">default</SPAN>:
+                <SPAN class="rem">// If no miter-revert, calculate new dx1, dy1, dx2, dy2</SPAN>
+                <SPAN class="rem">//----------------</SPAN>
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>intersection_failed<SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    mlimit <SPAN class="op">*=</SPAN> m_width_sign<SPAN class="op">;</SPAN>
+                    add_vertex<SPAN class="op">(</SPAN>vc<SPAN class="op">,</SPAN> v1<SPAN class="op">.</SPAN>x <SPAN class="op">+</SPAN> dx1 <SPAN class="op">+</SPAN> dy1 <SPAN class="op">*</SPAN> mlimit<SPAN class="op">,</SPAN> 
+                                   v1<SPAN class="op">.</SPAN>y <SPAN class="op">-</SPAN> dy1 <SPAN class="op">+</SPAN> dx1 <SPAN class="op">*</SPAN> mlimit<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    add_vertex<SPAN class="op">(</SPAN>vc<SPAN class="op">,</SPAN> v1<SPAN class="op">.</SPAN>x <SPAN class="op">+</SPAN> dx2 <SPAN class="op">-</SPAN> dy2 <SPAN class="op">*</SPAN> mlimit<SPAN class="op">,</SPAN> 
+                                   v1<SPAN class="op">.</SPAN>y <SPAN class="op">-</SPAN> dy2 <SPAN class="op">-</SPAN> dx2 <SPAN class="op">*</SPAN> mlimit<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+                <SPAN class="kw1">else</SPAN>
+                <SPAN class="op">{</SPAN>
+                    <SPAN class="kw1">double</SPAN> x1 <SPAN class="op">=</SPAN> v1<SPAN class="op">.</SPAN>x <SPAN class="op">+</SPAN> dx1<SPAN class="op">;</SPAN>
+                    <SPAN class="kw1">double</SPAN> y1 <SPAN class="op">=</SPAN> v1<SPAN class="op">.</SPAN>y <SPAN class="op">-</SPAN> dy1<SPAN class="op">;</SPAN>
+                    <SPAN class="kw1">double</SPAN> x2 <SPAN class="op">=</SPAN> v1<SPAN class="op">.</SPAN>x <SPAN class="op">+</SPAN> dx2<SPAN class="op">;</SPAN>
+                    <SPAN class="kw1">double</SPAN> y2 <SPAN class="op">=</SPAN> v1<SPAN class="op">.</SPAN>y <SPAN class="op">-</SPAN> dy2<SPAN class="op">;</SPAN>
+                    di <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>lim <SPAN class="op">-</SPAN> dbevel<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="op">(</SPAN>di <SPAN class="op">-</SPAN> dbevel<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    add_vertex<SPAN class="op">(</SPAN>vc<SPAN class="op">,</SPAN> x1 <SPAN class="op">+</SPAN> <SPAN class="op">(</SPAN>xi <SPAN class="op">-</SPAN> x1<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> di<SPAN class="op">,</SPAN> 
+                                   y1 <SPAN class="op">+</SPAN> <SPAN class="op">(</SPAN>yi <SPAN class="op">-</SPAN> y1<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> di<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    add_vertex<SPAN class="op">(</SPAN>vc<SPAN class="op">,</SPAN> x2 <SPAN class="op">+</SPAN> <SPAN class="op">(</SPAN>xi <SPAN class="op">-</SPAN> x2<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> di<SPAN class="op">,</SPAN> 
+                                   y2 <SPAN class="op">+</SPAN> <SPAN class="op">(</SPAN>yi <SPAN class="op">-</SPAN> y2<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> di<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+                <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//--------------------------------------------------------<A name="stroke_calc_cap"><B></B></A><A href="agg_math_stroke.h.html#stroke_calc_cap">stroke_calc_cap</A></SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> VC<SPAN class="op">&gt;</SPAN> 
+    <SPAN class="kw1">void</SPAN> <A href="agg_math_stroke.h.html#math_stroke">math_stroke</A><SPAN class="op">&lt;</SPAN>VC<SPAN class="op">&gt;</SPAN>::calc_cap<SPAN class="op">(</SPAN>VC<SPAN class="op">&amp;</SPAN> vc<SPAN class="op">,</SPAN>
+                                   <SPAN class="kw1">const</SPAN> <A href="agg_vertex_sequence.h.html#vertex_dist">vertex_dist</A><SPAN class="op">&amp;</SPAN> v0<SPAN class="op">,</SPAN> 
+                                   <SPAN class="kw1">const</SPAN> <A href="agg_vertex_sequence.h.html#vertex_dist">vertex_dist</A><SPAN class="op">&amp;</SPAN> v1<SPAN class="op">,</SPAN> 
+                                   <SPAN class="kw1">double</SPAN> len<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        vc<SPAN class="op">.</SPAN>remove_all<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">double</SPAN> dx1 <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>v1<SPAN class="op">.</SPAN>y <SPAN class="op">-</SPAN> v0<SPAN class="op">.</SPAN>y<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> len<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> dy1 <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>v1<SPAN class="op">.</SPAN>x <SPAN class="op">-</SPAN> v0<SPAN class="op">.</SPAN>x<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> len<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> dx2 <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> dy2 <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+
+        dx1 <SPAN class="op">*=</SPAN> m_width<SPAN class="op">;</SPAN>
+        dy1 <SPAN class="op">*=</SPAN> m_width<SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_line_cap <SPAN class="op">!=</SPAN> round_cap<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_line_cap <SPAN class="op">==</SPAN> square_cap<SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                dx2 <SPAN class="op">=</SPAN> dy1 <SPAN class="op">*</SPAN> m_width_sign<SPAN class="op">;</SPAN>
+                dy2 <SPAN class="op">=</SPAN> dx1 <SPAN class="op">*</SPAN> m_width_sign<SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            add_vertex<SPAN class="op">(</SPAN>vc<SPAN class="op">,</SPAN> v0<SPAN class="op">.</SPAN>x <SPAN class="op">-</SPAN> dx1 <SPAN class="op">-</SPAN> dx2<SPAN class="op">,</SPAN> v0<SPAN class="op">.</SPAN>y <SPAN class="op">+</SPAN> dy1 <SPAN class="op">-</SPAN> dy2<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            add_vertex<SPAN class="op">(</SPAN>vc<SPAN class="op">,</SPAN> v0<SPAN class="op">.</SPAN>x <SPAN class="op">+</SPAN> dx1 <SPAN class="op">-</SPAN> dx2<SPAN class="op">,</SPAN> v0<SPAN class="op">.</SPAN>y <SPAN class="op">-</SPAN> dy1 <SPAN class="op">-</SPAN> dy2<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">else</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">double</SPAN> da <SPAN class="op">=</SPAN> acos<SPAN class="op">(</SPAN>m_width_abs <SPAN class="op">/</SPAN> <SPAN class="op">(</SPAN>m_width_abs <SPAN class="op">+</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">125</SPAN> <SPAN class="op">/</SPAN> m_approx_scale<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">double</SPAN> a1<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">int</SPAN> i<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">int</SPAN> n <SPAN class="op">=</SPAN> <SPAN class="kw1">int</SPAN><SPAN class="op">(</SPAN><A href="agg_basics.h.html#pi">pi</A> <SPAN class="op">/</SPAN> da<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+            da <SPAN class="op">=</SPAN> <A href="agg_basics.h.html#pi">pi</A> <SPAN class="op">/</SPAN> <SPAN class="op">(</SPAN>n <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            add_vertex<SPAN class="op">(</SPAN>vc<SPAN class="op">,</SPAN> v0<SPAN class="op">.</SPAN>x <SPAN class="op">-</SPAN> dx1<SPAN class="op">,</SPAN> v0<SPAN class="op">.</SPAN>y <SPAN class="op">+</SPAN> dy1<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_width_sign <SPAN class="op">&gt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                a1 <SPAN class="op">=</SPAN> atan2<SPAN class="op">(</SPAN>dy1<SPAN class="op">,</SPAN> <SPAN class="op">-</SPAN>dx1<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                a1 <SPAN class="op">+=</SPAN> da<SPAN class="op">;</SPAN>
+                <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;</SPAN> n<SPAN class="op">;</SPAN> i<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    add_vertex<SPAN class="op">(</SPAN>vc<SPAN class="op">,</SPAN> v0<SPAN class="op">.</SPAN>x <SPAN class="op">+</SPAN> cos<SPAN class="op">(</SPAN>a1<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> m_width<SPAN class="op">,</SPAN> 
+                                   v0<SPAN class="op">.</SPAN>y <SPAN class="op">+</SPAN> sin<SPAN class="op">(</SPAN>a1<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> m_width<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    a1 <SPAN class="op">+=</SPAN> da<SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="kw1">else</SPAN>
+            <SPAN class="op">{</SPAN>
+                a1 <SPAN class="op">=</SPAN> atan2<SPAN class="op">(</SPAN><SPAN class="op">-</SPAN>dy1<SPAN class="op">,</SPAN> dx1<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                a1 <SPAN class="op">-=</SPAN> da<SPAN class="op">;</SPAN>
+                <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;</SPAN> n<SPAN class="op">;</SPAN> i<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    add_vertex<SPAN class="op">(</SPAN>vc<SPAN class="op">,</SPAN> v0<SPAN class="op">.</SPAN>x <SPAN class="op">+</SPAN> cos<SPAN class="op">(</SPAN>a1<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> m_width<SPAN class="op">,</SPAN> 
+                                   v0<SPAN class="op">.</SPAN>y <SPAN class="op">+</SPAN> sin<SPAN class="op">(</SPAN>a1<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> m_width<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    a1 <SPAN class="op">-=</SPAN> da<SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+            <SPAN class="op">}</SPAN>
+            add_vertex<SPAN class="op">(</SPAN>vc<SPAN class="op">,</SPAN> v0<SPAN class="op">.</SPAN>x <SPAN class="op">+</SPAN> dx1<SPAN class="op">,</SPAN> v0<SPAN class="op">.</SPAN>y <SPAN class="op">-</SPAN> dy1<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//-----------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> VC<SPAN class="op">&gt;</SPAN> 
+    <SPAN class="kw1">void</SPAN> <A href="agg_math_stroke.h.html#math_stroke">math_stroke</A><SPAN class="op">&lt;</SPAN>VC<SPAN class="op">&gt;</SPAN>::calc_join<SPAN class="op">(</SPAN>VC<SPAN class="op">&amp;</SPAN> vc<SPAN class="op">,</SPAN>
+                                    <SPAN class="kw1">const</SPAN> <A href="agg_vertex_sequence.h.html#vertex_dist">vertex_dist</A><SPAN class="op">&amp;</SPAN> v0<SPAN class="op">,</SPAN> 
+                                    <SPAN class="kw1">const</SPAN> <A href="agg_vertex_sequence.h.html#vertex_dist">vertex_dist</A><SPAN class="op">&amp;</SPAN> v1<SPAN class="op">,</SPAN> 
+                                    <SPAN class="kw1">const</SPAN> <A href="agg_vertex_sequence.h.html#vertex_dist">vertex_dist</A><SPAN class="op">&amp;</SPAN> v2<SPAN class="op">,</SPAN>
+                                    <SPAN class="kw1">double</SPAN> len1<SPAN class="op">,</SPAN> 
+                                    <SPAN class="kw1">double</SPAN> len2<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">double</SPAN> dx1 <SPAN class="op">=</SPAN> m_width <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>v1<SPAN class="op">.</SPAN>y <SPAN class="op">-</SPAN> v0<SPAN class="op">.</SPAN>y<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> len1<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> dy1 <SPAN class="op">=</SPAN> m_width <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>v1<SPAN class="op">.</SPAN>x <SPAN class="op">-</SPAN> v0<SPAN class="op">.</SPAN>x<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> len1<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> dx2 <SPAN class="op">=</SPAN> m_width <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>v2<SPAN class="op">.</SPAN>y <SPAN class="op">-</SPAN> v1<SPAN class="op">.</SPAN>y<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> len2<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> dy2 <SPAN class="op">=</SPAN> m_width <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>v2<SPAN class="op">.</SPAN>x <SPAN class="op">-</SPAN> v1<SPAN class="op">.</SPAN>x<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> len2<SPAN class="op">;</SPAN>
+
+        vc<SPAN class="op">.</SPAN>remove_all<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">double</SPAN> cp <SPAN class="op">=</SPAN> <A href="agg_math.h.html#cross_product">cross_product</A><SPAN class="op">(</SPAN>v0<SPAN class="op">.</SPAN>x<SPAN class="op">,</SPAN> v0<SPAN class="op">.</SPAN>y<SPAN class="op">,</SPAN> v1<SPAN class="op">.</SPAN>x<SPAN class="op">,</SPAN> v1<SPAN class="op">.</SPAN>y<SPAN class="op">,</SPAN> v2<SPAN class="op">.</SPAN>x<SPAN class="op">,</SPAN> v2<SPAN class="op">.</SPAN>y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>cp <SPAN class="op">!=</SPAN> <SPAN class="num">0</SPAN> <SPAN class="op">&amp;&amp;</SPAN> <SPAN class="op">(</SPAN>cp <SPAN class="op">&gt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">==</SPAN> <SPAN class="op">(</SPAN>m_width <SPAN class="op">&gt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="rem">// Inner join</SPAN>
+            <SPAN class="rem">//---------------</SPAN>
+            <SPAN class="kw1">double</SPAN> limit <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>len1 <SPAN class="op">&lt;</SPAN> len2<SPAN class="op">)</SPAN> ? len1 : len2<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> m_width_abs<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>limit <SPAN class="op">&lt;</SPAN> m_inner_miter_limit<SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                limit <SPAN class="op">=</SPAN> m_inner_miter_limit<SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+
+            <SPAN class="kw1">switch</SPAN><SPAN class="op">(</SPAN>m_inner_join<SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">default</SPAN>: <SPAN class="rem">// inner_bevel</SPAN>
+                add_vertex<SPAN class="op">(</SPAN>vc<SPAN class="op">,</SPAN> v1<SPAN class="op">.</SPAN>x <SPAN class="op">+</SPAN> dx1<SPAN class="op">,</SPAN> v1<SPAN class="op">.</SPAN>y <SPAN class="op">-</SPAN> dy1<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                add_vertex<SPAN class="op">(</SPAN>vc<SPAN class="op">,</SPAN> v1<SPAN class="op">.</SPAN>x <SPAN class="op">+</SPAN> dx2<SPAN class="op">,</SPAN> v1<SPAN class="op">.</SPAN>y <SPAN class="op">-</SPAN> dy2<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">case</SPAN> inner_miter:
+                calc_miter<SPAN class="op">(</SPAN>vc<SPAN class="op">,</SPAN>
+                           v0<SPAN class="op">,</SPAN> v1<SPAN class="op">,</SPAN> v2<SPAN class="op">,</SPAN> dx1<SPAN class="op">,</SPAN> dy1<SPAN class="op">,</SPAN> dx2<SPAN class="op">,</SPAN> dy2<SPAN class="op">,</SPAN> 
+                           miter_join_revert<SPAN class="op">,</SPAN> 
+                           limit<SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">case</SPAN> inner_jag:
+            <SPAN class="kw1">case</SPAN> inner_round:
+                cp <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>dx1<SPAN class="op">-</SPAN>dx2<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>dx1<SPAN class="op">-</SPAN>dx2<SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> <SPAN class="op">(</SPAN>dy1<SPAN class="op">-</SPAN>dy2<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>dy1<SPAN class="op">-</SPAN>dy2<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>cp <SPAN class="op">&lt;</SPAN> len1 <SPAN class="op">*</SPAN> len1 <SPAN class="op">&amp;&amp;</SPAN> cp <SPAN class="op">&lt;</SPAN> len2 <SPAN class="op">*</SPAN> len2<SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    calc_miter<SPAN class="op">(</SPAN>vc<SPAN class="op">,</SPAN>
+                               v0<SPAN class="op">,</SPAN> v1<SPAN class="op">,</SPAN> v2<SPAN class="op">,</SPAN> dx1<SPAN class="op">,</SPAN> dy1<SPAN class="op">,</SPAN> dx2<SPAN class="op">,</SPAN> dy2<SPAN class="op">,</SPAN> 
+                               miter_join_revert<SPAN class="op">,</SPAN> 
+                               limit<SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+                <SPAN class="kw1">else</SPAN>
+                <SPAN class="op">{</SPAN>
+                    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_inner_join <SPAN class="op">==</SPAN> inner_jag<SPAN class="op">)</SPAN>
+                    <SPAN class="op">{</SPAN>
+                        add_vertex<SPAN class="op">(</SPAN>vc<SPAN class="op">,</SPAN> v1<SPAN class="op">.</SPAN>x <SPAN class="op">+</SPAN> dx1<SPAN class="op">,</SPAN> v1<SPAN class="op">.</SPAN>y <SPAN class="op">-</SPAN> dy1<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                        add_vertex<SPAN class="op">(</SPAN>vc<SPAN class="op">,</SPAN> v1<SPAN class="op">.</SPAN>x<SPAN class="op">,</SPAN>       v1<SPAN class="op">.</SPAN>y      <SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                        add_vertex<SPAN class="op">(</SPAN>vc<SPAN class="op">,</SPAN> v1<SPAN class="op">.</SPAN>x <SPAN class="op">+</SPAN> dx2<SPAN class="op">,</SPAN> v1<SPAN class="op">.</SPAN>y <SPAN class="op">-</SPAN> dy2<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="op">}</SPAN>
+                    <SPAN class="kw1">else</SPAN>
+                    <SPAN class="op">{</SPAN>
+                        add_vertex<SPAN class="op">(</SPAN>vc<SPAN class="op">,</SPAN> v1<SPAN class="op">.</SPAN>x <SPAN class="op">+</SPAN> dx1<SPAN class="op">,</SPAN> v1<SPAN class="op">.</SPAN>y <SPAN class="op">-</SPAN> dy1<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                        add_vertex<SPAN class="op">(</SPAN>vc<SPAN class="op">,</SPAN> v1<SPAN class="op">.</SPAN>x<SPAN class="op">,</SPAN>       v1<SPAN class="op">.</SPAN>y      <SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                        calc_arc<SPAN class="op">(</SPAN>vc<SPAN class="op">,</SPAN> v1<SPAN class="op">.</SPAN>x<SPAN class="op">,</SPAN> v1<SPAN class="op">.</SPAN>y<SPAN class="op">,</SPAN> dx2<SPAN class="op">,</SPAN> <SPAN class="op">-</SPAN>dy2<SPAN class="op">,</SPAN> dx1<SPAN class="op">,</SPAN> <SPAN class="op">-</SPAN>dy1<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                        add_vertex<SPAN class="op">(</SPAN>vc<SPAN class="op">,</SPAN> v1<SPAN class="op">.</SPAN>x<SPAN class="op">,</SPAN>       v1<SPAN class="op">.</SPAN>y      <SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                        add_vertex<SPAN class="op">(</SPAN>vc<SPAN class="op">,</SPAN> v1<SPAN class="op">.</SPAN>x <SPAN class="op">+</SPAN> dx2<SPAN class="op">,</SPAN> v1<SPAN class="op">.</SPAN>y <SPAN class="op">-</SPAN> dy2<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="op">}</SPAN>
+                <SPAN class="op">}</SPAN>
+                <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">else</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="rem">// Outer join</SPAN>
+            <SPAN class="rem">//---------------</SPAN>
+
+            <SPAN class="rem">// Calculate the distance between v1 and </SPAN>
+            <SPAN class="rem">// the central point of the bevel line segment</SPAN>
+            <SPAN class="rem">//---------------</SPAN>
+            <SPAN class="kw1">double</SPAN> dx <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>dx1 <SPAN class="op">+</SPAN> dx2<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">double</SPAN> dy <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>dy1 <SPAN class="op">+</SPAN> dy2<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">double</SPAN> dbevel <SPAN class="op">=</SPAN> sqrt<SPAN class="op">(</SPAN>dx <SPAN class="op">*</SPAN> dx <SPAN class="op">+</SPAN> dy <SPAN class="op">*</SPAN> dy<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_line_join <SPAN class="op">==</SPAN> round_join <SPAN class="op">||</SPAN> m_line_join <SPAN class="op">==</SPAN> bevel_join<SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                <SPAN class="rem">// This is an optimization that reduces the number of points </SPAN>
+                <SPAN class="rem">// in cases of almost collinear segments. If there&#039;s no</SPAN>
+                <SPAN class="rem">// visible difference between bevel and miter joins we&#039;d rather</SPAN>
+                <SPAN class="rem">// use miter join because it adds only one point instead of two. </SPAN>
+                <SPAN class="rem">//</SPAN>
+                <SPAN class="rem">// Here we calculate the middle point between the bevel points </SPAN>
+                <SPAN class="rem">// and then, the distance between v1 and this middle point. </SPAN>
+                <SPAN class="rem">// At outer joins this distance always less than stroke width, </SPAN>
+                <SPAN class="rem">// because it&#039;s actually the height of an isosceles triangle of</SPAN>
+                <SPAN class="rem">// v1 and its two bevel points. If the difference between this</SPAN>
+                <SPAN class="rem">// width and this value is small (no visible bevel) we can </SPAN>
+                <SPAN class="rem">// add just one point. </SPAN>
+                <SPAN class="rem">//</SPAN>
+                <SPAN class="rem">// The constant in the expression makes the result approximately </SPAN>
+                <SPAN class="rem">// the same as in round joins and caps. You can safely comment </SPAN>
+                <SPAN class="rem">// out this entire &quot;if&quot;.</SPAN>
+                <SPAN class="rem">//-------------------</SPAN>
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_approx_scale <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>m_width_abs <SPAN class="op">-</SPAN> dbevel<SPAN class="op">)</SPAN> <SPAN class="op">&lt;</SPAN> m_width_eps<SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN><A href="agg_math.h.html#calc_intersection">calc_intersection</A><SPAN class="op">(</SPAN>v0<SPAN class="op">.</SPAN>x <SPAN class="op">+</SPAN> dx1<SPAN class="op">,</SPAN> v0<SPAN class="op">.</SPAN>y <SPAN class="op">-</SPAN> dy1<SPAN class="op">,</SPAN>
+                                         v1<SPAN class="op">.</SPAN>x <SPAN class="op">+</SPAN> dx1<SPAN class="op">,</SPAN> v1<SPAN class="op">.</SPAN>y <SPAN class="op">-</SPAN> dy1<SPAN class="op">,</SPAN>
+                                         v1<SPAN class="op">.</SPAN>x <SPAN class="op">+</SPAN> dx2<SPAN class="op">,</SPAN> v1<SPAN class="op">.</SPAN>y <SPAN class="op">-</SPAN> dy2<SPAN class="op">,</SPAN>
+                                         v2<SPAN class="op">.</SPAN>x <SPAN class="op">+</SPAN> dx2<SPAN class="op">,</SPAN> v2<SPAN class="op">.</SPAN>y <SPAN class="op">-</SPAN> dy2<SPAN class="op">,</SPAN>
+                                         <SPAN class="op">&amp;</SPAN>dx<SPAN class="op">,</SPAN> <SPAN class="op">&amp;</SPAN>dy<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+                    <SPAN class="op">{</SPAN>
+                        add_vertex<SPAN class="op">(</SPAN>vc<SPAN class="op">,</SPAN> dx<SPAN class="op">,</SPAN> dy<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="op">}</SPAN>
+                    <SPAN class="kw1">else</SPAN>
+                    <SPAN class="op">{</SPAN>
+                        add_vertex<SPAN class="op">(</SPAN>vc<SPAN class="op">,</SPAN> v1<SPAN class="op">.</SPAN>x <SPAN class="op">+</SPAN> dx1<SPAN class="op">,</SPAN> v1<SPAN class="op">.</SPAN>y <SPAN class="op">-</SPAN> dy1<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="op">}</SPAN>
+                    <SPAN class="kw1">return</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+            <SPAN class="op">}</SPAN>
+
+            <SPAN class="kw1">switch</SPAN><SPAN class="op">(</SPAN>m_line_join<SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">case</SPAN> miter_join:
+            <SPAN class="kw1">case</SPAN> miter_join_revert:
+            <SPAN class="kw1">case</SPAN> miter_join_round:
+                calc_miter<SPAN class="op">(</SPAN>vc<SPAN class="op">,</SPAN> 
+                           v0<SPAN class="op">,</SPAN> v1<SPAN class="op">,</SPAN> v2<SPAN class="op">,</SPAN> dx1<SPAN class="op">,</SPAN> dy1<SPAN class="op">,</SPAN> dx2<SPAN class="op">,</SPAN> dy2<SPAN class="op">,</SPAN> 
+                           m_line_join<SPAN class="op">,</SPAN> 
+                           m_miter_limit<SPAN class="op">,</SPAN>
+                           dbevel<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">case</SPAN> round_join:
+                calc_arc<SPAN class="op">(</SPAN>vc<SPAN class="op">,</SPAN> v1<SPAN class="op">.</SPAN>x<SPAN class="op">,</SPAN> v1<SPAN class="op">.</SPAN>y<SPAN class="op">,</SPAN> dx1<SPAN class="op">,</SPAN> <SPAN class="op">-</SPAN>dy1<SPAN class="op">,</SPAN> dx2<SPAN class="op">,</SPAN> <SPAN class="op">-</SPAN>dy2<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">default</SPAN>: <SPAN class="rem">// Bevel join</SPAN>
+                add_vertex<SPAN class="op">(</SPAN>vc<SPAN class="op">,</SPAN> v1<SPAN class="op">.</SPAN>x <SPAN class="op">+</SPAN> dx1<SPAN class="op">,</SPAN> v1<SPAN class="op">.</SPAN>y <SPAN class="op">-</SPAN> dy1<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                add_vertex<SPAN class="op">(</SPAN>vc<SPAN class="op">,</SPAN> v1<SPAN class="op">.</SPAN>x <SPAN class="op">+</SPAN> dx2<SPAN class="op">,</SPAN> v1<SPAN class="op">.</SPAN>y <SPAN class="op">-</SPAN> dy2<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+
+
+<SPAN class="op">}</SPAN>
+
+<SPAN class="kw2">#endif</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT><TABLE width="640px" bgcolor="#583927" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0">
+<TR><TD><CENTER><SPAN class="authors">
+Copyright <SPAN class="larger">&#169;</SPAN> 2002-2006
+<A href="../../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+<TR><TD><CENTER><SPAN class="authors">
+Web Design and Programming
+<A href="../../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+</TABLE>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+</HTML>

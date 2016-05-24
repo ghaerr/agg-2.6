@@ -1,0 +1,1149 @@
+<HTML><HEAD><TITLE>Anti-Grain Geometry - </TITLE>
+<META http-equiv="Content-Type" content="text/html"/>
+<LINK rel="stylesheet" type="text/css" href="../../agg.styles.css"/>
+</HEAD>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE><SPAN class="rem">//----------------------------------------------------------------------------</SPAN>
+<SPAN class="rem">// Anti-Grain Geometry (AGG) - Version 2.5</SPAN>
+<SPAN class="rem">// A high quality rendering engine for C++</SPAN>
+<SPAN class="rem">// Copyright (C) 2002-2006 Maxim Shemanarev</SPAN>
+<SPAN class="rem">// Contact: mcseem@antigrain.com</SPAN>
+<SPAN class="rem">//          mcseemagg@yahoo.com</SPAN>
+<SPAN class="rem">//          http://antigrain.com</SPAN>
+<SPAN class="rem">// </SPAN>
+<SPAN class="rem">// AGG is free software; you can redistribute it and/or</SPAN>
+<SPAN class="rem">// modify it under the terms of the GNU General Public License</SPAN>
+<SPAN class="rem">// as published by the Free Software Foundation; either version 2</SPAN>
+<SPAN class="rem">// of the License, or (at your option) any later version.</SPAN>
+<SPAN class="rem">// </SPAN>
+<SPAN class="rem">// AGG is distributed in the hope that it will be useful,</SPAN>
+<SPAN class="rem">// but WITHOUT ANY WARRANTY; without even the implied warranty of</SPAN>
+<SPAN class="rem">// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</SPAN>
+<SPAN class="rem">// GNU General Public License for more details.</SPAN>
+<SPAN class="rem">// </SPAN>
+<SPAN class="rem">// You should have received a copy of the GNU General Public License</SPAN>
+<SPAN class="rem">// along with AGG; if not, write to the Free Software</SPAN>
+<SPAN class="rem">// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, </SPAN>
+<SPAN class="rem">// MA 02110-1301, USA.</SPAN>
+<SPAN class="rem">//----------------------------------------------------------------------------</SPAN>
+
+<SPAN class="kw2">#ifndef</SPAN> AGG_ARRAY_INCLUDED
+<SPAN class="kw2">#define</SPAN> AGG_ARRAY_INCLUDED
+
+<SPAN class="kw2">#include</SPAN> <SPAN class="op">&lt;</SPAN>stddef<SPAN class="op">.</SPAN>h<SPAN class="op">&gt;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="op">&lt;</SPAN>string<SPAN class="op">.</SPAN>h<SPAN class="op">&gt;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="agg_basics.h.html">agg_basics.h</A>&quot;</SPAN>
+
+<SPAN class="kw1">namespace</SPAN> agg
+<SPAN class="op">{</SPAN>
+
+    <SPAN class="rem">//-------------------------------------------------------<A name="pod_array_adaptor"><B></B></A><A href="agg_array.h.html#pod_array_adaptor">pod_array_adaptor</A></SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> T<SPAN class="op">&gt;</SPAN> <SPAN class="kw1">class</SPAN> <A href="agg_array.h.html#pod_array_adaptor">pod_array_adaptor</A>
+    <SPAN class="op">{</SPAN>
+    <SPAN class="kw1">public</SPAN>:
+        <SPAN class="kw1">typedef</SPAN> T value_type<SPAN class="op">;</SPAN>
+        <A href="agg_array.h.html#pod_array_adaptor">pod_array_adaptor</A><SPAN class="op">(</SPAN>T<SPAN class="op">*</SPAN> array<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> size<SPAN class="op">)</SPAN> : 
+            m_array<SPAN class="op">(</SPAN>array<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> m_size<SPAN class="op">(</SPAN>size<SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN><SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">unsigned</SPAN> size<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_size<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">const</SPAN> T<SPAN class="op">&amp;</SPAN> <SPAN class="kw1">operator</SPAN> <SPAN class="op">[</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> i<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_array<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+              T<SPAN class="op">&amp;</SPAN> <SPAN class="kw1">operator</SPAN> <SPAN class="op">[</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> i<SPAN class="op">)</SPAN>       <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_array<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">const</SPAN> T<SPAN class="op">&amp;</SPAN> at<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> i<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN>           <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_array<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+              T<SPAN class="op">&amp;</SPAN> at<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> i<SPAN class="op">)</SPAN>                 <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_array<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        T  value_at<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> i<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN>           <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_array<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+
+    <SPAN class="kw1">private</SPAN>:
+        T<SPAN class="op">*</SPAN>       m_array<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> m_size<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+    <SPAN class="rem">//---------------------------------------------------------<A name="pod_auto_array"><B></B></A><A href="agg_array.h.html#pod_auto_array">pod_auto_array</A></SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> T<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> Size<SPAN class="op">&gt;</SPAN> <SPAN class="kw1">class</SPAN> <A href="agg_array.h.html#pod_auto_array">pod_auto_array</A>
+    <SPAN class="op">{</SPAN>
+    <SPAN class="kw1">public</SPAN>:
+        <SPAN class="kw1">typedef</SPAN> T value_type<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">typedef</SPAN> <A href="agg_array.h.html#pod_auto_array">pod_auto_array</A><SPAN class="op">&lt;</SPAN>T<SPAN class="op">,</SPAN> Size<SPAN class="op">&gt;</SPAN> self_type<SPAN class="op">;</SPAN>
+
+        <A href="agg_array.h.html#pod_auto_array">pod_auto_array</A><SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN><SPAN class="op">}</SPAN>
+        <SPAN class="kw1">explicit</SPAN> <A href="agg_array.h.html#pod_auto_array">pod_auto_array</A><SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> T<SPAN class="op">*</SPAN> c<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            memcpy<SPAN class="op">(</SPAN>m_array<SPAN class="op">,</SPAN> c<SPAN class="op">,</SPAN> <SPAN class="kw1">sizeof</SPAN><SPAN class="op">(</SPAN>T<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> Size<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">const</SPAN> self_type<SPAN class="op">&amp;</SPAN> <SPAN class="kw1">operator</SPAN> <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> T<SPAN class="op">*</SPAN> c<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            memcpy<SPAN class="op">(</SPAN>m_array<SPAN class="op">,</SPAN> c<SPAN class="op">,</SPAN> <SPAN class="kw1">sizeof</SPAN><SPAN class="op">(</SPAN>T<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> Size<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">return</SPAN> <SPAN class="op">*</SPAN><SPAN class="kw1">this</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">static</SPAN> <SPAN class="kw1">unsigned</SPAN> size<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> Size<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">const</SPAN> T<SPAN class="op">&amp;</SPAN> <SPAN class="kw1">operator</SPAN> <SPAN class="op">[</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> i<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_array<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+              T<SPAN class="op">&amp;</SPAN> <SPAN class="kw1">operator</SPAN> <SPAN class="op">[</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> i<SPAN class="op">)</SPAN>       <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_array<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">const</SPAN> T<SPAN class="op">&amp;</SPAN> at<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> i<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN>           <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_array<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+              T<SPAN class="op">&amp;</SPAN> at<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> i<SPAN class="op">)</SPAN>                 <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_array<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        T  value_at<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> i<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN>           <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_array<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+
+    <SPAN class="kw1">private</SPAN>:
+        T m_array<SPAN class="op">[</SPAN>Size<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+    <SPAN class="rem">//--------------------------------------------------------<A name="pod_auto_vector"><B></B></A><A href="agg_array.h.html#pod_auto_vector">pod_auto_vector</A></SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> T<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> Size<SPAN class="op">&gt;</SPAN> <SPAN class="kw1">class</SPAN> <A href="agg_array.h.html#pod_auto_vector">pod_auto_vector</A>
+    <SPAN class="op">{</SPAN>
+    <SPAN class="kw1">public</SPAN>:
+        <SPAN class="kw1">typedef</SPAN> T value_type<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">typedef</SPAN> <A href="agg_array.h.html#pod_auto_vector">pod_auto_vector</A><SPAN class="op">&lt;</SPAN>T<SPAN class="op">,</SPAN> Size<SPAN class="op">&gt;</SPAN> self_type<SPAN class="op">;</SPAN>
+
+        <A href="agg_array.h.html#pod_auto_vector">pod_auto_vector</A><SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> : m_size<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN><SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">void</SPAN> remove_all<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>            <SPAN class="op">{</SPAN> m_size <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">void</SPAN> clear<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>                 <SPAN class="op">{</SPAN> m_size <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">void</SPAN> add<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> T<SPAN class="op">&amp;</SPAN> v<SPAN class="op">)</SPAN>         <SPAN class="op">{</SPAN> m_array<SPAN class="op">[</SPAN>m_size<SPAN class="op">++</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> v<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">void</SPAN> push_back<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> T<SPAN class="op">&amp;</SPAN> v<SPAN class="op">)</SPAN>   <SPAN class="op">{</SPAN> m_array<SPAN class="op">[</SPAN>m_size<SPAN class="op">++</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> v<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">void</SPAN> inc_size<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> size<SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN> m_size <SPAN class="op">+=</SPAN> size<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        
+        <SPAN class="kw1">unsigned</SPAN> size<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_size<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">const</SPAN> T<SPAN class="op">&amp;</SPAN> <SPAN class="kw1">operator</SPAN> <SPAN class="op">[</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> i<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_array<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+              T<SPAN class="op">&amp;</SPAN> <SPAN class="kw1">operator</SPAN> <SPAN class="op">[</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> i<SPAN class="op">)</SPAN>       <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_array<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">const</SPAN> T<SPAN class="op">&amp;</SPAN> at<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> i<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN>           <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_array<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+              T<SPAN class="op">&amp;</SPAN> at<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> i<SPAN class="op">)</SPAN>                 <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_array<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        T  value_at<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> i<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN>           <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_array<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+
+    <SPAN class="kw1">private</SPAN>:
+        T m_array<SPAN class="op">[</SPAN>Size<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> m_size<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+    <SPAN class="rem">//---------------------------------------------------------------<A name="pod_array"><B></B></A><A href="agg_array.h.html#pod_array">pod_array</A></SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> T<SPAN class="op">&gt;</SPAN> <SPAN class="kw1">class</SPAN> <A href="agg_array.h.html#pod_array">pod_array</A>
+    <SPAN class="op">{</SPAN>
+    <SPAN class="kw1">public</SPAN>:
+        <SPAN class="kw1">typedef</SPAN> T value_type<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">typedef</SPAN> <A href="agg_array.h.html#pod_array">pod_array</A><SPAN class="op">&lt;</SPAN>T<SPAN class="op">&gt;</SPAN> self_type<SPAN class="op">;</SPAN>
+
+        ~<A href="agg_array.h.html#pod_array">pod_array</A><SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN> <A href="agg_basics.h.html#pod_allocator">pod_allocator</A><SPAN class="op">&lt;</SPAN>T<SPAN class="op">&gt;</SPAN>::deallocate<SPAN class="op">(</SPAN>m_array<SPAN class="op">,</SPAN> m_size<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <A href="agg_array.h.html#pod_array">pod_array</A><SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> : m_array<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> m_size<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN><SPAN class="op">}</SPAN>
+
+        <A href="agg_array.h.html#pod_array">pod_array</A><SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> size<SPAN class="op">)</SPAN> : 
+            m_array<SPAN class="op">(</SPAN><A href="agg_basics.h.html#pod_allocator">pod_allocator</A><SPAN class="op">&lt;</SPAN>T<SPAN class="op">&gt;</SPAN>::<SPAN class="kw1">allocate</SPAN><SPAN class="op">(</SPAN>size<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> 
+            m_size<SPAN class="op">(</SPAN>size<SPAN class="op">)</SPAN> 
+        <SPAN class="op">{</SPAN><SPAN class="op">}</SPAN>
+
+        <A href="agg_array.h.html#pod_array">pod_array</A><SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> self_type<SPAN class="op">&amp;</SPAN> v<SPAN class="op">)</SPAN> : 
+            m_array<SPAN class="op">(</SPAN><A href="agg_basics.h.html#pod_allocator">pod_allocator</A><SPAN class="op">&lt;</SPAN>T<SPAN class="op">&gt;</SPAN>::<SPAN class="kw1">allocate</SPAN><SPAN class="op">(</SPAN>v<SPAN class="op">.</SPAN>m_size<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> 
+            m_size<SPAN class="op">(</SPAN>v<SPAN class="op">.</SPAN>m_size<SPAN class="op">)</SPAN> 
+        <SPAN class="op">{</SPAN>
+            memcpy<SPAN class="op">(</SPAN>m_array<SPAN class="op">,</SPAN> v<SPAN class="op">.</SPAN>m_array<SPAN class="op">,</SPAN> <SPAN class="kw1">sizeof</SPAN><SPAN class="op">(</SPAN>T<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> m_size<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">void</SPAN> resize<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> size<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>size <SPAN class="op">!=</SPAN> m_size<SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                <A href="agg_basics.h.html#pod_allocator">pod_allocator</A><SPAN class="op">&lt;</SPAN>T<SPAN class="op">&gt;</SPAN>::deallocate<SPAN class="op">(</SPAN>m_array<SPAN class="op">,</SPAN> m_size<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                m_array <SPAN class="op">=</SPAN> <A href="agg_basics.h.html#pod_allocator">pod_allocator</A><SPAN class="op">&lt;</SPAN>T<SPAN class="op">&gt;</SPAN>::<SPAN class="kw1">allocate</SPAN><SPAN class="op">(</SPAN>m_size <SPAN class="op">=</SPAN> size<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">const</SPAN> self_type<SPAN class="op">&amp;</SPAN> <SPAN class="kw1">operator</SPAN> <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> self_type<SPAN class="op">&amp;</SPAN> v<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            resize<SPAN class="op">(</SPAN>v<SPAN class="op">.</SPAN>size<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            memcpy<SPAN class="op">(</SPAN>m_array<SPAN class="op">,</SPAN> v<SPAN class="op">.</SPAN>m_array<SPAN class="op">,</SPAN> <SPAN class="kw1">sizeof</SPAN><SPAN class="op">(</SPAN>T<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> m_size<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">return</SPAN> <SPAN class="op">*</SPAN><SPAN class="kw1">this</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">unsigned</SPAN> size<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_size<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">const</SPAN> T<SPAN class="op">&amp;</SPAN> <SPAN class="kw1">operator</SPAN> <SPAN class="op">[</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> i<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_array<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+              T<SPAN class="op">&amp;</SPAN> <SPAN class="kw1">operator</SPAN> <SPAN class="op">[</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> i<SPAN class="op">)</SPAN>       <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_array<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">const</SPAN> T<SPAN class="op">&amp;</SPAN> at<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> i<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN>           <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_array<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+              T<SPAN class="op">&amp;</SPAN> at<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> i<SPAN class="op">)</SPAN>                 <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_array<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        T  value_at<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> i<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN>           <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_array<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">const</SPAN> T<SPAN class="op">*</SPAN> data<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_array<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+              T<SPAN class="op">*</SPAN> data<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>       <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_array<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+    <SPAN class="kw1">private</SPAN>:
+        T<SPAN class="op">*</SPAN>       m_array<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> m_size<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+
+    <SPAN class="rem">//--------------------------------------------------------------<A name="pod_vector"><B></B></A><A href="agg_array.h.html#pod_vector">pod_vector</A></SPAN>
+    <SPAN class="rem">// A simple class template to store Plain Old Data, a vector</SPAN>
+    <SPAN class="rem">// of a fixed size. The data is continous in memory</SPAN>
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> T<SPAN class="op">&gt;</SPAN> <SPAN class="kw1">class</SPAN> <A href="agg_array.h.html#pod_vector">pod_vector</A>
+    <SPAN class="op">{</SPAN>
+    <SPAN class="kw1">public</SPAN>:
+        <SPAN class="kw1">typedef</SPAN> T value_type<SPAN class="op">;</SPAN>
+
+        ~<A href="agg_array.h.html#pod_vector">pod_vector</A><SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN> <A href="agg_basics.h.html#pod_allocator">pod_allocator</A><SPAN class="op">&lt;</SPAN>T<SPAN class="op">&gt;</SPAN>::deallocate<SPAN class="op">(</SPAN>m_array<SPAN class="op">,</SPAN> m_capacity<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <A href="agg_array.h.html#pod_vector">pod_vector</A><SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> : m_size<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> m_capacity<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> m_array<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN><SPAN class="op">}</SPAN>
+        <A href="agg_array.h.html#pod_vector">pod_vector</A><SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> cap<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> extra_tail<SPAN class="op">=</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="rem">// Copying</SPAN>
+        <A href="agg_array.h.html#pod_vector">pod_vector</A><SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <A href="agg_array.h.html#pod_vector">pod_vector</A><SPAN class="op">&lt;</SPAN>T<SPAN class="op">&gt;</SPAN><SPAN class="op">&amp;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">const</SPAN> <A href="agg_array.h.html#pod_vector">pod_vector</A><SPAN class="op">&lt;</SPAN>T<SPAN class="op">&gt;</SPAN><SPAN class="op">&amp;</SPAN> <SPAN class="kw1">operator</SPAN> <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <A href="agg_array.h.html#pod_vector">pod_vector</A><SPAN class="op">&lt;</SPAN>T<SPAN class="op">&gt;</SPAN><SPAN class="op">&amp;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="rem">// Set new capacity. All data is lost, size is set to zero.</SPAN>
+        <SPAN class="kw1">void</SPAN> capacity<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> cap<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> extra_tail<SPAN class="op">=</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> capacity<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_capacity<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">// Allocate n elements. All data is lost, </SPAN>
+        <SPAN class="rem">// but elements can be accessed in range 0...size-1. </SPAN>
+        <SPAN class="kw1">void</SPAN> <SPAN class="kw1">allocate</SPAN><SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> size<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> extra_tail<SPAN class="op">=</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="rem">// Resize keeping the content.</SPAN>
+        <SPAN class="kw1">void</SPAN> resize<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> new_size<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">void</SPAN> zero<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            memset<SPAN class="op">(</SPAN>m_array<SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="kw1">sizeof</SPAN><SPAN class="op">(</SPAN>T<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> m_size<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">void</SPAN> add<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> T<SPAN class="op">&amp;</SPAN> v<SPAN class="op">)</SPAN>         <SPAN class="op">{</SPAN> m_array<SPAN class="op">[</SPAN>m_size<SPAN class="op">++</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> v<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">void</SPAN> push_back<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> T<SPAN class="op">&amp;</SPAN> v<SPAN class="op">)</SPAN>   <SPAN class="op">{</SPAN> m_array<SPAN class="op">[</SPAN>m_size<SPAN class="op">++</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> v<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">void</SPAN> insert_at<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> pos<SPAN class="op">,</SPAN> <SPAN class="kw1">const</SPAN> T<SPAN class="op">&amp;</SPAN> val<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">void</SPAN> inc_size<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> size<SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN> m_size <SPAN class="op">+=</SPAN> size<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> size<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>      <SPAN class="kw1">const</SPAN>   <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_size<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> byte_size<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN>   <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_size <SPAN class="op">*</SPAN> <SPAN class="kw1">sizeof</SPAN><SPAN class="op">(</SPAN>T<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">void</SPAN> serialize<SPAN class="op">(</SPAN><A href="agg_basics.h.html#int8u">int8u</A><SPAN class="op">*</SPAN> ptr<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">void</SPAN> deserialize<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <A href="agg_basics.h.html#int8u">int8u</A><SPAN class="op">*</SPAN> data<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> byte_size<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">const</SPAN> T<SPAN class="op">&amp;</SPAN> <SPAN class="kw1">operator</SPAN> <SPAN class="op">[</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> i<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_array<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+              T<SPAN class="op">&amp;</SPAN> <SPAN class="kw1">operator</SPAN> <SPAN class="op">[</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> i<SPAN class="op">)</SPAN>       <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_array<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">const</SPAN> T<SPAN class="op">&amp;</SPAN> at<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> i<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN>           <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_array<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+              T<SPAN class="op">&amp;</SPAN> at<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> i<SPAN class="op">)</SPAN>                 <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_array<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        T  value_at<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> i<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN>           <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_array<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">const</SPAN> T<SPAN class="op">*</SPAN> data<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_array<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+              T<SPAN class="op">*</SPAN> data<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>       <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_array<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">void</SPAN> remove_all<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>         <SPAN class="op">{</SPAN> m_size <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">void</SPAN> clear<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>              <SPAN class="op">{</SPAN> m_size <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">void</SPAN> cut_at<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> num<SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>num <SPAN class="op">&lt;</SPAN> m_size<SPAN class="op">)</SPAN> m_size <SPAN class="op">=</SPAN> num<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+
+    <SPAN class="kw1">private</SPAN>:
+        <SPAN class="kw1">unsigned</SPAN> m_size<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> m_capacity<SPAN class="op">;</SPAN>
+        T<SPAN class="op">*</SPAN>       m_array<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> T<SPAN class="op">&gt;</SPAN> 
+    <SPAN class="kw1">void</SPAN> <A href="agg_array.h.html#pod_vector">pod_vector</A><SPAN class="op">&lt;</SPAN>T<SPAN class="op">&gt;</SPAN>::capacity<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> cap<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> extra_tail<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        m_size <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>cap <SPAN class="op">&gt;</SPAN> m_capacity<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <A href="agg_basics.h.html#pod_allocator">pod_allocator</A><SPAN class="op">&lt;</SPAN>T<SPAN class="op">&gt;</SPAN>::deallocate<SPAN class="op">(</SPAN>m_array<SPAN class="op">,</SPAN> m_capacity<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            m_capacity <SPAN class="op">=</SPAN> cap <SPAN class="op">+</SPAN> extra_tail<SPAN class="op">;</SPAN>
+            m_array <SPAN class="op">=</SPAN> m_capacity ? <A href="agg_basics.h.html#pod_allocator">pod_allocator</A><SPAN class="op">&lt;</SPAN>T<SPAN class="op">&gt;</SPAN>::<SPAN class="kw1">allocate</SPAN><SPAN class="op">(</SPAN>m_capacity<SPAN class="op">)</SPAN> : <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> T<SPAN class="op">&gt;</SPAN> 
+    <SPAN class="kw1">void</SPAN> <A href="agg_array.h.html#pod_vector">pod_vector</A><SPAN class="op">&lt;</SPAN>T<SPAN class="op">&gt;</SPAN>::<SPAN class="kw1">allocate</SPAN><SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> size<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> extra_tail<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        capacity<SPAN class="op">(</SPAN>size<SPAN class="op">,</SPAN> extra_tail<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_size <SPAN class="op">=</SPAN> size<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> T<SPAN class="op">&gt;</SPAN> 
+    <SPAN class="kw1">void</SPAN> <A href="agg_array.h.html#pod_vector">pod_vector</A><SPAN class="op">&lt;</SPAN>T<SPAN class="op">&gt;</SPAN>::resize<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> new_size<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>new_size <SPAN class="op">&gt;</SPAN> m_size<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>new_size <SPAN class="op">&gt;</SPAN> m_capacity<SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                T<SPAN class="op">*</SPAN> data <SPAN class="op">=</SPAN> <A href="agg_basics.h.html#pod_allocator">pod_allocator</A><SPAN class="op">&lt;</SPAN>T<SPAN class="op">&gt;</SPAN>::<SPAN class="kw1">allocate</SPAN><SPAN class="op">(</SPAN>new_size<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                memcpy<SPAN class="op">(</SPAN>data<SPAN class="op">,</SPAN> m_array<SPAN class="op">,</SPAN> m_size <SPAN class="op">*</SPAN> <SPAN class="kw1">sizeof</SPAN><SPAN class="op">(</SPAN>T<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <A href="agg_basics.h.html#pod_allocator">pod_allocator</A><SPAN class="op">&lt;</SPAN>T<SPAN class="op">&gt;</SPAN>::deallocate<SPAN class="op">(</SPAN>m_array<SPAN class="op">,</SPAN> m_capacity<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                m_array <SPAN class="op">=</SPAN> data<SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">else</SPAN>
+        <SPAN class="op">{</SPAN>
+            m_size <SPAN class="op">=</SPAN> new_size<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> T<SPAN class="op">&gt;</SPAN> <A href="agg_array.h.html#pod_vector">pod_vector</A><SPAN class="op">&lt;</SPAN>T<SPAN class="op">&gt;</SPAN>::<A href="agg_array.h.html#pod_vector">pod_vector</A><SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> cap<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> extra_tail<SPAN class="op">)</SPAN> :
+        m_size<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> 
+        m_capacity<SPAN class="op">(</SPAN>cap <SPAN class="op">+</SPAN> extra_tail<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> 
+        m_array<SPAN class="op">(</SPAN><A href="agg_basics.h.html#pod_allocator">pod_allocator</A><SPAN class="op">&lt;</SPAN>T<SPAN class="op">&gt;</SPAN>::<SPAN class="kw1">allocate</SPAN><SPAN class="op">(</SPAN>m_capacity<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN><SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> T<SPAN class="op">&gt;</SPAN> <A href="agg_array.h.html#pod_vector">pod_vector</A><SPAN class="op">&lt;</SPAN>T<SPAN class="op">&gt;</SPAN>::<A href="agg_array.h.html#pod_vector">pod_vector</A><SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <A href="agg_array.h.html#pod_vector">pod_vector</A><SPAN class="op">&lt;</SPAN>T<SPAN class="op">&gt;</SPAN><SPAN class="op">&amp;</SPAN> v<SPAN class="op">)</SPAN> :
+        m_size<SPAN class="op">(</SPAN>v<SPAN class="op">.</SPAN>m_size<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_capacity<SPAN class="op">(</SPAN>v<SPAN class="op">.</SPAN>m_capacity<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_array<SPAN class="op">(</SPAN>v<SPAN class="op">.</SPAN>m_capacity ? <A href="agg_basics.h.html#pod_allocator">pod_allocator</A><SPAN class="op">&lt;</SPAN>T<SPAN class="op">&gt;</SPAN>::<SPAN class="kw1">allocate</SPAN><SPAN class="op">(</SPAN>v<SPAN class="op">.</SPAN>m_capacity<SPAN class="op">)</SPAN> : <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        memcpy<SPAN class="op">(</SPAN>m_array<SPAN class="op">,</SPAN> v<SPAN class="op">.</SPAN>m_array<SPAN class="op">,</SPAN> <SPAN class="kw1">sizeof</SPAN><SPAN class="op">(</SPAN>T<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> v<SPAN class="op">.</SPAN>m_size<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> T<SPAN class="op">&gt;</SPAN> <SPAN class="kw1">const</SPAN> <A href="agg_array.h.html#pod_vector">pod_vector</A><SPAN class="op">&lt;</SPAN>T<SPAN class="op">&gt;</SPAN><SPAN class="op">&amp;</SPAN> 
+    <A href="agg_array.h.html#pod_vector">pod_vector</A><SPAN class="op">&lt;</SPAN>T<SPAN class="op">&gt;</SPAN>::<SPAN class="kw1">operator</SPAN> <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <A href="agg_array.h.html#pod_vector">pod_vector</A><SPAN class="op">&lt;</SPAN>T<SPAN class="op">&gt;</SPAN><SPAN class="op">&amp;</SPAN>v<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">allocate</SPAN><SPAN class="op">(</SPAN>v<SPAN class="op">.</SPAN>m_size<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>v<SPAN class="op">.</SPAN>m_size<SPAN class="op">)</SPAN> memcpy<SPAN class="op">(</SPAN>m_array<SPAN class="op">,</SPAN> v<SPAN class="op">.</SPAN>m_array<SPAN class="op">,</SPAN> <SPAN class="kw1">sizeof</SPAN><SPAN class="op">(</SPAN>T<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> v<SPAN class="op">.</SPAN>m_size<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">return</SPAN> <SPAN class="op">*</SPAN><SPAN class="kw1">this</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> T<SPAN class="op">&gt;</SPAN> <SPAN class="kw1">void</SPAN> <A href="agg_array.h.html#pod_vector">pod_vector</A><SPAN class="op">&lt;</SPAN>T<SPAN class="op">&gt;</SPAN>::serialize<SPAN class="op">(</SPAN><A href="agg_basics.h.html#int8u">int8u</A><SPAN class="op">*</SPAN> ptr<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN>
+    <SPAN class="op">{</SPAN> 
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_size<SPAN class="op">)</SPAN> memcpy<SPAN class="op">(</SPAN>ptr<SPAN class="op">,</SPAN> m_array<SPAN class="op">,</SPAN> m_size <SPAN class="op">*</SPAN> <SPAN class="kw1">sizeof</SPAN><SPAN class="op">(</SPAN>T<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> 
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> T<SPAN class="op">&gt;</SPAN> 
+    <SPAN class="kw1">void</SPAN> <A href="agg_array.h.html#pod_vector">pod_vector</A><SPAN class="op">&lt;</SPAN>T<SPAN class="op">&gt;</SPAN>::deserialize<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <A href="agg_basics.h.html#int8u">int8u</A><SPAN class="op">*</SPAN> data<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> byte_size<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        byte_size <SPAN class="op">/=</SPAN> <SPAN class="kw1">sizeof</SPAN><SPAN class="op">(</SPAN>T<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">allocate</SPAN><SPAN class="op">(</SPAN>byte_size<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>byte_size<SPAN class="op">)</SPAN> memcpy<SPAN class="op">(</SPAN>m_array<SPAN class="op">,</SPAN> data<SPAN class="op">,</SPAN> byte_size <SPAN class="op">*</SPAN> <SPAN class="kw1">sizeof</SPAN><SPAN class="op">(</SPAN>T<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> T<SPAN class="op">&gt;</SPAN> 
+    <SPAN class="kw1">void</SPAN> <A href="agg_array.h.html#pod_vector">pod_vector</A><SPAN class="op">&lt;</SPAN>T<SPAN class="op">&gt;</SPAN>::insert_at<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> pos<SPAN class="op">,</SPAN> <SPAN class="kw1">const</SPAN> T<SPAN class="op">&amp;</SPAN> val<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>pos <SPAN class="op">&gt;=</SPAN> m_size<SPAN class="op">)</SPAN> 
+        <SPAN class="op">{</SPAN>
+            m_array<SPAN class="op">[</SPAN>m_size<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> val<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">else</SPAN>
+        <SPAN class="op">{</SPAN>
+            memmove<SPAN class="op">(</SPAN>m_array <SPAN class="op">+</SPAN> pos <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">,</SPAN> m_array <SPAN class="op">+</SPAN> pos<SPAN class="op">,</SPAN> <SPAN class="op">(</SPAN>m_size <SPAN class="op">-</SPAN> pos<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> <SPAN class="kw1">sizeof</SPAN><SPAN class="op">(</SPAN>T<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            m_array<SPAN class="op">[</SPAN>pos<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> val<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="op">++</SPAN>m_size<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//---------------------------------------------------------------<A name="pod_bvector"><B></B></A><A href="agg_array.h.html#pod_bvector">pod_bvector</A></SPAN>
+    <SPAN class="rem">// A simple class template to store Plain Old Data, similar to std::deque</SPAN>
+    <SPAN class="rem">// It doesn&#039;t reallocate memory but instead, uses blocks of data of size </SPAN>
+    <SPAN class="rem">// of (1 &lt;&lt; S), that is, power of two. The data is NOT contiguous in memory, </SPAN>
+    <SPAN class="rem">// so the only valid access method is operator [] or curr(), prev(), next()</SPAN>
+    <SPAN class="rem">// </SPAN>
+    <SPAN class="rem">// There reallocs occure only when the pool of pointers to blocks needs </SPAN>
+    <SPAN class="rem">// to be extended (it happens very rarely). You can control the value </SPAN>
+    <SPAN class="rem">// of increment to reallocate the pointer buffer. See the second constructor.</SPAN>
+    <SPAN class="rem">// By default, the incremeent value equals (1 &lt;&lt; S), i.e., the block size.</SPAN>
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> T<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> S<SPAN class="op">=</SPAN><SPAN class="num">6</SPAN><SPAN class="op">&gt;</SPAN> <SPAN class="kw1">class</SPAN> <A href="agg_array.h.html#pod_bvector">pod_bvector</A>
+    <SPAN class="op">{</SPAN>
+    <SPAN class="kw1">public</SPAN>:
+        <SPAN class="kw1">enum</SPAN> block_scale_e
+        <SPAN class="op">{</SPAN>   
+            block_shift <SPAN class="op">=</SPAN> S<SPAN class="op">,</SPAN>
+            block_size  <SPAN class="op">=</SPAN> <SPAN class="num">1</SPAN> <SPAN class="op">&lt;&lt;</SPAN> block_shift<SPAN class="op">,</SPAN>
+            block_mask  <SPAN class="op">=</SPAN> block_size <SPAN class="op">-</SPAN> <SPAN class="num">1</SPAN>
+        <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">typedef</SPAN> T value_type<SPAN class="op">;</SPAN>
+
+        ~<A href="agg_array.h.html#pod_bvector">pod_bvector</A><SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <A href="agg_array.h.html#pod_bvector">pod_bvector</A><SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <A href="agg_array.h.html#pod_bvector">pod_bvector</A><SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> block_ptr_inc<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="rem">// Copying</SPAN>
+        <A href="agg_array.h.html#pod_bvector">pod_bvector</A><SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <A href="agg_array.h.html#pod_bvector">pod_bvector</A><SPAN class="op">&lt;</SPAN>T<SPAN class="op">,</SPAN> S<SPAN class="op">&gt;</SPAN><SPAN class="op">&amp;</SPAN> v<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">const</SPAN> <A href="agg_array.h.html#pod_bvector">pod_bvector</A><SPAN class="op">&lt;</SPAN>T<SPAN class="op">,</SPAN> S<SPAN class="op">&gt;</SPAN><SPAN class="op">&amp;</SPAN> <SPAN class="kw1">operator</SPAN> <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <A href="agg_array.h.html#pod_bvector">pod_bvector</A><SPAN class="op">&lt;</SPAN>T<SPAN class="op">,</SPAN> S<SPAN class="op">&gt;</SPAN><SPAN class="op">&amp;</SPAN> v<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">void</SPAN> remove_all<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN> m_size <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">void</SPAN> clear<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>      <SPAN class="op">{</SPAN> m_size <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">void</SPAN> free_all<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>   <SPAN class="op">{</SPAN> free_tail<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">void</SPAN> free_tail<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> size<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">void</SPAN> add<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> T<SPAN class="op">&amp;</SPAN> val<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">void</SPAN> push_back<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> T<SPAN class="op">&amp;</SPAN> val<SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN> add<SPAN class="op">(</SPAN>val<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">void</SPAN> modify_last<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> T<SPAN class="op">&amp;</SPAN> val<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">void</SPAN> remove_last<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">int</SPAN> allocate_continuous_block<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> num_elements<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">void</SPAN> add_array<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> T<SPAN class="op">*</SPAN> ptr<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> num_elem<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN>num_elem<SPAN class="op">--</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                add<SPAN class="op">(</SPAN><SPAN class="op">*</SPAN>ptr<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> DataAccessor<SPAN class="op">&gt;</SPAN> <SPAN class="kw1">void</SPAN> add_data<SPAN class="op">(</SPAN>DataAccessor<SPAN class="op">&amp;</SPAN> data<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN>data<SPAN class="op">.</SPAN>size<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                add<SPAN class="op">(</SPAN><SPAN class="op">*</SPAN>data<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">++</SPAN>data<SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">void</SPAN> cut_at<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> size<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>size <SPAN class="op">&lt;</SPAN> m_size<SPAN class="op">)</SPAN> m_size <SPAN class="op">=</SPAN> size<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">unsigned</SPAN> size<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_size<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">const</SPAN> T<SPAN class="op">&amp;</SPAN> <SPAN class="kw1">operator</SPAN> <SPAN class="op">[</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> i<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">return</SPAN> m_blocks<SPAN class="op">[</SPAN>i <SPAN class="op">&gt;&gt;</SPAN> block_shift<SPAN class="op">]</SPAN><SPAN class="op">[</SPAN>i <SPAN class="op">&amp;</SPAN> block_mask<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        T<SPAN class="op">&amp;</SPAN> <SPAN class="kw1">operator</SPAN> <SPAN class="op">[</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> i<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">return</SPAN> m_blocks<SPAN class="op">[</SPAN>i <SPAN class="op">&gt;&gt;</SPAN> block_shift<SPAN class="op">]</SPAN><SPAN class="op">[</SPAN>i <SPAN class="op">&amp;</SPAN> block_mask<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">const</SPAN> T<SPAN class="op">&amp;</SPAN> at<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> i<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN>
+        <SPAN class="op">{</SPAN> 
+            <SPAN class="kw1">return</SPAN> m_blocks<SPAN class="op">[</SPAN>i <SPAN class="op">&gt;&gt;</SPAN> block_shift<SPAN class="op">]</SPAN><SPAN class="op">[</SPAN>i <SPAN class="op">&amp;</SPAN> block_mask<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        T<SPAN class="op">&amp;</SPAN> at<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> i<SPAN class="op">)</SPAN> 
+        <SPAN class="op">{</SPAN> 
+            <SPAN class="kw1">return</SPAN> m_blocks<SPAN class="op">[</SPAN>i <SPAN class="op">&gt;&gt;</SPAN> block_shift<SPAN class="op">]</SPAN><SPAN class="op">[</SPAN>i <SPAN class="op">&amp;</SPAN> block_mask<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        T value_at<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> i<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN>
+        <SPAN class="op">{</SPAN> 
+            <SPAN class="kw1">return</SPAN> m_blocks<SPAN class="op">[</SPAN>i <SPAN class="op">&gt;&gt;</SPAN> block_shift<SPAN class="op">]</SPAN><SPAN class="op">[</SPAN>i <SPAN class="op">&amp;</SPAN> block_mask<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">const</SPAN> T<SPAN class="op">&amp;</SPAN> curr<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> idx<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">return</SPAN> <SPAN class="op">(</SPAN><SPAN class="op">*</SPAN><SPAN class="kw1">this</SPAN><SPAN class="op">)</SPAN><SPAN class="op">[</SPAN>idx<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        T<SPAN class="op">&amp;</SPAN> curr<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> idx<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">return</SPAN> <SPAN class="op">(</SPAN><SPAN class="op">*</SPAN><SPAN class="kw1">this</SPAN><SPAN class="op">)</SPAN><SPAN class="op">[</SPAN>idx<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">const</SPAN> T<SPAN class="op">&amp;</SPAN> prev<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> idx<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">return</SPAN> <SPAN class="op">(</SPAN><SPAN class="op">*</SPAN><SPAN class="kw1">this</SPAN><SPAN class="op">)</SPAN><SPAN class="op">[</SPAN><SPAN class="op">(</SPAN>idx <SPAN class="op">+</SPAN> m_size <SPAN class="op">-</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">%</SPAN> m_size<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        T<SPAN class="op">&amp;</SPAN> prev<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> idx<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">return</SPAN> <SPAN class="op">(</SPAN><SPAN class="op">*</SPAN><SPAN class="kw1">this</SPAN><SPAN class="op">)</SPAN><SPAN class="op">[</SPAN><SPAN class="op">(</SPAN>idx <SPAN class="op">+</SPAN> m_size <SPAN class="op">-</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">%</SPAN> m_size<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">const</SPAN> T<SPAN class="op">&amp;</SPAN> next<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> idx<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">return</SPAN> <SPAN class="op">(</SPAN><SPAN class="op">*</SPAN><SPAN class="kw1">this</SPAN><SPAN class="op">)</SPAN><SPAN class="op">[</SPAN><SPAN class="op">(</SPAN>idx <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">%</SPAN> m_size<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        T<SPAN class="op">&amp;</SPAN> next<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> idx<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">return</SPAN> <SPAN class="op">(</SPAN><SPAN class="op">*</SPAN><SPAN class="kw1">this</SPAN><SPAN class="op">)</SPAN><SPAN class="op">[</SPAN><SPAN class="op">(</SPAN>idx <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">%</SPAN> m_size<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">const</SPAN> T<SPAN class="op">&amp;</SPAN> last<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">return</SPAN> <SPAN class="op">(</SPAN><SPAN class="op">*</SPAN><SPAN class="kw1">this</SPAN><SPAN class="op">)</SPAN><SPAN class="op">[</SPAN>m_size <SPAN class="op">-</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        T<SPAN class="op">&amp;</SPAN> last<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">return</SPAN> <SPAN class="op">(</SPAN><SPAN class="op">*</SPAN><SPAN class="kw1">this</SPAN><SPAN class="op">)</SPAN><SPAN class="op">[</SPAN>m_size <SPAN class="op">-</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">unsigned</SPAN> byte_size<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">void</SPAN> serialize<SPAN class="op">(</SPAN><A href="agg_basics.h.html#int8u">int8u</A><SPAN class="op">*</SPAN> ptr<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">void</SPAN> deserialize<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <A href="agg_basics.h.html#int8u">int8u</A><SPAN class="op">*</SPAN> data<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> byte_size<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">void</SPAN> deserialize<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> start<SPAN class="op">,</SPAN> <SPAN class="kw1">const</SPAN> T<SPAN class="op">&amp;</SPAN> empty_val<SPAN class="op">,</SPAN> 
+                         <SPAN class="kw1">const</SPAN> <A href="agg_basics.h.html#int8u">int8u</A><SPAN class="op">*</SPAN> data<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> byte_size<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> ByteAccessor<SPAN class="op">&gt;</SPAN> 
+        <SPAN class="kw1">void</SPAN> deserialize<SPAN class="op">(</SPAN>ByteAccessor data<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            remove_all<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">unsigned</SPAN> elem_size <SPAN class="op">=</SPAN> data<SPAN class="op">.</SPAN>size<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="kw1">sizeof</SPAN><SPAN class="op">(</SPAN>T<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> i <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;</SPAN> elem_size<SPAN class="op">;</SPAN> <SPAN class="op">++</SPAN>i<SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                <A href="agg_basics.h.html#int8u">int8u</A><SPAN class="op">*</SPAN> ptr <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN><A href="agg_basics.h.html#int8u">int8u</A><SPAN class="op">*</SPAN><SPAN class="op">)</SPAN>data_ptr<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> j <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> j <SPAN class="op">&lt;</SPAN> <SPAN class="kw1">sizeof</SPAN><SPAN class="op">(</SPAN>T<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">++</SPAN>j<SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    <SPAN class="op">*</SPAN>ptr<SPAN class="op">++</SPAN> <SPAN class="op">=</SPAN> <SPAN class="op">*</SPAN>data<SPAN class="op">;</SPAN>
+                    <SPAN class="op">++</SPAN>data<SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+                <SPAN class="op">++</SPAN>m_size<SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> ByteAccessor<SPAN class="op">&gt;</SPAN>
+        <SPAN class="kw1">void</SPAN> deserialize<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> start<SPAN class="op">,</SPAN> <SPAN class="kw1">const</SPAN> T<SPAN class="op">&amp;</SPAN> empty_val<SPAN class="op">,</SPAN> ByteAccessor data<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN>m_size <SPAN class="op">&lt;</SPAN> start<SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                add<SPAN class="op">(</SPAN>empty_val<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+
+            <SPAN class="kw1">unsigned</SPAN> elem_size <SPAN class="op">=</SPAN> data<SPAN class="op">.</SPAN>size<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="kw1">sizeof</SPAN><SPAN class="op">(</SPAN>T<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> i <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;</SPAN> elem_size<SPAN class="op">;</SPAN> <SPAN class="op">++</SPAN>i<SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                <A href="agg_basics.h.html#int8u">int8u</A><SPAN class="op">*</SPAN> ptr<SPAN class="op">;</SPAN>
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>start <SPAN class="op">+</SPAN> i <SPAN class="op">&lt;</SPAN> m_size<SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    ptr <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN><A href="agg_basics.h.html#int8u">int8u</A><SPAN class="op">*</SPAN><SPAN class="op">)</SPAN><SPAN class="op">(</SPAN><SPAN class="op">&amp;</SPAN><SPAN class="op">(</SPAN><SPAN class="op">(</SPAN><SPAN class="op">*</SPAN><SPAN class="kw1">this</SPAN><SPAN class="op">)</SPAN><SPAN class="op">[</SPAN>start <SPAN class="op">+</SPAN> i<SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+                <SPAN class="kw1">else</SPAN>
+                <SPAN class="op">{</SPAN>
+                    ptr <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN><A href="agg_basics.h.html#int8u">int8u</A><SPAN class="op">*</SPAN><SPAN class="op">)</SPAN>data_ptr<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="op">++</SPAN>m_size<SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+                <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> j <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> j <SPAN class="op">&lt;</SPAN> <SPAN class="kw1">sizeof</SPAN><SPAN class="op">(</SPAN>T<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">++</SPAN>j<SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    <SPAN class="op">*</SPAN>ptr<SPAN class="op">++</SPAN> <SPAN class="op">=</SPAN> <SPAN class="op">*</SPAN>data<SPAN class="op">;</SPAN>
+                    <SPAN class="op">++</SPAN>data<SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">const</SPAN> T<SPAN class="op">*</SPAN> block<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> nb<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_blocks<SPAN class="op">[</SPAN>nb<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+
+    <SPAN class="kw1">private</SPAN>:
+        <SPAN class="kw1">void</SPAN> allocate_block<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> nb<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        T<SPAN class="op">*</SPAN>   data_ptr<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">unsigned</SPAN>        m_size<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN>        m_num_blocks<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN>        m_max_blocks<SPAN class="op">;</SPAN>
+        T<SPAN class="op">*</SPAN><SPAN class="op">*</SPAN>             m_blocks<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN>        m_block_ptr_inc<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> T<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> S<SPAN class="op">&gt;</SPAN> <A href="agg_array.h.html#pod_bvector">pod_bvector</A><SPAN class="op">&lt;</SPAN>T<SPAN class="op">,</SPAN> S<SPAN class="op">&gt;</SPAN>::~<A href="agg_array.h.html#pod_bvector">pod_bvector</A><SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_num_blocks<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            T<SPAN class="op">*</SPAN><SPAN class="op">*</SPAN> blk <SPAN class="op">=</SPAN> m_blocks <SPAN class="op">+</SPAN> m_num_blocks <SPAN class="op">-</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN>m_num_blocks<SPAN class="op">--</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                <A href="agg_basics.h.html#pod_allocator">pod_allocator</A><SPAN class="op">&lt;</SPAN>T<SPAN class="op">&gt;</SPAN>::deallocate<SPAN class="op">(</SPAN><SPAN class="op">*</SPAN>blk<SPAN class="op">,</SPAN> block_size<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">--</SPAN>blk<SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+        <A href="agg_basics.h.html#pod_allocator">pod_allocator</A><SPAN class="op">&lt;</SPAN>T<SPAN class="op">*</SPAN><SPAN class="op">&gt;</SPAN>::deallocate<SPAN class="op">(</SPAN>m_blocks<SPAN class="op">,</SPAN> m_max_blocks<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> T<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> S<SPAN class="op">&gt;</SPAN> 
+    <SPAN class="kw1">void</SPAN> <A href="agg_array.h.html#pod_bvector">pod_bvector</A><SPAN class="op">&lt;</SPAN>T<SPAN class="op">,</SPAN> S<SPAN class="op">&gt;</SPAN>::free_tail<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> size<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>size <SPAN class="op">&lt;</SPAN> m_size<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">unsigned</SPAN> nb <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>size <SPAN class="op">+</SPAN> block_mask<SPAN class="op">)</SPAN> <SPAN class="op">&gt;&gt;</SPAN> block_shift<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN>m_num_blocks <SPAN class="op">&gt;</SPAN> nb<SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                <A href="agg_basics.h.html#pod_allocator">pod_allocator</A><SPAN class="op">&lt;</SPAN>T<SPAN class="op">&gt;</SPAN>::deallocate<SPAN class="op">(</SPAN>m_blocks<SPAN class="op">[</SPAN><SPAN class="op">--</SPAN>m_num_blocks<SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> block_size<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_num_blocks <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                <A href="agg_basics.h.html#pod_allocator">pod_allocator</A><SPAN class="op">&lt;</SPAN>T<SPAN class="op">*</SPAN><SPAN class="op">&gt;</SPAN>::deallocate<SPAN class="op">(</SPAN>m_blocks<SPAN class="op">,</SPAN> m_max_blocks<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                m_blocks <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+                m_max_blocks <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            m_size <SPAN class="op">=</SPAN> size<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> T<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> S<SPAN class="op">&gt;</SPAN> <A href="agg_array.h.html#pod_bvector">pod_bvector</A><SPAN class="op">&lt;</SPAN>T<SPAN class="op">,</SPAN> S<SPAN class="op">&gt;</SPAN>::<A href="agg_array.h.html#pod_bvector">pod_bvector</A><SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> :
+        m_size<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_num_blocks<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_max_blocks<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_blocks<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_block_ptr_inc<SPAN class="op">(</SPAN>block_size<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> T<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> S<SPAN class="op">&gt;</SPAN> 
+    <A href="agg_array.h.html#pod_bvector">pod_bvector</A><SPAN class="op">&lt;</SPAN>T<SPAN class="op">,</SPAN> S<SPAN class="op">&gt;</SPAN>::<A href="agg_array.h.html#pod_bvector">pod_bvector</A><SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> block_ptr_inc<SPAN class="op">)</SPAN> :
+        m_size<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_num_blocks<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_max_blocks<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_blocks<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_block_ptr_inc<SPAN class="op">(</SPAN>block_ptr_inc<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> T<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> S<SPAN class="op">&gt;</SPAN> 
+    <A href="agg_array.h.html#pod_bvector">pod_bvector</A><SPAN class="op">&lt;</SPAN>T<SPAN class="op">,</SPAN> S<SPAN class="op">&gt;</SPAN>::<A href="agg_array.h.html#pod_bvector">pod_bvector</A><SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <A href="agg_array.h.html#pod_bvector">pod_bvector</A><SPAN class="op">&lt;</SPAN>T<SPAN class="op">,</SPAN> S<SPAN class="op">&gt;</SPAN><SPAN class="op">&amp;</SPAN> v<SPAN class="op">)</SPAN> :
+        m_size<SPAN class="op">(</SPAN>v<SPAN class="op">.</SPAN>m_size<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_num_blocks<SPAN class="op">(</SPAN>v<SPAN class="op">.</SPAN>m_num_blocks<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_max_blocks<SPAN class="op">(</SPAN>v<SPAN class="op">.</SPAN>m_max_blocks<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_blocks<SPAN class="op">(</SPAN>v<SPAN class="op">.</SPAN>m_max_blocks ? 
+                 <A href="agg_basics.h.html#pod_allocator">pod_allocator</A><SPAN class="op">&lt;</SPAN>T<SPAN class="op">*</SPAN><SPAN class="op">&gt;</SPAN>::<SPAN class="kw1">allocate</SPAN><SPAN class="op">(</SPAN>v<SPAN class="op">.</SPAN>m_max_blocks<SPAN class="op">)</SPAN> : 
+                 <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_block_ptr_inc<SPAN class="op">(</SPAN>v<SPAN class="op">.</SPAN>m_block_ptr_inc<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> i<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;</SPAN> v<SPAN class="op">.</SPAN>m_num_blocks<SPAN class="op">;</SPAN> <SPAN class="op">++</SPAN>i<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            m_blocks<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> <A href="agg_basics.h.html#pod_allocator">pod_allocator</A><SPAN class="op">&lt;</SPAN>T<SPAN class="op">&gt;</SPAN>::<SPAN class="kw1">allocate</SPAN><SPAN class="op">(</SPAN>block_size<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            memcpy<SPAN class="op">(</SPAN>m_blocks<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> v<SPAN class="op">.</SPAN>m_blocks<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> block_size <SPAN class="op">*</SPAN> <SPAN class="kw1">sizeof</SPAN><SPAN class="op">(</SPAN>T<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> T<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> S<SPAN class="op">&gt;</SPAN> 
+    <SPAN class="kw1">const</SPAN> <A href="agg_array.h.html#pod_bvector">pod_bvector</A><SPAN class="op">&lt;</SPAN>T<SPAN class="op">,</SPAN> S<SPAN class="op">&gt;</SPAN><SPAN class="op">&amp;</SPAN> 
+    <A href="agg_array.h.html#pod_bvector">pod_bvector</A><SPAN class="op">&lt;</SPAN>T<SPAN class="op">,</SPAN> S<SPAN class="op">&gt;</SPAN>::<SPAN class="kw1">operator</SPAN> <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <A href="agg_array.h.html#pod_bvector">pod_bvector</A><SPAN class="op">&lt;</SPAN>T<SPAN class="op">,</SPAN> S<SPAN class="op">&gt;</SPAN><SPAN class="op">&amp;</SPAN> v<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> i<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> m_num_blocks<SPAN class="op">;</SPAN> i <SPAN class="op">&lt;</SPAN> v<SPAN class="op">.</SPAN>m_num_blocks<SPAN class="op">;</SPAN> <SPAN class="op">++</SPAN>i<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            allocate_block<SPAN class="op">(</SPAN>i<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;</SPAN> v<SPAN class="op">.</SPAN>m_num_blocks<SPAN class="op">;</SPAN> <SPAN class="op">++</SPAN>i<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            memcpy<SPAN class="op">(</SPAN>m_blocks<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> v<SPAN class="op">.</SPAN>m_blocks<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> block_size <SPAN class="op">*</SPAN> <SPAN class="kw1">sizeof</SPAN><SPAN class="op">(</SPAN>T<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        m_size <SPAN class="op">=</SPAN> v<SPAN class="op">.</SPAN>m_size<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">return</SPAN> <SPAN class="op">*</SPAN><SPAN class="kw1">this</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> T<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> S<SPAN class="op">&gt;</SPAN>
+    <SPAN class="kw1">void</SPAN> <A href="agg_array.h.html#pod_bvector">pod_bvector</A><SPAN class="op">&lt;</SPAN>T<SPAN class="op">,</SPAN> S<SPAN class="op">&gt;</SPAN>::allocate_block<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> nb<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>nb <SPAN class="op">&gt;=</SPAN> m_max_blocks<SPAN class="op">)</SPAN> 
+        <SPAN class="op">{</SPAN>
+            T<SPAN class="op">*</SPAN><SPAN class="op">*</SPAN> new_blocks <SPAN class="op">=</SPAN> <A href="agg_basics.h.html#pod_allocator">pod_allocator</A><SPAN class="op">&lt;</SPAN>T<SPAN class="op">*</SPAN><SPAN class="op">&gt;</SPAN>::<SPAN class="kw1">allocate</SPAN><SPAN class="op">(</SPAN>m_max_blocks <SPAN class="op">+</SPAN> m_block_ptr_inc<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_blocks<SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                memcpy<SPAN class="op">(</SPAN>new_blocks<SPAN class="op">,</SPAN> 
+                       m_blocks<SPAN class="op">,</SPAN> 
+                       m_num_blocks <SPAN class="op">*</SPAN> <SPAN class="kw1">sizeof</SPAN><SPAN class="op">(</SPAN>T<SPAN class="op">*</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                <A href="agg_basics.h.html#pod_allocator">pod_allocator</A><SPAN class="op">&lt;</SPAN>T<SPAN class="op">*</SPAN><SPAN class="op">&gt;</SPAN>::deallocate<SPAN class="op">(</SPAN>m_blocks<SPAN class="op">,</SPAN> m_max_blocks<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            m_blocks <SPAN class="op">=</SPAN> new_blocks<SPAN class="op">;</SPAN>
+            m_max_blocks <SPAN class="op">+=</SPAN> m_block_ptr_inc<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        m_blocks<SPAN class="op">[</SPAN>nb<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> <A href="agg_basics.h.html#pod_allocator">pod_allocator</A><SPAN class="op">&lt;</SPAN>T<SPAN class="op">&gt;</SPAN>::<SPAN class="kw1">allocate</SPAN><SPAN class="op">(</SPAN>block_size<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_num_blocks<SPAN class="op">++</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> T<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> S<SPAN class="op">&gt;</SPAN>
+    <SPAN class="kw1">inline</SPAN> T<SPAN class="op">*</SPAN> <A href="agg_array.h.html#pod_bvector">pod_bvector</A><SPAN class="op">&lt;</SPAN>T<SPAN class="op">,</SPAN> S<SPAN class="op">&gt;</SPAN>::data_ptr<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> nb <SPAN class="op">=</SPAN> m_size <SPAN class="op">&gt;&gt;</SPAN> block_shift<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>nb <SPAN class="op">&gt;=</SPAN> m_num_blocks<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            allocate_block<SPAN class="op">(</SPAN>nb<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">return</SPAN> m_blocks<SPAN class="op">[</SPAN>nb<SPAN class="op">]</SPAN> <SPAN class="op">+</SPAN> <SPAN class="op">(</SPAN>m_size <SPAN class="op">&amp;</SPAN> block_mask<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> T<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> S<SPAN class="op">&gt;</SPAN> 
+    <SPAN class="kw1">inline</SPAN> <SPAN class="kw1">void</SPAN> <A href="agg_array.h.html#pod_bvector">pod_bvector</A><SPAN class="op">&lt;</SPAN>T<SPAN class="op">,</SPAN> S<SPAN class="op">&gt;</SPAN>::add<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> T<SPAN class="op">&amp;</SPAN> val<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="op">*</SPAN>data_ptr<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">=</SPAN> val<SPAN class="op">;</SPAN>
+        <SPAN class="op">++</SPAN>m_size<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> T<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> S<SPAN class="op">&gt;</SPAN> 
+    <SPAN class="kw1">inline</SPAN> <SPAN class="kw1">void</SPAN> <A href="agg_array.h.html#pod_bvector">pod_bvector</A><SPAN class="op">&lt;</SPAN>T<SPAN class="op">,</SPAN> S<SPAN class="op">&gt;</SPAN>::remove_last<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_size<SPAN class="op">)</SPAN> <SPAN class="op">--</SPAN>m_size<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> T<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> S<SPAN class="op">&gt;</SPAN> 
+    <SPAN class="kw1">void</SPAN> <A href="agg_array.h.html#pod_bvector">pod_bvector</A><SPAN class="op">&lt;</SPAN>T<SPAN class="op">,</SPAN> S<SPAN class="op">&gt;</SPAN>::modify_last<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> T<SPAN class="op">&amp;</SPAN> val<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        remove_last<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        add<SPAN class="op">(</SPAN>val<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> T<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> S<SPAN class="op">&gt;</SPAN> 
+    <SPAN class="kw1">int</SPAN> <A href="agg_array.h.html#pod_bvector">pod_bvector</A><SPAN class="op">&lt;</SPAN>T<SPAN class="op">,</SPAN> S<SPAN class="op">&gt;</SPAN>::allocate_continuous_block<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> num_elements<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>num_elements <SPAN class="op">&lt;</SPAN> block_size<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            data_ptr<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> <SPAN class="rem">// Allocate initial block if necessary</SPAN>
+            <SPAN class="kw1">unsigned</SPAN> rest <SPAN class="op">=</SPAN> block_size <SPAN class="op">-</SPAN> <SPAN class="op">(</SPAN>m_size <SPAN class="op">&amp;</SPAN> block_mask<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">unsigned</SPAN> index<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>num_elements <SPAN class="op">&lt;=</SPAN> rest<SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                <SPAN class="rem">// The rest of the block is good, we can use it</SPAN>
+                <SPAN class="rem">//-----------------</SPAN>
+                index <SPAN class="op">=</SPAN> m_size<SPAN class="op">;</SPAN>
+                m_size <SPAN class="op">+=</SPAN> num_elements<SPAN class="op">;</SPAN>
+                <SPAN class="kw1">return</SPAN> index<SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+
+            <SPAN class="rem">// New block</SPAN>
+            <SPAN class="rem">//---------------</SPAN>
+            m_size <SPAN class="op">+=</SPAN> rest<SPAN class="op">;</SPAN>
+            data_ptr<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            index <SPAN class="op">=</SPAN> m_size<SPAN class="op">;</SPAN>
+            m_size <SPAN class="op">+=</SPAN> num_elements<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">return</SPAN> index<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">return</SPAN> <SPAN class="op">-</SPAN><SPAN class="num">1</SPAN><SPAN class="op">;</SPAN> <SPAN class="rem">// Impossible to allocate</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> T<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> S<SPAN class="op">&gt;</SPAN> 
+    <SPAN class="kw1">unsigned</SPAN> <A href="agg_array.h.html#pod_bvector">pod_bvector</A><SPAN class="op">&lt;</SPAN>T<SPAN class="op">,</SPAN> S<SPAN class="op">&gt;</SPAN>::byte_size<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">return</SPAN> m_size <SPAN class="op">*</SPAN> <SPAN class="kw1">sizeof</SPAN><SPAN class="op">(</SPAN>T<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> T<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> S<SPAN class="op">&gt;</SPAN> 
+    <SPAN class="kw1">void</SPAN> <A href="agg_array.h.html#pod_bvector">pod_bvector</A><SPAN class="op">&lt;</SPAN>T<SPAN class="op">,</SPAN> S<SPAN class="op">&gt;</SPAN>::serialize<SPAN class="op">(</SPAN><A href="agg_basics.h.html#int8u">int8u</A><SPAN class="op">*</SPAN> ptr<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> i<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;</SPAN> m_size<SPAN class="op">;</SPAN> i<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            memcpy<SPAN class="op">(</SPAN>ptr<SPAN class="op">,</SPAN> <SPAN class="op">&amp;</SPAN><SPAN class="op">(</SPAN><SPAN class="op">*</SPAN><SPAN class="kw1">this</SPAN><SPAN class="op">)</SPAN><SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> <SPAN class="kw1">sizeof</SPAN><SPAN class="op">(</SPAN>T<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            ptr <SPAN class="op">+=</SPAN> <SPAN class="kw1">sizeof</SPAN><SPAN class="op">(</SPAN>T<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> T<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> S<SPAN class="op">&gt;</SPAN> 
+    <SPAN class="kw1">void</SPAN> <A href="agg_array.h.html#pod_bvector">pod_bvector</A><SPAN class="op">&lt;</SPAN>T<SPAN class="op">,</SPAN> S<SPAN class="op">&gt;</SPAN>::deserialize<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <A href="agg_basics.h.html#int8u">int8u</A><SPAN class="op">*</SPAN> data<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> byte_size<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        remove_all<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        byte_size <SPAN class="op">/=</SPAN> <SPAN class="kw1">sizeof</SPAN><SPAN class="op">(</SPAN>T<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> i <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;</SPAN> byte_size<SPAN class="op">;</SPAN> <SPAN class="op">++</SPAN>i<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            T<SPAN class="op">*</SPAN> ptr <SPAN class="op">=</SPAN> data_ptr<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            memcpy<SPAN class="op">(</SPAN>ptr<SPAN class="op">,</SPAN> data<SPAN class="op">,</SPAN> <SPAN class="kw1">sizeof</SPAN><SPAN class="op">(</SPAN>T<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">++</SPAN>m_size<SPAN class="op">;</SPAN>
+            data <SPAN class="op">+=</SPAN> <SPAN class="kw1">sizeof</SPAN><SPAN class="op">(</SPAN>T<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="rem">// Replace or add a number of elements starting from &quot;start&quot; position</SPAN>
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> T<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> S<SPAN class="op">&gt;</SPAN> 
+    <SPAN class="kw1">void</SPAN> <A href="agg_array.h.html#pod_bvector">pod_bvector</A><SPAN class="op">&lt;</SPAN>T<SPAN class="op">,</SPAN> S<SPAN class="op">&gt;</SPAN>::deserialize<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> start<SPAN class="op">,</SPAN> <SPAN class="kw1">const</SPAN> T<SPAN class="op">&amp;</SPAN> empty_val<SPAN class="op">,</SPAN> 
+                                        <SPAN class="kw1">const</SPAN> <A href="agg_basics.h.html#int8u">int8u</A><SPAN class="op">*</SPAN> data<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> byte_size<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN>m_size <SPAN class="op">&lt;</SPAN> start<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            add<SPAN class="op">(</SPAN>empty_val<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        byte_size <SPAN class="op">/=</SPAN> <SPAN class="kw1">sizeof</SPAN><SPAN class="op">(</SPAN>T<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> i <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;</SPAN> byte_size<SPAN class="op">;</SPAN> <SPAN class="op">++</SPAN>i<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>start <SPAN class="op">+</SPAN> i <SPAN class="op">&lt;</SPAN> m_size<SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                memcpy<SPAN class="op">(</SPAN><SPAN class="op">&amp;</SPAN><SPAN class="op">(</SPAN><SPAN class="op">(</SPAN><SPAN class="op">*</SPAN><SPAN class="kw1">this</SPAN><SPAN class="op">)</SPAN><SPAN class="op">[</SPAN>start <SPAN class="op">+</SPAN> i<SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> data<SPAN class="op">,</SPAN> <SPAN class="kw1">sizeof</SPAN><SPAN class="op">(</SPAN>T<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="kw1">else</SPAN>
+            <SPAN class="op">{</SPAN>
+                T<SPAN class="op">*</SPAN> ptr <SPAN class="op">=</SPAN> data_ptr<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                memcpy<SPAN class="op">(</SPAN>ptr<SPAN class="op">,</SPAN> data<SPAN class="op">,</SPAN> <SPAN class="kw1">sizeof</SPAN><SPAN class="op">(</SPAN>T<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">++</SPAN>m_size<SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            data <SPAN class="op">+=</SPAN> <SPAN class="kw1">sizeof</SPAN><SPAN class="op">(</SPAN>T<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="rem">//---------------------------------------------------------<A name="block_allocator"><B></B></A><A href="agg_array.h.html#block_allocator">block_allocator</A></SPAN>
+    <SPAN class="rem">// Allocator for arbitrary POD data. Most usable in different cache</SPAN>
+    <SPAN class="rem">// systems for efficient memory allocations. </SPAN>
+    <SPAN class="rem">// Memory is allocated with blocks of fixed size (&quot;block_size&quot; in</SPAN>
+    <SPAN class="rem">// the constructor). If required size exceeds the block size the allocator</SPAN>
+    <SPAN class="rem">// creates a new block of the required size. However, the most efficient</SPAN>
+    <SPAN class="rem">// use is when the average reqired size is much less than the block size. </SPAN>
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">class</SPAN> <A href="agg_array.h.html#block_allocator">block_allocator</A>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">struct</SPAN> block_type
+        <SPAN class="op">{</SPAN>
+            <A href="agg_basics.h.html#int8u">int8u</A><SPAN class="op">*</SPAN>   data<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">unsigned</SPAN> size<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">public</SPAN>:
+        <SPAN class="kw1">void</SPAN> remove_all<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_num_blocks<SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                block_type<SPAN class="op">*</SPAN> blk <SPAN class="op">=</SPAN> m_blocks <SPAN class="op">+</SPAN> m_num_blocks <SPAN class="op">-</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN>m_num_blocks<SPAN class="op">--</SPAN><SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    <A href="agg_basics.h.html#pod_allocator">pod_allocator</A><SPAN class="op">&lt;</SPAN><A href="agg_basics.h.html#int8u">int8u</A><SPAN class="op">&gt;</SPAN>::deallocate<SPAN class="op">(</SPAN>blk<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>data<SPAN class="op">,</SPAN> blk<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>size<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="op">--</SPAN>blk<SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+                <A href="agg_basics.h.html#pod_allocator">pod_allocator</A><SPAN class="op">&lt;</SPAN>block_type<SPAN class="op">&gt;</SPAN>::deallocate<SPAN class="op">(</SPAN>m_blocks<SPAN class="op">,</SPAN> m_max_blocks<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            m_num_blocks <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+            m_max_blocks <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+            m_blocks <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+            m_buf_ptr <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+            m_rest <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        ~<A href="agg_array.h.html#block_allocator">block_allocator</A><SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            remove_all<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <A href="agg_array.h.html#block_allocator">block_allocator</A><SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> block_size<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> block_ptr_inc<SPAN class="op">=</SPAN><SPAN class="num">256</SPAN><SPAN class="op">-</SPAN><SPAN class="num">8</SPAN><SPAN class="op">)</SPAN> :
+            m_block_size<SPAN class="op">(</SPAN>block_size<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_block_ptr_inc<SPAN class="op">(</SPAN>block_ptr_inc<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_num_blocks<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_max_blocks<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_blocks<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_buf_ptr<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_rest<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+        <SPAN class="op">}</SPAN>
+       
+
+        <A href="agg_basics.h.html#int8u">int8u</A><SPAN class="op">*</SPAN> <SPAN class="kw1">allocate</SPAN><SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> size<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> alignment<SPAN class="op">=</SPAN><SPAN class="num">1</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>size <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">return</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>size <SPAN class="op">&lt;=</SPAN> m_rest<SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                <A href="agg_basics.h.html#int8u">int8u</A><SPAN class="op">*</SPAN> ptr <SPAN class="op">=</SPAN> m_buf_ptr<SPAN class="op">;</SPAN>
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>alignment <SPAN class="op">&gt;</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    <SPAN class="kw1">unsigned</SPAN> <SPAN class="kw1">align</SPAN> <SPAN class="op">=</SPAN> 
+                        <SPAN class="op">(</SPAN>alignment <SPAN class="op">-</SPAN> <SPAN class="kw1">unsigned</SPAN><SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>size_t<SPAN class="op">)</SPAN>ptr<SPAN class="op">)</SPAN> <SPAN class="op">%</SPAN> alignment<SPAN class="op">)</SPAN> <SPAN class="op">%</SPAN> alignment<SPAN class="op">;</SPAN>
+
+                    size <SPAN class="op">+=</SPAN> <SPAN class="kw1">align</SPAN><SPAN class="op">;</SPAN>
+                    ptr <SPAN class="op">+=</SPAN> <SPAN class="kw1">align</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>size <SPAN class="op">&lt;=</SPAN> m_rest<SPAN class="op">)</SPAN>
+                    <SPAN class="op">{</SPAN>
+                        m_rest <SPAN class="op">-=</SPAN> size<SPAN class="op">;</SPAN>
+                        m_buf_ptr <SPAN class="op">+=</SPAN> size<SPAN class="op">;</SPAN>
+                        <SPAN class="kw1">return</SPAN> ptr<SPAN class="op">;</SPAN>
+                    <SPAN class="op">}</SPAN>
+                    allocate_block<SPAN class="op">(</SPAN>size<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="kw1">return</SPAN> <SPAN class="kw1">allocate</SPAN><SPAN class="op">(</SPAN>size <SPAN class="op">-</SPAN> <SPAN class="kw1">align</SPAN><SPAN class="op">,</SPAN> alignment<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+                m_rest <SPAN class="op">-=</SPAN> size<SPAN class="op">;</SPAN>
+                m_buf_ptr <SPAN class="op">+=</SPAN> size<SPAN class="op">;</SPAN>
+                <SPAN class="kw1">return</SPAN> ptr<SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            allocate_block<SPAN class="op">(</SPAN>size <SPAN class="op">+</SPAN> alignment <SPAN class="op">-</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">return</SPAN> <SPAN class="kw1">allocate</SPAN><SPAN class="op">(</SPAN>size<SPAN class="op">,</SPAN> alignment<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="kw1">private</SPAN>:
+        <SPAN class="kw1">void</SPAN> allocate_block<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> size<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>size <SPAN class="op">&lt;</SPAN> m_block_size<SPAN class="op">)</SPAN> size <SPAN class="op">=</SPAN> m_block_size<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_num_blocks <SPAN class="op">&gt;=</SPAN> m_max_blocks<SPAN class="op">)</SPAN> 
+            <SPAN class="op">{</SPAN>
+                block_type<SPAN class="op">*</SPAN> new_blocks <SPAN class="op">=</SPAN> 
+                    <A href="agg_basics.h.html#pod_allocator">pod_allocator</A><SPAN class="op">&lt;</SPAN>block_type<SPAN class="op">&gt;</SPAN>::<SPAN class="kw1">allocate</SPAN><SPAN class="op">(</SPAN>m_max_blocks <SPAN class="op">+</SPAN> m_block_ptr_inc<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_blocks<SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    memcpy<SPAN class="op">(</SPAN>new_blocks<SPAN class="op">,</SPAN> 
+                           m_blocks<SPAN class="op">,</SPAN> 
+                           m_num_blocks <SPAN class="op">*</SPAN> <SPAN class="kw1">sizeof</SPAN><SPAN class="op">(</SPAN>block_type<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <A href="agg_basics.h.html#pod_allocator">pod_allocator</A><SPAN class="op">&lt;</SPAN>block_type<SPAN class="op">&gt;</SPAN>::deallocate<SPAN class="op">(</SPAN>m_blocks<SPAN class="op">,</SPAN> m_max_blocks<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+                m_blocks <SPAN class="op">=</SPAN> new_blocks<SPAN class="op">;</SPAN>
+                m_max_blocks <SPAN class="op">+=</SPAN> m_block_ptr_inc<SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+
+            m_blocks<SPAN class="op">[</SPAN>m_num_blocks<SPAN class="op">]</SPAN><SPAN class="op">.</SPAN>size <SPAN class="op">=</SPAN> size<SPAN class="op">;</SPAN>
+            m_blocks<SPAN class="op">[</SPAN>m_num_blocks<SPAN class="op">]</SPAN><SPAN class="op">.</SPAN>data <SPAN class="op">=</SPAN> 
+                m_buf_ptr <SPAN class="op">=</SPAN>
+                <A href="agg_basics.h.html#pod_allocator">pod_allocator</A><SPAN class="op">&lt;</SPAN><A href="agg_basics.h.html#int8u">int8u</A><SPAN class="op">&gt;</SPAN>::<SPAN class="kw1">allocate</SPAN><SPAN class="op">(</SPAN>size<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+            m_num_blocks<SPAN class="op">++</SPAN><SPAN class="op">;</SPAN>
+            m_rest <SPAN class="op">=</SPAN> size<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">unsigned</SPAN>    m_block_size<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN>    m_block_ptr_inc<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN>    m_num_blocks<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN>    m_max_blocks<SPAN class="op">;</SPAN>
+        block_type<SPAN class="op">*</SPAN> m_blocks<SPAN class="op">;</SPAN>
+        <A href="agg_basics.h.html#int8u">int8u</A><SPAN class="op">*</SPAN>      m_buf_ptr<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN>    m_rest<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+
+
+
+
+
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">enum</SPAN> quick_sort_threshold_e
+    <SPAN class="op">{</SPAN>
+        quick_sort_threshold <SPAN class="op">=</SPAN> <SPAN class="num">9</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+    
+    <SPAN class="rem">//-----------------------------------------------------------<A name="swap_elements"><B></B></A><A href="agg_array.h.html#swap_elements">swap_elements</A></SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> T<SPAN class="op">&gt;</SPAN> <SPAN class="kw1">inline</SPAN> <SPAN class="kw1">void</SPAN> <A href="agg_array.h.html#swap_elements">swap_elements</A><SPAN class="op">(</SPAN>T<SPAN class="op">&amp;</SPAN> a<SPAN class="op">,</SPAN> T<SPAN class="op">&amp;</SPAN> b<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        T temp <SPAN class="op">=</SPAN> a<SPAN class="op">;</SPAN>
+        a <SPAN class="op">=</SPAN> b<SPAN class="op">;</SPAN>
+        b <SPAN class="op">=</SPAN> temp<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="rem">//--------------------------------------------------------------<A name="quick_sort"><B></B></A><A href="agg_array.h.html#quick_sort">quick_sort</A></SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Array<SPAN class="op">,</SPAN> <SPAN class="kw1">class</SPAN> Less<SPAN class="op">&gt;</SPAN>
+    <SPAN class="kw1">void</SPAN> <A href="agg_array.h.html#quick_sort">quick_sort</A><SPAN class="op">(</SPAN>Array<SPAN class="op">&amp;</SPAN> arr<SPAN class="op">,</SPAN> Less less<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>arr<SPAN class="op">.</SPAN>size<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">&lt;</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">return</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">typename</SPAN> Array::value_type<SPAN class="op">*</SPAN> e1<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">typename</SPAN> Array::value_type<SPAN class="op">*</SPAN> e2<SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">int</SPAN>  stack<SPAN class="op">[</SPAN><SPAN class="num">80</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN><SPAN class="op">*</SPAN> top <SPAN class="op">=</SPAN> stack<SPAN class="op">;</SPAN> 
+        <SPAN class="kw1">int</SPAN>  limit <SPAN class="op">=</SPAN> arr<SPAN class="op">.</SPAN>size<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN>  base <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN><SPAN class="op">;</SPAN><SPAN class="op">;</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">int</SPAN> len <SPAN class="op">=</SPAN> limit <SPAN class="op">-</SPAN> base<SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">int</SPAN> i<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">int</SPAN> j<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">int</SPAN> pivot<SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>len <SPAN class="op">&gt;</SPAN> quick_sort_threshold<SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                <SPAN class="rem">// we use base + len/2 as the pivot</SPAN>
+                pivot <SPAN class="op">=</SPAN> base <SPAN class="op">+</SPAN> len <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+                <A href="agg_array.h.html#swap_elements">swap_elements</A><SPAN class="op">(</SPAN>arr<SPAN class="op">[</SPAN>base<SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> arr<SPAN class="op">[</SPAN>pivot<SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                i <SPAN class="op">=</SPAN> base <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+                j <SPAN class="op">=</SPAN> limit <SPAN class="op">-</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+
+                <SPAN class="rem">// now ensure that *i &lt;= *base &lt;= *j </SPAN>
+                e1 <SPAN class="op">=</SPAN> <SPAN class="op">&amp;</SPAN><SPAN class="op">(</SPAN>arr<SPAN class="op">[</SPAN>j<SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> 
+                e2 <SPAN class="op">=</SPAN> <SPAN class="op">&amp;</SPAN><SPAN class="op">(</SPAN>arr<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>less<SPAN class="op">(</SPAN><SPAN class="op">*</SPAN>e1<SPAN class="op">,</SPAN> <SPAN class="op">*</SPAN>e2<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> <A href="agg_array.h.html#swap_elements">swap_elements</A><SPAN class="op">(</SPAN><SPAN class="op">*</SPAN>e1<SPAN class="op">,</SPAN> <SPAN class="op">*</SPAN>e2<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                e1 <SPAN class="op">=</SPAN> <SPAN class="op">&amp;</SPAN><SPAN class="op">(</SPAN>arr<SPAN class="op">[</SPAN>base<SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> 
+                e2 <SPAN class="op">=</SPAN> <SPAN class="op">&amp;</SPAN><SPAN class="op">(</SPAN>arr<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>less<SPAN class="op">(</SPAN><SPAN class="op">*</SPAN>e1<SPAN class="op">,</SPAN> <SPAN class="op">*</SPAN>e2<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> <A href="agg_array.h.html#swap_elements">swap_elements</A><SPAN class="op">(</SPAN><SPAN class="op">*</SPAN>e1<SPAN class="op">,</SPAN> <SPAN class="op">*</SPAN>e2<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                e1 <SPAN class="op">=</SPAN> <SPAN class="op">&amp;</SPAN><SPAN class="op">(</SPAN>arr<SPAN class="op">[</SPAN>j<SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> 
+                e2 <SPAN class="op">=</SPAN> <SPAN class="op">&amp;</SPAN><SPAN class="op">(</SPAN>arr<SPAN class="op">[</SPAN>base<SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>less<SPAN class="op">(</SPAN><SPAN class="op">*</SPAN>e1<SPAN class="op">,</SPAN> <SPAN class="op">*</SPAN>e2<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> <A href="agg_array.h.html#swap_elements">swap_elements</A><SPAN class="op">(</SPAN><SPAN class="op">*</SPAN>e1<SPAN class="op">,</SPAN> <SPAN class="op">*</SPAN>e2<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN><SPAN class="op">;</SPAN><SPAN class="op">;</SPAN><SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    <SPAN class="kw1">do</SPAN> i<SPAN class="op">++</SPAN><SPAN class="op">;</SPAN> <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN> less<SPAN class="op">(</SPAN>arr<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> arr<SPAN class="op">[</SPAN>base<SPAN class="op">]</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="kw1">do</SPAN> j<SPAN class="op">--</SPAN><SPAN class="op">;</SPAN> <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN> less<SPAN class="op">(</SPAN>arr<SPAN class="op">[</SPAN>base<SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> arr<SPAN class="op">[</SPAN>j<SPAN class="op">]</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN> i <SPAN class="op">&gt;</SPAN> j <SPAN class="op">)</SPAN>
+                    <SPAN class="op">{</SPAN>
+                        <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="op">}</SPAN>
+
+                    <A href="agg_array.h.html#swap_elements">swap_elements</A><SPAN class="op">(</SPAN>arr<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> arr<SPAN class="op">[</SPAN>j<SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+
+                <A href="agg_array.h.html#swap_elements">swap_elements</A><SPAN class="op">(</SPAN>arr<SPAN class="op">[</SPAN>base<SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> arr<SPAN class="op">[</SPAN>j<SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                <SPAN class="rem">// now, push the largest sub-array</SPAN>
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>j <SPAN class="op">-</SPAN> base <SPAN class="op">&gt;</SPAN> limit <SPAN class="op">-</SPAN> i<SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    top<SPAN class="op">[</SPAN><SPAN class="num">0</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> base<SPAN class="op">;</SPAN>
+                    top<SPAN class="op">[</SPAN><SPAN class="num">1</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> j<SPAN class="op">;</SPAN>
+                    base   <SPAN class="op">=</SPAN> i<SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+                <SPAN class="kw1">else</SPAN>
+                <SPAN class="op">{</SPAN>
+                    top<SPAN class="op">[</SPAN><SPAN class="num">0</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> i<SPAN class="op">;</SPAN>
+                    top<SPAN class="op">[</SPAN><SPAN class="num">1</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> limit<SPAN class="op">;</SPAN>
+                    limit  <SPAN class="op">=</SPAN> j<SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+                top <SPAN class="op">+=</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="kw1">else</SPAN>
+            <SPAN class="op">{</SPAN>
+                <SPAN class="rem">// the sub-array is small, perform insertion sort</SPAN>
+                j <SPAN class="op">=</SPAN> base<SPAN class="op">;</SPAN>
+                i <SPAN class="op">=</SPAN> j <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+
+                <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;</SPAN> limit<SPAN class="op">;</SPAN> j <SPAN class="op">=</SPAN> i<SPAN class="op">,</SPAN> i<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN><SPAN class="op">;</SPAN> less<SPAN class="op">(</SPAN><SPAN class="op">*</SPAN><SPAN class="op">(</SPAN>e1 <SPAN class="op">=</SPAN> <SPAN class="op">&amp;</SPAN><SPAN class="op">(</SPAN>arr<SPAN class="op">[</SPAN>j <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> <SPAN class="op">*</SPAN><SPAN class="op">(</SPAN>e2 <SPAN class="op">=</SPAN> <SPAN class="op">&amp;</SPAN><SPAN class="op">(</SPAN>arr<SPAN class="op">[</SPAN>j<SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> j<SPAN class="op">--</SPAN><SPAN class="op">)</SPAN>
+                    <SPAN class="op">{</SPAN>
+                        <A href="agg_array.h.html#swap_elements">swap_elements</A><SPAN class="op">(</SPAN><SPAN class="op">*</SPAN>e1<SPAN class="op">,</SPAN> <SPAN class="op">*</SPAN>e2<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>j <SPAN class="op">==</SPAN> base<SPAN class="op">)</SPAN>
+                        <SPAN class="op">{</SPAN>
+                            <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+                        <SPAN class="op">}</SPAN>
+                    <SPAN class="op">}</SPAN>
+                <SPAN class="op">}</SPAN>
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>top <SPAN class="op">&gt;</SPAN> stack<SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    top  <SPAN class="op">-=</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+                    base  <SPAN class="op">=</SPAN> top<SPAN class="op">[</SPAN><SPAN class="num">0</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    limit <SPAN class="op">=</SPAN> top<SPAN class="op">[</SPAN><SPAN class="num">1</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+                <SPAN class="kw1">else</SPAN>
+                <SPAN class="op">{</SPAN>
+                    <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+
+
+    <SPAN class="rem">//------------------------------------------------------<A name="remove_duplicates"><B></B></A><A href="agg_array.h.html#remove_duplicates">remove_duplicates</A></SPAN>
+    <SPAN class="rem">// Remove duplicates from a sorted array. It doesn&#039;t cut the </SPAN>
+    <SPAN class="rem">// tail of the array, it just returns the number of remaining elements.</SPAN>
+    <SPAN class="rem">//-----------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Array<SPAN class="op">,</SPAN> <SPAN class="kw1">class</SPAN> Equal<SPAN class="op">&gt;</SPAN>
+    <SPAN class="kw1">unsigned</SPAN> <A href="agg_array.h.html#remove_duplicates">remove_duplicates</A><SPAN class="op">(</SPAN>Array<SPAN class="op">&amp;</SPAN> arr<SPAN class="op">,</SPAN> Equal equal<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>arr<SPAN class="op">.</SPAN>size<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">&lt;</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">return</SPAN> arr<SPAN class="op">.</SPAN>size<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">unsigned</SPAN> i<SPAN class="op">,</SPAN> j<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">,</SPAN> j <SPAN class="op">=</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;</SPAN> arr<SPAN class="op">.</SPAN>size<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> i<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">typename</SPAN> Array::value_type<SPAN class="op">&amp;</SPAN> e <SPAN class="op">=</SPAN> arr<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN><SPAN class="op">!</SPAN>equal<SPAN class="op">(</SPAN>e<SPAN class="op">,</SPAN> arr<SPAN class="op">[</SPAN>i <SPAN class="op">-</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                arr<SPAN class="op">[</SPAN>j<SPAN class="op">++</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> e<SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">return</SPAN> j<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//--------------------------------------------------------<A name="invert_container"><B></B></A><A href="agg_array.h.html#invert_container">invert_container</A></SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Array<SPAN class="op">&gt;</SPAN> <SPAN class="kw1">void</SPAN> <A href="agg_array.h.html#invert_container">invert_container</A><SPAN class="op">(</SPAN>Array<SPAN class="op">&amp;</SPAN> arr<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">int</SPAN> i <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN> j <SPAN class="op">=</SPAN> arr<SPAN class="op">.</SPAN>size<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">-</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">&lt;</SPAN> j<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <A href="agg_array.h.html#swap_elements">swap_elements</A><SPAN class="op">(</SPAN>arr<SPAN class="op">[</SPAN>i<SPAN class="op">++</SPAN><SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> arr<SPAN class="op">[</SPAN>j<SPAN class="op">--</SPAN><SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------<A name="binary_search_pos"><B></B></A><A href="agg_array.h.html#binary_search_pos">binary_search_pos</A></SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Array<SPAN class="op">,</SPAN> <SPAN class="kw1">class</SPAN> Value<SPAN class="op">,</SPAN> <SPAN class="kw1">class</SPAN> Less<SPAN class="op">&gt;</SPAN>
+    <SPAN class="kw1">unsigned</SPAN> <A href="agg_array.h.html#binary_search_pos">binary_search_pos</A><SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> Array<SPAN class="op">&amp;</SPAN> arr<SPAN class="op">,</SPAN> <SPAN class="kw1">const</SPAN> Value<SPAN class="op">&amp;</SPAN> val<SPAN class="op">,</SPAN> Less less<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>arr<SPAN class="op">.</SPAN>size<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">return</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">unsigned</SPAN> beg <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> end <SPAN class="op">=</SPAN> arr<SPAN class="op">.</SPAN>size<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">-</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>less<SPAN class="op">(</SPAN>val<SPAN class="op">,</SPAN> arr<SPAN class="op">[</SPAN><SPAN class="num">0</SPAN><SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">return</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>less<SPAN class="op">(</SPAN>arr<SPAN class="op">[</SPAN>end<SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> val<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">return</SPAN> end <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN>end <SPAN class="op">-</SPAN> beg <SPAN class="op">&gt;</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">unsigned</SPAN> mid <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>end <SPAN class="op">+</SPAN> beg<SPAN class="op">)</SPAN> <SPAN class="op">&gt;&gt;</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>less<SPAN class="op">(</SPAN>val<SPAN class="op">,</SPAN> arr<SPAN class="op">[</SPAN>mid<SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> end <SPAN class="op">=</SPAN> mid<SPAN class="op">;</SPAN> 
+            <SPAN class="kw1">else</SPAN>                    beg <SPAN class="op">=</SPAN> mid<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//if(beg &lt;= 0 &amp;&amp; less(val, arr[0])) return 0;</SPAN>
+        <SPAN class="rem">//if(end &gt;= arr.size() - 1 &amp;&amp; less(arr[end], val)) ++end;</SPAN>
+
+        <SPAN class="kw1">return</SPAN> end<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//----------------------------------------------------------<A name="range_adaptor"><B></B></A><A href="agg_array.h.html#range_adaptor">range_adaptor</A></SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Array<SPAN class="op">&gt;</SPAN> <SPAN class="kw1">class</SPAN> <A href="agg_array.h.html#range_adaptor">range_adaptor</A>
+    <SPAN class="op">{</SPAN>
+    <SPAN class="kw1">public</SPAN>:
+        <SPAN class="kw1">typedef</SPAN> <SPAN class="kw1">typename</SPAN> Array::value_type value_type<SPAN class="op">;</SPAN>
+
+        <A href="agg_array.h.html#range_adaptor">range_adaptor</A><SPAN class="op">(</SPAN>Array<SPAN class="op">&amp;</SPAN> array<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> start<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> size<SPAN class="op">)</SPAN> :
+            m_array<SPAN class="op">(</SPAN>array<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> m_start<SPAN class="op">(</SPAN>start<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> m_size<SPAN class="op">(</SPAN>size<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN><SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">unsigned</SPAN> size<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_size<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">const</SPAN> value_type<SPAN class="op">&amp;</SPAN> <SPAN class="kw1">operator</SPAN> <SPAN class="op">[</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> i<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_array<SPAN class="op">[</SPAN>m_start <SPAN class="op">+</SPAN> i<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+              value_type<SPAN class="op">&amp;</SPAN> <SPAN class="kw1">operator</SPAN> <SPAN class="op">[</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> i<SPAN class="op">)</SPAN>       <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_array<SPAN class="op">[</SPAN>m_start <SPAN class="op">+</SPAN> i<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">const</SPAN> value_type<SPAN class="op">&amp;</SPAN> at<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> i<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN>           <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_array<SPAN class="op">[</SPAN>m_start <SPAN class="op">+</SPAN> i<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+              value_type<SPAN class="op">&amp;</SPAN> at<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> i<SPAN class="op">)</SPAN>                 <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_array<SPAN class="op">[</SPAN>m_start <SPAN class="op">+</SPAN> i<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        value_type  value_at<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> i<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN>           <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_array<SPAN class="op">[</SPAN>m_start <SPAN class="op">+</SPAN> i<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+
+    <SPAN class="kw1">private</SPAN>:
+        Array<SPAN class="op">&amp;</SPAN> m_array<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> m_start<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> m_size<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="rem">//---------------------------------------------------------------<A name="int_less"><B></B></A><A href="agg_array.h.html#int_less">int_less</A></SPAN>
+    <SPAN class="kw1">inline</SPAN> <SPAN class="kw1">bool</SPAN> <A href="agg_array.h.html#int_less">int_less</A><SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> a<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> b<SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> a <SPAN class="op">&lt;</SPAN> b<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------<A name="int_greater"><B></B></A><A href="agg_array.h.html#int_greater">int_greater</A></SPAN>
+    <SPAN class="kw1">inline</SPAN> <SPAN class="kw1">bool</SPAN> <A href="agg_array.h.html#int_greater">int_greater</A><SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> a<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> b<SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> a <SPAN class="op">&gt;</SPAN> b<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//----------------------------------------------------------<A name="unsigned_less"><B></B></A><A href="agg_array.h.html#unsigned_less">unsigned_less</A></SPAN>
+    <SPAN class="kw1">inline</SPAN> <SPAN class="kw1">bool</SPAN> <A href="agg_array.h.html#unsigned_less">unsigned_less</A><SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> a<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> b<SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> a <SPAN class="op">&lt;</SPAN> b<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//-------------------------------------------------------<A name="unsigned_greater"><B></B></A><A href="agg_array.h.html#unsigned_greater">unsigned_greater</A></SPAN>
+    <SPAN class="kw1">inline</SPAN> <SPAN class="kw1">bool</SPAN> <A href="agg_array.h.html#unsigned_greater">unsigned_greater</A><SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> a<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> b<SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> a <SPAN class="op">&gt;</SPAN> b<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+<SPAN class="op">}</SPAN>
+
+<SPAN class="kw2">#endif</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT><TABLE width="640px" bgcolor="#583927" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0">
+<TR><TD><CENTER><SPAN class="authors">
+Copyright <SPAN class="larger">&#169;</SPAN> 2002-2006
+<A href="../../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+<TR><TD><CENTER><SPAN class="authors">
+Web Design and Programming
+<A href="../../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+</TABLE>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+</HTML>

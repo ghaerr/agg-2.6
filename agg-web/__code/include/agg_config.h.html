@@ -1,0 +1,64 @@
+<HTML><HEAD><TITLE>Anti-Grain Geometry - </TITLE>
+<META http-equiv="Content-Type" content="text/html"/>
+<LINK rel="stylesheet" type="text/css" href="../../agg.styles.css"/>
+</HEAD>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE><SPAN class="kw2">#ifndef</SPAN> AGG_CONFIG_INCLUDED
+<SPAN class="kw2">#define</SPAN> AGG_CONFIG_INCLUDED
+
+<SPAN class="rem">// This file can be used to redefine certain data types.</SPAN>
+
+<SPAN class="rem">//---------------------------------------</SPAN>
+<SPAN class="rem">// 1. Default basic types such as:</SPAN>
+<SPAN class="rem">// </SPAN>
+<SPAN class="rem">// AGG_INT8</SPAN>
+<SPAN class="rem">// AGG_INT8U</SPAN>
+<SPAN class="rem">// AGG_INT16</SPAN>
+<SPAN class="rem">// AGG_INT16U</SPAN>
+<SPAN class="rem">// AGG_INT32</SPAN>
+<SPAN class="rem">// AGG_INT32U</SPAN>
+<SPAN class="rem">// AGG_INT64</SPAN>
+<SPAN class="rem">// AGG_INT64U</SPAN>
+<SPAN class="rem">//</SPAN>
+<SPAN class="rem">// Just replace this file with new defines if necessary. </SPAN>
+<SPAN class="rem">// For example, if your compiler doesn&#039;t have a 64 bit integer type</SPAN>
+<SPAN class="rem">// you can still use AGG if you define the follows:</SPAN>
+<SPAN class="rem">//</SPAN>
+<SPAN class="rem">// #define AGG_INT64  int</SPAN>
+<SPAN class="rem">// #define AGG_INT64U unsigned</SPAN>
+<SPAN class="rem">//</SPAN>
+<SPAN class="rem">// It will result in overflow in 16 bit-per-component image/pattern resampling</SPAN>
+<SPAN class="rem">// but it won&#039;t result any crash and the rest of the library will remain </SPAN>
+<SPAN class="rem">// fully functional.</SPAN>
+
+
+<SPAN class="rem">//---------------------------------------</SPAN>
+<SPAN class="rem">// 2. Default <A href="../../doc/basic_renderers/basic_renderers.agdoc.html#rendering_buffer">rendering_buffer</A> type. Can be:</SPAN>
+<SPAN class="rem">//</SPAN>
+<SPAN class="rem">// Provides faster access for massive pixel operations, </SPAN>
+<SPAN class="rem">// such as blur, image filtering:</SPAN>
+<SPAN class="rem">// #define AGG_RENDERING_BUFFER <A href="../../doc/basic_renderers/basic_renderers.agdoc.html#row_ptr_cache">row_ptr_cache</A>&lt;<A href="agg_basics.h.html#int8u">int8u</A>&gt;</SPAN>
+<SPAN class="rem">// </SPAN>
+<SPAN class="rem">// Provides cheaper creation and destruction (no mem allocs):</SPAN>
+<SPAN class="rem">// #define AGG_RENDERING_BUFFER <A href="agg_rendering_buffer.h.html#row_accessor">row_accessor</A>&lt;<A href="agg_basics.h.html#int8u">int8u</A>&gt;</SPAN>
+<SPAN class="rem">//</SPAN>
+<SPAN class="rem">// You can still use both of them simultaneouslyin your applications </SPAN>
+<SPAN class="rem">// This #define is used only for default <A href="../../doc/basic_renderers/basic_renderers.agdoc.html#rendering_buffer">rendering_buffer</A> type,</SPAN>
+<SPAN class="rem">// in short hand typedefs like <A href="agg_pixfmt_rgba.h.html#pixfmt_rgba32">pixfmt_rgba32</A>.</SPAN>
+
+<SPAN class="kw2">#endif</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT><TABLE width="640px" bgcolor="#583927" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0">
+<TR><TD><CENTER><SPAN class="authors">
+Copyright <SPAN class="larger">&#169;</SPAN> 2002-2006
+<A href="../../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+<TR><TD><CENTER><SPAN class="authors">
+Web Design and Programming
+<A href="../../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+</TABLE>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+</HTML>

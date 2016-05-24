@@ -1,0 +1,613 @@
+<HTML><PRE>
+\include replacements
+
+\title    {AGDoc Test}
+\subtitle {An example of text in the AGDoc format}
+
+\toc
+
+\h1 {Introduction}
+
+Anti-Grain Geometry (AGG) is a toolkit written completely in 
+standard and platform independent C++.
+It can be used in many areas of computer programming where 2D
+graphics is essential. AGG uses only C++ and standard 
+C runtime functions, such as memcpy(), sin(), cos(), sqrt(), etc.
+It doesn't even use STL. Thus, AGG can be used in a very large 
+number of applications, including embedded systems.
+
+Blah-blah blah-blah blah-blah...
+
+The effect of replacements: 
+\as_is
+{
+\AGG \br
+\TEX \br
+\DD\br
+}
+
+Appears as:
+
+\AGG \br
+\TEX \br
+\DD\br
+
+
+\h2 {Subtible of the Introduction}
+Most of the graphic libraries have a single class like "Graphics"
+in GDI+, that has hunded or even thousands of functions. This object 
+can exist implicitly, like in OpenGL. 
+
+... ... ...
+
+\h2 {The Proposal (Another subtitle)}
+I would like to break this ancient as mammoth's manure 
+tradition and show you the beauty of stability, lightness,
+flexibilty, and freedom. Well, you will have to pay something 
+for that. Namely, you will have to pay your attention to 
+understand the concepts that can seem not very conventional at the 
+beginning. For example, it's not that easy to draw a simple line, 
+because a line is rather a complex graphic object in terms of AGG.
+The simplest object in AGG is a polygon. Well, it's not quite
+right either, but all in good time.
+
+... ... ...
+
+
+\h1 {Example of code}
+\cpp
+{
+    template<class Consumer> 
+    void process_element(Consumer& c, 
+                         std::basic_string<char_type>& str)
+    {
+        unsigned i;
+        unsigned cmd_idx = 0;
+
+        std::basic_string<char_type> name = "";
+        if(m_name)
+        {
+            for(i = 0; i < m_name_len; i++) name += m_name[i];
+        }
+        c.begin_element(name.c_str());
+
+        str = "";
+        for(i = 0; i < m_content_len; i++)
+        {
+            if(m_content[i] == element_char)
+            {
+                if(str.length()) 
+                {
+                    c.content(str.c_str());
+                    str = "";
+                }
+                if(cmd_idx < m_elements.size())
+                {
+                    m_elements[cmd_idx].process_element(c, str);
+                    i += m_elements[cmd_idx].m_total_len;
+                    cmd_idx++;
+                }
+                else
+                {
+                    throw std::exception("ELEMENT COUNT ERROR");
+                }
+            }
+            //else
+            //{
+            //    if(m_content[i] != ignore_char)
+            //    {
+            //        str += m_content[i];
+            //    }
+            //}
+        }
+        if(str.length()) 
+        {
+            c.content(str.c_str());
+            str = "";
+        }
+        c.end_element(name.c_str());
+    }
+}
+
+
+\h1 {AGDoc Formatting}
+\h2 {Paragraphs}
+
+Leave one or more blank lines between paragraphs. 
+
+\h2 {Bold, Italic, Underline, Quoted, Code, etc...}
+
+\vbar_table[Table 1. Wiki- and TeX-like style formatting; anchor=TAB1]
+{
+\th{Wiki-like style                         || \TEX-like style                || Appears as }
+    \m{**Bold text**}                       || \m{\b{Bold text}}              ||**Bold text**
+    \m{~~Italic text~~}                     || \m{\i{Italic text}}            ||~~Italic text~~
+    \m{*~Bold and italic text*~}            || \m{\em{Bold and italic text}}  ||*~Bold and italic text*~
+    \m{__Underlined text__}                 || \m{\u{Underlined text}}        ||__Underlined text__
+    \m{==Nonbreaking text==}                || \m{\nobr{Nonbreaking text}}    ||==Nonbreaking text==
+    \m{''Quoted text''}                     || \m{\sq{Quoted text}}           ||''Quoted text''
+    \m{""Quoted text""}                     || \m{\dq{Quoted text}}           ||""Quoted text""
+    \m{<<Quoted text>>}                     || \m{\aq{Quoted text}}           ||<<Quoted text>>
+    Code: \m{$$while(*p++) {...}$$}         || \m{\m{while(*p++) {...}}}      ||$$while(*p++) {...}$$
+    Superscript: \m{2^^3^^ + 10^^2^^ = 108} || \m{2\sup{3} + 10\sup{2} = 108} ||2^^3^^ + 10^^2^^ = 108
+    Subscript: \m{Cvv2vvHvv5vvOH}           || \m{C\sub{2}H\sub{5}OH}         ||Cvv2vvHvv5vvOH
+    Em dash \m{--}                          || \m{\emdash}                    ||--
+    Copyright \m{(C)}                       || \m{\copy}                      ||(C)
+    Registered \m{(R)}                      || \m{\reg}                       ||(R)
+    Trademark \m{(TM)}                      || \m{\trade}                     ||(TM)
+    Ellipsis \m{...}                        || \m{\hellip}                    ||...
+    Degree \m{15^o}                         || \m{15\deg}                     ||15^o
+    Superscript 1: \m{3.1415^1}             || \m{3.1415\sup1}                ||3.1415^1
+    Superscript 2: \m{O(N^2 log N)}         || \m{O(N\sup2 log N)}            ||O(N\sup2 log N)
+    Superscript 3: \m{M^3}                  || \m{M\sup3}                     ||M^3
+    Plusmiunus: \m{10.5+-0.3}               || \m{10.5\plusmin{}0.3}          ||10.5+-0.3
+    Leftwards arrow: \m{A->B}               || \m{A\rarr{}B}                  ||A->B
+    Rightwards arrow: \m{A<-B}              || \m{A\larr{}B}                  ||A<-B
+    Left-right arrow: \m{A<->B}             || \m{A\harr{}B}                  ||A<->B
+    Nonbreaking space: \m{a~_b}             || \m{a\nbsp{}b}                  ||a~_b
+}
+
+\h2 { Tables}
+\h3 { Space separated values tables (ssv_table)}
+
+The rows are separated with the new-line character (LF), the cells in the row 
+are separaeted with any number of spaces (whitespace or tab). If you need to 
+have a space between words in one cell use a nonbreaking space, \m{~_}.
+
+**An example:**
+
+\as_is
+{
+\ssv_table[Table 2. Space separated values table; anchor=TAB2]
+{
+\th{ Line Style  ||  Pipeline || add_path || sort || render || total }
+\al{ <               >           >           >       >         >     }
+     Straight~_lines 2.819       21.207      73.599  71.813    169.437
+     Bezier~_curves  79.656      98.957      62.393  99.161    340.167
+     Dashed~_curves  99.332      94.182      39.310  73.310    306.134
+}
+}
+
+**Appears as:**
+
+\ssv_table[Table 2. Space separated values table; anchor=TAB2]
+{
+\th{ Line Style  ||  Pipeline || add_path || sort || render || total }
+\al{ <               >           >           >       >         >     }
+     Straight~_lines 2.819       21.207      73.599  71.813    169.437
+     Bezier~_curves  79.656      98.957      62.393  99.161    340.167
+     Dashed~_curves  99.332      94.182      39.310  73.310    306.134
+}
+
+Here **""\m{\th{...}}""** means **""Table Header""**, 
+     **""\m{\al{...}}""** -- **""Alignments of the Columns""**. 
+Both of these elements are optional.
+The columns of the header must be separated with double vertical bars ==(**\m{||}**)==.
+The **""Alignment""** extracts the following characters from the line: 
+ ==\m{'<', '>', '|', '-'}==, ignoring all other ones. They mean:
+      
+ * $$'<'$$ --  ""Left Alignment"" (by default)
+ * $$'>'$$ -- ""Right Alignment""
+ * $$'|'$$ -- ""Centered""
+ * $$'-'$$ -- ""Justified""
+
+Each character corresponds to the respective column.
+You can change the alignment in a separate cell in the folowing way:
+
+ * $$<|Cell Content$$ -- ""Left Alignment""
+ * $$Cell Content|>$$ -- ""Right Alignment""
+ * $$<|Cell Content|>$$ -- ""Centered""
+ * $$<-Cell Content->$$ -- ""Justified""
+
+The same rules about the table header and the alignments are applicable 
+to the other types of tables (see below).
+
+----
+
+\h3 { Vertical bar separated tables (vbar_table)}
+
+**An example:**
+
+\as_is
+{
+\vbar_table[Table 3. Vertical bar separated table; anchor=TAB3]
+{
+\th{==Test Type==||Action                 ||Required to Pass}
+    compile      ||compile only           ||Compiler returns 0.
+    compile-fail ||compile only           ||Compiler must return non-zero.
+    link         ||compile, link          ||Both compiler & linker return 0.
+    link-fail    ||compile, link          ||Either the compiler or linker must return non-zero.
+    run          ||compile, link, execute ||Compiler, linker, and executable must all return 0.
+    run-fail     ||compile, link, execute ||Both compiler and linker must return 0, and the executable must return non-zero.
+}
+}
+
+**Appears as:**
+
+\vbar_table[Table 3. Vertical bar separated table; anchor=TAB3]
+{
+\th{==Test Type==||Action                 ||Required to Pass}
+    compile      ||compile only           ||Compiler returns 0.
+    compile-fail ||compile only           ||Compiler must return non-zero.
+    link         ||compile, link          ||Both compiler & linker return 0.
+    link-fail    ||compile, link          ||Either the compiler or linker must return non-zero.
+    run          ||compile, link, execute ||Compiler, linker, and executable must all return 0.
+    run-fail     ||compile, link, execute ||Both compiler and linker must return 0, and the executable must return non-zero.
+}
+----
+
+\h3 { Empty line separated tables (eln_table)}
+
+**An example:**
+
+\as_is
+{
+\eln_table[Table 4. Empty line separated table; anchor=TAB4]
+{
+\th{==Test Type== || Action || Required to Pass || Description and Use }
+\al{<                <         <                   -                   }
+    compile
+
+    compile only
+
+    Compiler returns 0.
+
+    Verify that a source file will compile correctly, 
+    but without any attempt to link or execute. 
+    Used when factors such as possible object library 
+    unavailability make a run test impractical.
+----
+    ==compile-fail==
+
+    compile only 
+
+    Compiler must return non-zero.
+
+    Verify that a source file fails to compile. 
+    Used to verify that an expected compile-time 
+    error was detected.
+----
+    link 
+
+    compile, link 
+
+    Both compiler & linker return 0.
+
+    Verify that a source file will compile and link 
+    correctly, but without any attempt to execute 
+    the result.  Used when factors such as possible data 
+    file unavailability make a run test impractical.
+----
+    link-fail 
+
+    compile, link 
+
+    Either the compiler or linker must return non-zero.
+
+    Verify that a source file fails to compile and link. 
+    Used to verify that error detect which depends 
+    on unresolved externals works correctly.
+}
+}
+
+**Appears as:**
+
+\eln_table[Table 4. Empty line table; anchor=TAB4]
+{
+\th{==Test Type== || Action || Required to Pass || Description and Use }
+\al{<                <         <                   -                   }
+    compile
+
+    compile only
+
+    Compiler returns 0.
+
+    Verify that a source file will compile correctly, 
+    but without any attempt to link or execute. 
+    Used when factors such as possible object library 
+    unavailability make a run test impractical.
+----
+    ==compile-fail==
+
+    compile only 
+
+    Compiler must return non-zero.
+
+    Verify that a source file fails to compile. 
+    Used to verify that an expected compile-time 
+    error was detected.
+----
+    link 
+
+    compile, link 
+
+    Both compiler & linker return 0.
+
+    Verify that a source file will compile and link 
+    correctly, but without any attempt to execute 
+    the result.  Used when factors such as possible data 
+    file unavailability make a run test impractical.
+----
+    link-fail 
+
+    compile, link 
+
+    Either the compiler or linker must return non-zero.
+
+    Verify that a source file fails to compile and link. 
+    Used to verify that error detect which depends 
+    on unresolved externals works correctly.
+}
+----
+
+
+
+
+
+
+
+
+\h2 {Linking}
+
+\as_is
+{
+http://www.antigrain.com \br
+ftp://www.antigrain.com \br
+\href [http://www.antigrain.com] {==Anti-Grain Geometry img://inline_image.png ==} \br
+mailto:joe_sixpack@somewhere_on_the.moon \br
+\download [http://www.antigrain.com/agg2.zip] { Latest AGG snapshot }
+}
+
+
+http://www.antigrain.com \br
+ftp://www.antigrain.com \br
+\href [http://www.antigrain.com] {==Anti-Grain Geometry img://inline_image.png ==} \br
+mailto:joe_sixpack@somewhere_on_the.moon \br
+\download [http://www.antigrain.com/agg2.zip] { Latest AGG snapshot }
+
+
+\h2 {Images}
+
+\h3 {Left aligned images}
+
+\href0[http://www.antigrain.com]{\imgl0 [image_on_the_left.png] {Left Image} }
+some text some text some text some some text some text some text some text 
+some text some text some text some text some text some text some text some 
+text some text some text some text some text some text some text some text 
+some text some text some text some some text some text some text some text 
+some text some text some text some text some text some text some text some 
+text some text some text some text some text some text some text some text 
+some text some text some text some some text some text some text some text 
+some text some text some text some text some text some text some text some 
+text some text some text some text some text some text some text some text 
+some text some text some text some text.
+
+
+\imgl [image_on_the_left.png; anchor=FIG1] {Left Image}
+some text some text some text some text 
+some text some text some text some text some text some text some text some 
+text some text some text some text some text some text some text some text 
+some text some text some text some some text some text some text some text 
+some text some text some text some text some text some text some text some 
+text some text some text some text some text some text some text some text 
+some text some text some text some some text some text some text some text 
+some text some text some text some text some text some text some text some 
+text some text some text some text some text some text some text some text 
+some text some text some text some some text some text some text some text 
+some text some text some text some text some text some text some text some 
+text some text some text some text some text some text some text some text 
+some text some text some text some text.
+
+
+\h3 {Right aligned image}
+
+
+\href0[http://www.antigrain.com]{imgr0://http://www.antigrain.com/img/agg_logo_s.gif}
+some text some text some text some text 
+some some text some text some text some text some text some text some text some 
+some text some text some text some text some text some text some text some
+some text some text some text some text some text some text some text some
+some some text some text some text some text some text some text some text some 
+some text some text some text some text some text some text some text some
+some text some text some text some text some text some text some text some
+some text some text some text some text some text some text some text some
+some text some text some text some text some text some text some text some
+
+
+
+\imgr[image_on_the_right.png] {Right Image} some text some text some text some text 
+some some text some text some text some text some text some text some text some 
+some text some text some text some text some text some text some text some
+some text some text some text some text some text some text some text some
+some some text some text some text some text some text some text some text some 
+some text some text some text some text some text some text some text some
+some text some text some text some text some text some text some text some
+some some text some text some text some text some text some text some text some 
+some text some text some text some text some text some text some text some
+some text some text some text some text some text some text some text some
+
+
+\h3 {Inline images}
+some some text some text some text some text some text some text some text some 
+some text some text some text some text some text some text some text some
+some text some. An inline image: img://inline_image.png text some text some text 
+some text some text some text some some some text some text some text some text some 
+text some text some text some some text some text some text some text some text some text some text some
+some text some text some text some text some text some text some text some
+
+
+\h3 {Centered image}
+
+\h4 {Variant One}
+imgc://http://www.antigrain.com/img/lion3s.jpg
+
+\h4 {Variant Two}
+\imgc [aqua.png] { Figure 1 }
+
+\h3 {External images}
+
+\pc{
+    img://http://www.antigrain.com/img/lion2s.jpg
+    ~_~_~_~_~_
+    img://http://www.antigrain.com/img/lion3s.jpg
+}
+
+
+
+
+\h1 {Itemized lists}
+
+\h2 {Ordered lists}
+\as_is
+{
+    1.  Select Open under the FILE menu. \br
+        or \br
+        click the Open button on the MAIN Toolbar.
+    2.  The standard Windows OPEN dialog box will appear, see Figure 3.
+    3.  Designate the appropriate folder in the Look In field. See 3 in
+        Figure 4.
+    2.  Type the file name in the File Name field and click Open. See 4A in Figure 5. \br
+        or \br
+        Double click on the desired document file. See 4B in Figure 6.
+    2.  The designated document will open with structures displayed.
+        See Figure 9.
+}
+
+**Appears as:**
+
+    1.  Select Open under the FILE menu. \br
+        or \br
+        click the Open button on the MAIN Toolbar.
+    2.  The standard Windows OPEN dialog box will appear, see Figure 3.
+    3.  Designate the appropriate folder in the Look In field. See 3 in
+        Figure 4.
+    2.  Type the file name in the File Name field and click Open. See 4A in Figure 5. \br
+        or \br
+        Double click on the desired document file. See 4B in Figure 6.
+    2.  The designated document will open with structures displayed.
+        See Figure 9.
+
+
+\h2 {Unordered lists}
+\as_is
+{
+    *   Number of rows and columns displayed in the grid is selected by
+        increasing or decreasing the numbers in the Rows (1 in Figure 1) 
+        and Cols (2 in Figure 1) fields.
+    *   Background color for the unselected (Background, 3 in Figure 2) and 
+        selected (Selected Background, 4 in Figure 4) structures
+        can be set. See below.
+    *   The grid cell style (Normal, Raised, or Sunken) can be selected
+        (5 in Figure 6).
+    *   The \b{border thickness} can be selected (6 in Figure 8).
+}
+
+
+**Appears as:**
+    *   Number of rows and columns displayed in the grid is selected by
+        increasing or decreasing the numbers in the Rows (1 in Figure 1) 
+        and Cols (2 in Figure 1) fields.
+    *   Background color for the unselected (Background, 3 in Figure 2) and 
+        selected (Selected Background, 4 in Figure 4) structures
+        can be set. See below.
+    *   The grid cell style (Normal, Raised, or Sunken) can be selected
+        (5 in Figure 6).
+    *   The \b{border thickness} can be selected (6 in Figure 8).
+
+
+\h2 {Mixed and Nested lists}
+
+\as_is
+{
+    1.  Number of rows and columns displayed in the grid is selected by
+        increasing or decreasing the numbers in the Rows (1 in Figure 1) 
+        and Cols (2 in Figure 1) fields.
+            *  The Browser Window
+            *  Open Collections and Libraries
+            *  View Collections and Libraries
+    1.  Background color for the unselected (Background, 3 in Figure 2) and 
+        selected (Selected Background, 4 in Figure 4) structures
+        can be set. See below.
+            *  Edit Collections and Libraries
+            *  Create Zero Based Index (ZBI) files
+            *  Create New Collections
+            *  Summary of Mouse and Keyboard Commands
+    1.  The grid cell style (Normal, Raised, or Sunken) can be selected
+        (5 in Figure 6).
+    1.  The \b{border thickness} can be selected (6 in Figure 8).
+}
+
+**Appears as:**
+    1.  Number of rows and columns displayed in the grid is selected by
+        increasing or decreasing the numbers in the Rows (1 in Figure 1) 
+        and Cols (2 in Figure 1) fields.
+            *  The Browser Window
+            *  Open Collections and Libraries
+            *  View Collections and Libraries
+    1.  Background color for the unselected (Background, 3 in Figure 2) and 
+        selected (Selected Background, 4 in Figure 4) structures
+        can be set. See below.
+            *  Edit Collections and Libraries
+            *  Create Zero Based Index (ZBI) files
+            *  Create New Collections
+            *  Summary of Mouse and Keyboard Commands
+    1.  The grid cell style (Normal, Raised, or Sunken) can be selected
+        (5 in Figure 6).
+    1.  The \b{border thickness} can be selected (6 in Figure 8).
+
+
+\as_is
+{
+    * kbool algebra
+        * Re: kbool algebra
+            * Re: kbool algebra
+                * Re: kbool algebra
+        * Re: kbool algebra
+        * Re: kbool algebra
+            * Re: kbool algebra
+                * Re: kbool algebra
+            * Re: kbool algebra [OT]
+        * Re: kbool algebra 
+    * New "coolstuff" - perspective transformations
+        * Re: New "coolstuff" - perspective transformations
+            * Re: New "coolstuff" - perspective transformations
+                * Re: New "coolstuff" - perspective transformations
+    * Help, looking for Matrix functions~! 
+        * Re: Help, looking for Matrix functions~! 
+    * Problem of low level languages
+        * another way
+        * So much for so little.. [nt]
+            * Re: So much for so little.. [nt] 
+    * Did I miss something?
+        * Re: Did I miss something? 
+            * Re: Did I miss something? 
+}
+
+**Appears as:**
+    * kbool algebra
+        * Re: kbool algebra
+            * Re: kbool algebra
+                * Re: kbool algebra
+        * Re: kbool algebra
+        * Re: kbool algebra
+            * Re: kbool algebra
+                * Re: kbool algebra
+            * Re: kbool algebra [OT]
+        * Re: kbool algebra 
+    * New "coolstuff" - perspective transformations
+        * Re: New "coolstuff" - perspective transformations
+            * Re: New "coolstuff" - perspective transformations
+                * Re: New "coolstuff" - perspective transformations
+    * Help, looking for Matrix functions~! 
+        * Re: Help, looking for Matrix functions~! 
+    * Problem of low level languages
+        * another way
+        * So much for so little.. [nt]
+            * Re: So much for so little.. [nt] 
+    * Did I miss something?
+        * Re: Did I miss something? 
+            * Re: Did I miss something?
+
+
+
+</PRE></HTML>

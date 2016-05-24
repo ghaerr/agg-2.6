@@ -1,0 +1,173 @@
+<HTML><HEAD><TITLE>Anti-Grain Geometry - </TITLE>
+<META http-equiv="Content-Type" content="text/html"/>
+<LINK rel="stylesheet" type="text/css" href="../../agg.styles.css"/>
+</HEAD>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE><SPAN class="rem">//----------------------------------------------------------------------------</SPAN>
+<SPAN class="rem">// Anti-Grain Geometry (AGG) - Version 2.5</SPAN>
+<SPAN class="rem">// A high quality rendering engine for C++</SPAN>
+<SPAN class="rem">// Copyright (C) 2002-2006 Maxim Shemanarev</SPAN>
+<SPAN class="rem">// Contact: mcseem@antigrain.com</SPAN>
+<SPAN class="rem">//          mcseemagg@yahoo.com</SPAN>
+<SPAN class="rem">//          http://antigrain.com</SPAN>
+<SPAN class="rem">// </SPAN>
+<SPAN class="rem">// AGG is free software; you can redistribute it and/or</SPAN>
+<SPAN class="rem">// modify it under the terms of the GNU General Public License</SPAN>
+<SPAN class="rem">// as published by the Free Software Foundation; either version 2</SPAN>
+<SPAN class="rem">// of the License, or (at your option) any later version.</SPAN>
+<SPAN class="rem">// </SPAN>
+<SPAN class="rem">// AGG is distributed in the hope that it will be useful,</SPAN>
+<SPAN class="rem">// but WITHOUT ANY WARRANTY; without even the implied warranty of</SPAN>
+<SPAN class="rem">// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</SPAN>
+<SPAN class="rem">// GNU General Public License for more details.</SPAN>
+<SPAN class="rem">// </SPAN>
+<SPAN class="rem">// You should have received a copy of the GNU General Public License</SPAN>
+<SPAN class="rem">// along with AGG; if not, write to the Free Software</SPAN>
+<SPAN class="rem">// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, </SPAN>
+<SPAN class="rem">// MA 02110-1301, USA.</SPAN>
+<SPAN class="rem">//----------------------------------------------------------------------------</SPAN>
+
+<SPAN class="kw2">#ifndef</SPAN> AGG_SIMUL_EQ_INCLUDED
+<SPAN class="kw2">#define</SPAN> AGG_SIMUL_EQ_INCLUDED
+
+<SPAN class="kw2">#include</SPAN> <SPAN class="op">&lt;</SPAN>math<SPAN class="op">.</SPAN>h<SPAN class="op">&gt;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="agg_basics.h.html">agg_basics.h</A>&quot;</SPAN>
+
+<SPAN class="kw1">namespace</SPAN> agg
+<SPAN class="op">{</SPAN>
+
+    <SPAN class="rem">//=============================================================<A name="swap_arrays"><B></B></A><A href="agg_simul_eq.h.html#swap_arrays">swap_arrays</A></SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> T<SPAN class="op">&gt;</SPAN> <SPAN class="kw1">void</SPAN> <A href="agg_simul_eq.h.html#swap_arrays">swap_arrays</A><SPAN class="op">(</SPAN>T<SPAN class="op">*</SPAN> a1<SPAN class="op">,</SPAN> T<SPAN class="op">*</SPAN> a2<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> n<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> i<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;</SPAN> n<SPAN class="op">;</SPAN> i<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            T tmp <SPAN class="op">=</SPAN> <SPAN class="op">*</SPAN>a1<SPAN class="op">;</SPAN>
+            <SPAN class="op">*</SPAN>a1<SPAN class="op">++</SPAN> <SPAN class="op">=</SPAN> <SPAN class="op">*</SPAN>a2<SPAN class="op">;</SPAN>
+            <SPAN class="op">*</SPAN>a2<SPAN class="op">++</SPAN> <SPAN class="op">=</SPAN> tmp<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="rem">//============================================================<A name="matrix_pivot"><B></B></A><A href="agg_simul_eq.h.html#matrix_pivot">matrix_pivot</A></SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">unsigned</SPAN> Rows<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> Cols<SPAN class="op">&gt;</SPAN>
+    <SPAN class="kw1">struct</SPAN> <A href="agg_simul_eq.h.html#matrix_pivot">matrix_pivot</A>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">static</SPAN> <SPAN class="kw1">int</SPAN> pivot<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> m<SPAN class="op">[</SPAN>Rows<SPAN class="op">]</SPAN><SPAN class="op">[</SPAN>Cols<SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> row<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">int</SPAN> k <SPAN class="op">=</SPAN> <SPAN class="kw1">int</SPAN><SPAN class="op">(</SPAN>row<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">double</SPAN> max_val<SPAN class="op">,</SPAN> tmp<SPAN class="op">;</SPAN>
+
+            max_val <SPAN class="op">=</SPAN> <SPAN class="op">-</SPAN><SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">unsigned</SPAN> i<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> row<SPAN class="op">;</SPAN> i <SPAN class="op">&lt;</SPAN> Rows<SPAN class="op">;</SPAN> i<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>tmp <SPAN class="op">=</SPAN> fabs<SPAN class="op">(</SPAN>m<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">[</SPAN>row<SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">&gt;</SPAN> max_val <SPAN class="op">&amp;&amp;</SPAN> tmp <SPAN class="op">!=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    max_val <SPAN class="op">=</SPAN> tmp<SPAN class="op">;</SPAN>
+                    k <SPAN class="op">=</SPAN> i<SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+            <SPAN class="op">}</SPAN>
+
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m<SPAN class="op">[</SPAN>k<SPAN class="op">]</SPAN><SPAN class="op">[</SPAN>row<SPAN class="op">]</SPAN> <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                <SPAN class="kw1">return</SPAN> <SPAN class="op">-</SPAN><SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>k <SPAN class="op">!=</SPAN> <SPAN class="kw1">int</SPAN><SPAN class="op">(</SPAN>row<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                <A href="agg_simul_eq.h.html#swap_arrays">swap_arrays</A><SPAN class="op">(</SPAN>m<SPAN class="op">[</SPAN>k<SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> m<SPAN class="op">[</SPAN>row<SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> Cols<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">return</SPAN> k<SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="kw1">return</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+    
+
+
+    <SPAN class="rem">//===============================================================<A name="simul_eq"><B></B></A><A href="agg_simul_eq.h.html#simul_eq">simul_eq</A></SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">unsigned</SPAN> Size<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> RightCols<SPAN class="op">&gt;</SPAN>
+    <SPAN class="kw1">struct</SPAN> <A href="agg_simul_eq.h.html#simul_eq">simul_eq</A>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">static</SPAN> <SPAN class="kw1">bool</SPAN> solve<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <SPAN class="kw1">double</SPAN> left<SPAN class="op">[</SPAN>Size<SPAN class="op">]</SPAN><SPAN class="op">[</SPAN>Size<SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> 
+                          <SPAN class="kw1">const</SPAN> <SPAN class="kw1">double</SPAN> right<SPAN class="op">[</SPAN>Size<SPAN class="op">]</SPAN><SPAN class="op">[</SPAN>RightCols<SPAN class="op">]</SPAN><SPAN class="op">,</SPAN>
+                          <SPAN class="kw1">double</SPAN> result<SPAN class="op">[</SPAN>Size<SPAN class="op">]</SPAN><SPAN class="op">[</SPAN>RightCols<SPAN class="op">]</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">unsigned</SPAN> i<SPAN class="op">,</SPAN> j<SPAN class="op">,</SPAN> k<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">double</SPAN> a1<SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">double</SPAN> tmp<SPAN class="op">[</SPAN>Size<SPAN class="op">]</SPAN><SPAN class="op">[</SPAN>Size <SPAN class="op">+</SPAN> RightCols<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;</SPAN> Size<SPAN class="op">;</SPAN> i<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>j <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> j <SPAN class="op">&lt;</SPAN> Size<SPAN class="op">;</SPAN> j<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    tmp<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">[</SPAN>j<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> left<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">[</SPAN>j<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN> 
+                <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>j <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> j <SPAN class="op">&lt;</SPAN> RightCols<SPAN class="op">;</SPAN> j<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    tmp<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">[</SPAN>Size <SPAN class="op">+</SPAN> j<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> right<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">[</SPAN>j<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+            <SPAN class="op">}</SPAN>
+
+            <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>k <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> k <SPAN class="op">&lt;</SPAN> Size<SPAN class="op">;</SPAN> k<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN><A href="agg_simul_eq.h.html#matrix_pivot">matrix_pivot</A><SPAN class="op">&lt;</SPAN>Size<SPAN class="op">,</SPAN> Size <SPAN class="op">+</SPAN> RightCols<SPAN class="op">&gt;</SPAN>::pivot<SPAN class="op">(</SPAN>tmp<SPAN class="op">,</SPAN> k<SPAN class="op">)</SPAN> <SPAN class="op">&lt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    <SPAN class="kw1">return</SPAN> <SPAN class="kw1">false</SPAN><SPAN class="op">;</SPAN> <SPAN class="rem">// Singularity....</SPAN>
+                <SPAN class="op">}</SPAN>
+
+                a1 <SPAN class="op">=</SPAN> tmp<SPAN class="op">[</SPAN>k<SPAN class="op">]</SPAN><SPAN class="op">[</SPAN>k<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+
+                <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>j <SPAN class="op">=</SPAN> k<SPAN class="op">;</SPAN> j <SPAN class="op">&lt;</SPAN> Size <SPAN class="op">+</SPAN> RightCols<SPAN class="op">;</SPAN> j<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    tmp<SPAN class="op">[</SPAN>k<SPAN class="op">]</SPAN><SPAN class="op">[</SPAN>j<SPAN class="op">]</SPAN> <SPAN class="op">/=</SPAN> a1<SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+
+                <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> k <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;</SPAN> Size<SPAN class="op">;</SPAN> i<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    a1 <SPAN class="op">=</SPAN> tmp<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">[</SPAN>k<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="kw1">for</SPAN> <SPAN class="op">(</SPAN>j <SPAN class="op">=</SPAN> k<SPAN class="op">;</SPAN> j <SPAN class="op">&lt;</SPAN> Size <SPAN class="op">+</SPAN> RightCols<SPAN class="op">;</SPAN> j<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+                    <SPAN class="op">{</SPAN>
+                        tmp<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">[</SPAN>j<SPAN class="op">]</SPAN> <SPAN class="op">-=</SPAN> a1 <SPAN class="op">*</SPAN> tmp<SPAN class="op">[</SPAN>k<SPAN class="op">]</SPAN><SPAN class="op">[</SPAN>j<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="op">}</SPAN>
+                <SPAN class="op">}</SPAN>
+            <SPAN class="op">}</SPAN>
+
+
+            <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>k <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> k <SPAN class="op">&lt;</SPAN> RightCols<SPAN class="op">;</SPAN> k<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                <SPAN class="kw1">int</SPAN> m<SPAN class="op">;</SPAN>
+                <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>m <SPAN class="op">=</SPAN> <SPAN class="kw1">int</SPAN><SPAN class="op">(</SPAN>Size <SPAN class="op">-</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> m <SPAN class="op">&gt;=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> m<SPAN class="op">--</SPAN><SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    result<SPAN class="op">[</SPAN>m<SPAN class="op">]</SPAN><SPAN class="op">[</SPAN>k<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> tmp<SPAN class="op">[</SPAN>m<SPAN class="op">]</SPAN><SPAN class="op">[</SPAN>Size <SPAN class="op">+</SPAN> k<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>j <SPAN class="op">=</SPAN> m <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN> j <SPAN class="op">&lt;</SPAN> Size<SPAN class="op">;</SPAN> j<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+                    <SPAN class="op">{</SPAN>
+                        result<SPAN class="op">[</SPAN>m<SPAN class="op">]</SPAN><SPAN class="op">[</SPAN>k<SPAN class="op">]</SPAN> <SPAN class="op">-=</SPAN> tmp<SPAN class="op">[</SPAN>m<SPAN class="op">]</SPAN><SPAN class="op">[</SPAN>j<SPAN class="op">]</SPAN> <SPAN class="op">*</SPAN> result<SPAN class="op">[</SPAN>j<SPAN class="op">]</SPAN><SPAN class="op">[</SPAN>k<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="op">}</SPAN>
+                <SPAN class="op">}</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="kw1">return</SPAN> <SPAN class="kw1">true</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+<SPAN class="op">}</SPAN>
+
+<SPAN class="kw2">#endif</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT><TABLE width="640px" bgcolor="#583927" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0">
+<TR><TD><CENTER><SPAN class="authors">
+Copyright <SPAN class="larger">&#169;</SPAN> 2002-2006
+<A href="../../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+<TR><TD><CENTER><SPAN class="authors">
+Web Design and Programming
+<A href="../../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+</TABLE>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+</HTML>

@@ -1,0 +1,1043 @@
+<HTML><HEAD><TITLE>Anti-Grain Geometry - </TITLE>
+<META http-equiv="Content-Type" content="text/html"/>
+<LINK rel="stylesheet" type="text/css" href="../../agg.styles.css"/>
+</HEAD>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE><SPAN class="rem">//----------------------------------------------------------------------------</SPAN>
+<SPAN class="rem">// Anti-Grain Geometry (AGG) - Version 2.5</SPAN>
+<SPAN class="rem">// A high quality rendering engine for C++</SPAN>
+<SPAN class="rem">// Copyright (C) 2002-2006 Maxim Shemanarev</SPAN>
+<SPAN class="rem">// Contact: mcseem@antigrain.com</SPAN>
+<SPAN class="rem">//          mcseemagg@yahoo.com</SPAN>
+<SPAN class="rem">//          http://antigrain.com</SPAN>
+<SPAN class="rem">// </SPAN>
+<SPAN class="rem">// AGG is free software; you can redistribute it and/or</SPAN>
+<SPAN class="rem">// modify it under the terms of the GNU General Public License</SPAN>
+<SPAN class="rem">// as published by the Free Software Foundation; either version 2</SPAN>
+<SPAN class="rem">// of the License, or (at your option) any later version.</SPAN>
+<SPAN class="rem">// </SPAN>
+<SPAN class="rem">// AGG is distributed in the hope that it will be useful,</SPAN>
+<SPAN class="rem">// but WITHOUT ANY WARRANTY; without even the implied warranty of</SPAN>
+<SPAN class="rem">// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</SPAN>
+<SPAN class="rem">// GNU General Public License for more details.</SPAN>
+<SPAN class="rem">// </SPAN>
+<SPAN class="rem">// You should have received a copy of the GNU General Public License</SPAN>
+<SPAN class="rem">// along with AGG; if not, write to the Free Software</SPAN>
+<SPAN class="rem">// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, </SPAN>
+<SPAN class="rem">// MA 02110-1301, USA.</SPAN>
+<SPAN class="rem">//----------------------------------------------------------------------------</SPAN>
+
+<SPAN class="kw2">#ifndef</SPAN> AGG_RENDERER_OUTLINE_IMAGE_INCLUDED
+<SPAN class="kw2">#define</SPAN> AGG_RENDERER_OUTLINE_IMAGE_INCLUDED
+
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="agg_array.h.html">agg_array.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="agg_math.h.html">agg_math.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="agg_line_aa_basics.h.html">agg_line_aa_basics.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="agg_dda_line.h.html">agg_dda_line.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="agg_rendering_buffer.h.html">agg_rendering_buffer.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="agg_clip_liang_barsky.h.html">agg_clip_liang_barsky.h</A>&quot;</SPAN>
+
+
+<SPAN class="kw1">namespace</SPAN> agg
+<SPAN class="op">{</SPAN>
+    <SPAN class="rem">//========================================================<A name="line_image_scale"><B></B></A><A href="agg_renderer_outline_image.h.html#line_image_scale">line_image_scale</A></SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Source<SPAN class="op">&gt;</SPAN> <SPAN class="kw1">class</SPAN> <A href="agg_renderer_outline_image.h.html#line_image_scale">line_image_scale</A>
+    <SPAN class="op">{</SPAN>
+    <SPAN class="kw1">public</SPAN>:
+        <SPAN class="kw1">typedef</SPAN> <SPAN class="kw1">typename</SPAN> Source::color_type color_type<SPAN class="op">;</SPAN>
+
+        <A href="agg_renderer_outline_image.h.html#line_image_scale">line_image_scale</A><SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> Source<SPAN class="op">&amp;</SPAN> src<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> height<SPAN class="op">)</SPAN> :
+            m_source<SPAN class="op">(</SPAN>src<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> 
+            m_height<SPAN class="op">(</SPAN>height<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_scale<SPAN class="op">(</SPAN>src<SPAN class="op">.</SPAN>height<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> height<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">double</SPAN> width<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>  <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_source<SPAN class="op">.</SPAN>width<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">double</SPAN> height<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_height<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+
+        color_type pixel<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> 
+        <SPAN class="op">{</SPAN> 
+            <SPAN class="kw1">double</SPAN> src_y <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>y <SPAN class="op">+</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">5</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> m_scale <SPAN class="op">-</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">5</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">int</SPAN> h  <SPAN class="op">=</SPAN> m_source<SPAN class="op">.</SPAN>height<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">-</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">int</SPAN> y1 <SPAN class="op">=</SPAN> <A href="agg_basics.h.html#ufloor">ufloor</A><SPAN class="op">(</SPAN>src_y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">int</SPAN> y2 <SPAN class="op">=</SPAN> y1 <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+            color_type pix1 <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>y1 <SPAN class="op">&lt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> ? color_type::no_color<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> : m_source<SPAN class="op">.</SPAN>pixel<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> y1<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            color_type pix2 <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>y2 <SPAN class="op">&gt;</SPAN> h<SPAN class="op">)</SPAN> ? color_type::no_color<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> : m_source<SPAN class="op">.</SPAN>pixel<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> y2<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">return</SPAN> pix1<SPAN class="op">.</SPAN>gradient<SPAN class="op">(</SPAN>pix2<SPAN class="op">,</SPAN> src_y <SPAN class="op">-</SPAN> y1<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+    <SPAN class="kw1">private</SPAN>:
+        <A href="agg_renderer_outline_image.h.html#line_image_scale">line_image_scale</A><SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <A href="agg_renderer_outline_image.h.html#line_image_scale">line_image_scale</A><SPAN class="op">&lt;</SPAN>Source<SPAN class="op">&gt;</SPAN><SPAN class="op">&amp;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">const</SPAN> <A href="agg_renderer_outline_image.h.html#line_image_scale">line_image_scale</A><SPAN class="op">&lt;</SPAN>Source<SPAN class="op">&gt;</SPAN><SPAN class="op">&amp;</SPAN> <SPAN class="kw1">operator</SPAN> <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <A href="agg_renderer_outline_image.h.html#line_image_scale">line_image_scale</A><SPAN class="op">&lt;</SPAN>Source<SPAN class="op">&gt;</SPAN><SPAN class="op">&amp;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">const</SPAN> Source<SPAN class="op">&amp;</SPAN> m_source<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN>        m_height<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN>        m_scale<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+
+    <SPAN class="rem">//======================================================<A name="line_image_pattern"><B></B></A><A href="agg_renderer_outline_image.h.html#line_image_pattern">line_image_pattern</A></SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Filter<SPAN class="op">&gt;</SPAN> <SPAN class="kw1">class</SPAN> <A href="agg_renderer_outline_image.h.html#line_image_pattern">line_image_pattern</A>
+    <SPAN class="op">{</SPAN>
+    <SPAN class="kw1">public</SPAN>:
+        <SPAN class="kw1">typedef</SPAN> Filter filter_type<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">typedef</SPAN> <SPAN class="kw1">typename</SPAN> filter_type::color_type color_type<SPAN class="op">;</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <A href="agg_renderer_outline_image.h.html#line_image_pattern">line_image_pattern</A><SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> Filter<SPAN class="op">&amp;</SPAN> filter<SPAN class="op">)</SPAN> :
+            m_filter<SPAN class="op">(</SPAN><SPAN class="op">&amp;</SPAN>filter<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_dilation<SPAN class="op">(</SPAN>filter<SPAN class="op">.</SPAN>dilation<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_dilation_hr<SPAN class="op">(</SPAN>m_dilation <SPAN class="op">&lt;&lt;</SPAN> <A href="agg_line_aa_basics.h.html#line_subpixel_shift">line_subpixel_shift</A><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_data<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_width<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_height<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_width_hr<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_half_height_hr<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_offset_y_hr<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">// Create</SPAN>
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Source<SPAN class="op">&gt;</SPAN> 
+        <A href="agg_renderer_outline_image.h.html#line_image_pattern">line_image_pattern</A><SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> Filter<SPAN class="op">&amp;</SPAN> filter<SPAN class="op">,</SPAN> <SPAN class="kw1">const</SPAN> Source<SPAN class="op">&amp;</SPAN> src<SPAN class="op">)</SPAN> :
+            m_filter<SPAN class="op">(</SPAN><SPAN class="op">&amp;</SPAN>filter<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_dilation<SPAN class="op">(</SPAN>filter<SPAN class="op">.</SPAN>dilation<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_dilation_hr<SPAN class="op">(</SPAN>m_dilation <SPAN class="op">&lt;&lt;</SPAN> <A href="agg_line_aa_basics.h.html#line_subpixel_shift">line_subpixel_shift</A><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_data<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_width<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_height<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_width_hr<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_half_height_hr<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_offset_y_hr<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            create<SPAN class="op">(</SPAN>src<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">// Create</SPAN>
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Source<SPAN class="op">&gt;</SPAN> <SPAN class="kw1">void</SPAN> create<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> Source<SPAN class="op">&amp;</SPAN> src<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            m_height <SPAN class="op">=</SPAN> <A href="agg_basics.h.html#uceil">uceil</A><SPAN class="op">(</SPAN>src<SPAN class="op">.</SPAN>height<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            m_width  <SPAN class="op">=</SPAN> <A href="agg_basics.h.html#uceil">uceil</A><SPAN class="op">(</SPAN>src<SPAN class="op">.</SPAN>width<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            m_width_hr <SPAN class="op">=</SPAN> <A href="agg_basics.h.html#uround">uround</A><SPAN class="op">(</SPAN>src<SPAN class="op">.</SPAN>width<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> <A href="agg_line_aa_basics.h.html#line_subpixel_scale">line_subpixel_scale</A><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            m_half_height_hr <SPAN class="op">=</SPAN> <A href="agg_basics.h.html#uround">uround</A><SPAN class="op">(</SPAN>src<SPAN class="op">.</SPAN>height<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> <A href="agg_line_aa_basics.h.html#line_subpixel_scale">line_subpixel_scale</A><SPAN class="op">/</SPAN><SPAN class="num">2</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            m_offset_y_hr <SPAN class="op">=</SPAN> m_dilation_hr <SPAN class="op">+</SPAN> m_half_height_hr <SPAN class="op">-</SPAN> <A href="agg_line_aa_basics.h.html#line_subpixel_scale">line_subpixel_scale</A><SPAN class="op">/</SPAN><SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+            m_half_height_hr <SPAN class="op">+=</SPAN> <A href="agg_line_aa_basics.h.html#line_subpixel_scale">line_subpixel_scale</A><SPAN class="op">/</SPAN><SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+
+            m_data<SPAN class="op">.</SPAN>resize<SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>m_width <SPAN class="op">+</SPAN> m_dilation <SPAN class="op">*</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>m_height <SPAN class="op">+</SPAN> m_dilation <SPAN class="op">*</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+            m_buf<SPAN class="op">.</SPAN>attach<SPAN class="op">(</SPAN><SPAN class="op">&amp;</SPAN>m_data<SPAN class="op">[</SPAN><SPAN class="num">0</SPAN><SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> m_width  <SPAN class="op">+</SPAN> m_dilation <SPAN class="op">*</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">,</SPAN> 
+                                     m_height <SPAN class="op">+</SPAN> m_dilation <SPAN class="op">*</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">,</SPAN> 
+                                     m_width  <SPAN class="op">+</SPAN> m_dilation <SPAN class="op">*</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">unsigned</SPAN> x<SPAN class="op">,</SPAN> y<SPAN class="op">;</SPAN>
+            color_type<SPAN class="op">*</SPAN> d1<SPAN class="op">;</SPAN>
+            color_type<SPAN class="op">*</SPAN> d2<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>y <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> y <SPAN class="op">&lt;</SPAN> m_height<SPAN class="op">;</SPAN> y<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                d1 <SPAN class="op">=</SPAN> m_buf<SPAN class="op">.</SPAN>row_ptr<SPAN class="op">(</SPAN>y <SPAN class="op">+</SPAN> m_dilation<SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> m_dilation<SPAN class="op">;</SPAN>
+                <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>x <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> x <SPAN class="op">&lt;</SPAN> m_width<SPAN class="op">;</SPAN> x<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    <SPAN class="op">*</SPAN>d1<SPAN class="op">++</SPAN> <SPAN class="op">=</SPAN> src<SPAN class="op">.</SPAN>pixel<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+            <SPAN class="op">}</SPAN>
+
+            <SPAN class="kw1">const</SPAN> color_type<SPAN class="op">*</SPAN> s1<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">const</SPAN> color_type<SPAN class="op">*</SPAN> s2<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>y <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> y <SPAN class="op">&lt;</SPAN> m_dilation<SPAN class="op">;</SPAN> y<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                <SPAN class="rem">//s1 = m_buf.row_ptr(m_height + m_dilation - 1) + m_dilation;</SPAN>
+                <SPAN class="rem">//s2 = m_buf.row_ptr(m_dilation) + m_dilation;</SPAN>
+                d1 <SPAN class="op">=</SPAN> m_buf<SPAN class="op">.</SPAN>row_ptr<SPAN class="op">(</SPAN>m_dilation <SPAN class="op">+</SPAN> m_height <SPAN class="op">+</SPAN> y<SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> m_dilation<SPAN class="op">;</SPAN>
+                d2 <SPAN class="op">=</SPAN> m_buf<SPAN class="op">.</SPAN>row_ptr<SPAN class="op">(</SPAN>m_dilation <SPAN class="op">-</SPAN> y <SPAN class="op">-</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> m_dilation<SPAN class="op">;</SPAN>
+                <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>x <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> x <SPAN class="op">&lt;</SPAN> m_width<SPAN class="op">;</SPAN> x<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    <SPAN class="rem">//*d1++ = color_type(*s1++, 0);</SPAN>
+                    <SPAN class="rem">//*d2++ = color_type(*s2++, 0);</SPAN>
+                    <SPAN class="op">*</SPAN>d1<SPAN class="op">++</SPAN> <SPAN class="op">=</SPAN> color_type::no_color<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="op">*</SPAN>d2<SPAN class="op">++</SPAN> <SPAN class="op">=</SPAN> color_type::no_color<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+            <SPAN class="op">}</SPAN>
+
+            <SPAN class="kw1">unsigned</SPAN> h <SPAN class="op">=</SPAN> m_height <SPAN class="op">+</SPAN> m_dilation <SPAN class="op">*</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>y <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> y <SPAN class="op">&lt;</SPAN> h<SPAN class="op">;</SPAN> y<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                s1 <SPAN class="op">=</SPAN> m_buf<SPAN class="op">.</SPAN>row_ptr<SPAN class="op">(</SPAN>y<SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> m_dilation<SPAN class="op">;</SPAN>
+                s2 <SPAN class="op">=</SPAN> m_buf<SPAN class="op">.</SPAN>row_ptr<SPAN class="op">(</SPAN>y<SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> m_dilation <SPAN class="op">+</SPAN> m_width<SPAN class="op">;</SPAN>
+                d1 <SPAN class="op">=</SPAN> m_buf<SPAN class="op">.</SPAN>row_ptr<SPAN class="op">(</SPAN>y<SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> m_dilation <SPAN class="op">+</SPAN> m_width<SPAN class="op">;</SPAN>
+                d2 <SPAN class="op">=</SPAN> m_buf<SPAN class="op">.</SPAN>row_ptr<SPAN class="op">(</SPAN>y<SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> m_dilation<SPAN class="op">;</SPAN>
+
+                <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>x <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> x <SPAN class="op">&lt;</SPAN> m_dilation<SPAN class="op">;</SPAN> x<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    <SPAN class="op">*</SPAN>d1<SPAN class="op">++</SPAN> <SPAN class="op">=</SPAN> <SPAN class="op">*</SPAN>s1<SPAN class="op">++</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="op">*</SPAN><SPAN class="op">--</SPAN>d2 <SPAN class="op">=</SPAN> <SPAN class="op">*</SPAN><SPAN class="op">--</SPAN>s2<SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">int</SPAN> pattern_width<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_width_hr<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">int</SPAN> line_width<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>    <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_half_height_hr<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">double</SPAN> width<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>      <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_height<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">void</SPAN> pixel<SPAN class="op">(</SPAN>color_type<SPAN class="op">*</SPAN> p<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN>
+        <SPAN class="op">{</SPAN>
+            m_filter<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>pixel_high_res<SPAN class="op">(</SPAN>m_buf<SPAN class="op">.</SPAN>rows<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> 
+                                     p<SPAN class="op">,</SPAN> 
+                                     x <SPAN class="op">%</SPAN> m_width_hr <SPAN class="op">+</SPAN> m_dilation_hr<SPAN class="op">,</SPAN>
+                                     y <SPAN class="op">+</SPAN> m_offset_y_hr<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">const</SPAN> filter_type<SPAN class="op">&amp;</SPAN> filter<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> <SPAN class="op">*</SPAN>m_filter<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+
+    <SPAN class="kw1">private</SPAN>:
+        <A href="agg_renderer_outline_image.h.html#line_image_pattern">line_image_pattern</A><SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <A href="agg_renderer_outline_image.h.html#line_image_pattern">line_image_pattern</A><SPAN class="op">&lt;</SPAN>filter_type<SPAN class="op">&gt;</SPAN><SPAN class="op">&amp;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">const</SPAN> <A href="agg_renderer_outline_image.h.html#line_image_pattern">line_image_pattern</A><SPAN class="op">&lt;</SPAN>filter_type<SPAN class="op">&gt;</SPAN><SPAN class="op">&amp;</SPAN> 
+            <SPAN class="kw1">operator</SPAN> <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <A href="agg_renderer_outline_image.h.html#line_image_pattern">line_image_pattern</A><SPAN class="op">&lt;</SPAN>filter_type<SPAN class="op">&gt;</SPAN><SPAN class="op">&amp;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">protected</SPAN>:
+        <A href="../../doc/basic_renderers/basic_renderers.agdoc.html#row_ptr_cache">row_ptr_cache</A><SPAN class="op">&lt;</SPAN>color_type<SPAN class="op">&gt;</SPAN> m_buf<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">const</SPAN> filter_type<SPAN class="op">*</SPAN>        m_filter<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN>                  m_dilation<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN>                       m_dilation_hr<SPAN class="op">;</SPAN>
+        <A href="agg_array.h.html#pod_array">pod_array</A><SPAN class="op">&lt;</SPAN>color_type<SPAN class="op">&gt;</SPAN>     m_data<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN>                  m_width<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN>                  m_height<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN>                       m_width_hr<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN>                       m_half_height_hr<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN>                       m_offset_y_hr<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+
+
+
+
+    <SPAN class="rem">//=================================================<A name="line_image_pattern_pow2"><B></B></A><A href="agg_renderer_outline_image.h.html#line_image_pattern_pow2">line_image_pattern_pow2</A></SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Filter<SPAN class="op">&gt;</SPAN> <SPAN class="kw1">class</SPAN> <A href="agg_renderer_outline_image.h.html#line_image_pattern_pow2">line_image_pattern_pow2</A> : 
+    <SPAN class="kw1">public</SPAN> <A href="agg_renderer_outline_image.h.html#line_image_pattern">line_image_pattern</A><SPAN class="op">&lt;</SPAN>Filter<SPAN class="op">&gt;</SPAN>
+    <SPAN class="op">{</SPAN>
+    <SPAN class="kw1">public</SPAN>:
+        <SPAN class="kw1">typedef</SPAN> Filter filter_type<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">typedef</SPAN> <SPAN class="kw1">typename</SPAN> filter_type::color_type color_type<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">typedef</SPAN> <A href="agg_renderer_outline_image.h.html#line_image_pattern">line_image_pattern</A><SPAN class="op">&lt;</SPAN>Filter<SPAN class="op">&gt;</SPAN> base_type<SPAN class="op">;</SPAN>
+	
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <A href="agg_renderer_outline_image.h.html#line_image_pattern_pow2">line_image_pattern_pow2</A><SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> Filter<SPAN class="op">&amp;</SPAN> filter<SPAN class="op">)</SPAN> :
+            <A href="agg_renderer_outline_image.h.html#line_image_pattern">line_image_pattern</A><SPAN class="op">&lt;</SPAN>Filter<SPAN class="op">&gt;</SPAN><SPAN class="op">(</SPAN>filter<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> m_mask<SPAN class="op">(</SPAN><A href="agg_line_aa_basics.h.html#line_subpixel_mask">line_subpixel_mask</A><SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN><SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Source<SPAN class="op">&gt;</SPAN> 
+        <A href="agg_renderer_outline_image.h.html#line_image_pattern_pow2">line_image_pattern_pow2</A><SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> Filter<SPAN class="op">&amp;</SPAN> filter<SPAN class="op">,</SPAN> <SPAN class="kw1">const</SPAN> Source<SPAN class="op">&amp;</SPAN> src<SPAN class="op">)</SPAN> :
+            <A href="agg_renderer_outline_image.h.html#line_image_pattern">line_image_pattern</A><SPAN class="op">&lt;</SPAN>Filter<SPAN class="op">&gt;</SPAN><SPAN class="op">(</SPAN>filter<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> m_mask<SPAN class="op">(</SPAN><A href="agg_line_aa_basics.h.html#line_subpixel_mask">line_subpixel_mask</A><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            create<SPAN class="op">(</SPAN>src<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+            
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Source<SPAN class="op">&gt;</SPAN> <SPAN class="kw1">void</SPAN> create<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> Source<SPAN class="op">&amp;</SPAN> src<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <A href="agg_renderer_outline_image.h.html#line_image_pattern">line_image_pattern</A><SPAN class="op">&lt;</SPAN>Filter<SPAN class="op">&gt;</SPAN>::create<SPAN class="op">(</SPAN>src<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            m_mask <SPAN class="op">=</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN>m_mask <SPAN class="op">&lt;</SPAN> base_type::m_width<SPAN class="op">)</SPAN> 
+            <SPAN class="op">{</SPAN>
+                m_mask <SPAN class="op">&lt;&lt;=</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+                m_mask <SPAN class="op">|=</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            m_mask <SPAN class="op">&lt;&lt;=</SPAN> <A href="agg_line_aa_basics.h.html#line_subpixel_shift">line_subpixel_shift</A> <SPAN class="op">-</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+            m_mask <SPAN class="op">|=</SPAN>  <A href="agg_line_aa_basics.h.html#line_subpixel_mask">line_subpixel_mask</A><SPAN class="op">;</SPAN>
+            base_type::m_width_hr <SPAN class="op">=</SPAN> m_mask <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">void</SPAN> pixel<SPAN class="op">(</SPAN>color_type<SPAN class="op">*</SPAN> p<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN>
+        <SPAN class="op">{</SPAN>
+            base_type::m_filter<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>pixel_high_res<SPAN class="op">(</SPAN>
+                    base_type::m_buf<SPAN class="op">.</SPAN>rows<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> 
+                    p<SPAN class="op">,</SPAN>
+                    <SPAN class="op">(</SPAN>x <SPAN class="op">&amp;</SPAN> m_mask<SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> base_type::m_dilation_hr<SPAN class="op">,</SPAN>
+                    y <SPAN class="op">+</SPAN> base_type::m_offset_y_hr<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="kw1">private</SPAN>:
+        <SPAN class="kw1">unsigned</SPAN> m_mask<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+    
+    
+    
+    
+    
+    
+    
+    <SPAN class="rem">//===================================================<A name="distance_interpolator4"><B></B></A><A href="agg_renderer_outline_image.h.html#distance_interpolator4">distance_interpolator4</A></SPAN>
+    <SPAN class="kw1">class</SPAN> <A href="agg_renderer_outline_image.h.html#distance_interpolator4">distance_interpolator4</A>
+    <SPAN class="op">{</SPAN>
+    <SPAN class="kw1">public</SPAN>:
+        <SPAN class="rem">//---------------------------------------------------------------------</SPAN>
+        <A href="agg_renderer_outline_image.h.html#distance_interpolator4">distance_interpolator4</A><SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN><SPAN class="op">}</SPAN>
+        <A href="agg_renderer_outline_image.h.html#distance_interpolator4">distance_interpolator4</A><SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x1<SPAN class="op">,</SPAN>  <SPAN class="kw1">int</SPAN> y1<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> x2<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y2<SPAN class="op">,</SPAN>
+                               <SPAN class="kw1">int</SPAN> sx<SPAN class="op">,</SPAN>  <SPAN class="kw1">int</SPAN> sy<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> ex<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> ey<SPAN class="op">,</SPAN> 
+                               <SPAN class="kw1">int</SPAN> len<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> scale<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">)</SPAN> :
+            m_dx<SPAN class="op">(</SPAN>x2 <SPAN class="op">-</SPAN> x1<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_dy<SPAN class="op">(</SPAN>y2 <SPAN class="op">-</SPAN> y1<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_dx_start<SPAN class="op">(</SPAN><A href="agg_line_aa_basics.h.html#line_mr">line_mr</A><SPAN class="op">(</SPAN>sx<SPAN class="op">)</SPAN> <SPAN class="op">-</SPAN> <A href="agg_line_aa_basics.h.html#line_mr">line_mr</A><SPAN class="op">(</SPAN>x1<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_dy_start<SPAN class="op">(</SPAN><A href="agg_line_aa_basics.h.html#line_mr">line_mr</A><SPAN class="op">(</SPAN>sy<SPAN class="op">)</SPAN> <SPAN class="op">-</SPAN> <A href="agg_line_aa_basics.h.html#line_mr">line_mr</A><SPAN class="op">(</SPAN>y1<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_dx_end<SPAN class="op">(</SPAN><A href="agg_line_aa_basics.h.html#line_mr">line_mr</A><SPAN class="op">(</SPAN>ex<SPAN class="op">)</SPAN> <SPAN class="op">-</SPAN> <A href="agg_line_aa_basics.h.html#line_mr">line_mr</A><SPAN class="op">(</SPAN>x2<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_dy_end<SPAN class="op">(</SPAN><A href="agg_line_aa_basics.h.html#line_mr">line_mr</A><SPAN class="op">(</SPAN>ey<SPAN class="op">)</SPAN> <SPAN class="op">-</SPAN> <A href="agg_line_aa_basics.h.html#line_mr">line_mr</A><SPAN class="op">(</SPAN>y2<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+
+            m_dist<SPAN class="op">(</SPAN><A href="agg_basics.h.html#iround">iround</A><SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN><SPAN class="op">(</SPAN>x <SPAN class="op">+</SPAN> <A href="agg_line_aa_basics.h.html#line_subpixel_scale">line_subpixel_scale</A><SPAN class="op">/</SPAN><SPAN class="num">2</SPAN> <SPAN class="op">-</SPAN> x2<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> <SPAN class="kw1">double</SPAN><SPAN class="op">(</SPAN>m_dy<SPAN class="op">)</SPAN> <SPAN class="op">-</SPAN> 
+                          <SPAN class="kw1">double</SPAN><SPAN class="op">(</SPAN>y <SPAN class="op">+</SPAN> <A href="agg_line_aa_basics.h.html#line_subpixel_scale">line_subpixel_scale</A><SPAN class="op">/</SPAN><SPAN class="num">2</SPAN> <SPAN class="op">-</SPAN> y2<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> <SPAN class="kw1">double</SPAN><SPAN class="op">(</SPAN>m_dx<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+
+            m_dist_start<SPAN class="op">(</SPAN><SPAN class="op">(</SPAN><A href="agg_line_aa_basics.h.html#line_mr">line_mr</A><SPAN class="op">(</SPAN>x <SPAN class="op">+</SPAN> <A href="agg_line_aa_basics.h.html#line_subpixel_scale">line_subpixel_scale</A><SPAN class="op">/</SPAN><SPAN class="num">2</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">-</SPAN> <A href="agg_line_aa_basics.h.html#line_mr">line_mr</A><SPAN class="op">(</SPAN>sx<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> m_dy_start <SPAN class="op">-</SPAN> 
+                         <SPAN class="op">(</SPAN><A href="agg_line_aa_basics.h.html#line_mr">line_mr</A><SPAN class="op">(</SPAN>y <SPAN class="op">+</SPAN> <A href="agg_line_aa_basics.h.html#line_subpixel_scale">line_subpixel_scale</A><SPAN class="op">/</SPAN><SPAN class="num">2</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">-</SPAN> <A href="agg_line_aa_basics.h.html#line_mr">line_mr</A><SPAN class="op">(</SPAN>sy<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> m_dx_start<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+
+            m_dist_end<SPAN class="op">(</SPAN><SPAN class="op">(</SPAN><A href="agg_line_aa_basics.h.html#line_mr">line_mr</A><SPAN class="op">(</SPAN>x <SPAN class="op">+</SPAN> <A href="agg_line_aa_basics.h.html#line_subpixel_scale">line_subpixel_scale</A><SPAN class="op">/</SPAN><SPAN class="num">2</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">-</SPAN> <A href="agg_line_aa_basics.h.html#line_mr">line_mr</A><SPAN class="op">(</SPAN>ex<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> m_dy_end <SPAN class="op">-</SPAN> 
+                       <SPAN class="op">(</SPAN><A href="agg_line_aa_basics.h.html#line_mr">line_mr</A><SPAN class="op">(</SPAN>y <SPAN class="op">+</SPAN> <A href="agg_line_aa_basics.h.html#line_subpixel_scale">line_subpixel_scale</A><SPAN class="op">/</SPAN><SPAN class="num">2</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">-</SPAN> <A href="agg_line_aa_basics.h.html#line_mr">line_mr</A><SPAN class="op">(</SPAN>ey<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> m_dx_end<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_len<SPAN class="op">(</SPAN><A href="agg_basics.h.html#uround">uround</A><SPAN class="op">(</SPAN>len <SPAN class="op">/</SPAN> scale<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">double</SPAN> d <SPAN class="op">=</SPAN> len <SPAN class="op">*</SPAN> scale<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">int</SPAN> dx <SPAN class="op">=</SPAN> <A href="agg_basics.h.html#iround">iround</A><SPAN class="op">(</SPAN><SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>x2 <SPAN class="op">-</SPAN> x1<SPAN class="op">)</SPAN> <SPAN class="op">&lt;&lt;</SPAN> <A href="agg_line_aa_basics.h.html#line_subpixel_shift">line_subpixel_shift</A><SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> d<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">int</SPAN> dy <SPAN class="op">=</SPAN> <A href="agg_basics.h.html#iround">iround</A><SPAN class="op">(</SPAN><SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>y2 <SPAN class="op">-</SPAN> y1<SPAN class="op">)</SPAN> <SPAN class="op">&lt;&lt;</SPAN> <A href="agg_line_aa_basics.h.html#line_subpixel_shift">line_subpixel_shift</A><SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> d<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            m_dx_pict   <SPAN class="op">=</SPAN> <SPAN class="op">-</SPAN>dy<SPAN class="op">;</SPAN>
+            m_dy_pict   <SPAN class="op">=</SPAN>  dx<SPAN class="op">;</SPAN>
+            m_dist_pict <SPAN class="op">=</SPAN>  <SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>x <SPAN class="op">+</SPAN> <A href="agg_line_aa_basics.h.html#line_subpixel_scale">line_subpixel_scale</A><SPAN class="op">/</SPAN><SPAN class="num">2</SPAN> <SPAN class="op">-</SPAN> <SPAN class="op">(</SPAN>x1 <SPAN class="op">-</SPAN> dy<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> m_dy_pict <SPAN class="op">-</SPAN> 
+                            <SPAN class="op">(</SPAN>y <SPAN class="op">+</SPAN> <A href="agg_line_aa_basics.h.html#line_subpixel_scale">line_subpixel_scale</A><SPAN class="op">/</SPAN><SPAN class="num">2</SPAN> <SPAN class="op">-</SPAN> <SPAN class="op">(</SPAN>y1 <SPAN class="op">+</SPAN> dx<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> m_dx_pict<SPAN class="op">)</SPAN> <SPAN class="op">&gt;&gt;</SPAN> 
+                           <A href="agg_line_aa_basics.h.html#line_subpixel_shift">line_subpixel_shift</A><SPAN class="op">;</SPAN>
+
+            m_dx       <SPAN class="op">&lt;&lt;=</SPAN> <A href="agg_line_aa_basics.h.html#line_subpixel_shift">line_subpixel_shift</A><SPAN class="op">;</SPAN>
+            m_dy       <SPAN class="op">&lt;&lt;=</SPAN> <A href="agg_line_aa_basics.h.html#line_subpixel_shift">line_subpixel_shift</A><SPAN class="op">;</SPAN>
+            m_dx_start <SPAN class="op">&lt;&lt;=</SPAN> <A href="agg_line_aa_basics.h.html#line_mr_subpixel_shift">line_mr_subpixel_shift</A><SPAN class="op">;</SPAN>
+            m_dy_start <SPAN class="op">&lt;&lt;=</SPAN> <A href="agg_line_aa_basics.h.html#line_mr_subpixel_shift">line_mr_subpixel_shift</A><SPAN class="op">;</SPAN>
+            m_dx_end   <SPAN class="op">&lt;&lt;=</SPAN> <A href="agg_line_aa_basics.h.html#line_mr_subpixel_shift">line_mr_subpixel_shift</A><SPAN class="op">;</SPAN>
+            m_dy_end   <SPAN class="op">&lt;&lt;=</SPAN> <A href="agg_line_aa_basics.h.html#line_mr_subpixel_shift">line_mr_subpixel_shift</A><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//---------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">void</SPAN> inc_x<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> 
+        <SPAN class="op">{</SPAN> 
+            m_dist <SPAN class="op">+=</SPAN> m_dy<SPAN class="op">;</SPAN> 
+            m_dist_start <SPAN class="op">+=</SPAN> m_dy_start<SPAN class="op">;</SPAN> 
+            m_dist_pict <SPAN class="op">+=</SPAN> m_dy_pict<SPAN class="op">;</SPAN> 
+            m_dist_end <SPAN class="op">+=</SPAN> m_dy_end<SPAN class="op">;</SPAN> 
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//---------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">void</SPAN> dec_x<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> 
+        <SPAN class="op">{</SPAN> 
+            m_dist <SPAN class="op">-=</SPAN> m_dy<SPAN class="op">;</SPAN> 
+            m_dist_start <SPAN class="op">-=</SPAN> m_dy_start<SPAN class="op">;</SPAN> 
+            m_dist_pict <SPAN class="op">-=</SPAN> m_dy_pict<SPAN class="op">;</SPAN> 
+            m_dist_end <SPAN class="op">-=</SPAN> m_dy_end<SPAN class="op">;</SPAN> 
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//---------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">void</SPAN> inc_y<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> 
+        <SPAN class="op">{</SPAN> 
+            m_dist <SPAN class="op">-=</SPAN> m_dx<SPAN class="op">;</SPAN> 
+            m_dist_start <SPAN class="op">-=</SPAN> m_dx_start<SPAN class="op">;</SPAN> 
+            m_dist_pict <SPAN class="op">-=</SPAN> m_dx_pict<SPAN class="op">;</SPAN> 
+            m_dist_end <SPAN class="op">-=</SPAN> m_dx_end<SPAN class="op">;</SPAN> 
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//---------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">void</SPAN> dec_y<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> 
+        <SPAN class="op">{</SPAN> 
+            m_dist <SPAN class="op">+=</SPAN> m_dx<SPAN class="op">;</SPAN> 
+            m_dist_start <SPAN class="op">+=</SPAN> m_dx_start<SPAN class="op">;</SPAN> 
+            m_dist_pict <SPAN class="op">+=</SPAN> m_dx_pict<SPAN class="op">;</SPAN> 
+            m_dist_end <SPAN class="op">+=</SPAN> m_dx_end<SPAN class="op">;</SPAN> 
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//---------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">void</SPAN> inc_x<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> dy<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            m_dist       <SPAN class="op">+=</SPAN> m_dy<SPAN class="op">;</SPAN> 
+            m_dist_start <SPAN class="op">+=</SPAN> m_dy_start<SPAN class="op">;</SPAN> 
+            m_dist_pict  <SPAN class="op">+=</SPAN> m_dy_pict<SPAN class="op">;</SPAN> 
+            m_dist_end   <SPAN class="op">+=</SPAN> m_dy_end<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>dy <SPAN class="op">&gt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                m_dist       <SPAN class="op">-=</SPAN> m_dx<SPAN class="op">;</SPAN> 
+                m_dist_start <SPAN class="op">-=</SPAN> m_dx_start<SPAN class="op">;</SPAN> 
+                m_dist_pict  <SPAN class="op">-=</SPAN> m_dx_pict<SPAN class="op">;</SPAN> 
+                m_dist_end   <SPAN class="op">-=</SPAN> m_dx_end<SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>dy <SPAN class="op">&lt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                m_dist       <SPAN class="op">+=</SPAN> m_dx<SPAN class="op">;</SPAN> 
+                m_dist_start <SPAN class="op">+=</SPAN> m_dx_start<SPAN class="op">;</SPAN> 
+                m_dist_pict  <SPAN class="op">+=</SPAN> m_dx_pict<SPAN class="op">;</SPAN> 
+                m_dist_end   <SPAN class="op">+=</SPAN> m_dx_end<SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//---------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">void</SPAN> dec_x<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> dy<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            m_dist       <SPAN class="op">-=</SPAN> m_dy<SPAN class="op">;</SPAN> 
+            m_dist_start <SPAN class="op">-=</SPAN> m_dy_start<SPAN class="op">;</SPAN> 
+            m_dist_pict  <SPAN class="op">-=</SPAN> m_dy_pict<SPAN class="op">;</SPAN> 
+            m_dist_end   <SPAN class="op">-=</SPAN> m_dy_end<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>dy <SPAN class="op">&gt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                m_dist       <SPAN class="op">-=</SPAN> m_dx<SPAN class="op">;</SPAN> 
+                m_dist_start <SPAN class="op">-=</SPAN> m_dx_start<SPAN class="op">;</SPAN> 
+                m_dist_pict  <SPAN class="op">-=</SPAN> m_dx_pict<SPAN class="op">;</SPAN> 
+                m_dist_end   <SPAN class="op">-=</SPAN> m_dx_end<SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>dy <SPAN class="op">&lt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                m_dist       <SPAN class="op">+=</SPAN> m_dx<SPAN class="op">;</SPAN> 
+                m_dist_start <SPAN class="op">+=</SPAN> m_dx_start<SPAN class="op">;</SPAN> 
+                m_dist_pict  <SPAN class="op">+=</SPAN> m_dx_pict<SPAN class="op">;</SPAN> 
+                m_dist_end   <SPAN class="op">+=</SPAN> m_dx_end<SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//---------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">void</SPAN> inc_y<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> dx<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            m_dist       <SPAN class="op">-=</SPAN> m_dx<SPAN class="op">;</SPAN> 
+            m_dist_start <SPAN class="op">-=</SPAN> m_dx_start<SPAN class="op">;</SPAN> 
+            m_dist_pict  <SPAN class="op">-=</SPAN> m_dx_pict<SPAN class="op">;</SPAN> 
+            m_dist_end   <SPAN class="op">-=</SPAN> m_dx_end<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>dx <SPAN class="op">&gt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                m_dist       <SPAN class="op">+=</SPAN> m_dy<SPAN class="op">;</SPAN> 
+                m_dist_start <SPAN class="op">+=</SPAN> m_dy_start<SPAN class="op">;</SPAN> 
+                m_dist_pict  <SPAN class="op">+=</SPAN> m_dy_pict<SPAN class="op">;</SPAN> 
+                m_dist_end   <SPAN class="op">+=</SPAN> m_dy_end<SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>dx <SPAN class="op">&lt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                m_dist       <SPAN class="op">-=</SPAN> m_dy<SPAN class="op">;</SPAN> 
+                m_dist_start <SPAN class="op">-=</SPAN> m_dy_start<SPAN class="op">;</SPAN> 
+                m_dist_pict  <SPAN class="op">-=</SPAN> m_dy_pict<SPAN class="op">;</SPAN> 
+                m_dist_end   <SPAN class="op">-=</SPAN> m_dy_end<SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//---------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">void</SPAN> dec_y<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> dx<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            m_dist       <SPAN class="op">+=</SPAN> m_dx<SPAN class="op">;</SPAN> 
+            m_dist_start <SPAN class="op">+=</SPAN> m_dx_start<SPAN class="op">;</SPAN> 
+            m_dist_pict  <SPAN class="op">+=</SPAN> m_dx_pict<SPAN class="op">;</SPAN> 
+            m_dist_end   <SPAN class="op">+=</SPAN> m_dx_end<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>dx <SPAN class="op">&gt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                m_dist       <SPAN class="op">+=</SPAN> m_dy<SPAN class="op">;</SPAN> 
+                m_dist_start <SPAN class="op">+=</SPAN> m_dy_start<SPAN class="op">;</SPAN> 
+                m_dist_pict  <SPAN class="op">+=</SPAN> m_dy_pict<SPAN class="op">;</SPAN> 
+                m_dist_end   <SPAN class="op">+=</SPAN> m_dy_end<SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>dx <SPAN class="op">&lt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                m_dist       <SPAN class="op">-=</SPAN> m_dy<SPAN class="op">;</SPAN> 
+                m_dist_start <SPAN class="op">-=</SPAN> m_dy_start<SPAN class="op">;</SPAN> 
+                m_dist_pict  <SPAN class="op">-=</SPAN> m_dy_pict<SPAN class="op">;</SPAN> 
+                m_dist_end   <SPAN class="op">-=</SPAN> m_dy_end<SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//---------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">int</SPAN> dist<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>       <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_dist<SPAN class="op">;</SPAN>       <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">int</SPAN> dist_start<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_dist_start<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">int</SPAN> dist_pict<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>  <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_dist_pict<SPAN class="op">;</SPAN>  <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">int</SPAN> dist_end<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>   <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_dist_end<SPAN class="op">;</SPAN>   <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//---------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">int</SPAN> dx<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>       <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_dx<SPAN class="op">;</SPAN>       <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">int</SPAN> dy<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>       <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_dy<SPAN class="op">;</SPAN>       <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">int</SPAN> dx_start<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_dx_start<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">int</SPAN> dy_start<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_dy_start<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">int</SPAN> dx_pict<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>  <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_dx_pict<SPAN class="op">;</SPAN>  <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">int</SPAN> dy_pict<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>  <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_dy_pict<SPAN class="op">;</SPAN>  <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">int</SPAN> dx_end<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>   <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_dx_end<SPAN class="op">;</SPAN>   <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">int</SPAN> dy_end<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>   <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_dy_end<SPAN class="op">;</SPAN>   <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">int</SPAN> len<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>      <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_len<SPAN class="op">;</SPAN>      <SPAN class="op">}</SPAN>
+
+    <SPAN class="kw1">private</SPAN>:
+        <SPAN class="rem">//---------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">int</SPAN> m_dx<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN> m_dy<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN> m_dx_start<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN> m_dy_start<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN> m_dx_pict<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN> m_dy_pict<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN> m_dx_end<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN> m_dy_end<SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">int</SPAN> m_dist<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN> m_dist_start<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN> m_dist_pict<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN> m_dist_end<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN> m_len<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+
+
+
+    <SPAN class="rem">//==================================================<A name="line_interpolator_image"><B></B></A><A href="agg_renderer_outline_image.h.html#line_interpolator_image">line_interpolator_image</A></SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Renderer<SPAN class="op">&gt;</SPAN> <SPAN class="kw1">class</SPAN> <A href="agg_renderer_outline_image.h.html#line_interpolator_image">line_interpolator_image</A>
+    <SPAN class="op">{</SPAN>
+    <SPAN class="kw1">public</SPAN>:
+        <SPAN class="kw1">typedef</SPAN> Renderer renderer_type<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">typedef</SPAN> <SPAN class="kw1">typename</SPAN> Renderer::color_type color_type<SPAN class="op">;</SPAN>
+
+        <SPAN class="rem">//---------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">enum</SPAN> max_half_width_e
+        <SPAN class="op">{</SPAN> 
+            max_half_width <SPAN class="op">=</SPAN> <SPAN class="num">64</SPAN>
+        <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="rem">//---------------------------------------------------------------------</SPAN>
+        <A href="agg_renderer_outline_image.h.html#line_interpolator_image">line_interpolator_image</A><SPAN class="op">(</SPAN>renderer_type<SPAN class="op">&amp;</SPAN> ren<SPAN class="op">,</SPAN> <SPAN class="kw1">const</SPAN> <A href="agg_line_aa_basics.h.html#line_parameters">line_parameters</A><SPAN class="op">&amp;</SPAN> lp<SPAN class="op">,</SPAN>
+                                <SPAN class="kw1">int</SPAN> sx<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> sy<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> ex<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> ey<SPAN class="op">,</SPAN> 
+                                <SPAN class="kw1">int</SPAN> pattern_start<SPAN class="op">,</SPAN>
+                                <SPAN class="kw1">double</SPAN> scale_x<SPAN class="op">)</SPAN> :
+            m_lp<SPAN class="op">(</SPAN>lp<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_li<SPAN class="op">(</SPAN>lp<SPAN class="op">.</SPAN>vertical ? <A href="agg_line_aa_basics.h.html#line_dbl_hr">line_dbl_hr</A><SPAN class="op">(</SPAN>lp<SPAN class="op">.</SPAN>x2 <SPAN class="op">-</SPAN> lp<SPAN class="op">.</SPAN>x1<SPAN class="op">)</SPAN> :
+                               <A href="agg_line_aa_basics.h.html#line_dbl_hr">line_dbl_hr</A><SPAN class="op">(</SPAN>lp<SPAN class="op">.</SPAN>y2 <SPAN class="op">-</SPAN> lp<SPAN class="op">.</SPAN>y1<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+                 lp<SPAN class="op">.</SPAN>vertical ? abs<SPAN class="op">(</SPAN>lp<SPAN class="op">.</SPAN>y2 <SPAN class="op">-</SPAN> lp<SPAN class="op">.</SPAN>y1<SPAN class="op">)</SPAN> : 
+                               abs<SPAN class="op">(</SPAN>lp<SPAN class="op">.</SPAN>x2 <SPAN class="op">-</SPAN> lp<SPAN class="op">.</SPAN>x1<SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_di<SPAN class="op">(</SPAN>lp<SPAN class="op">.</SPAN>x1<SPAN class="op">,</SPAN> lp<SPAN class="op">.</SPAN>y1<SPAN class="op">,</SPAN> lp<SPAN class="op">.</SPAN>x2<SPAN class="op">,</SPAN> lp<SPAN class="op">.</SPAN>y2<SPAN class="op">,</SPAN> sx<SPAN class="op">,</SPAN> sy<SPAN class="op">,</SPAN> ex<SPAN class="op">,</SPAN> ey<SPAN class="op">,</SPAN> lp<SPAN class="op">.</SPAN>len<SPAN class="op">,</SPAN> scale_x<SPAN class="op">,</SPAN>
+                 lp<SPAN class="op">.</SPAN>x1 <SPAN class="op">&amp;</SPAN> ~<A href="agg_line_aa_basics.h.html#line_subpixel_mask">line_subpixel_mask</A><SPAN class="op">,</SPAN> lp<SPAN class="op">.</SPAN>y1 <SPAN class="op">&amp;</SPAN> ~<A href="agg_line_aa_basics.h.html#line_subpixel_mask">line_subpixel_mask</A><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_ren<SPAN class="op">(</SPAN>ren<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_x<SPAN class="op">(</SPAN>lp<SPAN class="op">.</SPAN>x1 <SPAN class="op">&gt;&gt;</SPAN> <A href="agg_line_aa_basics.h.html#line_subpixel_shift">line_subpixel_shift</A><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_y<SPAN class="op">(</SPAN>lp<SPAN class="op">.</SPAN>y1 <SPAN class="op">&gt;&gt;</SPAN> <A href="agg_line_aa_basics.h.html#line_subpixel_shift">line_subpixel_shift</A><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_old_x<SPAN class="op">(</SPAN>m_x<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_old_y<SPAN class="op">(</SPAN>m_y<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_count<SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>lp<SPAN class="op">.</SPAN>vertical ? abs<SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>lp<SPAN class="op">.</SPAN>y2 <SPAN class="op">&gt;&gt;</SPAN> <A href="agg_line_aa_basics.h.html#line_subpixel_shift">line_subpixel_shift</A><SPAN class="op">)</SPAN> <SPAN class="op">-</SPAN> m_y<SPAN class="op">)</SPAN> :
+                                   abs<SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>lp<SPAN class="op">.</SPAN>x2 <SPAN class="op">&gt;&gt;</SPAN> <A href="agg_line_aa_basics.h.html#line_subpixel_shift">line_subpixel_shift</A><SPAN class="op">)</SPAN> <SPAN class="op">-</SPAN> m_x<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_width<SPAN class="op">(</SPAN>ren<SPAN class="op">.</SPAN>subpixel_width<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            <SPAN class="rem">//m_max_extent(m_width &gt;&gt; (<A href="agg_line_aa_basics.h.html#line_subpixel_shift">line_subpixel_shift</A> - 2)),</SPAN>
+            m_max_extent<SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>m_width <SPAN class="op">+</SPAN> <A href="agg_line_aa_basics.h.html#line_subpixel_scale">line_subpixel_scale</A><SPAN class="op">)</SPAN> <SPAN class="op">&gt;&gt;</SPAN> <A href="agg_line_aa_basics.h.html#line_subpixel_shift">line_subpixel_shift</A><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_start<SPAN class="op">(</SPAN>pattern_start <SPAN class="op">+</SPAN> <SPAN class="op">(</SPAN>m_max_extent <SPAN class="op">+</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> ren<SPAN class="op">.</SPAN>pattern_width<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_step<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            agg::<A href="agg_dda_line.h.html#dda2_line_interpolator">dda2_line_interpolator</A> li<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> lp<SPAN class="op">.</SPAN>vertical ? 
+                                              <SPAN class="op">(</SPAN>lp<SPAN class="op">.</SPAN>dy <SPAN class="op">&lt;&lt;</SPAN> agg::<A href="agg_line_aa_basics.h.html#line_subpixel_shift">line_subpixel_shift</A><SPAN class="op">)</SPAN> :
+                                              <SPAN class="op">(</SPAN>lp<SPAN class="op">.</SPAN>dx <SPAN class="op">&lt;&lt;</SPAN> agg::<A href="agg_line_aa_basics.h.html#line_subpixel_shift">line_subpixel_shift</A><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+                                           lp<SPAN class="op">.</SPAN>len<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">unsigned</SPAN> i<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">int</SPAN> stop <SPAN class="op">=</SPAN> m_width <SPAN class="op">+</SPAN> <A href="agg_line_aa_basics.h.html#line_subpixel_scale">line_subpixel_scale</A> <SPAN class="op">*</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;</SPAN> max_half_width<SPAN class="op">;</SPAN> <SPAN class="op">++</SPAN>i<SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                m_dist_pos<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> li<SPAN class="op">.</SPAN>y<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_dist_pos<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN> <SPAN class="op">&gt;=</SPAN> stop<SPAN class="op">)</SPAN> <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">++</SPAN>li<SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            m_dist_pos<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> <SPAN class="num">0x7FFF0000</SPAN><SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">int</SPAN> dist1_start<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">int</SPAN> dist2_start<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">int</SPAN> npix <SPAN class="op">=</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>lp<SPAN class="op">.</SPAN>vertical<SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                <SPAN class="kw1">do</SPAN>
+                <SPAN class="op">{</SPAN>
+                    <SPAN class="op">--</SPAN>m_li<SPAN class="op">;</SPAN>
+                    m_y <SPAN class="op">-=</SPAN> lp<SPAN class="op">.</SPAN>inc<SPAN class="op">;</SPAN>
+                    m_x <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>m_lp<SPAN class="op">.</SPAN>x1 <SPAN class="op">+</SPAN> m_li<SPAN class="op">.</SPAN>y<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">&gt;&gt;</SPAN> <A href="agg_line_aa_basics.h.html#line_subpixel_shift">line_subpixel_shift</A><SPAN class="op">;</SPAN>
+
+                    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>lp<SPAN class="op">.</SPAN>inc <SPAN class="op">&gt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> m_di<SPAN class="op">.</SPAN>dec_y<SPAN class="op">(</SPAN>m_x <SPAN class="op">-</SPAN> m_old_x<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="kw1">else</SPAN>           m_di<SPAN class="op">.</SPAN>inc_y<SPAN class="op">(</SPAN>m_x <SPAN class="op">-</SPAN> m_old_x<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                    m_old_x <SPAN class="op">=</SPAN> m_x<SPAN class="op">;</SPAN>
+
+                    dist1_start <SPAN class="op">=</SPAN> dist2_start <SPAN class="op">=</SPAN> m_di<SPAN class="op">.</SPAN>dist_start<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> 
+
+                    <SPAN class="kw1">int</SPAN> dx <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>dist1_start <SPAN class="op">&lt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">++</SPAN>npix<SPAN class="op">;</SPAN>
+                    <SPAN class="kw1">do</SPAN>
+                    <SPAN class="op">{</SPAN>
+                        dist1_start <SPAN class="op">+=</SPAN> m_di<SPAN class="op">.</SPAN>dy_start<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                        dist2_start <SPAN class="op">-=</SPAN> m_di<SPAN class="op">.</SPAN>dy_start<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>dist1_start <SPAN class="op">&lt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">++</SPAN>npix<SPAN class="op">;</SPAN>
+                        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>dist2_start <SPAN class="op">&lt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">++</SPAN>npix<SPAN class="op">;</SPAN>
+                        <SPAN class="op">++</SPAN>dx<SPAN class="op">;</SPAN>
+                    <SPAN class="op">}</SPAN>
+                    <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN>m_dist_pos<SPAN class="op">[</SPAN>dx<SPAN class="op">]</SPAN> <SPAN class="op">&lt;=</SPAN> m_width<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>npix <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+
+                    npix <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+                <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN><SPAN class="op">--</SPAN>m_step <SPAN class="op">&gt;=</SPAN> <SPAN class="op">-</SPAN>m_max_extent<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="kw1">else</SPAN>
+            <SPAN class="op">{</SPAN>
+                <SPAN class="kw1">do</SPAN>
+                <SPAN class="op">{</SPAN>
+                    <SPAN class="op">--</SPAN>m_li<SPAN class="op">;</SPAN>
+
+                    m_x <SPAN class="op">-=</SPAN> lp<SPAN class="op">.</SPAN>inc<SPAN class="op">;</SPAN>
+                    m_y <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>m_lp<SPAN class="op">.</SPAN>y1 <SPAN class="op">+</SPAN> m_li<SPAN class="op">.</SPAN>y<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">&gt;&gt;</SPAN> <A href="agg_line_aa_basics.h.html#line_subpixel_shift">line_subpixel_shift</A><SPAN class="op">;</SPAN>
+
+                    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>lp<SPAN class="op">.</SPAN>inc <SPAN class="op">&gt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> m_di<SPAN class="op">.</SPAN>dec_x<SPAN class="op">(</SPAN>m_y <SPAN class="op">-</SPAN> m_old_y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="kw1">else</SPAN>           m_di<SPAN class="op">.</SPAN>inc_x<SPAN class="op">(</SPAN>m_y <SPAN class="op">-</SPAN> m_old_y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                    m_old_y <SPAN class="op">=</SPAN> m_y<SPAN class="op">;</SPAN>
+
+                    dist1_start <SPAN class="op">=</SPAN> dist2_start <SPAN class="op">=</SPAN> m_di<SPAN class="op">.</SPAN>dist_start<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> 
+
+                    <SPAN class="kw1">int</SPAN> dy <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>dist1_start <SPAN class="op">&lt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">++</SPAN>npix<SPAN class="op">;</SPAN>
+                    <SPAN class="kw1">do</SPAN>
+                    <SPAN class="op">{</SPAN>
+                        dist1_start <SPAN class="op">-=</SPAN> m_di<SPAN class="op">.</SPAN>dx_start<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                        dist2_start <SPAN class="op">+=</SPAN> m_di<SPAN class="op">.</SPAN>dx_start<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>dist1_start <SPAN class="op">&lt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">++</SPAN>npix<SPAN class="op">;</SPAN>
+                        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>dist2_start <SPAN class="op">&lt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">++</SPAN>npix<SPAN class="op">;</SPAN>
+                        <SPAN class="op">++</SPAN>dy<SPAN class="op">;</SPAN>
+                    <SPAN class="op">}</SPAN>
+                    <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN>m_dist_pos<SPAN class="op">[</SPAN>dy<SPAN class="op">]</SPAN> <SPAN class="op">&lt;=</SPAN> m_width<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>npix <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+
+                    npix <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+                <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN><SPAN class="op">--</SPAN>m_step <SPAN class="op">&gt;=</SPAN> <SPAN class="op">-</SPAN>m_max_extent<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            m_li<SPAN class="op">.</SPAN>adjust_forward<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            m_step <SPAN class="op">-=</SPAN> m_max_extent<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//---------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">bool</SPAN> step_hor<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="op">++</SPAN>m_li<SPAN class="op">;</SPAN>
+            m_x <SPAN class="op">+=</SPAN> m_lp<SPAN class="op">.</SPAN>inc<SPAN class="op">;</SPAN>
+            m_y <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>m_lp<SPAN class="op">.</SPAN>y1 <SPAN class="op">+</SPAN> m_li<SPAN class="op">.</SPAN>y<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">&gt;&gt;</SPAN> <A href="agg_line_aa_basics.h.html#line_subpixel_shift">line_subpixel_shift</A><SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_lp<SPAN class="op">.</SPAN>inc <SPAN class="op">&gt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> m_di<SPAN class="op">.</SPAN>inc_x<SPAN class="op">(</SPAN>m_y <SPAN class="op">-</SPAN> m_old_y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">else</SPAN>             m_di<SPAN class="op">.</SPAN>dec_x<SPAN class="op">(</SPAN>m_y <SPAN class="op">-</SPAN> m_old_y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+            m_old_y <SPAN class="op">=</SPAN> m_y<SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">int</SPAN> s1 <SPAN class="op">=</SPAN> m_di<SPAN class="op">.</SPAN>dist<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> m_lp<SPAN class="op">.</SPAN>len<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">int</SPAN> s2 <SPAN class="op">=</SPAN> <SPAN class="op">-</SPAN>s1<SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_lp<SPAN class="op">.</SPAN>inc <SPAN class="op">&lt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> s1 <SPAN class="op">=</SPAN> <SPAN class="op">-</SPAN>s1<SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">int</SPAN> dist_start<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">int</SPAN> dist_pict<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">int</SPAN> dist_end<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">int</SPAN> dy<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">int</SPAN> dist<SPAN class="op">;</SPAN>
+
+            dist_start <SPAN class="op">=</SPAN> m_di<SPAN class="op">.</SPAN>dist_start<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            dist_pict  <SPAN class="op">=</SPAN> m_di<SPAN class="op">.</SPAN>dist_pict<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> m_start<SPAN class="op">;</SPAN>
+            dist_end   <SPAN class="op">=</SPAN> m_di<SPAN class="op">.</SPAN>dist_end<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            color_type<SPAN class="op">*</SPAN> p0 <SPAN class="op">=</SPAN> m_colors <SPAN class="op">+</SPAN> max_half_width <SPAN class="op">+</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+            color_type<SPAN class="op">*</SPAN> p1 <SPAN class="op">=</SPAN> p0<SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">int</SPAN> npix <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+            p1<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>clear<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>dist_end <SPAN class="op">&gt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>dist_start <SPAN class="op">&lt;=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    m_ren<SPAN class="op">.</SPAN>pixel<SPAN class="op">(</SPAN>p1<SPAN class="op">,</SPAN> dist_pict<SPAN class="op">,</SPAN> s2<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+                <SPAN class="op">++</SPAN>npix<SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="op">++</SPAN>p1<SPAN class="op">;</SPAN>
+
+            dy <SPAN class="op">=</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>dist <SPAN class="op">=</SPAN> m_dist_pos<SPAN class="op">[</SPAN>dy<SPAN class="op">]</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">-</SPAN> s1 <SPAN class="op">&lt;=</SPAN> m_width<SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                dist_start <SPAN class="op">-=</SPAN> m_di<SPAN class="op">.</SPAN>dx_start<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                dist_pict  <SPAN class="op">-=</SPAN> m_di<SPAN class="op">.</SPAN>dx_pict<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                dist_end   <SPAN class="op">-=</SPAN> m_di<SPAN class="op">.</SPAN>dx_end<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                p1<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>clear<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>dist_end <SPAN class="op">&gt;</SPAN> <SPAN class="num">0</SPAN> <SPAN class="op">&amp;&amp;</SPAN> dist_start <SPAN class="op">&lt;=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>   
+                    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_lp<SPAN class="op">.</SPAN>inc <SPAN class="op">&gt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> dist <SPAN class="op">=</SPAN> <SPAN class="op">-</SPAN>dist<SPAN class="op">;</SPAN>
+                    m_ren<SPAN class="op">.</SPAN>pixel<SPAN class="op">(</SPAN>p1<SPAN class="op">,</SPAN> dist_pict<SPAN class="op">,</SPAN> s2 <SPAN class="op">-</SPAN> dist<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="op">++</SPAN>npix<SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+                <SPAN class="op">++</SPAN>p1<SPAN class="op">;</SPAN>
+                <SPAN class="op">++</SPAN>dy<SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+
+            dy <SPAN class="op">=</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+            dist_start <SPAN class="op">=</SPAN> m_di<SPAN class="op">.</SPAN>dist_start<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            dist_pict  <SPAN class="op">=</SPAN> m_di<SPAN class="op">.</SPAN>dist_pict<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> m_start<SPAN class="op">;</SPAN>
+            dist_end   <SPAN class="op">=</SPAN> m_di<SPAN class="op">.</SPAN>dist_end<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>dist <SPAN class="op">=</SPAN> m_dist_pos<SPAN class="op">[</SPAN>dy<SPAN class="op">]</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> s1 <SPAN class="op">&lt;=</SPAN> m_width<SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                dist_start <SPAN class="op">+=</SPAN> m_di<SPAN class="op">.</SPAN>dx_start<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                dist_pict  <SPAN class="op">+=</SPAN> m_di<SPAN class="op">.</SPAN>dx_pict<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                dist_end   <SPAN class="op">+=</SPAN> m_di<SPAN class="op">.</SPAN>dx_end<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">--</SPAN>p0<SPAN class="op">;</SPAN>
+                p0<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>clear<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>dist_end <SPAN class="op">&gt;</SPAN> <SPAN class="num">0</SPAN> <SPAN class="op">&amp;&amp;</SPAN> dist_start <SPAN class="op">&lt;=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>   
+                    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_lp<SPAN class="op">.</SPAN>inc <SPAN class="op">&gt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> dist <SPAN class="op">=</SPAN> <SPAN class="op">-</SPAN>dist<SPAN class="op">;</SPAN>
+                    m_ren<SPAN class="op">.</SPAN>pixel<SPAN class="op">(</SPAN>p0<SPAN class="op">,</SPAN> dist_pict<SPAN class="op">,</SPAN> s2 <SPAN class="op">+</SPAN> dist<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="op">++</SPAN>npix<SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+                <SPAN class="op">++</SPAN>dy<SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            m_ren<SPAN class="op">.</SPAN>blend_color_vspan<SPAN class="op">(</SPAN>m_x<SPAN class="op">,</SPAN> 
+                                    m_y <SPAN class="op">-</SPAN> dy <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">,</SPAN> 
+                                    <SPAN class="kw1">unsigned</SPAN><SPAN class="op">(</SPAN>p1 <SPAN class="op">-</SPAN> p0<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> 
+                                    p0<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> 
+            <SPAN class="kw1">return</SPAN> npix <SPAN class="op">&amp;&amp;</SPAN> <SPAN class="op">++</SPAN>m_step <SPAN class="op">&lt;</SPAN> m_count<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+
+
+        <SPAN class="rem">//---------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">bool</SPAN> step_ver<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="op">++</SPAN>m_li<SPAN class="op">;</SPAN>
+            m_y <SPAN class="op">+=</SPAN> m_lp<SPAN class="op">.</SPAN>inc<SPAN class="op">;</SPAN>
+            m_x <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>m_lp<SPAN class="op">.</SPAN>x1 <SPAN class="op">+</SPAN> m_li<SPAN class="op">.</SPAN>y<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">&gt;&gt;</SPAN> <A href="agg_line_aa_basics.h.html#line_subpixel_shift">line_subpixel_shift</A><SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_lp<SPAN class="op">.</SPAN>inc <SPAN class="op">&gt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> m_di<SPAN class="op">.</SPAN>inc_y<SPAN class="op">(</SPAN>m_x <SPAN class="op">-</SPAN> m_old_x<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">else</SPAN>             m_di<SPAN class="op">.</SPAN>dec_y<SPAN class="op">(</SPAN>m_x <SPAN class="op">-</SPAN> m_old_x<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+            m_old_x <SPAN class="op">=</SPAN> m_x<SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">int</SPAN> s1 <SPAN class="op">=</SPAN> m_di<SPAN class="op">.</SPAN>dist<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> m_lp<SPAN class="op">.</SPAN>len<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">int</SPAN> s2 <SPAN class="op">=</SPAN> <SPAN class="op">-</SPAN>s1<SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_lp<SPAN class="op">.</SPAN>inc <SPAN class="op">&gt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> s1 <SPAN class="op">=</SPAN> <SPAN class="op">-</SPAN>s1<SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">int</SPAN> dist_start<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">int</SPAN> dist_pict<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">int</SPAN> dist_end<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">int</SPAN> dist<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">int</SPAN> dx<SPAN class="op">;</SPAN>
+
+            dist_start <SPAN class="op">=</SPAN> m_di<SPAN class="op">.</SPAN>dist_start<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            dist_pict  <SPAN class="op">=</SPAN> m_di<SPAN class="op">.</SPAN>dist_pict<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> m_start<SPAN class="op">;</SPAN>
+            dist_end   <SPAN class="op">=</SPAN> m_di<SPAN class="op">.</SPAN>dist_end<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            color_type<SPAN class="op">*</SPAN> p0 <SPAN class="op">=</SPAN> m_colors <SPAN class="op">+</SPAN> max_half_width <SPAN class="op">+</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+            color_type<SPAN class="op">*</SPAN> p1 <SPAN class="op">=</SPAN> p0<SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">int</SPAN> npix <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+            p1<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>clear<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>dist_end <SPAN class="op">&gt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>dist_start <SPAN class="op">&lt;=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    m_ren<SPAN class="op">.</SPAN>pixel<SPAN class="op">(</SPAN>p1<SPAN class="op">,</SPAN> dist_pict<SPAN class="op">,</SPAN> s2<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+                <SPAN class="op">++</SPAN>npix<SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="op">++</SPAN>p1<SPAN class="op">;</SPAN>
+
+            dx <SPAN class="op">=</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>dist <SPAN class="op">=</SPAN> m_dist_pos<SPAN class="op">[</SPAN>dx<SPAN class="op">]</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">-</SPAN> s1 <SPAN class="op">&lt;=</SPAN> m_width<SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                dist_start <SPAN class="op">+=</SPAN> m_di<SPAN class="op">.</SPAN>dy_start<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                dist_pict  <SPAN class="op">+=</SPAN> m_di<SPAN class="op">.</SPAN>dy_pict<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                dist_end   <SPAN class="op">+=</SPAN> m_di<SPAN class="op">.</SPAN>dy_end<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                p1<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>clear<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>dist_end <SPAN class="op">&gt;</SPAN> <SPAN class="num">0</SPAN> <SPAN class="op">&amp;&amp;</SPAN> dist_start <SPAN class="op">&lt;=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>   
+                    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_lp<SPAN class="op">.</SPAN>inc <SPAN class="op">&gt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> dist <SPAN class="op">=</SPAN> <SPAN class="op">-</SPAN>dist<SPAN class="op">;</SPAN>
+                    m_ren<SPAN class="op">.</SPAN>pixel<SPAN class="op">(</SPAN>p1<SPAN class="op">,</SPAN> dist_pict<SPAN class="op">,</SPAN> s2 <SPAN class="op">+</SPAN> dist<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="op">++</SPAN>npix<SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+                <SPAN class="op">++</SPAN>p1<SPAN class="op">;</SPAN>
+                <SPAN class="op">++</SPAN>dx<SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+
+            dx <SPAN class="op">=</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+            dist_start <SPAN class="op">=</SPAN> m_di<SPAN class="op">.</SPAN>dist_start<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            dist_pict  <SPAN class="op">=</SPAN> m_di<SPAN class="op">.</SPAN>dist_pict<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> m_start<SPAN class="op">;</SPAN>
+            dist_end   <SPAN class="op">=</SPAN> m_di<SPAN class="op">.</SPAN>dist_end<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>dist <SPAN class="op">=</SPAN> m_dist_pos<SPAN class="op">[</SPAN>dx<SPAN class="op">]</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> s1 <SPAN class="op">&lt;=</SPAN> m_width<SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                dist_start <SPAN class="op">-=</SPAN> m_di<SPAN class="op">.</SPAN>dy_start<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                dist_pict  <SPAN class="op">-=</SPAN> m_di<SPAN class="op">.</SPAN>dy_pict<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                dist_end   <SPAN class="op">-=</SPAN> m_di<SPAN class="op">.</SPAN>dy_end<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">--</SPAN>p0<SPAN class="op">;</SPAN>
+                p0<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>clear<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>dist_end <SPAN class="op">&gt;</SPAN> <SPAN class="num">0</SPAN> <SPAN class="op">&amp;&amp;</SPAN> dist_start <SPAN class="op">&lt;=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>   
+                    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_lp<SPAN class="op">.</SPAN>inc <SPAN class="op">&gt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> dist <SPAN class="op">=</SPAN> <SPAN class="op">-</SPAN>dist<SPAN class="op">;</SPAN>
+                    m_ren<SPAN class="op">.</SPAN>pixel<SPAN class="op">(</SPAN>p0<SPAN class="op">,</SPAN> dist_pict<SPAN class="op">,</SPAN> s2 <SPAN class="op">-</SPAN> dist<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="op">++</SPAN>npix<SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+                <SPAN class="op">++</SPAN>dx<SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            m_ren<SPAN class="op">.</SPAN>blend_color_hspan<SPAN class="op">(</SPAN>m_x <SPAN class="op">-</SPAN> dx <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">,</SPAN> 
+                                    m_y<SPAN class="op">,</SPAN> 
+                                    <SPAN class="kw1">unsigned</SPAN><SPAN class="op">(</SPAN>p1 <SPAN class="op">-</SPAN> p0<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> 
+                                    p0<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">return</SPAN> npix <SPAN class="op">&amp;&amp;</SPAN> <SPAN class="op">++</SPAN>m_step <SPAN class="op">&lt;</SPAN> m_count<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+
+        <SPAN class="rem">//---------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">int</SPAN>  pattern_end<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_start <SPAN class="op">+</SPAN> m_di<SPAN class="op">.</SPAN>len<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//---------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">bool</SPAN> vertical<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_lp<SPAN class="op">.</SPAN>vertical<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">int</SPAN>  width<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_width<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">int</SPAN>  count<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_count<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+
+    <SPAN class="kw1">private</SPAN>:
+        <A href="agg_renderer_outline_image.h.html#line_interpolator_image">line_interpolator_image</A><SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <A href="agg_renderer_outline_image.h.html#line_interpolator_image">line_interpolator_image</A><SPAN class="op">&lt;</SPAN>Renderer<SPAN class="op">&gt;</SPAN><SPAN class="op">&amp;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">const</SPAN> <A href="agg_renderer_outline_image.h.html#line_interpolator_image">line_interpolator_image</A><SPAN class="op">&lt;</SPAN>Renderer<SPAN class="op">&gt;</SPAN><SPAN class="op">&amp;</SPAN>
+            <SPAN class="kw1">operator</SPAN> <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <A href="agg_renderer_outline_image.h.html#line_interpolator_image">line_interpolator_image</A><SPAN class="op">&lt;</SPAN>Renderer<SPAN class="op">&gt;</SPAN><SPAN class="op">&amp;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">protected</SPAN>:
+        <SPAN class="kw1">const</SPAN> <A href="agg_line_aa_basics.h.html#line_parameters">line_parameters</A><SPAN class="op">&amp;</SPAN> m_lp<SPAN class="op">;</SPAN>
+        <A href="agg_dda_line.h.html#dda2_line_interpolator">dda2_line_interpolator</A> m_li<SPAN class="op">;</SPAN>
+        <A href="agg_renderer_outline_image.h.html#distance_interpolator4">distance_interpolator4</A> m_di<SPAN class="op">;</SPAN> 
+        renderer_type<SPAN class="op">&amp;</SPAN>         m_ren<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN> m_plen<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN> m_x<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN> m_y<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN> m_old_x<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN> m_old_y<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN> m_count<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN> m_width<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN> m_max_extent<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN> m_start<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN> m_step<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN> m_dist_pos<SPAN class="op">[</SPAN>max_half_width <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+        color_type m_colors<SPAN class="op">[</SPAN>max_half_width <SPAN class="op">*</SPAN> <SPAN class="num">2</SPAN> <SPAN class="op">+</SPAN> <SPAN class="num">4</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+
+
+
+
+
+
+    <SPAN class="rem">//===================================================<A name="renderer_outline_image"><B></B></A><A href="agg_renderer_outline_image.h.html#renderer_outline_image">renderer_outline_image</A></SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> BaseRenderer<SPAN class="op">,</SPAN> <SPAN class="kw1">class</SPAN> ImagePattern<SPAN class="op">&gt;</SPAN> 
+    <SPAN class="kw1">class</SPAN> <A href="agg_renderer_outline_image.h.html#renderer_outline_image">renderer_outline_image</A>
+    <SPAN class="op">{</SPAN>
+    <SPAN class="kw1">public</SPAN>:
+        <SPAN class="rem">//---------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">typedef</SPAN> BaseRenderer base_ren_type<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">typedef</SPAN> <A href="agg_renderer_outline_image.h.html#renderer_outline_image">renderer_outline_image</A><SPAN class="op">&lt;</SPAN>BaseRenderer<SPAN class="op">,</SPAN> ImagePattern<SPAN class="op">&gt;</SPAN> self_type<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">typedef</SPAN> <SPAN class="kw1">typename</SPAN> base_ren_type::color_type color_type<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">typedef</SPAN> ImagePattern pattern_type<SPAN class="op">;</SPAN>
+
+
+        <SPAN class="rem">//---------------------------------------------------------------------</SPAN>
+        <A href="agg_renderer_outline_image.h.html#renderer_outline_image">renderer_outline_image</A><SPAN class="op">(</SPAN>base_ren_type<SPAN class="op">&amp;</SPAN> ren<SPAN class="op">,</SPAN> <SPAN class="kw1">const</SPAN> pattern_type<SPAN class="op">&amp;</SPAN> patt<SPAN class="op">)</SPAN> :
+            m_ren<SPAN class="op">(</SPAN><SPAN class="op">&amp;</SPAN>ren<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_pattern<SPAN class="op">(</SPAN><SPAN class="op">&amp;</SPAN>patt<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_start<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_scale_x<SPAN class="op">(</SPAN><SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_clip_box<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_clipping<SPAN class="op">(</SPAN><SPAN class="kw1">false</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN><SPAN class="op">}</SPAN>
+        <SPAN class="kw1">void</SPAN> attach<SPAN class="op">(</SPAN>base_ren_type<SPAN class="op">&amp;</SPAN> ren<SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN> m_ren <SPAN class="op">=</SPAN> <SPAN class="op">&amp;</SPAN>ren<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//---------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">void</SPAN> pattern<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> pattern_type<SPAN class="op">&amp;</SPAN> p<SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN> m_pattern <SPAN class="op">=</SPAN> <SPAN class="op">&amp;</SPAN>p<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">const</SPAN> pattern_type<SPAN class="op">&amp;</SPAN> pattern<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> <SPAN class="op">*</SPAN>m_pattern<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//---------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">void</SPAN> reset_clipping<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN> m_clipping <SPAN class="op">=</SPAN> <SPAN class="kw1">false</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">void</SPAN> clip_box<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x1<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y1<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> x2<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y2<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            m_clip_box<SPAN class="op">.</SPAN>x1 <SPAN class="op">=</SPAN> line_coord_sat::conv<SPAN class="op">(</SPAN>x1<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            m_clip_box<SPAN class="op">.</SPAN>y1 <SPAN class="op">=</SPAN> line_coord_sat::conv<SPAN class="op">(</SPAN>y1<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            m_clip_box<SPAN class="op">.</SPAN>x2 <SPAN class="op">=</SPAN> line_coord_sat::conv<SPAN class="op">(</SPAN>x2<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            m_clip_box<SPAN class="op">.</SPAN>y2 <SPAN class="op">=</SPAN> line_coord_sat::conv<SPAN class="op">(</SPAN>y2<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            m_clipping <SPAN class="op">=</SPAN> <SPAN class="kw1">true</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//---------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">void</SPAN>   scale_x<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> s<SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN> m_scale_x <SPAN class="op">=</SPAN> s<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">double</SPAN> scale_x<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN>   <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_scale_x<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//---------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">void</SPAN>   start_x<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> s<SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN> m_start <SPAN class="op">=</SPAN> <A href="agg_basics.h.html#iround">iround</A><SPAN class="op">(</SPAN>s <SPAN class="op">*</SPAN> <A href="agg_line_aa_basics.h.html#line_subpixel_scale">line_subpixel_scale</A><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">double</SPAN> start_x<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN>   <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> <SPAN class="kw1">double</SPAN><SPAN class="op">(</SPAN>m_start<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <A href="agg_line_aa_basics.h.html#line_subpixel_scale">line_subpixel_scale</A><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//---------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">int</SPAN> subpixel_width<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_pattern<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>line_width<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">int</SPAN> pattern_width<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_pattern<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>pattern_width<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">double</SPAN> width<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> <SPAN class="kw1">double</SPAN><SPAN class="op">(</SPAN>subpixel_width<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <A href="agg_line_aa_basics.h.html#line_subpixel_scale">line_subpixel_scale</A><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//-------------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">void</SPAN> pixel<SPAN class="op">(</SPAN>color_type<SPAN class="op">*</SPAN> p<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN>
+        <SPAN class="op">{</SPAN>
+            m_pattern<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>pixel<SPAN class="op">(</SPAN>p<SPAN class="op">,</SPAN> x<SPAN class="op">,</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//-------------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">void</SPAN> blend_color_hspan<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> len<SPAN class="op">,</SPAN> <SPAN class="kw1">const</SPAN> color_type<SPAN class="op">*</SPAN> colors<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            m_ren<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>blend_color_hspan<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> y<SPAN class="op">,</SPAN> len<SPAN class="op">,</SPAN> colors<SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//-------------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">void</SPAN> blend_color_vspan<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> len<SPAN class="op">,</SPAN> <SPAN class="kw1">const</SPAN> color_type<SPAN class="op">*</SPAN> colors<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            m_ren<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>blend_color_vspan<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> y<SPAN class="op">,</SPAN> len<SPAN class="op">,</SPAN> colors<SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//-------------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">static</SPAN> <SPAN class="kw1">bool</SPAN> accurate_join_only<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> <SPAN class="kw1">true</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//-------------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Cmp<SPAN class="op">&gt;</SPAN> 
+        <SPAN class="kw1">void</SPAN> semidot<SPAN class="op">(</SPAN>Cmp<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN><SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN><SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN><SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//-------------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">void</SPAN> pie<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN><SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN><SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN><SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN><SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN><SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//-------------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">void</SPAN> line0<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <A href="agg_line_aa_basics.h.html#line_parameters">line_parameters</A><SPAN class="op">&amp;</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//-------------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">void</SPAN> line1<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <A href="agg_line_aa_basics.h.html#line_parameters">line_parameters</A><SPAN class="op">&amp;</SPAN><SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN><SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//-------------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">void</SPAN> line2<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <A href="agg_line_aa_basics.h.html#line_parameters">line_parameters</A><SPAN class="op">&amp;</SPAN><SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN><SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//-------------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">void</SPAN> line3_no_clip<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <A href="agg_line_aa_basics.h.html#line_parameters">line_parameters</A><SPAN class="op">&amp;</SPAN> lp<SPAN class="op">,</SPAN> 
+                           <SPAN class="kw1">int</SPAN> sx<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> sy<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> ex<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> ey<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>lp<SPAN class="op">.</SPAN>len <SPAN class="op">&gt;</SPAN> <A href="agg_line_aa_basics.h.html#line_max_length">line_max_length</A><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                <A href="agg_line_aa_basics.h.html#line_parameters">line_parameters</A> lp1<SPAN class="op">,</SPAN> lp2<SPAN class="op">;</SPAN>
+                lp<SPAN class="op">.</SPAN>divide<SPAN class="op">(</SPAN>lp1<SPAN class="op">,</SPAN> lp2<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">int</SPAN> mx <SPAN class="op">=</SPAN> lp1<SPAN class="op">.</SPAN>x2 <SPAN class="op">+</SPAN> <SPAN class="op">(</SPAN>lp1<SPAN class="op">.</SPAN>y2 <SPAN class="op">-</SPAN> lp1<SPAN class="op">.</SPAN>y1<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">int</SPAN> my <SPAN class="op">=</SPAN> lp1<SPAN class="op">.</SPAN>y2 <SPAN class="op">-</SPAN> <SPAN class="op">(</SPAN>lp1<SPAN class="op">.</SPAN>x2 <SPAN class="op">-</SPAN> lp1<SPAN class="op">.</SPAN>x1<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                line3_no_clip<SPAN class="op">(</SPAN>lp1<SPAN class="op">,</SPAN> <SPAN class="op">(</SPAN>lp<SPAN class="op">.</SPAN>x1 <SPAN class="op">+</SPAN> sx<SPAN class="op">)</SPAN> <SPAN class="op">&gt;&gt;</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">,</SPAN> <SPAN class="op">(</SPAN>lp<SPAN class="op">.</SPAN>y1 <SPAN class="op">+</SPAN> sy<SPAN class="op">)</SPAN> <SPAN class="op">&gt;&gt;</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">,</SPAN> mx<SPAN class="op">,</SPAN> my<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                line3_no_clip<SPAN class="op">(</SPAN>lp2<SPAN class="op">,</SPAN> mx<SPAN class="op">,</SPAN> my<SPAN class="op">,</SPAN> <SPAN class="op">(</SPAN>lp<SPAN class="op">.</SPAN>x2 <SPAN class="op">+</SPAN> ex<SPAN class="op">)</SPAN> <SPAN class="op">&gt;&gt;</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">,</SPAN> <SPAN class="op">(</SPAN>lp<SPAN class="op">.</SPAN>y2 <SPAN class="op">+</SPAN> ey<SPAN class="op">)</SPAN> <SPAN class="op">&gt;&gt;</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">return</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            
+            <A href="agg_line_aa_basics.h.html#fix_degenerate_bisectrix_start">fix_degenerate_bisectrix_start</A><SPAN class="op">(</SPAN>lp<SPAN class="op">,</SPAN> <SPAN class="op">&amp;</SPAN>sx<SPAN class="op">,</SPAN> <SPAN class="op">&amp;</SPAN>sy<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <A href="agg_line_aa_basics.h.html#fix_degenerate_bisectrix_end">fix_degenerate_bisectrix_end</A><SPAN class="op">(</SPAN>lp<SPAN class="op">,</SPAN> <SPAN class="op">&amp;</SPAN>ex<SPAN class="op">,</SPAN> <SPAN class="op">&amp;</SPAN>ey<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <A href="agg_renderer_outline_image.h.html#line_interpolator_image">line_interpolator_image</A><SPAN class="op">&lt;</SPAN>self_type<SPAN class="op">&gt;</SPAN> li<SPAN class="op">(</SPAN><SPAN class="op">*</SPAN><SPAN class="kw1">this</SPAN><SPAN class="op">,</SPAN> lp<SPAN class="op">,</SPAN> 
+                                                  sx<SPAN class="op">,</SPAN> sy<SPAN class="op">,</SPAN> 
+                                                  ex<SPAN class="op">,</SPAN> ey<SPAN class="op">,</SPAN> 
+                                                  m_start<SPAN class="op">,</SPAN> m_scale_x<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>li<SPAN class="op">.</SPAN>vertical<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN>li<SPAN class="op">.</SPAN>step_ver<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="kw1">else</SPAN>
+            <SPAN class="op">{</SPAN>
+                <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN>li<SPAN class="op">.</SPAN>step_hor<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            m_start <SPAN class="op">+=</SPAN> <A href="agg_basics.h.html#uround">uround</A><SPAN class="op">(</SPAN>lp<SPAN class="op">.</SPAN>len <SPAN class="op">/</SPAN> m_scale_x<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//-------------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">void</SPAN> line3<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <A href="agg_line_aa_basics.h.html#line_parameters">line_parameters</A><SPAN class="op">&amp;</SPAN> lp<SPAN class="op">,</SPAN> 
+                   <SPAN class="kw1">int</SPAN> sx<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> sy<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> ex<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> ey<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_clipping<SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                <SPAN class="kw1">int</SPAN> x1 <SPAN class="op">=</SPAN> lp<SPAN class="op">.</SPAN>x1<SPAN class="op">;</SPAN>
+                <SPAN class="kw1">int</SPAN> y1 <SPAN class="op">=</SPAN> lp<SPAN class="op">.</SPAN>y1<SPAN class="op">;</SPAN>
+                <SPAN class="kw1">int</SPAN> x2 <SPAN class="op">=</SPAN> lp<SPAN class="op">.</SPAN>x2<SPAN class="op">;</SPAN>
+                <SPAN class="kw1">int</SPAN> y2 <SPAN class="op">=</SPAN> lp<SPAN class="op">.</SPAN>y2<SPAN class="op">;</SPAN>
+                <SPAN class="kw1">unsigned</SPAN> flags <SPAN class="op">=</SPAN> <A href="agg_clip_liang_barsky.h.html#clip_line_segment">clip_line_segment</A><SPAN class="op">(</SPAN><SPAN class="op">&amp;</SPAN>x1<SPAN class="op">,</SPAN> <SPAN class="op">&amp;</SPAN>y1<SPAN class="op">,</SPAN> <SPAN class="op">&amp;</SPAN>x2<SPAN class="op">,</SPAN> <SPAN class="op">&amp;</SPAN>y2<SPAN class="op">,</SPAN> m_clip_box<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">int</SPAN> start <SPAN class="op">=</SPAN> m_start<SPAN class="op">;</SPAN>
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>flags <SPAN class="op">&amp;</SPAN> <SPAN class="num">4</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>flags<SPAN class="op">)</SPAN>
+                    <SPAN class="op">{</SPAN>
+                        <A href="agg_line_aa_basics.h.html#line_parameters">line_parameters</A> lp2<SPAN class="op">(</SPAN>x1<SPAN class="op">,</SPAN> y1<SPAN class="op">,</SPAN> x2<SPAN class="op">,</SPAN> y2<SPAN class="op">,</SPAN> 
+                                           <A href="agg_basics.h.html#uround">uround</A><SPAN class="op">(</SPAN><A href="agg_math.h.html#calc_distance">calc_distance</A><SPAN class="op">(</SPAN>x1<SPAN class="op">,</SPAN> y1<SPAN class="op">,</SPAN> x2<SPAN class="op">,</SPAN> y2<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>flags <SPAN class="op">&amp;</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN>
+                        <SPAN class="op">{</SPAN>
+                            m_start <SPAN class="op">+=</SPAN> <A href="agg_basics.h.html#uround">uround</A><SPAN class="op">(</SPAN><A href="agg_math.h.html#calc_distance">calc_distance</A><SPAN class="op">(</SPAN>lp<SPAN class="op">.</SPAN>x1<SPAN class="op">,</SPAN> lp<SPAN class="op">.</SPAN>y1<SPAN class="op">,</SPAN> x1<SPAN class="op">,</SPAN> y1<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> m_scale_x<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                            sx <SPAN class="op">=</SPAN> x1 <SPAN class="op">+</SPAN> <SPAN class="op">(</SPAN>y2 <SPAN class="op">-</SPAN> y1<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> 
+                            sy <SPAN class="op">=</SPAN> y1 <SPAN class="op">-</SPAN> <SPAN class="op">(</SPAN>x2 <SPAN class="op">-</SPAN> x1<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                        <SPAN class="op">}</SPAN>
+                        <SPAN class="kw1">else</SPAN>
+                        <SPAN class="op">{</SPAN>
+                            <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN>abs<SPAN class="op">(</SPAN>sx <SPAN class="op">-</SPAN> lp<SPAN class="op">.</SPAN>x1<SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> abs<SPAN class="op">(</SPAN>sy <SPAN class="op">-</SPAN> lp<SPAN class="op">.</SPAN>y1<SPAN class="op">)</SPAN> <SPAN class="op">&gt;</SPAN> lp2<SPAN class="op">.</SPAN>len<SPAN class="op">)</SPAN>
+                            <SPAN class="op">{</SPAN>
+                                sx <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>lp<SPAN class="op">.</SPAN>x1 <SPAN class="op">+</SPAN> sx<SPAN class="op">)</SPAN> <SPAN class="op">&gt;&gt;</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+                                sy <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>lp<SPAN class="op">.</SPAN>y1 <SPAN class="op">+</SPAN> sy<SPAN class="op">)</SPAN> <SPAN class="op">&gt;&gt;</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+                            <SPAN class="op">}</SPAN>
+                        <SPAN class="op">}</SPAN>
+                        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>flags <SPAN class="op">&amp;</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">)</SPAN>
+                        <SPAN class="op">{</SPAN>
+                            ex <SPAN class="op">=</SPAN> x2 <SPAN class="op">+</SPAN> <SPAN class="op">(</SPAN>y2 <SPAN class="op">-</SPAN> y1<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> 
+                            ey <SPAN class="op">=</SPAN> y2 <SPAN class="op">-</SPAN> <SPAN class="op">(</SPAN>x2 <SPAN class="op">-</SPAN> x1<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                        <SPAN class="op">}</SPAN>
+                        <SPAN class="kw1">else</SPAN>
+                        <SPAN class="op">{</SPAN>
+                            <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN>abs<SPAN class="op">(</SPAN>ex <SPAN class="op">-</SPAN> lp<SPAN class="op">.</SPAN>x2<SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> abs<SPAN class="op">(</SPAN>ey <SPAN class="op">-</SPAN> lp<SPAN class="op">.</SPAN>y2<SPAN class="op">)</SPAN> <SPAN class="op">&gt;</SPAN> lp2<SPAN class="op">.</SPAN>len<SPAN class="op">)</SPAN>
+                            <SPAN class="op">{</SPAN>
+                                ex <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>lp<SPAN class="op">.</SPAN>x2 <SPAN class="op">+</SPAN> ex<SPAN class="op">)</SPAN> <SPAN class="op">&gt;&gt;</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+                                ey <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>lp<SPAN class="op">.</SPAN>y2 <SPAN class="op">+</SPAN> ey<SPAN class="op">)</SPAN> <SPAN class="op">&gt;&gt;</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+                            <SPAN class="op">}</SPAN>
+                        <SPAN class="op">}</SPAN>
+                        line3_no_clip<SPAN class="op">(</SPAN>lp2<SPAN class="op">,</SPAN> sx<SPAN class="op">,</SPAN> sy<SPAN class="op">,</SPAN> ex<SPAN class="op">,</SPAN> ey<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="op">}</SPAN>
+                    <SPAN class="kw1">else</SPAN>
+                    <SPAN class="op">{</SPAN>
+                        line3_no_clip<SPAN class="op">(</SPAN>lp<SPAN class="op">,</SPAN> sx<SPAN class="op">,</SPAN> sy<SPAN class="op">,</SPAN> ex<SPAN class="op">,</SPAN> ey<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="op">}</SPAN>
+                <SPAN class="op">}</SPAN>
+                m_start <SPAN class="op">=</SPAN> start <SPAN class="op">+</SPAN> <A href="agg_basics.h.html#uround">uround</A><SPAN class="op">(</SPAN>lp<SPAN class="op">.</SPAN>len <SPAN class="op">/</SPAN> m_scale_x<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="kw1">else</SPAN>
+            <SPAN class="op">{</SPAN>
+                line3_no_clip<SPAN class="op">(</SPAN>lp<SPAN class="op">,</SPAN> sx<SPAN class="op">,</SPAN> sy<SPAN class="op">,</SPAN> ex<SPAN class="op">,</SPAN> ey<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+
+    <SPAN class="kw1">private</SPAN>:
+        base_ren_type<SPAN class="op">*</SPAN>      m_ren<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">const</SPAN> pattern_type<SPAN class="op">*</SPAN> m_pattern<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN>                 m_start<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN>              m_scale_x<SPAN class="op">;</SPAN>
+        <A href="agg_basics.h.html#rect_i">rect_i</A>              m_clip_box<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">bool</SPAN>                m_clipping<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+
+
+
+<SPAN class="op">}</SPAN>
+
+
+
+<SPAN class="kw2">#endif</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT><TABLE width="640px" bgcolor="#583927" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0">
+<TR><TD><CENTER><SPAN class="authors">
+Copyright <SPAN class="larger">&#169;</SPAN> 2002-2006
+<A href="../../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+<TR><TD><CENTER><SPAN class="authors">
+Web Design and Programming
+<A href="../../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+</TABLE>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+</HTML>

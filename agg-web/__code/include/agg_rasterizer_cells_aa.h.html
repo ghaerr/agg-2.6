@@ -1,0 +1,784 @@
+<HTML><HEAD><TITLE>Anti-Grain Geometry - </TITLE>
+<META http-equiv="Content-Type" content="text/html"/>
+<LINK rel="stylesheet" type="text/css" href="../../agg.styles.css"/>
+</HEAD>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE><SPAN class="rem">//----------------------------------------------------------------------------</SPAN>
+<SPAN class="rem">// Anti-Grain Geometry (AGG) - Version 2.5</SPAN>
+<SPAN class="rem">// A high quality rendering engine for C++</SPAN>
+<SPAN class="rem">// Copyright (C) 2002-2006 Maxim Shemanarev</SPAN>
+<SPAN class="rem">// Contact: mcseem@antigrain.com</SPAN>
+<SPAN class="rem">//          mcseemagg@yahoo.com</SPAN>
+<SPAN class="rem">//          http://antigrain.com</SPAN>
+<SPAN class="rem">// </SPAN>
+<SPAN class="rem">// AGG is free software; you can redistribute it and/or</SPAN>
+<SPAN class="rem">// modify it under the terms of the GNU General Public License</SPAN>
+<SPAN class="rem">// as published by the Free Software Foundation; either version 2</SPAN>
+<SPAN class="rem">// of the License, or (at your option) any later version.</SPAN>
+<SPAN class="rem">// </SPAN>
+<SPAN class="rem">// AGG is distributed in the hope that it will be useful,</SPAN>
+<SPAN class="rem">// but WITHOUT ANY WARRANTY; without even the implied warranty of</SPAN>
+<SPAN class="rem">// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</SPAN>
+<SPAN class="rem">// GNU General Public License for more details.</SPAN>
+<SPAN class="rem">// </SPAN>
+<SPAN class="rem">// You should have received a copy of the GNU General Public License</SPAN>
+<SPAN class="rem">// along with AGG; if not, write to the Free Software</SPAN>
+<SPAN class="rem">// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, </SPAN>
+<SPAN class="rem">// MA 02110-1301, USA.</SPAN>
+<SPAN class="rem">//----------------------------------------------------------------------------</SPAN>
+<SPAN class="rem">//</SPAN>
+<SPAN class="rem">// The author gratefully acknowleges the support of David Turner, </SPAN>
+<SPAN class="rem">// Robert Wilhelm, and Werner Lemberg - the authors of the FreeType </SPAN>
+<SPAN class="rem">// libray - in producing this work. See http://www.freetype.org for details.</SPAN>
+<SPAN class="rem">//</SPAN>
+<SPAN class="rem">//----------------------------------------------------------------------------</SPAN>
+<SPAN class="rem">//</SPAN>
+<SPAN class="rem">// Adaptation for 32-bit screen coordinates has been sponsored by </SPAN>
+<SPAN class="rem">// Liberty Technology Systems, Inc., visit http://lib-sys.com</SPAN>
+<SPAN class="rem">//</SPAN>
+<SPAN class="rem">// Liberty Technology Systems, Inc. is the provider of</SPAN>
+<SPAN class="rem">// PostScript and PDF technology for software developers.</SPAN>
+<SPAN class="rem">// </SPAN>
+<SPAN class="rem">//----------------------------------------------------------------------------</SPAN>
+
+<SPAN class="kw2">#ifndef</SPAN> AGG_RASTERIZER_CELLS_AA_INCLUDED
+<SPAN class="kw2">#define</SPAN> AGG_RASTERIZER_CELLS_AA_INCLUDED
+
+<SPAN class="kw2">#include</SPAN> <SPAN class="op">&lt;</SPAN>string<SPAN class="op">.</SPAN>h<SPAN class="op">&gt;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="op">&lt;</SPAN>math<SPAN class="op">.</SPAN>h<SPAN class="op">&gt;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="agg_math.h.html">agg_math.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="agg_array.h.html">agg_array.h</A>&quot;</SPAN>
+
+
+<SPAN class="kw1">namespace</SPAN> agg
+<SPAN class="op">{</SPAN>
+
+    <SPAN class="rem">//-----------------------------------------------------<A name="rasterizer_cells_aa"><B></B></A><A href="agg_rasterizer_cells_aa.h.html#rasterizer_cells_aa">rasterizer_cells_aa</A></SPAN>
+    <SPAN class="rem">// An internal class that implements the main rasterization algorithm.</SPAN>
+    <SPAN class="rem">// Used in the rasterizer. Should not be used direcly.</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Cell<SPAN class="op">&gt;</SPAN> <SPAN class="kw1">class</SPAN> <A href="agg_rasterizer_cells_aa.h.html#rasterizer_cells_aa">rasterizer_cells_aa</A>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">enum</SPAN> cell_block_scale_e
+        <SPAN class="op">{</SPAN>
+            cell_block_shift <SPAN class="op">=</SPAN> <SPAN class="num">12</SPAN><SPAN class="op">,</SPAN>
+            cell_block_size  <SPAN class="op">=</SPAN> <SPAN class="num">1</SPAN> <SPAN class="op">&lt;&lt;</SPAN> cell_block_shift<SPAN class="op">,</SPAN>
+            cell_block_mask  <SPAN class="op">=</SPAN> cell_block_size <SPAN class="op">-</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">,</SPAN>
+            cell_block_pool  <SPAN class="op">=</SPAN> <SPAN class="num">256</SPAN><SPAN class="op">,</SPAN>
+            cell_block_limit <SPAN class="op">=</SPAN> <SPAN class="num">1024</SPAN>
+        <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">struct</SPAN> sorted_y
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">unsigned</SPAN> start<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">unsigned</SPAN> num<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">public</SPAN>:
+        <SPAN class="kw1">typedef</SPAN> Cell cell_type<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">typedef</SPAN> <A href="agg_rasterizer_cells_aa.h.html#rasterizer_cells_aa">rasterizer_cells_aa</A><SPAN class="op">&lt;</SPAN>Cell<SPAN class="op">&gt;</SPAN> self_type<SPAN class="op">;</SPAN>
+
+        ~<A href="agg_rasterizer_cells_aa.h.html#rasterizer_cells_aa">rasterizer_cells_aa</A><SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <A href="agg_rasterizer_cells_aa.h.html#rasterizer_cells_aa">rasterizer_cells_aa</A><SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">void</SPAN> reset<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">void</SPAN> style<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> cell_type<SPAN class="op">&amp;</SPAN> style_cell<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">void</SPAN> line<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x1<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y1<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> x2<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y2<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">int</SPAN> min_x<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_min_x<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">int</SPAN> min_y<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_min_y<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">int</SPAN> max_x<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_max_x<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">int</SPAN> max_y<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_max_y<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">void</SPAN> sort_cells<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">unsigned</SPAN> total_cells<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> 
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">return</SPAN> m_num_cells<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">unsigned</SPAN> scanline_num_cells<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> y<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> 
+        <SPAN class="op">{</SPAN> 
+            <SPAN class="kw1">return</SPAN> m_sorted_y<SPAN class="op">[</SPAN>y <SPAN class="op">-</SPAN> m_min_y<SPAN class="op">]</SPAN><SPAN class="op">.</SPAN>num<SPAN class="op">;</SPAN> 
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">const</SPAN> cell_type<SPAN class="op">*</SPAN> <SPAN class="kw1">const</SPAN><SPAN class="op">*</SPAN> scanline_cells<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> y<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN>
+        <SPAN class="op">{</SPAN> 
+            <SPAN class="kw1">return</SPAN> m_sorted_cells<SPAN class="op">.</SPAN>data<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> m_sorted_y<SPAN class="op">[</SPAN>y <SPAN class="op">-</SPAN> m_min_y<SPAN class="op">]</SPAN><SPAN class="op">.</SPAN>start<SPAN class="op">;</SPAN> 
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">bool</SPAN> sorted<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_sorted<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+
+    <SPAN class="kw1">private</SPAN>:
+        <A href="agg_rasterizer_cells_aa.h.html#rasterizer_cells_aa">rasterizer_cells_aa</A><SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> self_type<SPAN class="op">&amp;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">const</SPAN> self_type<SPAN class="op">&amp;</SPAN> <SPAN class="kw1">operator</SPAN> <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> self_type<SPAN class="op">&amp;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">void</SPAN> set_curr_cell<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">void</SPAN> add_curr_cell<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">void</SPAN> render_hline<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> ey<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> x1<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y1<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> x2<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y2<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">void</SPAN> allocate_block<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        
+    <SPAN class="kw1">private</SPAN>:
+        <SPAN class="kw1">unsigned</SPAN>                m_num_blocks<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN>                m_max_blocks<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN>                m_curr_block<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN>                m_num_cells<SPAN class="op">;</SPAN>
+        cell_type<SPAN class="op">*</SPAN><SPAN class="op">*</SPAN>             m_cells<SPAN class="op">;</SPAN>
+        cell_type<SPAN class="op">*</SPAN>              m_curr_cell_ptr<SPAN class="op">;</SPAN>
+        <A href="agg_array.h.html#pod_vector">pod_vector</A><SPAN class="op">&lt;</SPAN>cell_type<SPAN class="op">*</SPAN><SPAN class="op">&gt;</SPAN>  m_sorted_cells<SPAN class="op">;</SPAN>
+        <A href="agg_array.h.html#pod_vector">pod_vector</A><SPAN class="op">&lt;</SPAN>sorted_y<SPAN class="op">&gt;</SPAN>    m_sorted_y<SPAN class="op">;</SPAN>
+        cell_type               m_curr_cell<SPAN class="op">;</SPAN>
+        cell_type               m_style_cell<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN>                     m_min_x<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN>                     m_min_y<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN>                     m_max_x<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN>                     m_max_y<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">bool</SPAN>                    m_sorted<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Cell<SPAN class="op">&gt;</SPAN> 
+    <A href="agg_rasterizer_cells_aa.h.html#rasterizer_cells_aa">rasterizer_cells_aa</A><SPAN class="op">&lt;</SPAN>Cell<SPAN class="op">&gt;</SPAN>::~<A href="agg_rasterizer_cells_aa.h.html#rasterizer_cells_aa">rasterizer_cells_aa</A><SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_num_blocks<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            cell_type<SPAN class="op">*</SPAN><SPAN class="op">*</SPAN> ptr <SPAN class="op">=</SPAN> m_cells <SPAN class="op">+</SPAN> m_num_blocks <SPAN class="op">-</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN>m_num_blocks<SPAN class="op">--</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                <A href="agg_basics.h.html#pod_allocator">pod_allocator</A><SPAN class="op">&lt;</SPAN>cell_type<SPAN class="op">&gt;</SPAN>::deallocate<SPAN class="op">(</SPAN><SPAN class="op">*</SPAN>ptr<SPAN class="op">,</SPAN> cell_block_size<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                ptr<SPAN class="op">--</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            <A href="agg_basics.h.html#pod_allocator">pod_allocator</A><SPAN class="op">&lt;</SPAN>cell_type<SPAN class="op">*</SPAN><SPAN class="op">&gt;</SPAN>::deallocate<SPAN class="op">(</SPAN>m_cells<SPAN class="op">,</SPAN> m_max_blocks<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Cell<SPAN class="op">&gt;</SPAN> 
+    <A href="agg_rasterizer_cells_aa.h.html#rasterizer_cells_aa">rasterizer_cells_aa</A><SPAN class="op">&lt;</SPAN>Cell<SPAN class="op">&gt;</SPAN>::<A href="agg_rasterizer_cells_aa.h.html#rasterizer_cells_aa">rasterizer_cells_aa</A><SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> :
+        m_num_blocks<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_max_blocks<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_curr_block<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_num_cells<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_cells<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_curr_cell_ptr<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_sorted_cells<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_sorted_y<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_min_x<SPAN class="op">(</SPAN><SPAN class="num">0x7FFFFFFF</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_min_y<SPAN class="op">(</SPAN><SPAN class="num">0x7FFFFFFF</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_max_x<SPAN class="op">(</SPAN><SPAN class="op">-</SPAN><SPAN class="num">0x7FFFFFFF</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_max_y<SPAN class="op">(</SPAN><SPAN class="op">-</SPAN><SPAN class="num">0x7FFFFFFF</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_sorted<SPAN class="op">(</SPAN><SPAN class="kw1">false</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        m_style_cell<SPAN class="op">.</SPAN>initial<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_curr_cell<SPAN class="op">.</SPAN>initial<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Cell<SPAN class="op">&gt;</SPAN> 
+    <SPAN class="kw1">void</SPAN> <A href="agg_rasterizer_cells_aa.h.html#rasterizer_cells_aa">rasterizer_cells_aa</A><SPAN class="op">&lt;</SPAN>Cell<SPAN class="op">&gt;</SPAN>::reset<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        m_num_cells <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> 
+        m_curr_block <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        m_curr_cell<SPAN class="op">.</SPAN>initial<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_style_cell<SPAN class="op">.</SPAN>initial<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_sorted <SPAN class="op">=</SPAN> <SPAN class="kw1">false</SPAN><SPAN class="op">;</SPAN>
+        m_min_x <SPAN class="op">=</SPAN>  <SPAN class="num">0x7FFFFFFF</SPAN><SPAN class="op">;</SPAN>
+        m_min_y <SPAN class="op">=</SPAN>  <SPAN class="num">0x7FFFFFFF</SPAN><SPAN class="op">;</SPAN>
+        m_max_x <SPAN class="op">=</SPAN> <SPAN class="op">-</SPAN><SPAN class="num">0x7FFFFFFF</SPAN><SPAN class="op">;</SPAN>
+        m_max_y <SPAN class="op">=</SPAN> <SPAN class="op">-</SPAN><SPAN class="num">0x7FFFFFFF</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Cell<SPAN class="op">&gt;</SPAN> 
+    AGG_INLINE <SPAN class="kw1">void</SPAN> <A href="agg_rasterizer_cells_aa.h.html#rasterizer_cells_aa">rasterizer_cells_aa</A><SPAN class="op">&lt;</SPAN>Cell<SPAN class="op">&gt;</SPAN>::add_curr_cell<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_curr_cell<SPAN class="op">.</SPAN>area <SPAN class="op">|</SPAN> m_curr_cell<SPAN class="op">.</SPAN>cover<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>m_num_cells <SPAN class="op">&amp;</SPAN> cell_block_mask<SPAN class="op">)</SPAN> <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_num_blocks <SPAN class="op">&gt;=</SPAN> cell_block_limit<SPAN class="op">)</SPAN> <SPAN class="kw1">return</SPAN><SPAN class="op">;</SPAN>
+                allocate_block<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="op">*</SPAN>m_curr_cell_ptr<SPAN class="op">++</SPAN> <SPAN class="op">=</SPAN> m_curr_cell<SPAN class="op">;</SPAN>
+            <SPAN class="op">++</SPAN>m_num_cells<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Cell<SPAN class="op">&gt;</SPAN> 
+    AGG_INLINE <SPAN class="kw1">void</SPAN> <A href="agg_rasterizer_cells_aa.h.html#rasterizer_cells_aa">rasterizer_cells_aa</A><SPAN class="op">&lt;</SPAN>Cell<SPAN class="op">&gt;</SPAN>::set_curr_cell<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_curr_cell<SPAN class="op">.</SPAN>not_equal<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> y<SPAN class="op">,</SPAN> m_style_cell<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            add_curr_cell<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            m_curr_cell<SPAN class="op">.</SPAN>style<SPAN class="op">(</SPAN>m_style_cell<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            m_curr_cell<SPAN class="op">.</SPAN>x     <SPAN class="op">=</SPAN> x<SPAN class="op">;</SPAN>
+            m_curr_cell<SPAN class="op">.</SPAN>y     <SPAN class="op">=</SPAN> y<SPAN class="op">;</SPAN>
+            m_curr_cell<SPAN class="op">.</SPAN>cover <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+            m_curr_cell<SPAN class="op">.</SPAN>area  <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Cell<SPAN class="op">&gt;</SPAN> 
+    AGG_INLINE <SPAN class="kw1">void</SPAN> <A href="agg_rasterizer_cells_aa.h.html#rasterizer_cells_aa">rasterizer_cells_aa</A><SPAN class="op">&lt;</SPAN>Cell<SPAN class="op">&gt;</SPAN>::render_hline<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> ey<SPAN class="op">,</SPAN> 
+                                                            <SPAN class="kw1">int</SPAN> x1<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y1<SPAN class="op">,</SPAN> 
+                                                            <SPAN class="kw1">int</SPAN> x2<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y2<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">int</SPAN> ex1 <SPAN class="op">=</SPAN> x1 <SPAN class="op">&gt;&gt;</SPAN> <A href="agg_basics.h.html#poly_subpixel_shift">poly_subpixel_shift</A><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN> ex2 <SPAN class="op">=</SPAN> x2 <SPAN class="op">&gt;&gt;</SPAN> <A href="agg_basics.h.html#poly_subpixel_shift">poly_subpixel_shift</A><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN> fx1 <SPAN class="op">=</SPAN> x1 <SPAN class="op">&amp;</SPAN> <A href="agg_basics.h.html#poly_subpixel_mask">poly_subpixel_mask</A><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN> fx2 <SPAN class="op">=</SPAN> x2 <SPAN class="op">&amp;</SPAN> <A href="agg_basics.h.html#poly_subpixel_mask">poly_subpixel_mask</A><SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">int</SPAN> delta<SPAN class="op">,</SPAN> p<SPAN class="op">,</SPAN> first<SPAN class="op">,</SPAN> dx<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN> incr<SPAN class="op">,</SPAN> lift<SPAN class="op">,</SPAN> mod<SPAN class="op">,</SPAN> rem<SPAN class="op">;</SPAN>
+
+        <SPAN class="rem">//trivial case. Happens often</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>y1 <SPAN class="op">==</SPAN> y2<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            set_curr_cell<SPAN class="op">(</SPAN>ex2<SPAN class="op">,</SPAN> ey<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">return</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//everything is located in a single cell.  That is easy!</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>ex1 <SPAN class="op">==</SPAN> ex2<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            delta <SPAN class="op">=</SPAN> y2 <SPAN class="op">-</SPAN> y1<SPAN class="op">;</SPAN>
+            m_curr_cell<SPAN class="op">.</SPAN>cover <SPAN class="op">+=</SPAN> delta<SPAN class="op">;</SPAN>
+            m_curr_cell<SPAN class="op">.</SPAN>area  <SPAN class="op">+=</SPAN> <SPAN class="op">(</SPAN>fx1 <SPAN class="op">+</SPAN> fx2<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> delta<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">return</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//ok, we&#039;ll have to render a run of adjacent cells on the same</SPAN>
+        <SPAN class="rem">//hline...</SPAN>
+        p     <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN><A href="agg_basics.h.html#poly_subpixel_scale">poly_subpixel_scale</A> <SPAN class="op">-</SPAN> fx1<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>y2 <SPAN class="op">-</SPAN> y1<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        first <SPAN class="op">=</SPAN> <A href="agg_basics.h.html#poly_subpixel_scale">poly_subpixel_scale</A><SPAN class="op">;</SPAN>
+        incr  <SPAN class="op">=</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+
+        dx <SPAN class="op">=</SPAN> x2 <SPAN class="op">-</SPAN> x1<SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>dx <SPAN class="op">&lt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            p     <SPAN class="op">=</SPAN> fx1 <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>y2 <SPAN class="op">-</SPAN> y1<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            first <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+            incr  <SPAN class="op">=</SPAN> <SPAN class="op">-</SPAN><SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+            dx    <SPAN class="op">=</SPAN> <SPAN class="op">-</SPAN>dx<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        delta <SPAN class="op">=</SPAN> p <SPAN class="op">/</SPAN> dx<SPAN class="op">;</SPAN>
+        mod   <SPAN class="op">=</SPAN> p <SPAN class="op">%</SPAN> dx<SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>mod <SPAN class="op">&lt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            delta<SPAN class="op">--</SPAN><SPAN class="op">;</SPAN>
+            mod <SPAN class="op">+=</SPAN> dx<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        m_curr_cell<SPAN class="op">.</SPAN>cover <SPAN class="op">+=</SPAN> delta<SPAN class="op">;</SPAN>
+        m_curr_cell<SPAN class="op">.</SPAN>area  <SPAN class="op">+=</SPAN> <SPAN class="op">(</SPAN>fx1 <SPAN class="op">+</SPAN> first<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> delta<SPAN class="op">;</SPAN>
+
+        ex1 <SPAN class="op">+=</SPAN> incr<SPAN class="op">;</SPAN>
+        set_curr_cell<SPAN class="op">(</SPAN>ex1<SPAN class="op">,</SPAN> ey<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        y1  <SPAN class="op">+=</SPAN> delta<SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>ex1 <SPAN class="op">!=</SPAN> ex2<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            p     <SPAN class="op">=</SPAN> <A href="agg_basics.h.html#poly_subpixel_scale">poly_subpixel_scale</A> <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>y2 <SPAN class="op">-</SPAN> y1 <SPAN class="op">+</SPAN> delta<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            lift  <SPAN class="op">=</SPAN> p <SPAN class="op">/</SPAN> dx<SPAN class="op">;</SPAN>
+            rem   <SPAN class="op">=</SPAN> p <SPAN class="op">%</SPAN> dx<SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">if</SPAN> <SPAN class="op">(</SPAN>rem <SPAN class="op">&lt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                lift<SPAN class="op">--</SPAN><SPAN class="op">;</SPAN>
+                rem <SPAN class="op">+=</SPAN> dx<SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+
+            mod <SPAN class="op">-=</SPAN> dx<SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">while</SPAN> <SPAN class="op">(</SPAN>ex1 <SPAN class="op">!=</SPAN> ex2<SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                delta <SPAN class="op">=</SPAN> lift<SPAN class="op">;</SPAN>
+                mod  <SPAN class="op">+=</SPAN> rem<SPAN class="op">;</SPAN>
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>mod <SPAN class="op">&gt;=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    mod <SPAN class="op">-=</SPAN> dx<SPAN class="op">;</SPAN>
+                    delta<SPAN class="op">++</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+
+                m_curr_cell<SPAN class="op">.</SPAN>cover <SPAN class="op">+=</SPAN> delta<SPAN class="op">;</SPAN>
+                m_curr_cell<SPAN class="op">.</SPAN>area  <SPAN class="op">+=</SPAN> <A href="agg_basics.h.html#poly_subpixel_scale">poly_subpixel_scale</A> <SPAN class="op">*</SPAN> delta<SPAN class="op">;</SPAN>
+                y1  <SPAN class="op">+=</SPAN> delta<SPAN class="op">;</SPAN>
+                ex1 <SPAN class="op">+=</SPAN> incr<SPAN class="op">;</SPAN>
+                set_curr_cell<SPAN class="op">(</SPAN>ex1<SPAN class="op">,</SPAN> ey<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+        delta <SPAN class="op">=</SPAN> y2 <SPAN class="op">-</SPAN> y1<SPAN class="op">;</SPAN>
+        m_curr_cell<SPAN class="op">.</SPAN>cover <SPAN class="op">+=</SPAN> delta<SPAN class="op">;</SPAN>
+        m_curr_cell<SPAN class="op">.</SPAN>area  <SPAN class="op">+=</SPAN> <SPAN class="op">(</SPAN>fx2 <SPAN class="op">+</SPAN> <A href="agg_basics.h.html#poly_subpixel_scale">poly_subpixel_scale</A> <SPAN class="op">-</SPAN> first<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> delta<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Cell<SPAN class="op">&gt;</SPAN> 
+    AGG_INLINE <SPAN class="kw1">void</SPAN> <A href="agg_rasterizer_cells_aa.h.html#rasterizer_cells_aa">rasterizer_cells_aa</A><SPAN class="op">&lt;</SPAN>Cell<SPAN class="op">&gt;</SPAN>::style<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> cell_type<SPAN class="op">&amp;</SPAN> style_cell<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN> 
+        m_style_cell<SPAN class="op">.</SPAN>style<SPAN class="op">(</SPAN>style_cell<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> 
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Cell<SPAN class="op">&gt;</SPAN> 
+    <SPAN class="kw1">void</SPAN> <A href="agg_rasterizer_cells_aa.h.html#rasterizer_cells_aa">rasterizer_cells_aa</A><SPAN class="op">&lt;</SPAN>Cell<SPAN class="op">&gt;</SPAN>::line<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x1<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y1<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> x2<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y2<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">enum</SPAN> dx_limit_e <SPAN class="op">{</SPAN> dx_limit <SPAN class="op">=</SPAN> <SPAN class="num">16384</SPAN> <SPAN class="op">&lt;&lt;</SPAN> <A href="agg_basics.h.html#poly_subpixel_shift">poly_subpixel_shift</A> <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">int</SPAN> dx <SPAN class="op">=</SPAN> x2 <SPAN class="op">-</SPAN> x1<SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>dx <SPAN class="op">&gt;=</SPAN> dx_limit <SPAN class="op">||</SPAN> dx <SPAN class="op">&lt;=</SPAN> <SPAN class="op">-</SPAN>dx_limit<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">int</SPAN> cx <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>x1 <SPAN class="op">+</SPAN> x2<SPAN class="op">)</SPAN> <SPAN class="op">&gt;&gt;</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">int</SPAN> cy <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>y1 <SPAN class="op">+</SPAN> y2<SPAN class="op">)</SPAN> <SPAN class="op">&gt;&gt;</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+            line<SPAN class="op">(</SPAN>x1<SPAN class="op">,</SPAN> y1<SPAN class="op">,</SPAN> cx<SPAN class="op">,</SPAN> cy<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            line<SPAN class="op">(</SPAN>cx<SPAN class="op">,</SPAN> cy<SPAN class="op">,</SPAN> x2<SPAN class="op">,</SPAN> y2<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">int</SPAN> dy <SPAN class="op">=</SPAN> y2 <SPAN class="op">-</SPAN> y1<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN> ex1 <SPAN class="op">=</SPAN> x1 <SPAN class="op">&gt;&gt;</SPAN> <A href="agg_basics.h.html#poly_subpixel_shift">poly_subpixel_shift</A><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN> ex2 <SPAN class="op">=</SPAN> x2 <SPAN class="op">&gt;&gt;</SPAN> <A href="agg_basics.h.html#poly_subpixel_shift">poly_subpixel_shift</A><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN> ey1 <SPAN class="op">=</SPAN> y1 <SPAN class="op">&gt;&gt;</SPAN> <A href="agg_basics.h.html#poly_subpixel_shift">poly_subpixel_shift</A><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN> ey2 <SPAN class="op">=</SPAN> y2 <SPAN class="op">&gt;&gt;</SPAN> <A href="agg_basics.h.html#poly_subpixel_shift">poly_subpixel_shift</A><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN> fy1 <SPAN class="op">=</SPAN> y1 <SPAN class="op">&amp;</SPAN> <A href="agg_basics.h.html#poly_subpixel_mask">poly_subpixel_mask</A><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN> fy2 <SPAN class="op">=</SPAN> y2 <SPAN class="op">&amp;</SPAN> <A href="agg_basics.h.html#poly_subpixel_mask">poly_subpixel_mask</A><SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">int</SPAN> x_from<SPAN class="op">,</SPAN> x_to<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN> p<SPAN class="op">,</SPAN> rem<SPAN class="op">,</SPAN> mod<SPAN class="op">,</SPAN> lift<SPAN class="op">,</SPAN> delta<SPAN class="op">,</SPAN> first<SPAN class="op">,</SPAN> incr<SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>ex1 <SPAN class="op">&lt;</SPAN> m_min_x<SPAN class="op">)</SPAN> m_min_x <SPAN class="op">=</SPAN> ex1<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>ex1 <SPAN class="op">&gt;</SPAN> m_max_x<SPAN class="op">)</SPAN> m_max_x <SPAN class="op">=</SPAN> ex1<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>ey1 <SPAN class="op">&lt;</SPAN> m_min_y<SPAN class="op">)</SPAN> m_min_y <SPAN class="op">=</SPAN> ey1<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>ey1 <SPAN class="op">&gt;</SPAN> m_max_y<SPAN class="op">)</SPAN> m_max_y <SPAN class="op">=</SPAN> ey1<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>ex2 <SPAN class="op">&lt;</SPAN> m_min_x<SPAN class="op">)</SPAN> m_min_x <SPAN class="op">=</SPAN> ex2<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>ex2 <SPAN class="op">&gt;</SPAN> m_max_x<SPAN class="op">)</SPAN> m_max_x <SPAN class="op">=</SPAN> ex2<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>ey2 <SPAN class="op">&lt;</SPAN> m_min_y<SPAN class="op">)</SPAN> m_min_y <SPAN class="op">=</SPAN> ey2<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>ey2 <SPAN class="op">&gt;</SPAN> m_max_y<SPAN class="op">)</SPAN> m_max_y <SPAN class="op">=</SPAN> ey2<SPAN class="op">;</SPAN>
+
+        set_curr_cell<SPAN class="op">(</SPAN>ex1<SPAN class="op">,</SPAN> ey1<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="rem">//everything is on a single hline</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>ey1 <SPAN class="op">==</SPAN> ey2<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            render_hline<SPAN class="op">(</SPAN>ey1<SPAN class="op">,</SPAN> x1<SPAN class="op">,</SPAN> fy1<SPAN class="op">,</SPAN> x2<SPAN class="op">,</SPAN> fy2<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">return</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//Vertical line - we have to calculate start and end cells,</SPAN>
+        <SPAN class="rem">//and then - the common values of the area and coverage for</SPAN>
+        <SPAN class="rem">//all cells of the line. We know exactly there&#039;s only one </SPAN>
+        <SPAN class="rem">//cell, so, we don&#039;t have to call render_hline().</SPAN>
+        incr  <SPAN class="op">=</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>dx <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">int</SPAN> ex <SPAN class="op">=</SPAN> x1 <SPAN class="op">&gt;&gt;</SPAN> <A href="agg_basics.h.html#poly_subpixel_shift">poly_subpixel_shift</A><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">int</SPAN> two_fx <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>x1 <SPAN class="op">-</SPAN> <SPAN class="op">(</SPAN>ex <SPAN class="op">&lt;&lt;</SPAN> <A href="agg_basics.h.html#poly_subpixel_shift">poly_subpixel_shift</A><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">&lt;&lt;</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">int</SPAN> area<SPAN class="op">;</SPAN>
+
+            first <SPAN class="op">=</SPAN> <A href="agg_basics.h.html#poly_subpixel_scale">poly_subpixel_scale</A><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>dy <SPAN class="op">&lt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                first <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+                incr  <SPAN class="op">=</SPAN> <SPAN class="op">-</SPAN><SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+
+            x_from <SPAN class="op">=</SPAN> x1<SPAN class="op">;</SPAN>
+
+            <SPAN class="rem">//render_hline(ey1, x_from, fy1, x_from, first);</SPAN>
+            delta <SPAN class="op">=</SPAN> first <SPAN class="op">-</SPAN> fy1<SPAN class="op">;</SPAN>
+            m_curr_cell<SPAN class="op">.</SPAN>cover <SPAN class="op">+=</SPAN> delta<SPAN class="op">;</SPAN>
+            m_curr_cell<SPAN class="op">.</SPAN>area  <SPAN class="op">+=</SPAN> two_fx <SPAN class="op">*</SPAN> delta<SPAN class="op">;</SPAN>
+
+            ey1 <SPAN class="op">+=</SPAN> incr<SPAN class="op">;</SPAN>
+            set_curr_cell<SPAN class="op">(</SPAN>ex<SPAN class="op">,</SPAN> ey1<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+            delta <SPAN class="op">=</SPAN> first <SPAN class="op">+</SPAN> first <SPAN class="op">-</SPAN> <A href="agg_basics.h.html#poly_subpixel_scale">poly_subpixel_scale</A><SPAN class="op">;</SPAN>
+            area <SPAN class="op">=</SPAN> two_fx <SPAN class="op">*</SPAN> delta<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN>ey1 <SPAN class="op">!=</SPAN> ey2<SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                <SPAN class="rem">//render_hline(ey1, x_from, <A href="agg_basics.h.html#poly_subpixel_scale">poly_subpixel_scale</A> - first, x_from, first);</SPAN>
+                m_curr_cell<SPAN class="op">.</SPAN>cover <SPAN class="op">=</SPAN> delta<SPAN class="op">;</SPAN>
+                m_curr_cell<SPAN class="op">.</SPAN>area  <SPAN class="op">=</SPAN> area<SPAN class="op">;</SPAN>
+                ey1 <SPAN class="op">+=</SPAN> incr<SPAN class="op">;</SPAN>
+                set_curr_cell<SPAN class="op">(</SPAN>ex<SPAN class="op">,</SPAN> ey1<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="rem">//render_hline(ey1, x_from, <A href="agg_basics.h.html#poly_subpixel_scale">poly_subpixel_scale</A> - first, x_from, fy2);</SPAN>
+            delta <SPAN class="op">=</SPAN> fy2 <SPAN class="op">-</SPAN> <A href="agg_basics.h.html#poly_subpixel_scale">poly_subpixel_scale</A> <SPAN class="op">+</SPAN> first<SPAN class="op">;</SPAN>
+            m_curr_cell<SPAN class="op">.</SPAN>cover <SPAN class="op">+=</SPAN> delta<SPAN class="op">;</SPAN>
+            m_curr_cell<SPAN class="op">.</SPAN>area  <SPAN class="op">+=</SPAN> two_fx <SPAN class="op">*</SPAN> delta<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">return</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//ok, we have to render several hlines</SPAN>
+        p     <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN><A href="agg_basics.h.html#poly_subpixel_scale">poly_subpixel_scale</A> <SPAN class="op">-</SPAN> fy1<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> dx<SPAN class="op">;</SPAN>
+        first <SPAN class="op">=</SPAN> <A href="agg_basics.h.html#poly_subpixel_scale">poly_subpixel_scale</A><SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>dy <SPAN class="op">&lt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            p     <SPAN class="op">=</SPAN> fy1 <SPAN class="op">*</SPAN> dx<SPAN class="op">;</SPAN>
+            first <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+            incr  <SPAN class="op">=</SPAN> <SPAN class="op">-</SPAN><SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+            dy    <SPAN class="op">=</SPAN> <SPAN class="op">-</SPAN>dy<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        delta <SPAN class="op">=</SPAN> p <SPAN class="op">/</SPAN> dy<SPAN class="op">;</SPAN>
+        mod   <SPAN class="op">=</SPAN> p <SPAN class="op">%</SPAN> dy<SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>mod <SPAN class="op">&lt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            delta<SPAN class="op">--</SPAN><SPAN class="op">;</SPAN>
+            mod <SPAN class="op">+=</SPAN> dy<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        x_from <SPAN class="op">=</SPAN> x1 <SPAN class="op">+</SPAN> delta<SPAN class="op">;</SPAN>
+        render_hline<SPAN class="op">(</SPAN>ey1<SPAN class="op">,</SPAN> x1<SPAN class="op">,</SPAN> fy1<SPAN class="op">,</SPAN> x_from<SPAN class="op">,</SPAN> first<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        ey1 <SPAN class="op">+=</SPAN> incr<SPAN class="op">;</SPAN>
+        set_curr_cell<SPAN class="op">(</SPAN>x_from <SPAN class="op">&gt;&gt;</SPAN> <A href="agg_basics.h.html#poly_subpixel_shift">poly_subpixel_shift</A><SPAN class="op">,</SPAN> ey1<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>ey1 <SPAN class="op">!=</SPAN> ey2<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            p     <SPAN class="op">=</SPAN> <A href="agg_basics.h.html#poly_subpixel_scale">poly_subpixel_scale</A> <SPAN class="op">*</SPAN> dx<SPAN class="op">;</SPAN>
+            lift  <SPAN class="op">=</SPAN> p <SPAN class="op">/</SPAN> dy<SPAN class="op">;</SPAN>
+            rem   <SPAN class="op">=</SPAN> p <SPAN class="op">%</SPAN> dy<SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>rem <SPAN class="op">&lt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                lift<SPAN class="op">--</SPAN><SPAN class="op">;</SPAN>
+                rem <SPAN class="op">+=</SPAN> dy<SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            mod <SPAN class="op">-=</SPAN> dy<SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN>ey1 <SPAN class="op">!=</SPAN> ey2<SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                delta <SPAN class="op">=</SPAN> lift<SPAN class="op">;</SPAN>
+                mod  <SPAN class="op">+=</SPAN> rem<SPAN class="op">;</SPAN>
+                <SPAN class="kw1">if</SPAN> <SPAN class="op">(</SPAN>mod <SPAN class="op">&gt;=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    mod <SPAN class="op">-=</SPAN> dy<SPAN class="op">;</SPAN>
+                    delta<SPAN class="op">++</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+
+                x_to <SPAN class="op">=</SPAN> x_from <SPAN class="op">+</SPAN> delta<SPAN class="op">;</SPAN>
+                render_hline<SPAN class="op">(</SPAN>ey1<SPAN class="op">,</SPAN> x_from<SPAN class="op">,</SPAN> <A href="agg_basics.h.html#poly_subpixel_scale">poly_subpixel_scale</A> <SPAN class="op">-</SPAN> first<SPAN class="op">,</SPAN> x_to<SPAN class="op">,</SPAN> first<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                x_from <SPAN class="op">=</SPAN> x_to<SPAN class="op">;</SPAN>
+
+                ey1 <SPAN class="op">+=</SPAN> incr<SPAN class="op">;</SPAN>
+                set_curr_cell<SPAN class="op">(</SPAN>x_from <SPAN class="op">&gt;&gt;</SPAN> <A href="agg_basics.h.html#poly_subpixel_shift">poly_subpixel_shift</A><SPAN class="op">,</SPAN> ey1<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+        render_hline<SPAN class="op">(</SPAN>ey1<SPAN class="op">,</SPAN> x_from<SPAN class="op">,</SPAN> <A href="agg_basics.h.html#poly_subpixel_scale">poly_subpixel_scale</A> <SPAN class="op">-</SPAN> first<SPAN class="op">,</SPAN> x2<SPAN class="op">,</SPAN> fy2<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Cell<SPAN class="op">&gt;</SPAN> 
+    <SPAN class="kw1">void</SPAN> <A href="agg_rasterizer_cells_aa.h.html#rasterizer_cells_aa">rasterizer_cells_aa</A><SPAN class="op">&lt;</SPAN>Cell<SPAN class="op">&gt;</SPAN>::allocate_block<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_curr_block <SPAN class="op">&gt;=</SPAN> m_num_blocks<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_num_blocks <SPAN class="op">&gt;=</SPAN> m_max_blocks<SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                cell_type<SPAN class="op">*</SPAN><SPAN class="op">*</SPAN> new_cells <SPAN class="op">=</SPAN> 
+                    <A href="agg_basics.h.html#pod_allocator">pod_allocator</A><SPAN class="op">&lt;</SPAN>cell_type<SPAN class="op">*</SPAN><SPAN class="op">&gt;</SPAN>::<SPAN class="kw1">allocate</SPAN><SPAN class="op">(</SPAN>m_max_blocks <SPAN class="op">+</SPAN> 
+                                                        cell_block_pool<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_cells<SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    memcpy<SPAN class="op">(</SPAN>new_cells<SPAN class="op">,</SPAN> m_cells<SPAN class="op">,</SPAN> m_max_blocks <SPAN class="op">*</SPAN> <SPAN class="kw1">sizeof</SPAN><SPAN class="op">(</SPAN>cell_type<SPAN class="op">*</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <A href="agg_basics.h.html#pod_allocator">pod_allocator</A><SPAN class="op">&lt;</SPAN>cell_type<SPAN class="op">*</SPAN><SPAN class="op">&gt;</SPAN>::deallocate<SPAN class="op">(</SPAN>m_cells<SPAN class="op">,</SPAN> m_max_blocks<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+                m_cells <SPAN class="op">=</SPAN> new_cells<SPAN class="op">;</SPAN>
+                m_max_blocks <SPAN class="op">+=</SPAN> cell_block_pool<SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+
+            m_cells<SPAN class="op">[</SPAN>m_num_blocks<SPAN class="op">++</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> 
+                <A href="agg_basics.h.html#pod_allocator">pod_allocator</A><SPAN class="op">&lt;</SPAN>cell_type<SPAN class="op">&gt;</SPAN>::<SPAN class="kw1">allocate</SPAN><SPAN class="op">(</SPAN>cell_block_size<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="op">}</SPAN>
+        m_curr_cell_ptr <SPAN class="op">=</SPAN> m_cells<SPAN class="op">[</SPAN>m_curr_block<SPAN class="op">++</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN> <SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> T<SPAN class="op">&gt;</SPAN> <SPAN class="kw1">static</SPAN> AGG_INLINE <SPAN class="kw1">void</SPAN> swap_cells<SPAN class="op">(</SPAN>T<SPAN class="op">*</SPAN> a<SPAN class="op">,</SPAN> T<SPAN class="op">*</SPAN> b<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        T temp <SPAN class="op">=</SPAN> <SPAN class="op">*</SPAN>a<SPAN class="op">;</SPAN>
+        <SPAN class="op">*</SPAN>a <SPAN class="op">=</SPAN> <SPAN class="op">*</SPAN>b<SPAN class="op">;</SPAN>
+        <SPAN class="op">*</SPAN>b <SPAN class="op">=</SPAN> temp<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">enum</SPAN>
+    <SPAN class="op">{</SPAN>
+        qsort_threshold <SPAN class="op">=</SPAN> <SPAN class="num">9</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Cell<SPAN class="op">&gt;</SPAN>
+    <SPAN class="kw1">void</SPAN> qsort_cells<SPAN class="op">(</SPAN>Cell<SPAN class="op">*</SPAN><SPAN class="op">*</SPAN> start<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> num<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        Cell<SPAN class="op">*</SPAN><SPAN class="op">*</SPAN>  stack<SPAN class="op">[</SPAN><SPAN class="num">80</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+        Cell<SPAN class="op">*</SPAN><SPAN class="op">*</SPAN><SPAN class="op">*</SPAN> top<SPAN class="op">;</SPAN> 
+        Cell<SPAN class="op">*</SPAN><SPAN class="op">*</SPAN>  limit<SPAN class="op">;</SPAN>
+        Cell<SPAN class="op">*</SPAN><SPAN class="op">*</SPAN>  base<SPAN class="op">;</SPAN>
+
+        limit <SPAN class="op">=</SPAN> start <SPAN class="op">+</SPAN> num<SPAN class="op">;</SPAN>
+        base  <SPAN class="op">=</SPAN> start<SPAN class="op">;</SPAN>
+        top   <SPAN class="op">=</SPAN> stack<SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">for</SPAN> <SPAN class="op">(</SPAN><SPAN class="op">;</SPAN><SPAN class="op">;</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">int</SPAN> len <SPAN class="op">=</SPAN> <SPAN class="kw1">int</SPAN><SPAN class="op">(</SPAN>limit <SPAN class="op">-</SPAN> base<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+            Cell<SPAN class="op">*</SPAN><SPAN class="op">*</SPAN> i<SPAN class="op">;</SPAN>
+            Cell<SPAN class="op">*</SPAN><SPAN class="op">*</SPAN> j<SPAN class="op">;</SPAN>
+            Cell<SPAN class="op">*</SPAN><SPAN class="op">*</SPAN> pivot<SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>len <SPAN class="op">&gt;</SPAN> qsort_threshold<SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                <SPAN class="rem">// we use base + len/2 as the pivot</SPAN>
+                pivot <SPAN class="op">=</SPAN> base <SPAN class="op">+</SPAN> len <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+                swap_cells<SPAN class="op">(</SPAN>base<SPAN class="op">,</SPAN> pivot<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                i <SPAN class="op">=</SPAN> base <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+                j <SPAN class="op">=</SPAN> limit <SPAN class="op">-</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+
+                <SPAN class="rem">// now ensure that *i &lt;= *base &lt;= *j </SPAN>
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN><SPAN class="op">(</SPAN><SPAN class="op">*</SPAN>j<SPAN class="op">)</SPAN><SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>x <SPAN class="op">&lt;</SPAN> <SPAN class="op">(</SPAN><SPAN class="op">*</SPAN>i<SPAN class="op">)</SPAN><SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>x<SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    swap_cells<SPAN class="op">(</SPAN>i<SPAN class="op">,</SPAN> j<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN><SPAN class="op">(</SPAN><SPAN class="op">*</SPAN>base<SPAN class="op">)</SPAN><SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>x <SPAN class="op">&lt;</SPAN> <SPAN class="op">(</SPAN><SPAN class="op">*</SPAN>i<SPAN class="op">)</SPAN><SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>x<SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    swap_cells<SPAN class="op">(</SPAN>base<SPAN class="op">,</SPAN> i<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN><SPAN class="op">(</SPAN><SPAN class="op">*</SPAN>j<SPAN class="op">)</SPAN><SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>x <SPAN class="op">&lt;</SPAN> <SPAN class="op">(</SPAN><SPAN class="op">*</SPAN>base<SPAN class="op">)</SPAN><SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>x<SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    swap_cells<SPAN class="op">(</SPAN>base<SPAN class="op">,</SPAN> j<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+
+                <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN><SPAN class="op">;</SPAN><SPAN class="op">;</SPAN><SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    <SPAN class="kw1">int</SPAN> x <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN><SPAN class="op">*</SPAN>base<SPAN class="op">)</SPAN><SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>x<SPAN class="op">;</SPAN>
+                    <SPAN class="kw1">do</SPAN> i<SPAN class="op">++</SPAN><SPAN class="op">;</SPAN> <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN> <SPAN class="op">(</SPAN><SPAN class="op">*</SPAN>i<SPAN class="op">)</SPAN><SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>x <SPAN class="op">&lt;</SPAN> x <SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="kw1">do</SPAN> j<SPAN class="op">--</SPAN><SPAN class="op">;</SPAN> <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN> x <SPAN class="op">&lt;</SPAN> <SPAN class="op">(</SPAN><SPAN class="op">*</SPAN>j<SPAN class="op">)</SPAN><SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>x <SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">&gt;</SPAN> j<SPAN class="op">)</SPAN>
+                    <SPAN class="op">{</SPAN>
+                        <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="op">}</SPAN>
+
+                    swap_cells<SPAN class="op">(</SPAN>i<SPAN class="op">,</SPAN> j<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+
+                swap_cells<SPAN class="op">(</SPAN>base<SPAN class="op">,</SPAN> j<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                <SPAN class="rem">// now, push the largest sub-array</SPAN>
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>j <SPAN class="op">-</SPAN> base <SPAN class="op">&gt;</SPAN> limit <SPAN class="op">-</SPAN> i<SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    top<SPAN class="op">[</SPAN><SPAN class="num">0</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> base<SPAN class="op">;</SPAN>
+                    top<SPAN class="op">[</SPAN><SPAN class="num">1</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> j<SPAN class="op">;</SPAN>
+                    base   <SPAN class="op">=</SPAN> i<SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+                <SPAN class="kw1">else</SPAN>
+                <SPAN class="op">{</SPAN>
+                    top<SPAN class="op">[</SPAN><SPAN class="num">0</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> i<SPAN class="op">;</SPAN>
+                    top<SPAN class="op">[</SPAN><SPAN class="num">1</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> limit<SPAN class="op">;</SPAN>
+                    limit  <SPAN class="op">=</SPAN> j<SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+                top <SPAN class="op">+=</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="kw1">else</SPAN>
+            <SPAN class="op">{</SPAN>
+                <SPAN class="rem">// the sub-array is small, perform insertion sort</SPAN>
+                j <SPAN class="op">=</SPAN> base<SPAN class="op">;</SPAN>
+                i <SPAN class="op">=</SPAN> j <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+
+                <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;</SPAN> limit<SPAN class="op">;</SPAN> j <SPAN class="op">=</SPAN> i<SPAN class="op">,</SPAN> i<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN><SPAN class="op">;</SPAN> j<SPAN class="op">[</SPAN><SPAN class="num">1</SPAN><SPAN class="op">]</SPAN><SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>x <SPAN class="op">&lt;</SPAN> <SPAN class="op">(</SPAN><SPAN class="op">*</SPAN>j<SPAN class="op">)</SPAN><SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>x<SPAN class="op">;</SPAN> j<SPAN class="op">--</SPAN><SPAN class="op">)</SPAN>
+                    <SPAN class="op">{</SPAN>
+                        swap_cells<SPAN class="op">(</SPAN>j <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">,</SPAN> j<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                        <SPAN class="kw1">if</SPAN> <SPAN class="op">(</SPAN>j <SPAN class="op">==</SPAN> base<SPAN class="op">)</SPAN>
+                        <SPAN class="op">{</SPAN>
+                            <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+                        <SPAN class="op">}</SPAN>
+                    <SPAN class="op">}</SPAN>
+                <SPAN class="op">}</SPAN>
+
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>top <SPAN class="op">&gt;</SPAN> stack<SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    top  <SPAN class="op">-=</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+                    base  <SPAN class="op">=</SPAN> top<SPAN class="op">[</SPAN><SPAN class="num">0</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    limit <SPAN class="op">=</SPAN> top<SPAN class="op">[</SPAN><SPAN class="num">1</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+                <SPAN class="kw1">else</SPAN>
+                <SPAN class="op">{</SPAN>
+                    <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Cell<SPAN class="op">&gt;</SPAN> 
+    <SPAN class="kw1">void</SPAN> <A href="agg_rasterizer_cells_aa.h.html#rasterizer_cells_aa">rasterizer_cells_aa</A><SPAN class="op">&lt;</SPAN>Cell<SPAN class="op">&gt;</SPAN>::sort_cells<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_sorted<SPAN class="op">)</SPAN> <SPAN class="kw1">return</SPAN><SPAN class="op">;</SPAN> <SPAN class="rem">//Perform sort only the first time.</SPAN>
+
+        add_curr_cell<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_curr_cell<SPAN class="op">.</SPAN>x     <SPAN class="op">=</SPAN> <SPAN class="num">0x7FFFFFFF</SPAN><SPAN class="op">;</SPAN>
+        m_curr_cell<SPAN class="op">.</SPAN>y     <SPAN class="op">=</SPAN> <SPAN class="num">0x7FFFFFFF</SPAN><SPAN class="op">;</SPAN>
+        m_curr_cell<SPAN class="op">.</SPAN>cover <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        m_curr_cell<SPAN class="op">.</SPAN>area  <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_num_cells <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">return</SPAN><SPAN class="op">;</SPAN>
+
+<SPAN class="rem">// DBG: Check to see if min/max works well.</SPAN>
+<SPAN class="rem">//for(unsigned nc = 0; nc &lt; m_num_cells; nc++)</SPAN>
+<SPAN class="rem">//{</SPAN>
+<SPAN class="rem">//    cell_type* cell = m_cells[nc &gt;&gt; cell_block_shift] + (nc &amp; cell_block_mask);</SPAN>
+<SPAN class="rem">//    if(cell-&gt;x &lt; m_min_x || </SPAN>
+<SPAN class="rem">//       cell-&gt;y &lt; m_min_y || </SPAN>
+<SPAN class="rem">//       cell-&gt;x &gt; m_max_x || </SPAN>
+<SPAN class="rem">//       cell-&gt;y &gt; m_max_y)</SPAN>
+<SPAN class="rem">//    {</SPAN>
+<SPAN class="rem">//        cell = cell; // Breakpoint here</SPAN>
+<SPAN class="rem">//    }</SPAN>
+<SPAN class="rem">//}</SPAN>
+        <SPAN class="rem">// Allocate the array of cell pointers</SPAN>
+        m_sorted_cells<SPAN class="op">.</SPAN><SPAN class="kw1">allocate</SPAN><SPAN class="op">(</SPAN>m_num_cells<SPAN class="op">,</SPAN> <SPAN class="num">16</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="rem">// Allocate and zero the Y array</SPAN>
+        m_sorted_y<SPAN class="op">.</SPAN><SPAN class="kw1">allocate</SPAN><SPAN class="op">(</SPAN>m_max_y <SPAN class="op">-</SPAN> m_min_y <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">16</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_sorted_y<SPAN class="op">.</SPAN>zero<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="rem">// Create the Y-histogram (count the numbers of cells for each Y)</SPAN>
+        cell_type<SPAN class="op">*</SPAN><SPAN class="op">*</SPAN> block_ptr <SPAN class="op">=</SPAN> m_cells<SPAN class="op">;</SPAN>
+        cell_type<SPAN class="op">*</SPAN>  cell_ptr<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> nb <SPAN class="op">=</SPAN> m_num_cells <SPAN class="op">&gt;&gt;</SPAN> cell_block_shift<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> i<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN>nb<SPAN class="op">--</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            cell_ptr <SPAN class="op">=</SPAN> <SPAN class="op">*</SPAN>block_ptr<SPAN class="op">++</SPAN><SPAN class="op">;</SPAN>
+            i <SPAN class="op">=</SPAN> cell_block_size<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN>i<SPAN class="op">--</SPAN><SPAN class="op">)</SPAN> 
+            <SPAN class="op">{</SPAN>
+                m_sorted_y<SPAN class="op">[</SPAN>cell_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>y <SPAN class="op">-</SPAN> m_min_y<SPAN class="op">]</SPAN><SPAN class="op">.</SPAN>start<SPAN class="op">++</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">++</SPAN>cell_ptr<SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        cell_ptr <SPAN class="op">=</SPAN> <SPAN class="op">*</SPAN>block_ptr<SPAN class="op">++</SPAN><SPAN class="op">;</SPAN>
+        i <SPAN class="op">=</SPAN> m_num_cells <SPAN class="op">&amp;</SPAN> cell_block_mask<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN>i<SPAN class="op">--</SPAN><SPAN class="op">)</SPAN> 
+        <SPAN class="op">{</SPAN>
+            m_sorted_y<SPAN class="op">[</SPAN>cell_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>y <SPAN class="op">-</SPAN> m_min_y<SPAN class="op">]</SPAN><SPAN class="op">.</SPAN>start<SPAN class="op">++</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">++</SPAN>cell_ptr<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">// Convert the Y-histogram into the array of starting indexes</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> start <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;</SPAN> m_sorted_y<SPAN class="op">.</SPAN>size<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> i<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">unsigned</SPAN> v <SPAN class="op">=</SPAN> m_sorted_y<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">.</SPAN>start<SPAN class="op">;</SPAN>
+            m_sorted_y<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">.</SPAN>start <SPAN class="op">=</SPAN> start<SPAN class="op">;</SPAN>
+            start <SPAN class="op">+=</SPAN> v<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">// Fill the cell pointer array sorted by Y</SPAN>
+        block_ptr <SPAN class="op">=</SPAN> m_cells<SPAN class="op">;</SPAN>
+        nb <SPAN class="op">=</SPAN> m_num_cells <SPAN class="op">&gt;&gt;</SPAN> cell_block_shift<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN>nb<SPAN class="op">--</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            cell_ptr <SPAN class="op">=</SPAN> <SPAN class="op">*</SPAN>block_ptr<SPAN class="op">++</SPAN><SPAN class="op">;</SPAN>
+            i <SPAN class="op">=</SPAN> cell_block_size<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN>i<SPAN class="op">--</SPAN><SPAN class="op">)</SPAN> 
+            <SPAN class="op">{</SPAN>
+                sorted_y<SPAN class="op">&amp;</SPAN> curr_y <SPAN class="op">=</SPAN> m_sorted_y<SPAN class="op">[</SPAN>cell_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>y <SPAN class="op">-</SPAN> m_min_y<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                m_sorted_cells<SPAN class="op">[</SPAN>curr_y<SPAN class="op">.</SPAN>start <SPAN class="op">+</SPAN> curr_y<SPAN class="op">.</SPAN>num<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> cell_ptr<SPAN class="op">;</SPAN>
+                <SPAN class="op">++</SPAN>curr_y<SPAN class="op">.</SPAN>num<SPAN class="op">;</SPAN>
+                <SPAN class="op">++</SPAN>cell_ptr<SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+        
+        cell_ptr <SPAN class="op">=</SPAN> <SPAN class="op">*</SPAN>block_ptr<SPAN class="op">++</SPAN><SPAN class="op">;</SPAN>
+        i <SPAN class="op">=</SPAN> m_num_cells <SPAN class="op">&amp;</SPAN> cell_block_mask<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN>i<SPAN class="op">--</SPAN><SPAN class="op">)</SPAN> 
+        <SPAN class="op">{</SPAN>
+            sorted_y<SPAN class="op">&amp;</SPAN> curr_y <SPAN class="op">=</SPAN> m_sorted_y<SPAN class="op">[</SPAN>cell_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>y <SPAN class="op">-</SPAN> m_min_y<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+            m_sorted_cells<SPAN class="op">[</SPAN>curr_y<SPAN class="op">.</SPAN>start <SPAN class="op">+</SPAN> curr_y<SPAN class="op">.</SPAN>num<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> cell_ptr<SPAN class="op">;</SPAN>
+            <SPAN class="op">++</SPAN>curr_y<SPAN class="op">.</SPAN>num<SPAN class="op">;</SPAN>
+            <SPAN class="op">++</SPAN>cell_ptr<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">// Finally arrange the X-arrays</SPAN>
+        <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;</SPAN> m_sorted_y<SPAN class="op">.</SPAN>size<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> i<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">const</SPAN> sorted_y<SPAN class="op">&amp;</SPAN> curr_y <SPAN class="op">=</SPAN> m_sorted_y<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>curr_y<SPAN class="op">.</SPAN>num<SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                qsort_cells<SPAN class="op">(</SPAN>m_sorted_cells<SPAN class="op">.</SPAN>data<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> curr_y<SPAN class="op">.</SPAN>start<SPAN class="op">,</SPAN> curr_y<SPAN class="op">.</SPAN>num<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+        m_sorted <SPAN class="op">=</SPAN> <SPAN class="kw1">true</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+
+    <SPAN class="rem">//------------------------------------------------------<A name="scanline_hit_test"><B></B></A><A href="agg_rasterizer_cells_aa.h.html#scanline_hit_test">scanline_hit_test</A></SPAN>
+    <SPAN class="kw1">class</SPAN> <A href="agg_rasterizer_cells_aa.h.html#scanline_hit_test">scanline_hit_test</A>
+    <SPAN class="op">{</SPAN>
+    <SPAN class="kw1">public</SPAN>:
+        <A href="agg_rasterizer_cells_aa.h.html#scanline_hit_test">scanline_hit_test</A><SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">)</SPAN> : m_x<SPAN class="op">(</SPAN>x<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> m_hit<SPAN class="op">(</SPAN><SPAN class="kw1">false</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN><SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">void</SPAN> reset_spans<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN><SPAN class="op">}</SPAN>
+        <SPAN class="kw1">void</SPAN> finalize<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN><SPAN class="op">}</SPAN>
+        <SPAN class="kw1">void</SPAN> add_cell<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_x <SPAN class="op">==</SPAN> x<SPAN class="op">)</SPAN> m_hit <SPAN class="op">=</SPAN> <SPAN class="kw1">true</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">void</SPAN> add_span<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> len<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_x <SPAN class="op">&gt;=</SPAN> x <SPAN class="op">&amp;&amp;</SPAN> m_x <SPAN class="op">&lt;</SPAN> x<SPAN class="op">+</SPAN>len<SPAN class="op">)</SPAN> m_hit <SPAN class="op">=</SPAN> <SPAN class="kw1">true</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> num_spans<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">bool</SPAN> hit<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_hit<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+
+    <SPAN class="kw1">private</SPAN>:
+        <SPAN class="kw1">int</SPAN>  m_x<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">bool</SPAN> m_hit<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+<SPAN class="op">}</SPAN>
+
+<SPAN class="kw2">#endif</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT><TABLE width="640px" bgcolor="#583927" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0">
+<TR><TD><CENTER><SPAN class="authors">
+Copyright <SPAN class="larger">&#169;</SPAN> 2002-2006
+<A href="../../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+<TR><TD><CENTER><SPAN class="authors">
+Web Design and Programming
+<A href="../../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+</TABLE>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+</HTML>

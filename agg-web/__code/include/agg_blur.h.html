@@ -1,0 +1,1323 @@
+<HTML><HEAD><TITLE>Anti-Grain Geometry - </TITLE>
+<META http-equiv="Content-Type" content="text/html"/>
+<LINK rel="stylesheet" type="text/css" href="../../agg.styles.css"/>
+</HEAD>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE><SPAN class="rem">//----------------------------------------------------------------------------</SPAN>
+<SPAN class="rem">// Anti-Grain Geometry (AGG) - Version 2.5</SPAN>
+<SPAN class="rem">// A high quality rendering engine for C++</SPAN>
+<SPAN class="rem">// Copyright (C) 2002-2006 Maxim Shemanarev</SPAN>
+<SPAN class="rem">// Contact: mcseem@antigrain.com</SPAN>
+<SPAN class="rem">//          mcseemagg@yahoo.com</SPAN>
+<SPAN class="rem">//          http://antigrain.com</SPAN>
+<SPAN class="rem">// </SPAN>
+<SPAN class="rem">// AGG is free software; you can redistribute it and/or</SPAN>
+<SPAN class="rem">// modify it under the terms of the GNU General Public License</SPAN>
+<SPAN class="rem">// as published by the Free Software Foundation; either version 2</SPAN>
+<SPAN class="rem">// of the License, or (at your option) any later version.</SPAN>
+<SPAN class="rem">// </SPAN>
+<SPAN class="rem">// AGG is distributed in the hope that it will be useful,</SPAN>
+<SPAN class="rem">// but WITHOUT ANY WARRANTY; without even the implied warranty of</SPAN>
+<SPAN class="rem">// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</SPAN>
+<SPAN class="rem">// GNU General Public License for more details.</SPAN>
+<SPAN class="rem">// </SPAN>
+<SPAN class="rem">// You should have received a copy of the GNU General Public License</SPAN>
+<SPAN class="rem">// along with AGG; if not, write to the Free Software</SPAN>
+<SPAN class="rem">// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, </SPAN>
+<SPAN class="rem">// MA 02110-1301, USA.</SPAN>
+<SPAN class="rem">//----------------------------------------------------------------------------</SPAN>
+<SPAN class="rem">//</SPAN>
+<SPAN class="rem">// The Stack Blur Algorithm was invented by Mario Klingemann, </SPAN>
+<SPAN class="rem">// mario@quasimondo.com and described here:</SPAN>
+<SPAN class="rem">// http://incubator.quasimondo.com/processing/fast_blur_deluxe.php</SPAN>
+<SPAN class="rem">// (search phrase &quot;Stackblur: Fast But Goodlooking&quot;). </SPAN>
+<SPAN class="rem">// The major improvement is that there&#039;s no more division table</SPAN>
+<SPAN class="rem">// that was very expensive to create for large blur radii. Insted, </SPAN>
+<SPAN class="rem">// for 8-bit per channel and radius not exceeding 254 the division is </SPAN>
+<SPAN class="rem">// replaced by multiplication and shift. </SPAN>
+<SPAN class="rem">//</SPAN>
+<SPAN class="rem">//----------------------------------------------------------------------------</SPAN>
+
+<SPAN class="kw2">#ifndef</SPAN> AGG_BLUR_INCLUDED
+<SPAN class="kw2">#define</SPAN> AGG_BLUR_INCLUDED
+
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="agg_array.h.html">agg_array.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="agg_pixfmt_transposer.h.html">agg_pixfmt_transposer.h</A>&quot;</SPAN>
+
+<SPAN class="kw1">namespace</SPAN> agg
+<SPAN class="op">{</SPAN>
+
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> T<SPAN class="op">&gt;</SPAN> <SPAN class="kw1">struct</SPAN> stack_blur_tables
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">static</SPAN> <A href="agg_basics.h.html#int16u">int16u</A> <SPAN class="kw1">const</SPAN> g_stack_blur8_mul<SPAN class="op">[</SPAN><SPAN class="num">255</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">static</SPAN> <A href="agg_basics.h.html#int8u">int8u</A>  <SPAN class="kw1">const</SPAN> g_stack_blur8_shr<SPAN class="op">[</SPAN><SPAN class="num">255</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> T<SPAN class="op">&gt;</SPAN> 
+    <A href="agg_basics.h.html#int16u">int16u</A> <SPAN class="kw1">const</SPAN> stack_blur_tables<SPAN class="op">&lt;</SPAN>T<SPAN class="op">&gt;</SPAN>::g_stack_blur8_mul<SPAN class="op">[</SPAN><SPAN class="num">255</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> 
+    <SPAN class="op">{</SPAN>
+        <SPAN class="num">512</SPAN><SPAN class="op">,</SPAN><SPAN class="num">512</SPAN><SPAN class="op">,</SPAN><SPAN class="num">456</SPAN><SPAN class="op">,</SPAN><SPAN class="num">512</SPAN><SPAN class="op">,</SPAN><SPAN class="num">328</SPAN><SPAN class="op">,</SPAN><SPAN class="num">456</SPAN><SPAN class="op">,</SPAN><SPAN class="num">335</SPAN><SPAN class="op">,</SPAN><SPAN class="num">512</SPAN><SPAN class="op">,</SPAN><SPAN class="num">405</SPAN><SPAN class="op">,</SPAN><SPAN class="num">328</SPAN><SPAN class="op">,</SPAN><SPAN class="num">271</SPAN><SPAN class="op">,</SPAN><SPAN class="num">456</SPAN><SPAN class="op">,</SPAN><SPAN class="num">388</SPAN><SPAN class="op">,</SPAN><SPAN class="num">335</SPAN><SPAN class="op">,</SPAN><SPAN class="num">292</SPAN><SPAN class="op">,</SPAN><SPAN class="num">512</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="num">454</SPAN><SPAN class="op">,</SPAN><SPAN class="num">405</SPAN><SPAN class="op">,</SPAN><SPAN class="num">364</SPAN><SPAN class="op">,</SPAN><SPAN class="num">328</SPAN><SPAN class="op">,</SPAN><SPAN class="num">298</SPAN><SPAN class="op">,</SPAN><SPAN class="num">271</SPAN><SPAN class="op">,</SPAN><SPAN class="num">496</SPAN><SPAN class="op">,</SPAN><SPAN class="num">456</SPAN><SPAN class="op">,</SPAN><SPAN class="num">420</SPAN><SPAN class="op">,</SPAN><SPAN class="num">388</SPAN><SPAN class="op">,</SPAN><SPAN class="num">360</SPAN><SPAN class="op">,</SPAN><SPAN class="num">335</SPAN><SPAN class="op">,</SPAN><SPAN class="num">312</SPAN><SPAN class="op">,</SPAN><SPAN class="num">292</SPAN><SPAN class="op">,</SPAN><SPAN class="num">273</SPAN><SPAN class="op">,</SPAN><SPAN class="num">512</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="num">482</SPAN><SPAN class="op">,</SPAN><SPAN class="num">454</SPAN><SPAN class="op">,</SPAN><SPAN class="num">428</SPAN><SPAN class="op">,</SPAN><SPAN class="num">405</SPAN><SPAN class="op">,</SPAN><SPAN class="num">383</SPAN><SPAN class="op">,</SPAN><SPAN class="num">364</SPAN><SPAN class="op">,</SPAN><SPAN class="num">345</SPAN><SPAN class="op">,</SPAN><SPAN class="num">328</SPAN><SPAN class="op">,</SPAN><SPAN class="num">312</SPAN><SPAN class="op">,</SPAN><SPAN class="num">298</SPAN><SPAN class="op">,</SPAN><SPAN class="num">284</SPAN><SPAN class="op">,</SPAN><SPAN class="num">271</SPAN><SPAN class="op">,</SPAN><SPAN class="num">259</SPAN><SPAN class="op">,</SPAN><SPAN class="num">496</SPAN><SPAN class="op">,</SPAN><SPAN class="num">475</SPAN><SPAN class="op">,</SPAN><SPAN class="num">456</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="num">437</SPAN><SPAN class="op">,</SPAN><SPAN class="num">420</SPAN><SPAN class="op">,</SPAN><SPAN class="num">404</SPAN><SPAN class="op">,</SPAN><SPAN class="num">388</SPAN><SPAN class="op">,</SPAN><SPAN class="num">374</SPAN><SPAN class="op">,</SPAN><SPAN class="num">360</SPAN><SPAN class="op">,</SPAN><SPAN class="num">347</SPAN><SPAN class="op">,</SPAN><SPAN class="num">335</SPAN><SPAN class="op">,</SPAN><SPAN class="num">323</SPAN><SPAN class="op">,</SPAN><SPAN class="num">312</SPAN><SPAN class="op">,</SPAN><SPAN class="num">302</SPAN><SPAN class="op">,</SPAN><SPAN class="num">292</SPAN><SPAN class="op">,</SPAN><SPAN class="num">282</SPAN><SPAN class="op">,</SPAN><SPAN class="num">273</SPAN><SPAN class="op">,</SPAN><SPAN class="num">265</SPAN><SPAN class="op">,</SPAN><SPAN class="num">512</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="num">497</SPAN><SPAN class="op">,</SPAN><SPAN class="num">482</SPAN><SPAN class="op">,</SPAN><SPAN class="num">468</SPAN><SPAN class="op">,</SPAN><SPAN class="num">454</SPAN><SPAN class="op">,</SPAN><SPAN class="num">441</SPAN><SPAN class="op">,</SPAN><SPAN class="num">428</SPAN><SPAN class="op">,</SPAN><SPAN class="num">417</SPAN><SPAN class="op">,</SPAN><SPAN class="num">405</SPAN><SPAN class="op">,</SPAN><SPAN class="num">394</SPAN><SPAN class="op">,</SPAN><SPAN class="num">383</SPAN><SPAN class="op">,</SPAN><SPAN class="num">373</SPAN><SPAN class="op">,</SPAN><SPAN class="num">364</SPAN><SPAN class="op">,</SPAN><SPAN class="num">354</SPAN><SPAN class="op">,</SPAN><SPAN class="num">345</SPAN><SPAN class="op">,</SPAN><SPAN class="num">337</SPAN><SPAN class="op">,</SPAN><SPAN class="num">328</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="num">320</SPAN><SPAN class="op">,</SPAN><SPAN class="num">312</SPAN><SPAN class="op">,</SPAN><SPAN class="num">305</SPAN><SPAN class="op">,</SPAN><SPAN class="num">298</SPAN><SPAN class="op">,</SPAN><SPAN class="num">291</SPAN><SPAN class="op">,</SPAN><SPAN class="num">284</SPAN><SPAN class="op">,</SPAN><SPAN class="num">278</SPAN><SPAN class="op">,</SPAN><SPAN class="num">271</SPAN><SPAN class="op">,</SPAN><SPAN class="num">265</SPAN><SPAN class="op">,</SPAN><SPAN class="num">259</SPAN><SPAN class="op">,</SPAN><SPAN class="num">507</SPAN><SPAN class="op">,</SPAN><SPAN class="num">496</SPAN><SPAN class="op">,</SPAN><SPAN class="num">485</SPAN><SPAN class="op">,</SPAN><SPAN class="num">475</SPAN><SPAN class="op">,</SPAN><SPAN class="num">465</SPAN><SPAN class="op">,</SPAN><SPAN class="num">456</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="num">446</SPAN><SPAN class="op">,</SPAN><SPAN class="num">437</SPAN><SPAN class="op">,</SPAN><SPAN class="num">428</SPAN><SPAN class="op">,</SPAN><SPAN class="num">420</SPAN><SPAN class="op">,</SPAN><SPAN class="num">412</SPAN><SPAN class="op">,</SPAN><SPAN class="num">404</SPAN><SPAN class="op">,</SPAN><SPAN class="num">396</SPAN><SPAN class="op">,</SPAN><SPAN class="num">388</SPAN><SPAN class="op">,</SPAN><SPAN class="num">381</SPAN><SPAN class="op">,</SPAN><SPAN class="num">374</SPAN><SPAN class="op">,</SPAN><SPAN class="num">367</SPAN><SPAN class="op">,</SPAN><SPAN class="num">360</SPAN><SPAN class="op">,</SPAN><SPAN class="num">354</SPAN><SPAN class="op">,</SPAN><SPAN class="num">347</SPAN><SPAN class="op">,</SPAN><SPAN class="num">341</SPAN><SPAN class="op">,</SPAN><SPAN class="num">335</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="num">329</SPAN><SPAN class="op">,</SPAN><SPAN class="num">323</SPAN><SPAN class="op">,</SPAN><SPAN class="num">318</SPAN><SPAN class="op">,</SPAN><SPAN class="num">312</SPAN><SPAN class="op">,</SPAN><SPAN class="num">307</SPAN><SPAN class="op">,</SPAN><SPAN class="num">302</SPAN><SPAN class="op">,</SPAN><SPAN class="num">297</SPAN><SPAN class="op">,</SPAN><SPAN class="num">292</SPAN><SPAN class="op">,</SPAN><SPAN class="num">287</SPAN><SPAN class="op">,</SPAN><SPAN class="num">282</SPAN><SPAN class="op">,</SPAN><SPAN class="num">278</SPAN><SPAN class="op">,</SPAN><SPAN class="num">273</SPAN><SPAN class="op">,</SPAN><SPAN class="num">269</SPAN><SPAN class="op">,</SPAN><SPAN class="num">265</SPAN><SPAN class="op">,</SPAN><SPAN class="num">261</SPAN><SPAN class="op">,</SPAN><SPAN class="num">512</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="num">505</SPAN><SPAN class="op">,</SPAN><SPAN class="num">497</SPAN><SPAN class="op">,</SPAN><SPAN class="num">489</SPAN><SPAN class="op">,</SPAN><SPAN class="num">482</SPAN><SPAN class="op">,</SPAN><SPAN class="num">475</SPAN><SPAN class="op">,</SPAN><SPAN class="num">468</SPAN><SPAN class="op">,</SPAN><SPAN class="num">461</SPAN><SPAN class="op">,</SPAN><SPAN class="num">454</SPAN><SPAN class="op">,</SPAN><SPAN class="num">447</SPAN><SPAN class="op">,</SPAN><SPAN class="num">441</SPAN><SPAN class="op">,</SPAN><SPAN class="num">435</SPAN><SPAN class="op">,</SPAN><SPAN class="num">428</SPAN><SPAN class="op">,</SPAN><SPAN class="num">422</SPAN><SPAN class="op">,</SPAN><SPAN class="num">417</SPAN><SPAN class="op">,</SPAN><SPAN class="num">411</SPAN><SPAN class="op">,</SPAN><SPAN class="num">405</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="num">399</SPAN><SPAN class="op">,</SPAN><SPAN class="num">394</SPAN><SPAN class="op">,</SPAN><SPAN class="num">389</SPAN><SPAN class="op">,</SPAN><SPAN class="num">383</SPAN><SPAN class="op">,</SPAN><SPAN class="num">378</SPAN><SPAN class="op">,</SPAN><SPAN class="num">373</SPAN><SPAN class="op">,</SPAN><SPAN class="num">368</SPAN><SPAN class="op">,</SPAN><SPAN class="num">364</SPAN><SPAN class="op">,</SPAN><SPAN class="num">359</SPAN><SPAN class="op">,</SPAN><SPAN class="num">354</SPAN><SPAN class="op">,</SPAN><SPAN class="num">350</SPAN><SPAN class="op">,</SPAN><SPAN class="num">345</SPAN><SPAN class="op">,</SPAN><SPAN class="num">341</SPAN><SPAN class="op">,</SPAN><SPAN class="num">337</SPAN><SPAN class="op">,</SPAN><SPAN class="num">332</SPAN><SPAN class="op">,</SPAN><SPAN class="num">328</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="num">324</SPAN><SPAN class="op">,</SPAN><SPAN class="num">320</SPAN><SPAN class="op">,</SPAN><SPAN class="num">316</SPAN><SPAN class="op">,</SPAN><SPAN class="num">312</SPAN><SPAN class="op">,</SPAN><SPAN class="num">309</SPAN><SPAN class="op">,</SPAN><SPAN class="num">305</SPAN><SPAN class="op">,</SPAN><SPAN class="num">301</SPAN><SPAN class="op">,</SPAN><SPAN class="num">298</SPAN><SPAN class="op">,</SPAN><SPAN class="num">294</SPAN><SPAN class="op">,</SPAN><SPAN class="num">291</SPAN><SPAN class="op">,</SPAN><SPAN class="num">287</SPAN><SPAN class="op">,</SPAN><SPAN class="num">284</SPAN><SPAN class="op">,</SPAN><SPAN class="num">281</SPAN><SPAN class="op">,</SPAN><SPAN class="num">278</SPAN><SPAN class="op">,</SPAN><SPAN class="num">274</SPAN><SPAN class="op">,</SPAN><SPAN class="num">271</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="num">268</SPAN><SPAN class="op">,</SPAN><SPAN class="num">265</SPAN><SPAN class="op">,</SPAN><SPAN class="num">262</SPAN><SPAN class="op">,</SPAN><SPAN class="num">259</SPAN><SPAN class="op">,</SPAN><SPAN class="num">257</SPAN><SPAN class="op">,</SPAN><SPAN class="num">507</SPAN><SPAN class="op">,</SPAN><SPAN class="num">501</SPAN><SPAN class="op">,</SPAN><SPAN class="num">496</SPAN><SPAN class="op">,</SPAN><SPAN class="num">491</SPAN><SPAN class="op">,</SPAN><SPAN class="num">485</SPAN><SPAN class="op">,</SPAN><SPAN class="num">480</SPAN><SPAN class="op">,</SPAN><SPAN class="num">475</SPAN><SPAN class="op">,</SPAN><SPAN class="num">470</SPAN><SPAN class="op">,</SPAN><SPAN class="num">465</SPAN><SPAN class="op">,</SPAN><SPAN class="num">460</SPAN><SPAN class="op">,</SPAN><SPAN class="num">456</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="num">451</SPAN><SPAN class="op">,</SPAN><SPAN class="num">446</SPAN><SPAN class="op">,</SPAN><SPAN class="num">442</SPAN><SPAN class="op">,</SPAN><SPAN class="num">437</SPAN><SPAN class="op">,</SPAN><SPAN class="num">433</SPAN><SPAN class="op">,</SPAN><SPAN class="num">428</SPAN><SPAN class="op">,</SPAN><SPAN class="num">424</SPAN><SPAN class="op">,</SPAN><SPAN class="num">420</SPAN><SPAN class="op">,</SPAN><SPAN class="num">416</SPAN><SPAN class="op">,</SPAN><SPAN class="num">412</SPAN><SPAN class="op">,</SPAN><SPAN class="num">408</SPAN><SPAN class="op">,</SPAN><SPAN class="num">404</SPAN><SPAN class="op">,</SPAN><SPAN class="num">400</SPAN><SPAN class="op">,</SPAN><SPAN class="num">396</SPAN><SPAN class="op">,</SPAN><SPAN class="num">392</SPAN><SPAN class="op">,</SPAN><SPAN class="num">388</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="num">385</SPAN><SPAN class="op">,</SPAN><SPAN class="num">381</SPAN><SPAN class="op">,</SPAN><SPAN class="num">377</SPAN><SPAN class="op">,</SPAN><SPAN class="num">374</SPAN><SPAN class="op">,</SPAN><SPAN class="num">370</SPAN><SPAN class="op">,</SPAN><SPAN class="num">367</SPAN><SPAN class="op">,</SPAN><SPAN class="num">363</SPAN><SPAN class="op">,</SPAN><SPAN class="num">360</SPAN><SPAN class="op">,</SPAN><SPAN class="num">357</SPAN><SPAN class="op">,</SPAN><SPAN class="num">354</SPAN><SPAN class="op">,</SPAN><SPAN class="num">350</SPAN><SPAN class="op">,</SPAN><SPAN class="num">347</SPAN><SPAN class="op">,</SPAN><SPAN class="num">344</SPAN><SPAN class="op">,</SPAN><SPAN class="num">341</SPAN><SPAN class="op">,</SPAN><SPAN class="num">338</SPAN><SPAN class="op">,</SPAN><SPAN class="num">335</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="num">332</SPAN><SPAN class="op">,</SPAN><SPAN class="num">329</SPAN><SPAN class="op">,</SPAN><SPAN class="num">326</SPAN><SPAN class="op">,</SPAN><SPAN class="num">323</SPAN><SPAN class="op">,</SPAN><SPAN class="num">320</SPAN><SPAN class="op">,</SPAN><SPAN class="num">318</SPAN><SPAN class="op">,</SPAN><SPAN class="num">315</SPAN><SPAN class="op">,</SPAN><SPAN class="num">312</SPAN><SPAN class="op">,</SPAN><SPAN class="num">310</SPAN><SPAN class="op">,</SPAN><SPAN class="num">307</SPAN><SPAN class="op">,</SPAN><SPAN class="num">304</SPAN><SPAN class="op">,</SPAN><SPAN class="num">302</SPAN><SPAN class="op">,</SPAN><SPAN class="num">299</SPAN><SPAN class="op">,</SPAN><SPAN class="num">297</SPAN><SPAN class="op">,</SPAN><SPAN class="num">294</SPAN><SPAN class="op">,</SPAN><SPAN class="num">292</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="num">289</SPAN><SPAN class="op">,</SPAN><SPAN class="num">287</SPAN><SPAN class="op">,</SPAN><SPAN class="num">285</SPAN><SPAN class="op">,</SPAN><SPAN class="num">282</SPAN><SPAN class="op">,</SPAN><SPAN class="num">280</SPAN><SPAN class="op">,</SPAN><SPAN class="num">278</SPAN><SPAN class="op">,</SPAN><SPAN class="num">275</SPAN><SPAN class="op">,</SPAN><SPAN class="num">273</SPAN><SPAN class="op">,</SPAN><SPAN class="num">271</SPAN><SPAN class="op">,</SPAN><SPAN class="num">269</SPAN><SPAN class="op">,</SPAN><SPAN class="num">267</SPAN><SPAN class="op">,</SPAN><SPAN class="num">265</SPAN><SPAN class="op">,</SPAN><SPAN class="num">263</SPAN><SPAN class="op">,</SPAN><SPAN class="num">261</SPAN><SPAN class="op">,</SPAN><SPAN class="num">259</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> T<SPAN class="op">&gt;</SPAN> 
+    <A href="agg_basics.h.html#int8u">int8u</A> <SPAN class="kw1">const</SPAN> stack_blur_tables<SPAN class="op">&lt;</SPAN>T<SPAN class="op">&gt;</SPAN>::g_stack_blur8_shr<SPAN class="op">[</SPAN><SPAN class="num">255</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> 
+    <SPAN class="op">{</SPAN>
+          <SPAN class="num">9</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">11</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">12</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">13</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">13</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">14</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">14</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">15</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">15</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">15</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">15</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">16</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">16</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">16</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">16</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">17</SPAN><SPAN class="op">,</SPAN> 
+         <SPAN class="num">17</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">17</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">17</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">17</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">17</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">17</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">18</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">18</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">18</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">18</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">18</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">18</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">18</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">18</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">18</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">19</SPAN><SPAN class="op">,</SPAN> 
+         <SPAN class="num">19</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">19</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">19</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">19</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">19</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">19</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">19</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">19</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">19</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">19</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">19</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">19</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">19</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">20</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">20</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">20</SPAN><SPAN class="op">,</SPAN>
+         <SPAN class="num">20</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">20</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">20</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">20</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">20</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">20</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">20</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">20</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">20</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">20</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">20</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">20</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">20</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">20</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">20</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">21</SPAN><SPAN class="op">,</SPAN>
+         <SPAN class="num">21</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">21</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">21</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">21</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">21</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">21</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">21</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">21</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">21</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">21</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">21</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">21</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">21</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">21</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">21</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">21</SPAN><SPAN class="op">,</SPAN>
+         <SPAN class="num">21</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">21</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">21</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">21</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">21</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">21</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">21</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">21</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">21</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">21</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">22</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">22</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">22</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">22</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">22</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">22</SPAN><SPAN class="op">,</SPAN> 
+         <SPAN class="num">22</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">22</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">22</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">22</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">22</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">22</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">22</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">22</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">22</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">22</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">22</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">22</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">22</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">22</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">22</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">22</SPAN><SPAN class="op">,</SPAN>
+         <SPAN class="num">22</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">22</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">22</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">22</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">22</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">22</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">22</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">22</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">22</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">22</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">22</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">22</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">22</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">22</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">22</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">23</SPAN><SPAN class="op">,</SPAN> 
+         <SPAN class="num">23</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">23</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">23</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">23</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">23</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">23</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">23</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">23</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">23</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">23</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">23</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">23</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">23</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">23</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">23</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">23</SPAN><SPAN class="op">,</SPAN>
+         <SPAN class="num">23</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">23</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">23</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">23</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">23</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">23</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">23</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">23</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">23</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">23</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">23</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">23</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">23</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">23</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">23</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">23</SPAN><SPAN class="op">,</SPAN>
+         <SPAN class="num">23</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">23</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">23</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">23</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">23</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">23</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">23</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">23</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">23</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">23</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">23</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">23</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">23</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">23</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">23</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">23</SPAN><SPAN class="op">,</SPAN> 
+         <SPAN class="num">23</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">23</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">23</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">23</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">23</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">24</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">24</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">24</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">24</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">24</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">24</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">24</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">24</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">24</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">24</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">24</SPAN><SPAN class="op">,</SPAN> 
+         <SPAN class="num">24</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">24</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">24</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">24</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">24</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">24</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">24</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">24</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">24</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">24</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">24</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">24</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">24</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">24</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">24</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">24</SPAN><SPAN class="op">,</SPAN>
+         <SPAN class="num">24</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">24</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">24</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">24</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">24</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">24</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">24</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">24</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">24</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">24</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">24</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">24</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">24</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">24</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">24</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">24</SPAN><SPAN class="op">,</SPAN>
+         <SPAN class="num">24</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">24</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">24</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">24</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">24</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">24</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">24</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">24</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">24</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">24</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">24</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">24</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">24</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">24</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">24</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">24</SPAN><SPAN class="op">,</SPAN>
+         <SPAN class="num">24</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">24</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">24</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">24</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">24</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">24</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">24</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">24</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">24</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">24</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">24</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">24</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">24</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">24</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">24</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+
+    <SPAN class="rem">//==============================================================<A name="stack_blur"><B></B></A><A href="agg_blur.h.html#stack_blur">stack_blur</A></SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> ColorT<SPAN class="op">,</SPAN> <SPAN class="kw1">class</SPAN> CalculatorT<SPAN class="op">&gt;</SPAN> <SPAN class="kw1">class</SPAN> <A href="agg_blur.h.html#stack_blur">stack_blur</A>
+    <SPAN class="op">{</SPAN>
+    <SPAN class="kw1">public</SPAN>:
+        <SPAN class="kw1">typedef</SPAN> ColorT      color_type<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">typedef</SPAN> CalculatorT calculator_type<SPAN class="op">;</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Img<SPAN class="op">&gt;</SPAN> <SPAN class="kw1">void</SPAN> blur_x<SPAN class="op">(</SPAN>Img<SPAN class="op">&amp;</SPAN> img<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> radius<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>radius <SPAN class="op">&lt;</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">return</SPAN><SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">unsigned</SPAN> x<SPAN class="op">,</SPAN> y<SPAN class="op">,</SPAN> xp<SPAN class="op">,</SPAN> i<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">unsigned</SPAN> stack_ptr<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">unsigned</SPAN> stack_start<SPAN class="op">;</SPAN>
+
+            color_type      pix<SPAN class="op">;</SPAN>
+            color_type<SPAN class="op">*</SPAN>     stack_pix<SPAN class="op">;</SPAN>
+            calculator_type sum<SPAN class="op">;</SPAN>
+            calculator_type sum_in<SPAN class="op">;</SPAN>
+            calculator_type sum_out<SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">unsigned</SPAN> w   <SPAN class="op">=</SPAN> img<SPAN class="op">.</SPAN>width<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">unsigned</SPAN> h   <SPAN class="op">=</SPAN> img<SPAN class="op">.</SPAN>height<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">unsigned</SPAN> wm  <SPAN class="op">=</SPAN> w <SPAN class="op">-</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">unsigned</SPAN> div <SPAN class="op">=</SPAN> radius <SPAN class="op">*</SPAN> <SPAN class="num">2</SPAN> <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">unsigned</SPAN> div_sum <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>radius <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>radius <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">unsigned</SPAN> mul_sum <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">unsigned</SPAN> shr_sum <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">unsigned</SPAN> max_val <SPAN class="op">=</SPAN> color_type::base_mask<SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>max_val <SPAN class="op">&lt;=</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">&amp;&amp;</SPAN> radius <SPAN class="op">&lt;</SPAN> <SPAN class="num">255</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                mul_sum <SPAN class="op">=</SPAN> stack_blur_tables<SPAN class="op">&lt;</SPAN><SPAN class="kw1">int</SPAN><SPAN class="op">&gt;</SPAN>::g_stack_blur8_mul<SPAN class="op">[</SPAN>radius<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                shr_sum <SPAN class="op">=</SPAN> stack_blur_tables<SPAN class="op">&lt;</SPAN><SPAN class="kw1">int</SPAN><SPAN class="op">&gt;</SPAN>::g_stack_blur8_shr<SPAN class="op">[</SPAN>radius<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+
+            m_buf<SPAN class="op">.</SPAN><SPAN class="kw1">allocate</SPAN><SPAN class="op">(</SPAN>w<SPAN class="op">,</SPAN> <SPAN class="num">128</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            m_stack<SPAN class="op">.</SPAN><SPAN class="kw1">allocate</SPAN><SPAN class="op">(</SPAN>div<SPAN class="op">,</SPAN> <SPAN class="num">32</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>y <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> y <SPAN class="op">&lt;</SPAN> h<SPAN class="op">;</SPAN> y<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                sum<SPAN class="op">.</SPAN>clear<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                sum_in<SPAN class="op">.</SPAN>clear<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                sum_out<SPAN class="op">.</SPAN>clear<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                pix <SPAN class="op">=</SPAN> img<SPAN class="op">.</SPAN>pixel<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;=</SPAN> radius<SPAN class="op">;</SPAN> i<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    m_stack<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> pix<SPAN class="op">;</SPAN>
+                    sum<SPAN class="op">.</SPAN>add<SPAN class="op">(</SPAN>pix<SPAN class="op">,</SPAN> i <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    sum_out<SPAN class="op">.</SPAN>add<SPAN class="op">(</SPAN>pix<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+                <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;=</SPAN> radius<SPAN class="op">;</SPAN> i<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    pix <SPAN class="op">=</SPAN> img<SPAN class="op">.</SPAN>pixel<SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">&gt;</SPAN> wm<SPAN class="op">)</SPAN> ? wm : i<SPAN class="op">,</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    m_stack<SPAN class="op">[</SPAN>i <SPAN class="op">+</SPAN> radius<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> pix<SPAN class="op">;</SPAN>
+                    sum<SPAN class="op">.</SPAN>add<SPAN class="op">(</SPAN>pix<SPAN class="op">,</SPAN> radius <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN> <SPAN class="op">-</SPAN> i<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    sum_in<SPAN class="op">.</SPAN>add<SPAN class="op">(</SPAN>pix<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+
+                stack_ptr <SPAN class="op">=</SPAN> radius<SPAN class="op">;</SPAN>
+                <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>x <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> x <SPAN class="op">&lt;</SPAN> w<SPAN class="op">;</SPAN> x<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>mul_sum<SPAN class="op">)</SPAN> sum<SPAN class="op">.</SPAN>calc_pix<SPAN class="op">(</SPAN>m_buf<SPAN class="op">[</SPAN>x<SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> mul_sum<SPAN class="op">,</SPAN> shr_sum<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="kw1">else</SPAN>        sum<SPAN class="op">.</SPAN>calc_pix<SPAN class="op">(</SPAN>m_buf<SPAN class="op">[</SPAN>x<SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> div_sum<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                    sum<SPAN class="op">.</SPAN>sub<SPAN class="op">(</SPAN>sum_out<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+           
+                    stack_start <SPAN class="op">=</SPAN> stack_ptr <SPAN class="op">+</SPAN> div <SPAN class="op">-</SPAN> radius<SPAN class="op">;</SPAN>
+                    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>stack_start <SPAN class="op">&gt;=</SPAN> div<SPAN class="op">)</SPAN> stack_start <SPAN class="op">-=</SPAN> div<SPAN class="op">;</SPAN>
+                    stack_pix <SPAN class="op">=</SPAN> <SPAN class="op">&amp;</SPAN>m_stack<SPAN class="op">[</SPAN>stack_start<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+
+                    sum_out<SPAN class="op">.</SPAN>sub<SPAN class="op">(</SPAN><SPAN class="op">*</SPAN>stack_pix<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                    xp <SPAN class="op">=</SPAN> x <SPAN class="op">+</SPAN> radius <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>xp <SPAN class="op">&gt;</SPAN> wm<SPAN class="op">)</SPAN> xp <SPAN class="op">=</SPAN> wm<SPAN class="op">;</SPAN>
+                    pix <SPAN class="op">=</SPAN> img<SPAN class="op">.</SPAN>pixel<SPAN class="op">(</SPAN>xp<SPAN class="op">,</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            
+                    <SPAN class="op">*</SPAN>stack_pix <SPAN class="op">=</SPAN> pix<SPAN class="op">;</SPAN>
+            
+                    sum_in<SPAN class="op">.</SPAN>add<SPAN class="op">(</SPAN>pix<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    sum<SPAN class="op">.</SPAN>add<SPAN class="op">(</SPAN>sum_in<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            
+                    <SPAN class="op">++</SPAN>stack_ptr<SPAN class="op">;</SPAN>
+                    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>stack_ptr <SPAN class="op">&gt;=</SPAN> div<SPAN class="op">)</SPAN> stack_ptr <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+                    stack_pix <SPAN class="op">=</SPAN> <SPAN class="op">&amp;</SPAN>m_stack<SPAN class="op">[</SPAN>stack_ptr<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+
+                    sum_out<SPAN class="op">.</SPAN>add<SPAN class="op">(</SPAN><SPAN class="op">*</SPAN>stack_pix<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    sum_in<SPAN class="op">.</SPAN>sub<SPAN class="op">(</SPAN><SPAN class="op">*</SPAN>stack_pix<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+                img<SPAN class="op">.</SPAN>copy_color_hspan<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> y<SPAN class="op">,</SPAN> w<SPAN class="op">,</SPAN> <SPAN class="op">&amp;</SPAN>m_buf<SPAN class="op">[</SPAN><SPAN class="num">0</SPAN><SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Img<SPAN class="op">&gt;</SPAN> <SPAN class="kw1">void</SPAN> blur_y<SPAN class="op">(</SPAN>Img<SPAN class="op">&amp;</SPAN> img<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> radius<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <A href="agg_pixfmt_transposer.h.html#pixfmt_transposer">pixfmt_transposer</A><SPAN class="op">&lt;</SPAN>Img<SPAN class="op">&gt;</SPAN> img2<SPAN class="op">(</SPAN>img<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            blur_x<SPAN class="op">(</SPAN>img2<SPAN class="op">,</SPAN> radius<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Img<SPAN class="op">&gt;</SPAN> <SPAN class="kw1">void</SPAN> blur<SPAN class="op">(</SPAN>Img<SPAN class="op">&amp;</SPAN> img<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> radius<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            blur_x<SPAN class="op">(</SPAN>img<SPAN class="op">,</SPAN> radius<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <A href="agg_pixfmt_transposer.h.html#pixfmt_transposer">pixfmt_transposer</A><SPAN class="op">&lt;</SPAN>Img<SPAN class="op">&gt;</SPAN> img2<SPAN class="op">(</SPAN>img<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            blur_x<SPAN class="op">(</SPAN>img2<SPAN class="op">,</SPAN> radius<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+    <SPAN class="kw1">private</SPAN>:
+        <A href="agg_array.h.html#pod_vector">pod_vector</A><SPAN class="op">&lt;</SPAN>color_type<SPAN class="op">&gt;</SPAN> m_buf<SPAN class="op">;</SPAN>
+        <A href="agg_array.h.html#pod_vector">pod_vector</A><SPAN class="op">&lt;</SPAN>color_type<SPAN class="op">&gt;</SPAN> m_stack<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="rem">//====================================================<A name="stack_blur_calc_rgba"><B></B></A><A href="agg_blur.h.html#stack_blur_calc_rgba">stack_blur_calc_rgba</A></SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> T<SPAN class="op">=</SPAN><SPAN class="kw1">unsigned</SPAN><SPAN class="op">&gt;</SPAN> <SPAN class="kw1">struct</SPAN> <A href="agg_blur.h.html#stack_blur_calc_rgba">stack_blur_calc_rgba</A>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">typedef</SPAN> T value_type<SPAN class="op">;</SPAN>
+        value_type r<SPAN class="op">,</SPAN>g<SPAN class="op">,</SPAN>b<SPAN class="op">,</SPAN>a<SPAN class="op">;</SPAN>
+
+        AGG_INLINE <SPAN class="kw1">void</SPAN> clear<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> 
+        <SPAN class="op">{</SPAN> 
+            r <SPAN class="op">=</SPAN> g <SPAN class="op">=</SPAN> b <SPAN class="op">=</SPAN> a <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> 
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> ArgT<SPAN class="op">&gt;</SPAN> AGG_INLINE <SPAN class="kw1">void</SPAN> add<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> ArgT<SPAN class="op">&amp;</SPAN> v<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            r <SPAN class="op">+=</SPAN> v<SPAN class="op">.</SPAN>r<SPAN class="op">;</SPAN>
+            g <SPAN class="op">+=</SPAN> v<SPAN class="op">.</SPAN>g<SPAN class="op">;</SPAN>
+            b <SPAN class="op">+=</SPAN> v<SPAN class="op">.</SPAN>b<SPAN class="op">;</SPAN>
+            a <SPAN class="op">+=</SPAN> v<SPAN class="op">.</SPAN>a<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> ArgT<SPAN class="op">&gt;</SPAN> AGG_INLINE <SPAN class="kw1">void</SPAN> add<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> ArgT<SPAN class="op">&amp;</SPAN> v<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> k<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            r <SPAN class="op">+=</SPAN> v<SPAN class="op">.</SPAN>r <SPAN class="op">*</SPAN> k<SPAN class="op">;</SPAN>
+            g <SPAN class="op">+=</SPAN> v<SPAN class="op">.</SPAN>g <SPAN class="op">*</SPAN> k<SPAN class="op">;</SPAN>
+            b <SPAN class="op">+=</SPAN> v<SPAN class="op">.</SPAN>b <SPAN class="op">*</SPAN> k<SPAN class="op">;</SPAN>
+            a <SPAN class="op">+=</SPAN> v<SPAN class="op">.</SPAN>a <SPAN class="op">*</SPAN> k<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> ArgT<SPAN class="op">&gt;</SPAN> AGG_INLINE <SPAN class="kw1">void</SPAN> sub<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> ArgT<SPAN class="op">&amp;</SPAN> v<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            r <SPAN class="op">-=</SPAN> v<SPAN class="op">.</SPAN>r<SPAN class="op">;</SPAN>
+            g <SPAN class="op">-=</SPAN> v<SPAN class="op">.</SPAN>g<SPAN class="op">;</SPAN>
+            b <SPAN class="op">-=</SPAN> v<SPAN class="op">.</SPAN>b<SPAN class="op">;</SPAN>
+            a <SPAN class="op">-=</SPAN> v<SPAN class="op">.</SPAN>a<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> ArgT<SPAN class="op">&gt;</SPAN> AGG_INLINE <SPAN class="kw1">void</SPAN> calc_pix<SPAN class="op">(</SPAN>ArgT<SPAN class="op">&amp;</SPAN> v<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> div<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">typedef</SPAN> <SPAN class="kw1">typename</SPAN> ArgT::value_type value_type<SPAN class="op">;</SPAN>
+            v<SPAN class="op">.</SPAN>r <SPAN class="op">=</SPAN> value_type<SPAN class="op">(</SPAN>r <SPAN class="op">/</SPAN> div<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            v<SPAN class="op">.</SPAN>g <SPAN class="op">=</SPAN> value_type<SPAN class="op">(</SPAN>g <SPAN class="op">/</SPAN> div<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            v<SPAN class="op">.</SPAN>b <SPAN class="op">=</SPAN> value_type<SPAN class="op">(</SPAN>b <SPAN class="op">/</SPAN> div<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            v<SPAN class="op">.</SPAN>a <SPAN class="op">=</SPAN> value_type<SPAN class="op">(</SPAN>a <SPAN class="op">/</SPAN> div<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> ArgT<SPAN class="op">&gt;</SPAN> 
+        AGG_INLINE <SPAN class="kw1">void</SPAN> calc_pix<SPAN class="op">(</SPAN>ArgT<SPAN class="op">&amp;</SPAN> v<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> mul<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> shr<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">typedef</SPAN> <SPAN class="kw1">typename</SPAN> ArgT::value_type value_type<SPAN class="op">;</SPAN>
+            v<SPAN class="op">.</SPAN>r <SPAN class="op">=</SPAN> value_type<SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>r <SPAN class="op">*</SPAN> mul<SPAN class="op">)</SPAN> <SPAN class="op">&gt;&gt;</SPAN> shr<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            v<SPAN class="op">.</SPAN>g <SPAN class="op">=</SPAN> value_type<SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>g <SPAN class="op">*</SPAN> mul<SPAN class="op">)</SPAN> <SPAN class="op">&gt;&gt;</SPAN> shr<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            v<SPAN class="op">.</SPAN>b <SPAN class="op">=</SPAN> value_type<SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>b <SPAN class="op">*</SPAN> mul<SPAN class="op">)</SPAN> <SPAN class="op">&gt;&gt;</SPAN> shr<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            v<SPAN class="op">.</SPAN>a <SPAN class="op">=</SPAN> value_type<SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>a <SPAN class="op">*</SPAN> mul<SPAN class="op">)</SPAN> <SPAN class="op">&gt;&gt;</SPAN> shr<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+    <SPAN class="rem">//=====================================================<A name="stack_blur_calc_rgb"><B></B></A><A href="agg_blur.h.html#stack_blur_calc_rgb">stack_blur_calc_rgb</A></SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> T<SPAN class="op">=</SPAN><SPAN class="kw1">unsigned</SPAN><SPAN class="op">&gt;</SPAN> <SPAN class="kw1">struct</SPAN> <A href="agg_blur.h.html#stack_blur_calc_rgb">stack_blur_calc_rgb</A>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">typedef</SPAN> T value_type<SPAN class="op">;</SPAN>
+        value_type r<SPAN class="op">,</SPAN>g<SPAN class="op">,</SPAN>b<SPAN class="op">;</SPAN>
+
+        AGG_INLINE <SPAN class="kw1">void</SPAN> clear<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> 
+        <SPAN class="op">{</SPAN> 
+            r <SPAN class="op">=</SPAN> g <SPAN class="op">=</SPAN> b <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> 
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> ArgT<SPAN class="op">&gt;</SPAN> AGG_INLINE <SPAN class="kw1">void</SPAN> add<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> ArgT<SPAN class="op">&amp;</SPAN> v<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            r <SPAN class="op">+=</SPAN> v<SPAN class="op">.</SPAN>r<SPAN class="op">;</SPAN>
+            g <SPAN class="op">+=</SPAN> v<SPAN class="op">.</SPAN>g<SPAN class="op">;</SPAN>
+            b <SPAN class="op">+=</SPAN> v<SPAN class="op">.</SPAN>b<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> ArgT<SPAN class="op">&gt;</SPAN> AGG_INLINE <SPAN class="kw1">void</SPAN> add<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> ArgT<SPAN class="op">&amp;</SPAN> v<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> k<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            r <SPAN class="op">+=</SPAN> v<SPAN class="op">.</SPAN>r <SPAN class="op">*</SPAN> k<SPAN class="op">;</SPAN>
+            g <SPAN class="op">+=</SPAN> v<SPAN class="op">.</SPAN>g <SPAN class="op">*</SPAN> k<SPAN class="op">;</SPAN>
+            b <SPAN class="op">+=</SPAN> v<SPAN class="op">.</SPAN>b <SPAN class="op">*</SPAN> k<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> ArgT<SPAN class="op">&gt;</SPAN> AGG_INLINE <SPAN class="kw1">void</SPAN> sub<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> ArgT<SPAN class="op">&amp;</SPAN> v<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            r <SPAN class="op">-=</SPAN> v<SPAN class="op">.</SPAN>r<SPAN class="op">;</SPAN>
+            g <SPAN class="op">-=</SPAN> v<SPAN class="op">.</SPAN>g<SPAN class="op">;</SPAN>
+            b <SPAN class="op">-=</SPAN> v<SPAN class="op">.</SPAN>b<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> ArgT<SPAN class="op">&gt;</SPAN> AGG_INLINE <SPAN class="kw1">void</SPAN> calc_pix<SPAN class="op">(</SPAN>ArgT<SPAN class="op">&amp;</SPAN> v<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> div<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">typedef</SPAN> <SPAN class="kw1">typename</SPAN> ArgT::value_type value_type<SPAN class="op">;</SPAN>
+            v<SPAN class="op">.</SPAN>r <SPAN class="op">=</SPAN> value_type<SPAN class="op">(</SPAN>r <SPAN class="op">/</SPAN> div<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            v<SPAN class="op">.</SPAN>g <SPAN class="op">=</SPAN> value_type<SPAN class="op">(</SPAN>g <SPAN class="op">/</SPAN> div<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            v<SPAN class="op">.</SPAN>b <SPAN class="op">=</SPAN> value_type<SPAN class="op">(</SPAN>b <SPAN class="op">/</SPAN> div<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> ArgT<SPAN class="op">&gt;</SPAN> 
+        AGG_INLINE <SPAN class="kw1">void</SPAN> calc_pix<SPAN class="op">(</SPAN>ArgT<SPAN class="op">&amp;</SPAN> v<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> mul<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> shr<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">typedef</SPAN> <SPAN class="kw1">typename</SPAN> ArgT::value_type value_type<SPAN class="op">;</SPAN>
+            v<SPAN class="op">.</SPAN>r <SPAN class="op">=</SPAN> value_type<SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>r <SPAN class="op">*</SPAN> mul<SPAN class="op">)</SPAN> <SPAN class="op">&gt;&gt;</SPAN> shr<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            v<SPAN class="op">.</SPAN>g <SPAN class="op">=</SPAN> value_type<SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>g <SPAN class="op">*</SPAN> mul<SPAN class="op">)</SPAN> <SPAN class="op">&gt;&gt;</SPAN> shr<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            v<SPAN class="op">.</SPAN>b <SPAN class="op">=</SPAN> value_type<SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>b <SPAN class="op">*</SPAN> mul<SPAN class="op">)</SPAN> <SPAN class="op">&gt;&gt;</SPAN> shr<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+    <SPAN class="rem">//====================================================<A name="stack_blur_calc_gray"><B></B></A><A href="agg_blur.h.html#stack_blur_calc_gray">stack_blur_calc_gray</A></SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> T<SPAN class="op">=</SPAN><SPAN class="kw1">unsigned</SPAN><SPAN class="op">&gt;</SPAN> <SPAN class="kw1">struct</SPAN> <A href="agg_blur.h.html#stack_blur_calc_gray">stack_blur_calc_gray</A>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">typedef</SPAN> T value_type<SPAN class="op">;</SPAN>
+        value_type v<SPAN class="op">;</SPAN>
+
+        AGG_INLINE <SPAN class="kw1">void</SPAN> clear<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> 
+        <SPAN class="op">{</SPAN> 
+            v <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> 
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> ArgT<SPAN class="op">&gt;</SPAN> AGG_INLINE <SPAN class="kw1">void</SPAN> add<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> ArgT<SPAN class="op">&amp;</SPAN> a<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            v <SPAN class="op">+=</SPAN> a<SPAN class="op">.</SPAN>v<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> ArgT<SPAN class="op">&gt;</SPAN> AGG_INLINE <SPAN class="kw1">void</SPAN> add<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> ArgT<SPAN class="op">&amp;</SPAN> a<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> k<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            v <SPAN class="op">+=</SPAN> a<SPAN class="op">.</SPAN>v <SPAN class="op">*</SPAN> k<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> ArgT<SPAN class="op">&gt;</SPAN> AGG_INLINE <SPAN class="kw1">void</SPAN> sub<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> ArgT<SPAN class="op">&amp;</SPAN> a<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            v <SPAN class="op">-=</SPAN> a<SPAN class="op">.</SPAN>v<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> ArgT<SPAN class="op">&gt;</SPAN> AGG_INLINE <SPAN class="kw1">void</SPAN> calc_pix<SPAN class="op">(</SPAN>ArgT<SPAN class="op">&amp;</SPAN> a<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> div<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">typedef</SPAN> <SPAN class="kw1">typename</SPAN> ArgT::value_type value_type<SPAN class="op">;</SPAN>
+            a<SPAN class="op">.</SPAN>v <SPAN class="op">=</SPAN> value_type<SPAN class="op">(</SPAN>v <SPAN class="op">/</SPAN> div<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> ArgT<SPAN class="op">&gt;</SPAN> 
+        AGG_INLINE <SPAN class="kw1">void</SPAN> calc_pix<SPAN class="op">(</SPAN>ArgT<SPAN class="op">&amp;</SPAN> a<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> mul<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> shr<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">typedef</SPAN> <SPAN class="kw1">typename</SPAN> ArgT::value_type value_type<SPAN class="op">;</SPAN>
+            a<SPAN class="op">.</SPAN>v <SPAN class="op">=</SPAN> value_type<SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>v <SPAN class="op">*</SPAN> mul<SPAN class="op">)</SPAN> <SPAN class="op">&gt;&gt;</SPAN> shr<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+
+    <SPAN class="rem">//========================================================<A name="stack_blur_gray8"><B></B></A><A href="agg_blur.h.html#stack_blur_gray8">stack_blur_gray8</A></SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Img<SPAN class="op">&gt;</SPAN> 
+    <SPAN class="kw1">void</SPAN> <A href="agg_blur.h.html#stack_blur_gray8">stack_blur_gray8</A><SPAN class="op">(</SPAN>Img<SPAN class="op">&amp;</SPAN> img<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> rx<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> ry<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> x<SPAN class="op">,</SPAN> y<SPAN class="op">,</SPAN> xp<SPAN class="op">,</SPAN> yp<SPAN class="op">,</SPAN> i<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> stack_ptr<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> stack_start<SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">const</SPAN> <A href="agg_basics.h.html#int8u">int8u</A><SPAN class="op">*</SPAN> src_pix_ptr<SPAN class="op">;</SPAN>
+              <A href="agg_basics.h.html#int8u">int8u</A><SPAN class="op">*</SPAN> dst_pix_ptr<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> pix<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> stack_pix<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> sum<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> sum_in<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> sum_out<SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">unsigned</SPAN> w   <SPAN class="op">=</SPAN> img<SPAN class="op">.</SPAN>width<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> h   <SPAN class="op">=</SPAN> img<SPAN class="op">.</SPAN>height<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> wm  <SPAN class="op">=</SPAN> w <SPAN class="op">-</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> hm  <SPAN class="op">=</SPAN> h <SPAN class="op">-</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">unsigned</SPAN> div<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> mul_sum<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> shr_sum<SPAN class="op">;</SPAN>
+
+        <A href="agg_array.h.html#pod_vector">pod_vector</A><SPAN class="op">&lt;</SPAN><A href="agg_basics.h.html#int8u">int8u</A><SPAN class="op">&gt;</SPAN> stack<SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>rx <SPAN class="op">&gt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>rx <SPAN class="op">&gt;</SPAN> <SPAN class="num">254</SPAN><SPAN class="op">)</SPAN> rx <SPAN class="op">=</SPAN> <SPAN class="num">254</SPAN><SPAN class="op">;</SPAN>
+            div <SPAN class="op">=</SPAN> rx <SPAN class="op">*</SPAN> <SPAN class="num">2</SPAN> <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+            mul_sum <SPAN class="op">=</SPAN> stack_blur_tables<SPAN class="op">&lt;</SPAN><SPAN class="kw1">int</SPAN><SPAN class="op">&gt;</SPAN>::g_stack_blur8_mul<SPAN class="op">[</SPAN>rx<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+            shr_sum <SPAN class="op">=</SPAN> stack_blur_tables<SPAN class="op">&lt;</SPAN><SPAN class="kw1">int</SPAN><SPAN class="op">&gt;</SPAN>::g_stack_blur8_shr<SPAN class="op">[</SPAN>rx<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+            stack<SPAN class="op">.</SPAN><SPAN class="kw1">allocate</SPAN><SPAN class="op">(</SPAN>div<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>y <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> y <SPAN class="op">&lt;</SPAN> h<SPAN class="op">;</SPAN> y<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                sum <SPAN class="op">=</SPAN> sum_in <SPAN class="op">=</SPAN> sum_out <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+
+                src_pix_ptr <SPAN class="op">=</SPAN> img<SPAN class="op">.</SPAN>pix_ptr<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                pix <SPAN class="op">=</SPAN> <SPAN class="op">*</SPAN>src_pix_ptr<SPAN class="op">;</SPAN>
+                <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;=</SPAN> rx<SPAN class="op">;</SPAN> i<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    stack<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> pix<SPAN class="op">;</SPAN>
+                    sum     <SPAN class="op">+=</SPAN> pix <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>i <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    sum_out <SPAN class="op">+=</SPAN> pix<SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+                <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;=</SPAN> rx<SPAN class="op">;</SPAN> i<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">&lt;=</SPAN> wm<SPAN class="op">)</SPAN> src_pix_ptr <SPAN class="op">+=</SPAN> Img::pix_step<SPAN class="op">;</SPAN> 
+                    pix <SPAN class="op">=</SPAN> <SPAN class="op">*</SPAN>src_pix_ptr<SPAN class="op">;</SPAN> 
+                    stack<SPAN class="op">[</SPAN>i <SPAN class="op">+</SPAN> rx<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> pix<SPAN class="op">;</SPAN>
+                    sum    <SPAN class="op">+=</SPAN> pix <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>rx <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN> <SPAN class="op">-</SPAN> i<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    sum_in <SPAN class="op">+=</SPAN> pix<SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+
+                stack_ptr <SPAN class="op">=</SPAN> rx<SPAN class="op">;</SPAN>
+                xp <SPAN class="op">=</SPAN> rx<SPAN class="op">;</SPAN>
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>xp <SPAN class="op">&gt;</SPAN> wm<SPAN class="op">)</SPAN> xp <SPAN class="op">=</SPAN> wm<SPAN class="op">;</SPAN>
+                src_pix_ptr <SPAN class="op">=</SPAN> img<SPAN class="op">.</SPAN>pix_ptr<SPAN class="op">(</SPAN>xp<SPAN class="op">,</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                dst_pix_ptr <SPAN class="op">=</SPAN> img<SPAN class="op">.</SPAN>pix_ptr<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>x <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> x <SPAN class="op">&lt;</SPAN> w<SPAN class="op">;</SPAN> x<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    <SPAN class="op">*</SPAN>dst_pix_ptr <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>sum <SPAN class="op">*</SPAN> mul_sum<SPAN class="op">)</SPAN> <SPAN class="op">&gt;&gt;</SPAN> shr_sum<SPAN class="op">;</SPAN>
+                    dst_pix_ptr <SPAN class="op">+=</SPAN> Img::pix_step<SPAN class="op">;</SPAN>
+
+                    sum <SPAN class="op">-=</SPAN> sum_out<SPAN class="op">;</SPAN>
+       
+                    stack_start <SPAN class="op">=</SPAN> stack_ptr <SPAN class="op">+</SPAN> div <SPAN class="op">-</SPAN> rx<SPAN class="op">;</SPAN>
+                    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>stack_start <SPAN class="op">&gt;=</SPAN> div<SPAN class="op">)</SPAN> stack_start <SPAN class="op">-=</SPAN> div<SPAN class="op">;</SPAN>
+                    sum_out <SPAN class="op">-=</SPAN> stack<SPAN class="op">[</SPAN>stack_start<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+
+                    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>xp <SPAN class="op">&lt;</SPAN> wm<SPAN class="op">)</SPAN> 
+                    <SPAN class="op">{</SPAN>
+                        src_pix_ptr <SPAN class="op">+=</SPAN> Img::pix_step<SPAN class="op">;</SPAN>
+                        pix <SPAN class="op">=</SPAN> <SPAN class="op">*</SPAN>src_pix_ptr<SPAN class="op">;</SPAN>
+                        <SPAN class="op">++</SPAN>xp<SPAN class="op">;</SPAN>
+                    <SPAN class="op">}</SPAN>
+        
+                    stack<SPAN class="op">[</SPAN>stack_start<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> pix<SPAN class="op">;</SPAN>
+        
+                    sum_in <SPAN class="op">+=</SPAN> pix<SPAN class="op">;</SPAN>
+                    sum    <SPAN class="op">+=</SPAN> sum_in<SPAN class="op">;</SPAN>
+        
+                    <SPAN class="op">++</SPAN>stack_ptr<SPAN class="op">;</SPAN>
+                    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>stack_ptr <SPAN class="op">&gt;=</SPAN> div<SPAN class="op">)</SPAN> stack_ptr <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+                    stack_pix <SPAN class="op">=</SPAN> stack<SPAN class="op">[</SPAN>stack_ptr<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+
+                    sum_out <SPAN class="op">+=</SPAN> stack_pix<SPAN class="op">;</SPAN>
+                    sum_in  <SPAN class="op">-=</SPAN> stack_pix<SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>ry <SPAN class="op">&gt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>ry <SPAN class="op">&gt;</SPAN> <SPAN class="num">254</SPAN><SPAN class="op">)</SPAN> ry <SPAN class="op">=</SPAN> <SPAN class="num">254</SPAN><SPAN class="op">;</SPAN>
+            div <SPAN class="op">=</SPAN> ry <SPAN class="op">*</SPAN> <SPAN class="num">2</SPAN> <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+            mul_sum <SPAN class="op">=</SPAN> stack_blur_tables<SPAN class="op">&lt;</SPAN><SPAN class="kw1">int</SPAN><SPAN class="op">&gt;</SPAN>::g_stack_blur8_mul<SPAN class="op">[</SPAN>ry<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+            shr_sum <SPAN class="op">=</SPAN> stack_blur_tables<SPAN class="op">&lt;</SPAN><SPAN class="kw1">int</SPAN><SPAN class="op">&gt;</SPAN>::g_stack_blur8_shr<SPAN class="op">[</SPAN>ry<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+            stack<SPAN class="op">.</SPAN><SPAN class="kw1">allocate</SPAN><SPAN class="op">(</SPAN>div<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">int</SPAN> stride <SPAN class="op">=</SPAN> img<SPAN class="op">.</SPAN>stride<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>x <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> x <SPAN class="op">&lt;</SPAN> w<SPAN class="op">;</SPAN> x<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                sum <SPAN class="op">=</SPAN> sum_in <SPAN class="op">=</SPAN> sum_out <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+
+                src_pix_ptr <SPAN class="op">=</SPAN> img<SPAN class="op">.</SPAN>pix_ptr<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                pix <SPAN class="op">=</SPAN> <SPAN class="op">*</SPAN>src_pix_ptr<SPAN class="op">;</SPAN>
+                <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;=</SPAN> ry<SPAN class="op">;</SPAN> i<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    stack<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> pix<SPAN class="op">;</SPAN>
+                    sum     <SPAN class="op">+=</SPAN> pix <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>i <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    sum_out <SPAN class="op">+=</SPAN> pix<SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+                <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;=</SPAN> ry<SPAN class="op">;</SPAN> i<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">&lt;=</SPAN> hm<SPAN class="op">)</SPAN> src_pix_ptr <SPAN class="op">+=</SPAN> stride<SPAN class="op">;</SPAN> 
+                    pix <SPAN class="op">=</SPAN> <SPAN class="op">*</SPAN>src_pix_ptr<SPAN class="op">;</SPAN> 
+                    stack<SPAN class="op">[</SPAN>i <SPAN class="op">+</SPAN> ry<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> pix<SPAN class="op">;</SPAN>
+                    sum    <SPAN class="op">+=</SPAN> pix <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>ry <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN> <SPAN class="op">-</SPAN> i<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    sum_in <SPAN class="op">+=</SPAN> pix<SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+
+                stack_ptr <SPAN class="op">=</SPAN> ry<SPAN class="op">;</SPAN>
+                yp <SPAN class="op">=</SPAN> ry<SPAN class="op">;</SPAN>
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>yp <SPAN class="op">&gt;</SPAN> hm<SPAN class="op">)</SPAN> yp <SPAN class="op">=</SPAN> hm<SPAN class="op">;</SPAN>
+                src_pix_ptr <SPAN class="op">=</SPAN> img<SPAN class="op">.</SPAN>pix_ptr<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> yp<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                dst_pix_ptr <SPAN class="op">=</SPAN> img<SPAN class="op">.</SPAN>pix_ptr<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>y <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> y <SPAN class="op">&lt;</SPAN> h<SPAN class="op">;</SPAN> y<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    <SPAN class="op">*</SPAN>dst_pix_ptr <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>sum <SPAN class="op">*</SPAN> mul_sum<SPAN class="op">)</SPAN> <SPAN class="op">&gt;&gt;</SPAN> shr_sum<SPAN class="op">;</SPAN>
+                    dst_pix_ptr <SPAN class="op">+=</SPAN> stride<SPAN class="op">;</SPAN>
+
+                    sum <SPAN class="op">-=</SPAN> sum_out<SPAN class="op">;</SPAN>
+       
+                    stack_start <SPAN class="op">=</SPAN> stack_ptr <SPAN class="op">+</SPAN> div <SPAN class="op">-</SPAN> ry<SPAN class="op">;</SPAN>
+                    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>stack_start <SPAN class="op">&gt;=</SPAN> div<SPAN class="op">)</SPAN> stack_start <SPAN class="op">-=</SPAN> div<SPAN class="op">;</SPAN>
+                    sum_out <SPAN class="op">-=</SPAN> stack<SPAN class="op">[</SPAN>stack_start<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+
+                    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>yp <SPAN class="op">&lt;</SPAN> hm<SPAN class="op">)</SPAN> 
+                    <SPAN class="op">{</SPAN>
+                        src_pix_ptr <SPAN class="op">+=</SPAN> stride<SPAN class="op">;</SPAN>
+                        pix <SPAN class="op">=</SPAN> <SPAN class="op">*</SPAN>src_pix_ptr<SPAN class="op">;</SPAN>
+                        <SPAN class="op">++</SPAN>yp<SPAN class="op">;</SPAN>
+                    <SPAN class="op">}</SPAN>
+        
+                    stack<SPAN class="op">[</SPAN>stack_start<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> pix<SPAN class="op">;</SPAN>
+        
+                    sum_in <SPAN class="op">+=</SPAN> pix<SPAN class="op">;</SPAN>
+                    sum    <SPAN class="op">+=</SPAN> sum_in<SPAN class="op">;</SPAN>
+        
+                    <SPAN class="op">++</SPAN>stack_ptr<SPAN class="op">;</SPAN>
+                    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>stack_ptr <SPAN class="op">&gt;=</SPAN> div<SPAN class="op">)</SPAN> stack_ptr <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+                    stack_pix <SPAN class="op">=</SPAN> stack<SPAN class="op">[</SPAN>stack_ptr<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+
+                    sum_out <SPAN class="op">+=</SPAN> stack_pix<SPAN class="op">;</SPAN>
+                    sum_in  <SPAN class="op">-=</SPAN> stack_pix<SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+
+    <SPAN class="rem">//========================================================<A name="stack_blur_rgb24"><B></B></A><A href="agg_blur.h.html#stack_blur_rgb24">stack_blur_rgb24</A></SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Img<SPAN class="op">&gt;</SPAN> 
+    <SPAN class="kw1">void</SPAN> <A href="agg_blur.h.html#stack_blur_rgb24">stack_blur_rgb24</A><SPAN class="op">(</SPAN>Img<SPAN class="op">&amp;</SPAN> img<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> rx<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> ry<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">typedef</SPAN> <SPAN class="kw1">typename</SPAN> Img::color_type color_type<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">typedef</SPAN> <SPAN class="kw1">typename</SPAN> Img::order_type order_type<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">enum</SPAN> order_e 
+        <SPAN class="op">{</SPAN> 
+            R <SPAN class="op">=</SPAN> order_type::R<SPAN class="op">,</SPAN> 
+            G <SPAN class="op">=</SPAN> order_type::G<SPAN class="op">,</SPAN> 
+            B <SPAN class="op">=</SPAN> order_type::B 
+        <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">unsigned</SPAN> x<SPAN class="op">,</SPAN> y<SPAN class="op">,</SPAN> xp<SPAN class="op">,</SPAN> yp<SPAN class="op">,</SPAN> i<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> stack_ptr<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> stack_start<SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">const</SPAN> <A href="agg_basics.h.html#int8u">int8u</A><SPAN class="op">*</SPAN> src_pix_ptr<SPAN class="op">;</SPAN>
+              <A href="agg_basics.h.html#int8u">int8u</A><SPAN class="op">*</SPAN> dst_pix_ptr<SPAN class="op">;</SPAN>
+        color_type<SPAN class="op">*</SPAN>  stack_pix_ptr<SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">unsigned</SPAN> sum_r<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> sum_g<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> sum_b<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> sum_in_r<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> sum_in_g<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> sum_in_b<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> sum_out_r<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> sum_out_g<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> sum_out_b<SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">unsigned</SPAN> w   <SPAN class="op">=</SPAN> img<SPAN class="op">.</SPAN>width<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> h   <SPAN class="op">=</SPAN> img<SPAN class="op">.</SPAN>height<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> wm  <SPAN class="op">=</SPAN> w <SPAN class="op">-</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> hm  <SPAN class="op">=</SPAN> h <SPAN class="op">-</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">unsigned</SPAN> div<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> mul_sum<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> shr_sum<SPAN class="op">;</SPAN>
+
+        <A href="agg_array.h.html#pod_vector">pod_vector</A><SPAN class="op">&lt;</SPAN>color_type<SPAN class="op">&gt;</SPAN> stack<SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>rx <SPAN class="op">&gt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>rx <SPAN class="op">&gt;</SPAN> <SPAN class="num">254</SPAN><SPAN class="op">)</SPAN> rx <SPAN class="op">=</SPAN> <SPAN class="num">254</SPAN><SPAN class="op">;</SPAN>
+            div <SPAN class="op">=</SPAN> rx <SPAN class="op">*</SPAN> <SPAN class="num">2</SPAN> <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+            mul_sum <SPAN class="op">=</SPAN> stack_blur_tables<SPAN class="op">&lt;</SPAN><SPAN class="kw1">int</SPAN><SPAN class="op">&gt;</SPAN>::g_stack_blur8_mul<SPAN class="op">[</SPAN>rx<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+            shr_sum <SPAN class="op">=</SPAN> stack_blur_tables<SPAN class="op">&lt;</SPAN><SPAN class="kw1">int</SPAN><SPAN class="op">&gt;</SPAN>::g_stack_blur8_shr<SPAN class="op">[</SPAN>rx<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+            stack<SPAN class="op">.</SPAN><SPAN class="kw1">allocate</SPAN><SPAN class="op">(</SPAN>div<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>y <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> y <SPAN class="op">&lt;</SPAN> h<SPAN class="op">;</SPAN> y<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                sum_r <SPAN class="op">=</SPAN> 
+                sum_g <SPAN class="op">=</SPAN> 
+                sum_b <SPAN class="op">=</SPAN> 
+                sum_in_r <SPAN class="op">=</SPAN> 
+                sum_in_g <SPAN class="op">=</SPAN> 
+                sum_in_b <SPAN class="op">=</SPAN> 
+                sum_out_r <SPAN class="op">=</SPAN> 
+                sum_out_g <SPAN class="op">=</SPAN> 
+                sum_out_b <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+
+                src_pix_ptr <SPAN class="op">=</SPAN> img<SPAN class="op">.</SPAN>pix_ptr<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;=</SPAN> rx<SPAN class="op">;</SPAN> i<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    stack_pix_ptr    <SPAN class="op">=</SPAN> <SPAN class="op">&amp;</SPAN>stack<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    stack_pix_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>r <SPAN class="op">=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>R<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    stack_pix_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>g <SPAN class="op">=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>G<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    stack_pix_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>b <SPAN class="op">=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>B<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    sum_r           <SPAN class="op">+=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>R<SPAN class="op">]</SPAN> <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>i <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    sum_g           <SPAN class="op">+=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>G<SPAN class="op">]</SPAN> <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>i <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    sum_b           <SPAN class="op">+=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>B<SPAN class="op">]</SPAN> <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>i <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    sum_out_r       <SPAN class="op">+=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>R<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    sum_out_g       <SPAN class="op">+=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>G<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    sum_out_b       <SPAN class="op">+=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>B<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+                <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;=</SPAN> rx<SPAN class="op">;</SPAN> i<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">&lt;=</SPAN> wm<SPAN class="op">)</SPAN> src_pix_ptr <SPAN class="op">+=</SPAN> Img::pix_width<SPAN class="op">;</SPAN> 
+                    stack_pix_ptr <SPAN class="op">=</SPAN> <SPAN class="op">&amp;</SPAN>stack<SPAN class="op">[</SPAN>i <SPAN class="op">+</SPAN> rx<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    stack_pix_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>r <SPAN class="op">=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>R<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    stack_pix_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>g <SPAN class="op">=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>G<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    stack_pix_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>b <SPAN class="op">=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>B<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    sum_r           <SPAN class="op">+=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>R<SPAN class="op">]</SPAN> <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>rx <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN> <SPAN class="op">-</SPAN> i<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    sum_g           <SPAN class="op">+=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>G<SPAN class="op">]</SPAN> <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>rx <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN> <SPAN class="op">-</SPAN> i<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    sum_b           <SPAN class="op">+=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>B<SPAN class="op">]</SPAN> <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>rx <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN> <SPAN class="op">-</SPAN> i<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    sum_in_r        <SPAN class="op">+=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>R<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    sum_in_g        <SPAN class="op">+=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>G<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    sum_in_b        <SPAN class="op">+=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>B<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+
+                stack_ptr <SPAN class="op">=</SPAN> rx<SPAN class="op">;</SPAN>
+                xp <SPAN class="op">=</SPAN> rx<SPAN class="op">;</SPAN>
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>xp <SPAN class="op">&gt;</SPAN> wm<SPAN class="op">)</SPAN> xp <SPAN class="op">=</SPAN> wm<SPAN class="op">;</SPAN>
+                src_pix_ptr <SPAN class="op">=</SPAN> img<SPAN class="op">.</SPAN>pix_ptr<SPAN class="op">(</SPAN>xp<SPAN class="op">,</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                dst_pix_ptr <SPAN class="op">=</SPAN> img<SPAN class="op">.</SPAN>pix_ptr<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>x <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> x <SPAN class="op">&lt;</SPAN> w<SPAN class="op">;</SPAN> x<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    dst_pix_ptr<SPAN class="op">[</SPAN>R<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>sum_r <SPAN class="op">*</SPAN> mul_sum<SPAN class="op">)</SPAN> <SPAN class="op">&gt;&gt;</SPAN> shr_sum<SPAN class="op">;</SPAN>
+                    dst_pix_ptr<SPAN class="op">[</SPAN>G<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>sum_g <SPAN class="op">*</SPAN> mul_sum<SPAN class="op">)</SPAN> <SPAN class="op">&gt;&gt;</SPAN> shr_sum<SPAN class="op">;</SPAN>
+                    dst_pix_ptr<SPAN class="op">[</SPAN>B<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>sum_b <SPAN class="op">*</SPAN> mul_sum<SPAN class="op">)</SPAN> <SPAN class="op">&gt;&gt;</SPAN> shr_sum<SPAN class="op">;</SPAN>
+                    dst_pix_ptr   <SPAN class="op">+=</SPAN> Img::pix_width<SPAN class="op">;</SPAN>
+
+                    sum_r <SPAN class="op">-=</SPAN> sum_out_r<SPAN class="op">;</SPAN>
+                    sum_g <SPAN class="op">-=</SPAN> sum_out_g<SPAN class="op">;</SPAN>
+                    sum_b <SPAN class="op">-=</SPAN> sum_out_b<SPAN class="op">;</SPAN>
+       
+                    stack_start <SPAN class="op">=</SPAN> stack_ptr <SPAN class="op">+</SPAN> div <SPAN class="op">-</SPAN> rx<SPAN class="op">;</SPAN>
+                    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>stack_start <SPAN class="op">&gt;=</SPAN> div<SPAN class="op">)</SPAN> stack_start <SPAN class="op">-=</SPAN> div<SPAN class="op">;</SPAN>
+                    stack_pix_ptr <SPAN class="op">=</SPAN> <SPAN class="op">&amp;</SPAN>stack<SPAN class="op">[</SPAN>stack_start<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+
+                    sum_out_r <SPAN class="op">-=</SPAN> stack_pix_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>r<SPAN class="op">;</SPAN>
+                    sum_out_g <SPAN class="op">-=</SPAN> stack_pix_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>g<SPAN class="op">;</SPAN>
+                    sum_out_b <SPAN class="op">-=</SPAN> stack_pix_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>b<SPAN class="op">;</SPAN>
+
+                    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>xp <SPAN class="op">&lt;</SPAN> wm<SPAN class="op">)</SPAN> 
+                    <SPAN class="op">{</SPAN>
+                        src_pix_ptr <SPAN class="op">+=</SPAN> Img::pix_width<SPAN class="op">;</SPAN>
+                        <SPAN class="op">++</SPAN>xp<SPAN class="op">;</SPAN>
+                    <SPAN class="op">}</SPAN>
+        
+                    stack_pix_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>r <SPAN class="op">=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>R<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    stack_pix_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>g <SPAN class="op">=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>G<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    stack_pix_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>b <SPAN class="op">=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>B<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+        
+                    sum_in_r <SPAN class="op">+=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>R<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    sum_in_g <SPAN class="op">+=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>G<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    sum_in_b <SPAN class="op">+=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>B<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    sum_r    <SPAN class="op">+=</SPAN> sum_in_r<SPAN class="op">;</SPAN>
+                    sum_g    <SPAN class="op">+=</SPAN> sum_in_g<SPAN class="op">;</SPAN>
+                    sum_b    <SPAN class="op">+=</SPAN> sum_in_b<SPAN class="op">;</SPAN>
+        
+                    <SPAN class="op">++</SPAN>stack_ptr<SPAN class="op">;</SPAN>
+                    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>stack_ptr <SPAN class="op">&gt;=</SPAN> div<SPAN class="op">)</SPAN> stack_ptr <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+                    stack_pix_ptr <SPAN class="op">=</SPAN> <SPAN class="op">&amp;</SPAN>stack<SPAN class="op">[</SPAN>stack_ptr<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+
+                    sum_out_r <SPAN class="op">+=</SPAN> stack_pix_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>r<SPAN class="op">;</SPAN>
+                    sum_out_g <SPAN class="op">+=</SPAN> stack_pix_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>g<SPAN class="op">;</SPAN>
+                    sum_out_b <SPAN class="op">+=</SPAN> stack_pix_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>b<SPAN class="op">;</SPAN>
+                    sum_in_r  <SPAN class="op">-=</SPAN> stack_pix_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>r<SPAN class="op">;</SPAN>
+                    sum_in_g  <SPAN class="op">-=</SPAN> stack_pix_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>g<SPAN class="op">;</SPAN>
+                    sum_in_b  <SPAN class="op">-=</SPAN> stack_pix_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>b<SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>ry <SPAN class="op">&gt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>ry <SPAN class="op">&gt;</SPAN> <SPAN class="num">254</SPAN><SPAN class="op">)</SPAN> ry <SPAN class="op">=</SPAN> <SPAN class="num">254</SPAN><SPAN class="op">;</SPAN>
+            div <SPAN class="op">=</SPAN> ry <SPAN class="op">*</SPAN> <SPAN class="num">2</SPAN> <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+            mul_sum <SPAN class="op">=</SPAN> stack_blur_tables<SPAN class="op">&lt;</SPAN><SPAN class="kw1">int</SPAN><SPAN class="op">&gt;</SPAN>::g_stack_blur8_mul<SPAN class="op">[</SPAN>ry<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+            shr_sum <SPAN class="op">=</SPAN> stack_blur_tables<SPAN class="op">&lt;</SPAN><SPAN class="kw1">int</SPAN><SPAN class="op">&gt;</SPAN>::g_stack_blur8_shr<SPAN class="op">[</SPAN>ry<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+            stack<SPAN class="op">.</SPAN><SPAN class="kw1">allocate</SPAN><SPAN class="op">(</SPAN>div<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">int</SPAN> stride <SPAN class="op">=</SPAN> img<SPAN class="op">.</SPAN>stride<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>x <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> x <SPAN class="op">&lt;</SPAN> w<SPAN class="op">;</SPAN> x<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                sum_r <SPAN class="op">=</SPAN> 
+                sum_g <SPAN class="op">=</SPAN> 
+                sum_b <SPAN class="op">=</SPAN> 
+                sum_in_r <SPAN class="op">=</SPAN> 
+                sum_in_g <SPAN class="op">=</SPAN> 
+                sum_in_b <SPAN class="op">=</SPAN> 
+                sum_out_r <SPAN class="op">=</SPAN> 
+                sum_out_g <SPAN class="op">=</SPAN> 
+                sum_out_b <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+
+                src_pix_ptr <SPAN class="op">=</SPAN> img<SPAN class="op">.</SPAN>pix_ptr<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;=</SPAN> ry<SPAN class="op">;</SPAN> i<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    stack_pix_ptr    <SPAN class="op">=</SPAN> <SPAN class="op">&amp;</SPAN>stack<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    stack_pix_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>r <SPAN class="op">=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>R<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    stack_pix_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>g <SPAN class="op">=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>G<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    stack_pix_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>b <SPAN class="op">=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>B<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    sum_r           <SPAN class="op">+=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>R<SPAN class="op">]</SPAN> <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>i <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    sum_g           <SPAN class="op">+=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>G<SPAN class="op">]</SPAN> <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>i <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    sum_b           <SPAN class="op">+=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>B<SPAN class="op">]</SPAN> <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>i <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    sum_out_r       <SPAN class="op">+=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>R<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    sum_out_g       <SPAN class="op">+=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>G<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    sum_out_b       <SPAN class="op">+=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>B<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+                <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;=</SPAN> ry<SPAN class="op">;</SPAN> i<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">&lt;=</SPAN> hm<SPAN class="op">)</SPAN> src_pix_ptr <SPAN class="op">+=</SPAN> stride<SPAN class="op">;</SPAN> 
+                    stack_pix_ptr <SPAN class="op">=</SPAN> <SPAN class="op">&amp;</SPAN>stack<SPAN class="op">[</SPAN>i <SPAN class="op">+</SPAN> ry<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    stack_pix_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>r <SPAN class="op">=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>R<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    stack_pix_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>g <SPAN class="op">=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>G<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    stack_pix_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>b <SPAN class="op">=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>B<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    sum_r           <SPAN class="op">+=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>R<SPAN class="op">]</SPAN> <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>ry <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN> <SPAN class="op">-</SPAN> i<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    sum_g           <SPAN class="op">+=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>G<SPAN class="op">]</SPAN> <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>ry <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN> <SPAN class="op">-</SPAN> i<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    sum_b           <SPAN class="op">+=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>B<SPAN class="op">]</SPAN> <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>ry <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN> <SPAN class="op">-</SPAN> i<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    sum_in_r        <SPAN class="op">+=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>R<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    sum_in_g        <SPAN class="op">+=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>G<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    sum_in_b        <SPAN class="op">+=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>B<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+
+                stack_ptr <SPAN class="op">=</SPAN> ry<SPAN class="op">;</SPAN>
+                yp <SPAN class="op">=</SPAN> ry<SPAN class="op">;</SPAN>
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>yp <SPAN class="op">&gt;</SPAN> hm<SPAN class="op">)</SPAN> yp <SPAN class="op">=</SPAN> hm<SPAN class="op">;</SPAN>
+                src_pix_ptr <SPAN class="op">=</SPAN> img<SPAN class="op">.</SPAN>pix_ptr<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> yp<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                dst_pix_ptr <SPAN class="op">=</SPAN> img<SPAN class="op">.</SPAN>pix_ptr<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>y <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> y <SPAN class="op">&lt;</SPAN> h<SPAN class="op">;</SPAN> y<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    dst_pix_ptr<SPAN class="op">[</SPAN>R<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>sum_r <SPAN class="op">*</SPAN> mul_sum<SPAN class="op">)</SPAN> <SPAN class="op">&gt;&gt;</SPAN> shr_sum<SPAN class="op">;</SPAN>
+                    dst_pix_ptr<SPAN class="op">[</SPAN>G<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>sum_g <SPAN class="op">*</SPAN> mul_sum<SPAN class="op">)</SPAN> <SPAN class="op">&gt;&gt;</SPAN> shr_sum<SPAN class="op">;</SPAN>
+                    dst_pix_ptr<SPAN class="op">[</SPAN>B<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>sum_b <SPAN class="op">*</SPAN> mul_sum<SPAN class="op">)</SPAN> <SPAN class="op">&gt;&gt;</SPAN> shr_sum<SPAN class="op">;</SPAN>
+                    dst_pix_ptr <SPAN class="op">+=</SPAN> stride<SPAN class="op">;</SPAN>
+
+                    sum_r <SPAN class="op">-=</SPAN> sum_out_r<SPAN class="op">;</SPAN>
+                    sum_g <SPAN class="op">-=</SPAN> sum_out_g<SPAN class="op">;</SPAN>
+                    sum_b <SPAN class="op">-=</SPAN> sum_out_b<SPAN class="op">;</SPAN>
+       
+                    stack_start <SPAN class="op">=</SPAN> stack_ptr <SPAN class="op">+</SPAN> div <SPAN class="op">-</SPAN> ry<SPAN class="op">;</SPAN>
+                    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>stack_start <SPAN class="op">&gt;=</SPAN> div<SPAN class="op">)</SPAN> stack_start <SPAN class="op">-=</SPAN> div<SPAN class="op">;</SPAN>
+
+                    stack_pix_ptr <SPAN class="op">=</SPAN> <SPAN class="op">&amp;</SPAN>stack<SPAN class="op">[</SPAN>stack_start<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    sum_out_r <SPAN class="op">-=</SPAN> stack_pix_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>r<SPAN class="op">;</SPAN>
+                    sum_out_g <SPAN class="op">-=</SPAN> stack_pix_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>g<SPAN class="op">;</SPAN>
+                    sum_out_b <SPAN class="op">-=</SPAN> stack_pix_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>b<SPAN class="op">;</SPAN>
+
+                    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>yp <SPAN class="op">&lt;</SPAN> hm<SPAN class="op">)</SPAN> 
+                    <SPAN class="op">{</SPAN>
+                        src_pix_ptr <SPAN class="op">+=</SPAN> stride<SPAN class="op">;</SPAN>
+                        <SPAN class="op">++</SPAN>yp<SPAN class="op">;</SPAN>
+                    <SPAN class="op">}</SPAN>
+        
+                    stack_pix_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>r <SPAN class="op">=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>R<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    stack_pix_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>g <SPAN class="op">=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>G<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    stack_pix_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>b <SPAN class="op">=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>B<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+        
+                    sum_in_r <SPAN class="op">+=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>R<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    sum_in_g <SPAN class="op">+=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>G<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    sum_in_b <SPAN class="op">+=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>B<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    sum_r    <SPAN class="op">+=</SPAN> sum_in_r<SPAN class="op">;</SPAN>
+                    sum_g    <SPAN class="op">+=</SPAN> sum_in_g<SPAN class="op">;</SPAN>
+                    sum_b    <SPAN class="op">+=</SPAN> sum_in_b<SPAN class="op">;</SPAN>
+        
+                    <SPAN class="op">++</SPAN>stack_ptr<SPAN class="op">;</SPAN>
+                    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>stack_ptr <SPAN class="op">&gt;=</SPAN> div<SPAN class="op">)</SPAN> stack_ptr <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+                    stack_pix_ptr <SPAN class="op">=</SPAN> <SPAN class="op">&amp;</SPAN>stack<SPAN class="op">[</SPAN>stack_ptr<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+
+                    sum_out_r <SPAN class="op">+=</SPAN> stack_pix_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>r<SPAN class="op">;</SPAN>
+                    sum_out_g <SPAN class="op">+=</SPAN> stack_pix_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>g<SPAN class="op">;</SPAN>
+                    sum_out_b <SPAN class="op">+=</SPAN> stack_pix_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>b<SPAN class="op">;</SPAN>
+                    sum_in_r  <SPAN class="op">-=</SPAN> stack_pix_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>r<SPAN class="op">;</SPAN>
+                    sum_in_g  <SPAN class="op">-=</SPAN> stack_pix_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>g<SPAN class="op">;</SPAN>
+                    sum_in_b  <SPAN class="op">-=</SPAN> stack_pix_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>b<SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+
+    <SPAN class="rem">//=======================================================<A name="stack_blur_rgba32"><B></B></A><A href="agg_blur.h.html#stack_blur_rgba32">stack_blur_rgba32</A></SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Img<SPAN class="op">&gt;</SPAN> 
+    <SPAN class="kw1">void</SPAN> <A href="agg_blur.h.html#stack_blur_rgba32">stack_blur_rgba32</A><SPAN class="op">(</SPAN>Img<SPAN class="op">&amp;</SPAN> img<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> rx<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> ry<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">typedef</SPAN> <SPAN class="kw1">typename</SPAN> Img::color_type color_type<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">typedef</SPAN> <SPAN class="kw1">typename</SPAN> Img::order_type order_type<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">enum</SPAN> order_e 
+        <SPAN class="op">{</SPAN> 
+            R <SPAN class="op">=</SPAN> order_type::R<SPAN class="op">,</SPAN> 
+            G <SPAN class="op">=</SPAN> order_type::G<SPAN class="op">,</SPAN> 
+            B <SPAN class="op">=</SPAN> order_type::B<SPAN class="op">,</SPAN>
+            A <SPAN class="op">=</SPAN> order_type::A 
+        <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">unsigned</SPAN> x<SPAN class="op">,</SPAN> y<SPAN class="op">,</SPAN> xp<SPAN class="op">,</SPAN> yp<SPAN class="op">,</SPAN> i<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> stack_ptr<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> stack_start<SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">const</SPAN> <A href="agg_basics.h.html#int8u">int8u</A><SPAN class="op">*</SPAN> src_pix_ptr<SPAN class="op">;</SPAN>
+              <A href="agg_basics.h.html#int8u">int8u</A><SPAN class="op">*</SPAN> dst_pix_ptr<SPAN class="op">;</SPAN>
+        color_type<SPAN class="op">*</SPAN>  stack_pix_ptr<SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">unsigned</SPAN> sum_r<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> sum_g<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> sum_b<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> sum_a<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> sum_in_r<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> sum_in_g<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> sum_in_b<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> sum_in_a<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> sum_out_r<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> sum_out_g<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> sum_out_b<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> sum_out_a<SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">unsigned</SPAN> w   <SPAN class="op">=</SPAN> img<SPAN class="op">.</SPAN>width<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> h   <SPAN class="op">=</SPAN> img<SPAN class="op">.</SPAN>height<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> wm  <SPAN class="op">=</SPAN> w <SPAN class="op">-</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> hm  <SPAN class="op">=</SPAN> h <SPAN class="op">-</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">unsigned</SPAN> div<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> mul_sum<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> shr_sum<SPAN class="op">;</SPAN>
+
+        <A href="agg_array.h.html#pod_vector">pod_vector</A><SPAN class="op">&lt;</SPAN>color_type<SPAN class="op">&gt;</SPAN> stack<SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>rx <SPAN class="op">&gt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>rx <SPAN class="op">&gt;</SPAN> <SPAN class="num">254</SPAN><SPAN class="op">)</SPAN> rx <SPAN class="op">=</SPAN> <SPAN class="num">254</SPAN><SPAN class="op">;</SPAN>
+            div <SPAN class="op">=</SPAN> rx <SPAN class="op">*</SPAN> <SPAN class="num">2</SPAN> <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+            mul_sum <SPAN class="op">=</SPAN> stack_blur_tables<SPAN class="op">&lt;</SPAN><SPAN class="kw1">int</SPAN><SPAN class="op">&gt;</SPAN>::g_stack_blur8_mul<SPAN class="op">[</SPAN>rx<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+            shr_sum <SPAN class="op">=</SPAN> stack_blur_tables<SPAN class="op">&lt;</SPAN><SPAN class="kw1">int</SPAN><SPAN class="op">&gt;</SPAN>::g_stack_blur8_shr<SPAN class="op">[</SPAN>rx<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+            stack<SPAN class="op">.</SPAN><SPAN class="kw1">allocate</SPAN><SPAN class="op">(</SPAN>div<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>y <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> y <SPAN class="op">&lt;</SPAN> h<SPAN class="op">;</SPAN> y<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                sum_r <SPAN class="op">=</SPAN> 
+                sum_g <SPAN class="op">=</SPAN> 
+                sum_b <SPAN class="op">=</SPAN> 
+                sum_a <SPAN class="op">=</SPAN> 
+                sum_in_r <SPAN class="op">=</SPAN> 
+                sum_in_g <SPAN class="op">=</SPAN> 
+                sum_in_b <SPAN class="op">=</SPAN> 
+                sum_in_a <SPAN class="op">=</SPAN> 
+                sum_out_r <SPAN class="op">=</SPAN> 
+                sum_out_g <SPAN class="op">=</SPAN> 
+                sum_out_b <SPAN class="op">=</SPAN> 
+                sum_out_a <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+
+                src_pix_ptr <SPAN class="op">=</SPAN> img<SPAN class="op">.</SPAN>pix_ptr<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;=</SPAN> rx<SPAN class="op">;</SPAN> i<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    stack_pix_ptr    <SPAN class="op">=</SPAN> <SPAN class="op">&amp;</SPAN>stack<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    stack_pix_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>r <SPAN class="op">=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>R<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    stack_pix_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>g <SPAN class="op">=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>G<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    stack_pix_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>b <SPAN class="op">=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>B<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    stack_pix_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>a <SPAN class="op">=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>A<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    sum_r           <SPAN class="op">+=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>R<SPAN class="op">]</SPAN> <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>i <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    sum_g           <SPAN class="op">+=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>G<SPAN class="op">]</SPAN> <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>i <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    sum_b           <SPAN class="op">+=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>B<SPAN class="op">]</SPAN> <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>i <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    sum_a           <SPAN class="op">+=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>A<SPAN class="op">]</SPAN> <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>i <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    sum_out_r       <SPAN class="op">+=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>R<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    sum_out_g       <SPAN class="op">+=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>G<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    sum_out_b       <SPAN class="op">+=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>B<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    sum_out_a       <SPAN class="op">+=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>A<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+                <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;=</SPAN> rx<SPAN class="op">;</SPAN> i<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">&lt;=</SPAN> wm<SPAN class="op">)</SPAN> src_pix_ptr <SPAN class="op">+=</SPAN> Img::pix_width<SPAN class="op">;</SPAN> 
+                    stack_pix_ptr <SPAN class="op">=</SPAN> <SPAN class="op">&amp;</SPAN>stack<SPAN class="op">[</SPAN>i <SPAN class="op">+</SPAN> rx<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    stack_pix_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>r <SPAN class="op">=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>R<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    stack_pix_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>g <SPAN class="op">=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>G<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    stack_pix_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>b <SPAN class="op">=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>B<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    stack_pix_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>a <SPAN class="op">=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>A<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    sum_r           <SPAN class="op">+=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>R<SPAN class="op">]</SPAN> <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>rx <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN> <SPAN class="op">-</SPAN> i<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    sum_g           <SPAN class="op">+=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>G<SPAN class="op">]</SPAN> <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>rx <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN> <SPAN class="op">-</SPAN> i<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    sum_b           <SPAN class="op">+=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>B<SPAN class="op">]</SPAN> <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>rx <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN> <SPAN class="op">-</SPAN> i<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    sum_a           <SPAN class="op">+=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>A<SPAN class="op">]</SPAN> <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>rx <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN> <SPAN class="op">-</SPAN> i<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    sum_in_r        <SPAN class="op">+=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>R<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    sum_in_g        <SPAN class="op">+=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>G<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    sum_in_b        <SPAN class="op">+=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>B<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    sum_in_a        <SPAN class="op">+=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>A<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+
+                stack_ptr <SPAN class="op">=</SPAN> rx<SPAN class="op">;</SPAN>
+                xp <SPAN class="op">=</SPAN> rx<SPAN class="op">;</SPAN>
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>xp <SPAN class="op">&gt;</SPAN> wm<SPAN class="op">)</SPAN> xp <SPAN class="op">=</SPAN> wm<SPAN class="op">;</SPAN>
+                src_pix_ptr <SPAN class="op">=</SPAN> img<SPAN class="op">.</SPAN>pix_ptr<SPAN class="op">(</SPAN>xp<SPAN class="op">,</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                dst_pix_ptr <SPAN class="op">=</SPAN> img<SPAN class="op">.</SPAN>pix_ptr<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>x <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> x <SPAN class="op">&lt;</SPAN> w<SPAN class="op">;</SPAN> x<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    dst_pix_ptr<SPAN class="op">[</SPAN>R<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>sum_r <SPAN class="op">*</SPAN> mul_sum<SPAN class="op">)</SPAN> <SPAN class="op">&gt;&gt;</SPAN> shr_sum<SPAN class="op">;</SPAN>
+                    dst_pix_ptr<SPAN class="op">[</SPAN>G<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>sum_g <SPAN class="op">*</SPAN> mul_sum<SPAN class="op">)</SPAN> <SPAN class="op">&gt;&gt;</SPAN> shr_sum<SPAN class="op">;</SPAN>
+                    dst_pix_ptr<SPAN class="op">[</SPAN>B<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>sum_b <SPAN class="op">*</SPAN> mul_sum<SPAN class="op">)</SPAN> <SPAN class="op">&gt;&gt;</SPAN> shr_sum<SPAN class="op">;</SPAN>
+                    dst_pix_ptr<SPAN class="op">[</SPAN>A<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>sum_a <SPAN class="op">*</SPAN> mul_sum<SPAN class="op">)</SPAN> <SPAN class="op">&gt;&gt;</SPAN> shr_sum<SPAN class="op">;</SPAN>
+                    dst_pix_ptr <SPAN class="op">+=</SPAN> Img::pix_width<SPAN class="op">;</SPAN>
+
+                    sum_r <SPAN class="op">-=</SPAN> sum_out_r<SPAN class="op">;</SPAN>
+                    sum_g <SPAN class="op">-=</SPAN> sum_out_g<SPAN class="op">;</SPAN>
+                    sum_b <SPAN class="op">-=</SPAN> sum_out_b<SPAN class="op">;</SPAN>
+                    sum_a <SPAN class="op">-=</SPAN> sum_out_a<SPAN class="op">;</SPAN>
+       
+                    stack_start <SPAN class="op">=</SPAN> stack_ptr <SPAN class="op">+</SPAN> div <SPAN class="op">-</SPAN> rx<SPAN class="op">;</SPAN>
+                    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>stack_start <SPAN class="op">&gt;=</SPAN> div<SPAN class="op">)</SPAN> stack_start <SPAN class="op">-=</SPAN> div<SPAN class="op">;</SPAN>
+                    stack_pix_ptr <SPAN class="op">=</SPAN> <SPAN class="op">&amp;</SPAN>stack<SPAN class="op">[</SPAN>stack_start<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+
+                    sum_out_r <SPAN class="op">-=</SPAN> stack_pix_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>r<SPAN class="op">;</SPAN>
+                    sum_out_g <SPAN class="op">-=</SPAN> stack_pix_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>g<SPAN class="op">;</SPAN>
+                    sum_out_b <SPAN class="op">-=</SPAN> stack_pix_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>b<SPAN class="op">;</SPAN>
+                    sum_out_a <SPAN class="op">-=</SPAN> stack_pix_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>a<SPAN class="op">;</SPAN>
+
+                    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>xp <SPAN class="op">&lt;</SPAN> wm<SPAN class="op">)</SPAN> 
+                    <SPAN class="op">{</SPAN>
+                        src_pix_ptr <SPAN class="op">+=</SPAN> Img::pix_width<SPAN class="op">;</SPAN>
+                        <SPAN class="op">++</SPAN>xp<SPAN class="op">;</SPAN>
+                    <SPAN class="op">}</SPAN>
+        
+                    stack_pix_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>r <SPAN class="op">=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>R<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    stack_pix_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>g <SPAN class="op">=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>G<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    stack_pix_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>b <SPAN class="op">=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>B<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    stack_pix_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>a <SPAN class="op">=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>A<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+        
+                    sum_in_r <SPAN class="op">+=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>R<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    sum_in_g <SPAN class="op">+=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>G<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    sum_in_b <SPAN class="op">+=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>B<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    sum_in_a <SPAN class="op">+=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>A<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    sum_r    <SPAN class="op">+=</SPAN> sum_in_r<SPAN class="op">;</SPAN>
+                    sum_g    <SPAN class="op">+=</SPAN> sum_in_g<SPAN class="op">;</SPAN>
+                    sum_b    <SPAN class="op">+=</SPAN> sum_in_b<SPAN class="op">;</SPAN>
+                    sum_a    <SPAN class="op">+=</SPAN> sum_in_a<SPAN class="op">;</SPAN>
+        
+                    <SPAN class="op">++</SPAN>stack_ptr<SPAN class="op">;</SPAN>
+                    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>stack_ptr <SPAN class="op">&gt;=</SPAN> div<SPAN class="op">)</SPAN> stack_ptr <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+                    stack_pix_ptr <SPAN class="op">=</SPAN> <SPAN class="op">&amp;</SPAN>stack<SPAN class="op">[</SPAN>stack_ptr<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+
+                    sum_out_r <SPAN class="op">+=</SPAN> stack_pix_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>r<SPAN class="op">;</SPAN>
+                    sum_out_g <SPAN class="op">+=</SPAN> stack_pix_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>g<SPAN class="op">;</SPAN>
+                    sum_out_b <SPAN class="op">+=</SPAN> stack_pix_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>b<SPAN class="op">;</SPAN>
+                    sum_out_a <SPAN class="op">+=</SPAN> stack_pix_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>a<SPAN class="op">;</SPAN>
+                    sum_in_r  <SPAN class="op">-=</SPAN> stack_pix_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>r<SPAN class="op">;</SPAN>
+                    sum_in_g  <SPAN class="op">-=</SPAN> stack_pix_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>g<SPAN class="op">;</SPAN>
+                    sum_in_b  <SPAN class="op">-=</SPAN> stack_pix_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>b<SPAN class="op">;</SPAN>
+                    sum_in_a  <SPAN class="op">-=</SPAN> stack_pix_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>a<SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>ry <SPAN class="op">&gt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>ry <SPAN class="op">&gt;</SPAN> <SPAN class="num">254</SPAN><SPAN class="op">)</SPAN> ry <SPAN class="op">=</SPAN> <SPAN class="num">254</SPAN><SPAN class="op">;</SPAN>
+            div <SPAN class="op">=</SPAN> ry <SPAN class="op">*</SPAN> <SPAN class="num">2</SPAN> <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+            mul_sum <SPAN class="op">=</SPAN> stack_blur_tables<SPAN class="op">&lt;</SPAN><SPAN class="kw1">int</SPAN><SPAN class="op">&gt;</SPAN>::g_stack_blur8_mul<SPAN class="op">[</SPAN>ry<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+            shr_sum <SPAN class="op">=</SPAN> stack_blur_tables<SPAN class="op">&lt;</SPAN><SPAN class="kw1">int</SPAN><SPAN class="op">&gt;</SPAN>::g_stack_blur8_shr<SPAN class="op">[</SPAN>ry<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+            stack<SPAN class="op">.</SPAN><SPAN class="kw1">allocate</SPAN><SPAN class="op">(</SPAN>div<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">int</SPAN> stride <SPAN class="op">=</SPAN> img<SPAN class="op">.</SPAN>stride<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>x <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> x <SPAN class="op">&lt;</SPAN> w<SPAN class="op">;</SPAN> x<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                sum_r <SPAN class="op">=</SPAN> 
+                sum_g <SPAN class="op">=</SPAN> 
+                sum_b <SPAN class="op">=</SPAN> 
+                sum_a <SPAN class="op">=</SPAN> 
+                sum_in_r <SPAN class="op">=</SPAN> 
+                sum_in_g <SPAN class="op">=</SPAN> 
+                sum_in_b <SPAN class="op">=</SPAN> 
+                sum_in_a <SPAN class="op">=</SPAN> 
+                sum_out_r <SPAN class="op">=</SPAN> 
+                sum_out_g <SPAN class="op">=</SPAN> 
+                sum_out_b <SPAN class="op">=</SPAN> 
+                sum_out_a <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+
+                src_pix_ptr <SPAN class="op">=</SPAN> img<SPAN class="op">.</SPAN>pix_ptr<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;=</SPAN> ry<SPAN class="op">;</SPAN> i<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    stack_pix_ptr    <SPAN class="op">=</SPAN> <SPAN class="op">&amp;</SPAN>stack<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    stack_pix_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>r <SPAN class="op">=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>R<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    stack_pix_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>g <SPAN class="op">=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>G<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    stack_pix_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>b <SPAN class="op">=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>B<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    stack_pix_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>a <SPAN class="op">=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>A<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    sum_r           <SPAN class="op">+=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>R<SPAN class="op">]</SPAN> <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>i <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    sum_g           <SPAN class="op">+=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>G<SPAN class="op">]</SPAN> <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>i <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    sum_b           <SPAN class="op">+=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>B<SPAN class="op">]</SPAN> <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>i <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    sum_a           <SPAN class="op">+=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>A<SPAN class="op">]</SPAN> <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>i <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    sum_out_r       <SPAN class="op">+=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>R<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    sum_out_g       <SPAN class="op">+=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>G<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    sum_out_b       <SPAN class="op">+=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>B<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    sum_out_a       <SPAN class="op">+=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>A<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+                <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;=</SPAN> ry<SPAN class="op">;</SPAN> i<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">&lt;=</SPAN> hm<SPAN class="op">)</SPAN> src_pix_ptr <SPAN class="op">+=</SPAN> stride<SPAN class="op">;</SPAN> 
+                    stack_pix_ptr <SPAN class="op">=</SPAN> <SPAN class="op">&amp;</SPAN>stack<SPAN class="op">[</SPAN>i <SPAN class="op">+</SPAN> ry<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    stack_pix_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>r <SPAN class="op">=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>R<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    stack_pix_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>g <SPAN class="op">=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>G<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    stack_pix_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>b <SPAN class="op">=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>B<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    stack_pix_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>a <SPAN class="op">=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>A<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    sum_r           <SPAN class="op">+=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>R<SPAN class="op">]</SPAN> <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>ry <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN> <SPAN class="op">-</SPAN> i<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    sum_g           <SPAN class="op">+=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>G<SPAN class="op">]</SPAN> <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>ry <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN> <SPAN class="op">-</SPAN> i<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    sum_b           <SPAN class="op">+=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>B<SPAN class="op">]</SPAN> <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>ry <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN> <SPAN class="op">-</SPAN> i<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    sum_a           <SPAN class="op">+=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>A<SPAN class="op">]</SPAN> <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>ry <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN> <SPAN class="op">-</SPAN> i<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    sum_in_r        <SPAN class="op">+=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>R<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    sum_in_g        <SPAN class="op">+=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>G<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    sum_in_b        <SPAN class="op">+=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>B<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    sum_in_a        <SPAN class="op">+=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>A<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+
+                stack_ptr <SPAN class="op">=</SPAN> ry<SPAN class="op">;</SPAN>
+                yp <SPAN class="op">=</SPAN> ry<SPAN class="op">;</SPAN>
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>yp <SPAN class="op">&gt;</SPAN> hm<SPAN class="op">)</SPAN> yp <SPAN class="op">=</SPAN> hm<SPAN class="op">;</SPAN>
+                src_pix_ptr <SPAN class="op">=</SPAN> img<SPAN class="op">.</SPAN>pix_ptr<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> yp<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                dst_pix_ptr <SPAN class="op">=</SPAN> img<SPAN class="op">.</SPAN>pix_ptr<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>y <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> y <SPAN class="op">&lt;</SPAN> h<SPAN class="op">;</SPAN> y<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    dst_pix_ptr<SPAN class="op">[</SPAN>R<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>sum_r <SPAN class="op">*</SPAN> mul_sum<SPAN class="op">)</SPAN> <SPAN class="op">&gt;&gt;</SPAN> shr_sum<SPAN class="op">;</SPAN>
+                    dst_pix_ptr<SPAN class="op">[</SPAN>G<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>sum_g <SPAN class="op">*</SPAN> mul_sum<SPAN class="op">)</SPAN> <SPAN class="op">&gt;&gt;</SPAN> shr_sum<SPAN class="op">;</SPAN>
+                    dst_pix_ptr<SPAN class="op">[</SPAN>B<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>sum_b <SPAN class="op">*</SPAN> mul_sum<SPAN class="op">)</SPAN> <SPAN class="op">&gt;&gt;</SPAN> shr_sum<SPAN class="op">;</SPAN>
+                    dst_pix_ptr<SPAN class="op">[</SPAN>A<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>sum_a <SPAN class="op">*</SPAN> mul_sum<SPAN class="op">)</SPAN> <SPAN class="op">&gt;&gt;</SPAN> shr_sum<SPAN class="op">;</SPAN>
+                    dst_pix_ptr <SPAN class="op">+=</SPAN> stride<SPAN class="op">;</SPAN>
+
+                    sum_r <SPAN class="op">-=</SPAN> sum_out_r<SPAN class="op">;</SPAN>
+                    sum_g <SPAN class="op">-=</SPAN> sum_out_g<SPAN class="op">;</SPAN>
+                    sum_b <SPAN class="op">-=</SPAN> sum_out_b<SPAN class="op">;</SPAN>
+                    sum_a <SPAN class="op">-=</SPAN> sum_out_a<SPAN class="op">;</SPAN>
+       
+                    stack_start <SPAN class="op">=</SPAN> stack_ptr <SPAN class="op">+</SPAN> div <SPAN class="op">-</SPAN> ry<SPAN class="op">;</SPAN>
+                    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>stack_start <SPAN class="op">&gt;=</SPAN> div<SPAN class="op">)</SPAN> stack_start <SPAN class="op">-=</SPAN> div<SPAN class="op">;</SPAN>
+
+                    stack_pix_ptr <SPAN class="op">=</SPAN> <SPAN class="op">&amp;</SPAN>stack<SPAN class="op">[</SPAN>stack_start<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    sum_out_r <SPAN class="op">-=</SPAN> stack_pix_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>r<SPAN class="op">;</SPAN>
+                    sum_out_g <SPAN class="op">-=</SPAN> stack_pix_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>g<SPAN class="op">;</SPAN>
+                    sum_out_b <SPAN class="op">-=</SPAN> stack_pix_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>b<SPAN class="op">;</SPAN>
+                    sum_out_a <SPAN class="op">-=</SPAN> stack_pix_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>a<SPAN class="op">;</SPAN>
+
+                    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>yp <SPAN class="op">&lt;</SPAN> hm<SPAN class="op">)</SPAN> 
+                    <SPAN class="op">{</SPAN>
+                        src_pix_ptr <SPAN class="op">+=</SPAN> stride<SPAN class="op">;</SPAN>
+                        <SPAN class="op">++</SPAN>yp<SPAN class="op">;</SPAN>
+                    <SPAN class="op">}</SPAN>
+        
+                    stack_pix_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>r <SPAN class="op">=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>R<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    stack_pix_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>g <SPAN class="op">=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>G<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    stack_pix_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>b <SPAN class="op">=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>B<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    stack_pix_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>a <SPAN class="op">=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>A<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+        
+                    sum_in_r <SPAN class="op">+=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>R<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    sum_in_g <SPAN class="op">+=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>G<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    sum_in_b <SPAN class="op">+=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>B<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    sum_in_a <SPAN class="op">+=</SPAN> src_pix_ptr<SPAN class="op">[</SPAN>A<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    sum_r    <SPAN class="op">+=</SPAN> sum_in_r<SPAN class="op">;</SPAN>
+                    sum_g    <SPAN class="op">+=</SPAN> sum_in_g<SPAN class="op">;</SPAN>
+                    sum_b    <SPAN class="op">+=</SPAN> sum_in_b<SPAN class="op">;</SPAN>
+                    sum_a    <SPAN class="op">+=</SPAN> sum_in_a<SPAN class="op">;</SPAN>
+        
+                    <SPAN class="op">++</SPAN>stack_ptr<SPAN class="op">;</SPAN>
+                    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>stack_ptr <SPAN class="op">&gt;=</SPAN> div<SPAN class="op">)</SPAN> stack_ptr <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+                    stack_pix_ptr <SPAN class="op">=</SPAN> <SPAN class="op">&amp;</SPAN>stack<SPAN class="op">[</SPAN>stack_ptr<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+
+                    sum_out_r <SPAN class="op">+=</SPAN> stack_pix_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>r<SPAN class="op">;</SPAN>
+                    sum_out_g <SPAN class="op">+=</SPAN> stack_pix_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>g<SPAN class="op">;</SPAN>
+                    sum_out_b <SPAN class="op">+=</SPAN> stack_pix_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>b<SPAN class="op">;</SPAN>
+                    sum_out_a <SPAN class="op">+=</SPAN> stack_pix_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>a<SPAN class="op">;</SPAN>
+                    sum_in_r  <SPAN class="op">-=</SPAN> stack_pix_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>r<SPAN class="op">;</SPAN>
+                    sum_in_g  <SPAN class="op">-=</SPAN> stack_pix_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>g<SPAN class="op">;</SPAN>
+                    sum_in_b  <SPAN class="op">-=</SPAN> stack_pix_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>b<SPAN class="op">;</SPAN>
+                    sum_in_a  <SPAN class="op">-=</SPAN> stack_pix_ptr<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>a<SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+
+    <SPAN class="rem">//===========================================================<A name="recursive_blur"><B></B></A><A href="agg_blur.h.html#recursive_blur">recursive_blur</A></SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> ColorT<SPAN class="op">,</SPAN> <SPAN class="kw1">class</SPAN> CalculatorT<SPAN class="op">&gt;</SPAN> <SPAN class="kw1">class</SPAN> <A href="agg_blur.h.html#recursive_blur">recursive_blur</A>
+    <SPAN class="op">{</SPAN>
+    <SPAN class="kw1">public</SPAN>:
+        <SPAN class="kw1">typedef</SPAN> ColorT color_type<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">typedef</SPAN> CalculatorT calculator_type<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">typedef</SPAN> <SPAN class="kw1">typename</SPAN> color_type::value_type value_type<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">typedef</SPAN> <SPAN class="kw1">typename</SPAN> calculator_type::value_type calc_type<SPAN class="op">;</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Img<SPAN class="op">&gt;</SPAN> <SPAN class="kw1">void</SPAN> blur_x<SPAN class="op">(</SPAN>Img<SPAN class="op">&amp;</SPAN> img<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> radius<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>radius <SPAN class="op">&lt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">62</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">return</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>img<SPAN class="op">.</SPAN>width<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">&lt;</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">return</SPAN><SPAN class="op">;</SPAN>
+
+            calc_type s <SPAN class="op">=</SPAN> calc_type<SPAN class="op">(</SPAN>radius <SPAN class="op">*</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">5</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            calc_type q <SPAN class="op">=</SPAN> calc_type<SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>s <SPAN class="op">&lt;</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">.</SPAN><SPAN class="num">5</SPAN><SPAN class="op">)</SPAN> ?
+                                    <SPAN class="num">3</SPAN><SPAN class="op">.</SPAN><SPAN class="num">97156</SPAN> <SPAN class="op">-</SPAN> <SPAN class="num">4</SPAN><SPAN class="op">.</SPAN><SPAN class="num">14554</SPAN> <SPAN class="op">*</SPAN> sqrt<SPAN class="op">(</SPAN><SPAN class="num">1</SPAN> <SPAN class="op">-</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">26891</SPAN> <SPAN class="op">*</SPAN> s<SPAN class="op">)</SPAN> :
+                                    <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">98711</SPAN> <SPAN class="op">*</SPAN> s <SPAN class="op">-</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">96330</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+            calc_type q2 <SPAN class="op">=</SPAN> calc_type<SPAN class="op">(</SPAN>q <SPAN class="op">*</SPAN> q<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            calc_type q3 <SPAN class="op">=</SPAN> calc_type<SPAN class="op">(</SPAN>q2 <SPAN class="op">*</SPAN> q<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+            calc_type b0 <SPAN class="op">=</SPAN> calc_type<SPAN class="op">(</SPAN><SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">/</SPAN> <SPAN class="op">(</SPAN><SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">578250</SPAN> <SPAN class="op">+</SPAN> 
+                                            <SPAN class="num">2</SPAN><SPAN class="op">.</SPAN><SPAN class="num">444130</SPAN> <SPAN class="op">*</SPAN> q <SPAN class="op">+</SPAN> 
+                                            <SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">428100</SPAN> <SPAN class="op">*</SPAN> q2 <SPAN class="op">+</SPAN> 
+                                            <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">422205</SPAN> <SPAN class="op">*</SPAN> q3<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+            calc_type b1 <SPAN class="op">=</SPAN> calc_type<SPAN class="op">(</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">.</SPAN><SPAN class="num">44413</SPAN> <SPAN class="op">*</SPAN> q <SPAN class="op">+</SPAN> 
+                                      <SPAN class="num">2</SPAN><SPAN class="op">.</SPAN><SPAN class="num">85619</SPAN> <SPAN class="op">*</SPAN> q2 <SPAN class="op">+</SPAN> 
+                                      <SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">26661</SPAN> <SPAN class="op">*</SPAN> q3<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+            calc_type b2 <SPAN class="op">=</SPAN> calc_type<SPAN class="op">(</SPAN><SPAN class="op">-</SPAN><SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">42810</SPAN> <SPAN class="op">*</SPAN> q2 <SPAN class="op">+</SPAN> 
+                                     <SPAN class="op">-</SPAN><SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">26661</SPAN> <SPAN class="op">*</SPAN> q3<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+            calc_type b3 <SPAN class="op">=</SPAN> calc_type<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">422205</SPAN> <SPAN class="op">*</SPAN> q3<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+            calc_type b  <SPAN class="op">=</SPAN> calc_type<SPAN class="op">(</SPAN><SPAN class="num">1</SPAN> <SPAN class="op">-</SPAN> <SPAN class="op">(</SPAN>b1 <SPAN class="op">+</SPAN> b2 <SPAN class="op">+</SPAN> b3<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> b0<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+            b1 <SPAN class="op">*=</SPAN> b0<SPAN class="op">;</SPAN>
+            b2 <SPAN class="op">*=</SPAN> b0<SPAN class="op">;</SPAN>
+            b3 <SPAN class="op">*=</SPAN> b0<SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">int</SPAN> w <SPAN class="op">=</SPAN> img<SPAN class="op">.</SPAN>width<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">int</SPAN> h <SPAN class="op">=</SPAN> img<SPAN class="op">.</SPAN>height<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">int</SPAN> wm <SPAN class="op">=</SPAN> w<SPAN class="op">-</SPAN><SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> y<SPAN class="op">;</SPAN>
+
+            m_sum1<SPAN class="op">.</SPAN><SPAN class="kw1">allocate</SPAN><SPAN class="op">(</SPAN>w<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            m_sum2<SPAN class="op">.</SPAN><SPAN class="kw1">allocate</SPAN><SPAN class="op">(</SPAN>w<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            m_buf<SPAN class="op">.</SPAN><SPAN class="kw1">allocate</SPAN><SPAN class="op">(</SPAN>w<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>y <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> y <SPAN class="op">&lt;</SPAN> h<SPAN class="op">;</SPAN> y<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                calculator_type c<SPAN class="op">;</SPAN>
+                c<SPAN class="op">.</SPAN>from_pix<SPAN class="op">(</SPAN>img<SPAN class="op">.</SPAN>pixel<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                m_sum1<SPAN class="op">[</SPAN><SPAN class="num">0</SPAN><SPAN class="op">]</SPAN><SPAN class="op">.</SPAN>calc<SPAN class="op">(</SPAN>b<SPAN class="op">,</SPAN> b1<SPAN class="op">,</SPAN> b2<SPAN class="op">,</SPAN> b3<SPAN class="op">,</SPAN> c<SPAN class="op">,</SPAN> c<SPAN class="op">,</SPAN> c<SPAN class="op">,</SPAN> c<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                c<SPAN class="op">.</SPAN>from_pix<SPAN class="op">(</SPAN>img<SPAN class="op">.</SPAN>pixel<SPAN class="op">(</SPAN><SPAN class="num">1</SPAN><SPAN class="op">,</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                m_sum1<SPAN class="op">[</SPAN><SPAN class="num">1</SPAN><SPAN class="op">]</SPAN><SPAN class="op">.</SPAN>calc<SPAN class="op">(</SPAN>b<SPAN class="op">,</SPAN> b1<SPAN class="op">,</SPAN> b2<SPAN class="op">,</SPAN> b3<SPAN class="op">,</SPAN> c<SPAN class="op">,</SPAN> m_sum1<SPAN class="op">[</SPAN><SPAN class="num">0</SPAN><SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> m_sum1<SPAN class="op">[</SPAN><SPAN class="num">0</SPAN><SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> m_sum1<SPAN class="op">[</SPAN><SPAN class="num">0</SPAN><SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                c<SPAN class="op">.</SPAN>from_pix<SPAN class="op">(</SPAN>img<SPAN class="op">.</SPAN>pixel<SPAN class="op">(</SPAN><SPAN class="num">2</SPAN><SPAN class="op">,</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                m_sum1<SPAN class="op">[</SPAN><SPAN class="num">2</SPAN><SPAN class="op">]</SPAN><SPAN class="op">.</SPAN>calc<SPAN class="op">(</SPAN>b<SPAN class="op">,</SPAN> b1<SPAN class="op">,</SPAN> b2<SPAN class="op">,</SPAN> b3<SPAN class="op">,</SPAN> c<SPAN class="op">,</SPAN> m_sum1<SPAN class="op">[</SPAN><SPAN class="num">1</SPAN><SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> m_sum1<SPAN class="op">[</SPAN><SPAN class="num">0</SPAN><SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> m_sum1<SPAN class="op">[</SPAN><SPAN class="num">0</SPAN><SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>x <SPAN class="op">=</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">;</SPAN> x <SPAN class="op">&lt;</SPAN> w<SPAN class="op">;</SPAN> <SPAN class="op">++</SPAN>x<SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    c<SPAN class="op">.</SPAN>from_pix<SPAN class="op">(</SPAN>img<SPAN class="op">.</SPAN>pixel<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    m_sum1<SPAN class="op">[</SPAN>x<SPAN class="op">]</SPAN><SPAN class="op">.</SPAN>calc<SPAN class="op">(</SPAN>b<SPAN class="op">,</SPAN> b1<SPAN class="op">,</SPAN> b2<SPAN class="op">,</SPAN> b3<SPAN class="op">,</SPAN> c<SPAN class="op">,</SPAN> m_sum1<SPAN class="op">[</SPAN>x<SPAN class="op">-</SPAN><SPAN class="num">1</SPAN><SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> m_sum1<SPAN class="op">[</SPAN>x<SPAN class="op">-</SPAN><SPAN class="num">2</SPAN><SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> m_sum1<SPAN class="op">[</SPAN>x<SPAN class="op">-</SPAN><SPAN class="num">3</SPAN><SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+    
+                m_sum2<SPAN class="op">[</SPAN>wm  <SPAN class="op">]</SPAN><SPAN class="op">.</SPAN>calc<SPAN class="op">(</SPAN>b<SPAN class="op">,</SPAN> b1<SPAN class="op">,</SPAN> b2<SPAN class="op">,</SPAN> b3<SPAN class="op">,</SPAN> m_sum1<SPAN class="op">[</SPAN>wm  <SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> m_sum1<SPAN class="op">[</SPAN>wm  <SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> m_sum1<SPAN class="op">[</SPAN>wm<SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> m_sum1<SPAN class="op">[</SPAN>wm<SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                m_sum2<SPAN class="op">[</SPAN>wm<SPAN class="op">-</SPAN><SPAN class="num">1</SPAN><SPAN class="op">]</SPAN><SPAN class="op">.</SPAN>calc<SPAN class="op">(</SPAN>b<SPAN class="op">,</SPAN> b1<SPAN class="op">,</SPAN> b2<SPAN class="op">,</SPAN> b3<SPAN class="op">,</SPAN> m_sum1<SPAN class="op">[</SPAN>wm<SPAN class="op">-</SPAN><SPAN class="num">1</SPAN><SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> m_sum2<SPAN class="op">[</SPAN>wm  <SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> m_sum2<SPAN class="op">[</SPAN>wm<SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> m_sum2<SPAN class="op">[</SPAN>wm<SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                m_sum2<SPAN class="op">[</SPAN>wm<SPAN class="op">-</SPAN><SPAN class="num">2</SPAN><SPAN class="op">]</SPAN><SPAN class="op">.</SPAN>calc<SPAN class="op">(</SPAN>b<SPAN class="op">,</SPAN> b1<SPAN class="op">,</SPAN> b2<SPAN class="op">,</SPAN> b3<SPAN class="op">,</SPAN> m_sum1<SPAN class="op">[</SPAN>wm<SPAN class="op">-</SPAN><SPAN class="num">2</SPAN><SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> m_sum2<SPAN class="op">[</SPAN>wm<SPAN class="op">-</SPAN><SPAN class="num">1</SPAN><SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> m_sum2<SPAN class="op">[</SPAN>wm<SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> m_sum2<SPAN class="op">[</SPAN>wm<SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                m_sum2<SPAN class="op">[</SPAN>wm  <SPAN class="op">]</SPAN><SPAN class="op">.</SPAN>to_pix<SPAN class="op">(</SPAN>m_buf<SPAN class="op">[</SPAN>wm  <SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                m_sum2<SPAN class="op">[</SPAN>wm<SPAN class="op">-</SPAN><SPAN class="num">1</SPAN><SPAN class="op">]</SPAN><SPAN class="op">.</SPAN>to_pix<SPAN class="op">(</SPAN>m_buf<SPAN class="op">[</SPAN>wm<SPAN class="op">-</SPAN><SPAN class="num">1</SPAN><SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                m_sum2<SPAN class="op">[</SPAN>wm<SPAN class="op">-</SPAN><SPAN class="num">2</SPAN><SPAN class="op">]</SPAN><SPAN class="op">.</SPAN>to_pix<SPAN class="op">(</SPAN>m_buf<SPAN class="op">[</SPAN>wm<SPAN class="op">-</SPAN><SPAN class="num">2</SPAN><SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>x <SPAN class="op">=</SPAN> wm<SPAN class="op">-</SPAN><SPAN class="num">3</SPAN><SPAN class="op">;</SPAN> x <SPAN class="op">&gt;=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">--</SPAN>x<SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    m_sum2<SPAN class="op">[</SPAN>x<SPAN class="op">]</SPAN><SPAN class="op">.</SPAN>calc<SPAN class="op">(</SPAN>b<SPAN class="op">,</SPAN> b1<SPAN class="op">,</SPAN> b2<SPAN class="op">,</SPAN> b3<SPAN class="op">,</SPAN> m_sum1<SPAN class="op">[</SPAN>x<SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> m_sum2<SPAN class="op">[</SPAN>x<SPAN class="op">+</SPAN><SPAN class="num">1</SPAN><SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> m_sum2<SPAN class="op">[</SPAN>x<SPAN class="op">+</SPAN><SPAN class="num">2</SPAN><SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> m_sum2<SPAN class="op">[</SPAN>x<SPAN class="op">+</SPAN><SPAN class="num">3</SPAN><SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    m_sum2<SPAN class="op">[</SPAN>x<SPAN class="op">]</SPAN><SPAN class="op">.</SPAN>to_pix<SPAN class="op">(</SPAN>m_buf<SPAN class="op">[</SPAN>x<SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+                img<SPAN class="op">.</SPAN>copy_color_hspan<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> y<SPAN class="op">,</SPAN> w<SPAN class="op">,</SPAN> <SPAN class="op">&amp;</SPAN>m_buf<SPAN class="op">[</SPAN><SPAN class="num">0</SPAN><SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Img<SPAN class="op">&gt;</SPAN> <SPAN class="kw1">void</SPAN> blur_y<SPAN class="op">(</SPAN>Img<SPAN class="op">&amp;</SPAN> img<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> radius<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <A href="agg_pixfmt_transposer.h.html#pixfmt_transposer">pixfmt_transposer</A><SPAN class="op">&lt;</SPAN>Img<SPAN class="op">&gt;</SPAN> img2<SPAN class="op">(</SPAN>img<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            blur_x<SPAN class="op">(</SPAN>img2<SPAN class="op">,</SPAN> radius<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Img<SPAN class="op">&gt;</SPAN> <SPAN class="kw1">void</SPAN> blur<SPAN class="op">(</SPAN>Img<SPAN class="op">&amp;</SPAN> img<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> radius<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            blur_x<SPAN class="op">(</SPAN>img<SPAN class="op">,</SPAN> radius<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <A href="agg_pixfmt_transposer.h.html#pixfmt_transposer">pixfmt_transposer</A><SPAN class="op">&lt;</SPAN>Img<SPAN class="op">&gt;</SPAN> img2<SPAN class="op">(</SPAN>img<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            blur_x<SPAN class="op">(</SPAN>img2<SPAN class="op">,</SPAN> radius<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+    <SPAN class="kw1">private</SPAN>:
+        agg::<A href="agg_array.h.html#pod_vector">pod_vector</A><SPAN class="op">&lt;</SPAN>calculator_type<SPAN class="op">&gt;</SPAN> m_sum1<SPAN class="op">;</SPAN>
+        agg::<A href="agg_array.h.html#pod_vector">pod_vector</A><SPAN class="op">&lt;</SPAN>calculator_type<SPAN class="op">&gt;</SPAN> m_sum2<SPAN class="op">;</SPAN>
+        agg::<A href="agg_array.h.html#pod_vector">pod_vector</A><SPAN class="op">&lt;</SPAN>color_type<SPAN class="op">&gt;</SPAN>      m_buf<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+    <SPAN class="rem">//=================================================<A name="recursive_blur_calc_rgba"><B></B></A><A href="agg_blur.h.html#recursive_blur_calc_rgba">recursive_blur_calc_rgba</A></SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> T<SPAN class="op">=</SPAN><SPAN class="kw1">double</SPAN><SPAN class="op">&gt;</SPAN> <SPAN class="kw1">struct</SPAN> <A href="agg_blur.h.html#recursive_blur_calc_rgba">recursive_blur_calc_rgba</A>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">typedef</SPAN> T value_type<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">typedef</SPAN> <A href="agg_blur.h.html#recursive_blur_calc_rgba">recursive_blur_calc_rgba</A><SPAN class="op">&lt;</SPAN>T<SPAN class="op">&gt;</SPAN> self_type<SPAN class="op">;</SPAN>
+
+        value_type r<SPAN class="op">,</SPAN>g<SPAN class="op">,</SPAN>b<SPAN class="op">,</SPAN>a<SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> ColorT<SPAN class="op">&gt;</SPAN> 
+        AGG_INLINE <SPAN class="kw1">void</SPAN> from_pix<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> ColorT<SPAN class="op">&amp;</SPAN> c<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            r <SPAN class="op">=</SPAN> c<SPAN class="op">.</SPAN>r<SPAN class="op">;</SPAN>
+            g <SPAN class="op">=</SPAN> c<SPAN class="op">.</SPAN>g<SPAN class="op">;</SPAN>
+            b <SPAN class="op">=</SPAN> c<SPAN class="op">.</SPAN>b<SPAN class="op">;</SPAN>
+            a <SPAN class="op">=</SPAN> c<SPAN class="op">.</SPAN>a<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        AGG_INLINE <SPAN class="kw1">void</SPAN> calc<SPAN class="op">(</SPAN>value_type b1<SPAN class="op">,</SPAN> 
+                             value_type b2<SPAN class="op">,</SPAN> 
+                             value_type b3<SPAN class="op">,</SPAN> 
+                             value_type b4<SPAN class="op">,</SPAN>
+                             <SPAN class="kw1">const</SPAN> self_type<SPAN class="op">&amp;</SPAN> c1<SPAN class="op">,</SPAN> 
+                             <SPAN class="kw1">const</SPAN> self_type<SPAN class="op">&amp;</SPAN> c2<SPAN class="op">,</SPAN> 
+                             <SPAN class="kw1">const</SPAN> self_type<SPAN class="op">&amp;</SPAN> c3<SPAN class="op">,</SPAN> 
+                             <SPAN class="kw1">const</SPAN> self_type<SPAN class="op">&amp;</SPAN> c4<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            r <SPAN class="op">=</SPAN> b1<SPAN class="op">*</SPAN>c1<SPAN class="op">.</SPAN>r <SPAN class="op">+</SPAN> b2<SPAN class="op">*</SPAN>c2<SPAN class="op">.</SPAN>r <SPAN class="op">+</SPAN> b3<SPAN class="op">*</SPAN>c3<SPAN class="op">.</SPAN>r <SPAN class="op">+</SPAN> b4<SPAN class="op">*</SPAN>c4<SPAN class="op">.</SPAN>r<SPAN class="op">;</SPAN>
+            g <SPAN class="op">=</SPAN> b1<SPAN class="op">*</SPAN>c1<SPAN class="op">.</SPAN>g <SPAN class="op">+</SPAN> b2<SPAN class="op">*</SPAN>c2<SPAN class="op">.</SPAN>g <SPAN class="op">+</SPAN> b3<SPAN class="op">*</SPAN>c3<SPAN class="op">.</SPAN>g <SPAN class="op">+</SPAN> b4<SPAN class="op">*</SPAN>c4<SPAN class="op">.</SPAN>g<SPAN class="op">;</SPAN>
+            b <SPAN class="op">=</SPAN> b1<SPAN class="op">*</SPAN>c1<SPAN class="op">.</SPAN>b <SPAN class="op">+</SPAN> b2<SPAN class="op">*</SPAN>c2<SPAN class="op">.</SPAN>b <SPAN class="op">+</SPAN> b3<SPAN class="op">*</SPAN>c3<SPAN class="op">.</SPAN>b <SPAN class="op">+</SPAN> b4<SPAN class="op">*</SPAN>c4<SPAN class="op">.</SPAN>b<SPAN class="op">;</SPAN>
+            a <SPAN class="op">=</SPAN> b1<SPAN class="op">*</SPAN>c1<SPAN class="op">.</SPAN>a <SPAN class="op">+</SPAN> b2<SPAN class="op">*</SPAN>c2<SPAN class="op">.</SPAN>a <SPAN class="op">+</SPAN> b3<SPAN class="op">*</SPAN>c3<SPAN class="op">.</SPAN>a <SPAN class="op">+</SPAN> b4<SPAN class="op">*</SPAN>c4<SPAN class="op">.</SPAN>a<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> ColorT<SPAN class="op">&gt;</SPAN> 
+        AGG_INLINE <SPAN class="kw1">void</SPAN> to_pix<SPAN class="op">(</SPAN>ColorT<SPAN class="op">&amp;</SPAN> c<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">typedef</SPAN> <SPAN class="kw1">typename</SPAN> ColorT::value_type cv_type<SPAN class="op">;</SPAN>
+            c<SPAN class="op">.</SPAN>r <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>cv_type<SPAN class="op">)</SPAN><A href="agg_basics.h.html#uround">uround</A><SPAN class="op">(</SPAN>r<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            c<SPAN class="op">.</SPAN>g <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>cv_type<SPAN class="op">)</SPAN><A href="agg_basics.h.html#uround">uround</A><SPAN class="op">(</SPAN>g<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            c<SPAN class="op">.</SPAN>b <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>cv_type<SPAN class="op">)</SPAN><A href="agg_basics.h.html#uround">uround</A><SPAN class="op">(</SPAN>b<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            c<SPAN class="op">.</SPAN>a <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>cv_type<SPAN class="op">)</SPAN><A href="agg_basics.h.html#uround">uround</A><SPAN class="op">(</SPAN>a<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+    <SPAN class="rem">//=================================================<A name="recursive_blur_calc_rgb"><B></B></A><A href="agg_blur.h.html#recursive_blur_calc_rgb">recursive_blur_calc_rgb</A></SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> T<SPAN class="op">=</SPAN><SPAN class="kw1">double</SPAN><SPAN class="op">&gt;</SPAN> <SPAN class="kw1">struct</SPAN> <A href="agg_blur.h.html#recursive_blur_calc_rgb">recursive_blur_calc_rgb</A>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">typedef</SPAN> T value_type<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">typedef</SPAN> <A href="agg_blur.h.html#recursive_blur_calc_rgb">recursive_blur_calc_rgb</A><SPAN class="op">&lt;</SPAN>T<SPAN class="op">&gt;</SPAN> self_type<SPAN class="op">;</SPAN>
+
+        value_type r<SPAN class="op">,</SPAN>g<SPAN class="op">,</SPAN>b<SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> ColorT<SPAN class="op">&gt;</SPAN> 
+        AGG_INLINE <SPAN class="kw1">void</SPAN> from_pix<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> ColorT<SPAN class="op">&amp;</SPAN> c<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            r <SPAN class="op">=</SPAN> c<SPAN class="op">.</SPAN>r<SPAN class="op">;</SPAN>
+            g <SPAN class="op">=</SPAN> c<SPAN class="op">.</SPAN>g<SPAN class="op">;</SPAN>
+            b <SPAN class="op">=</SPAN> c<SPAN class="op">.</SPAN>b<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        AGG_INLINE <SPAN class="kw1">void</SPAN> calc<SPAN class="op">(</SPAN>value_type b1<SPAN class="op">,</SPAN> 
+                             value_type b2<SPAN class="op">,</SPAN> 
+                             value_type b3<SPAN class="op">,</SPAN> 
+                             value_type b4<SPAN class="op">,</SPAN>
+                             <SPAN class="kw1">const</SPAN> self_type<SPAN class="op">&amp;</SPAN> c1<SPAN class="op">,</SPAN> 
+                             <SPAN class="kw1">const</SPAN> self_type<SPAN class="op">&amp;</SPAN> c2<SPAN class="op">,</SPAN> 
+                             <SPAN class="kw1">const</SPAN> self_type<SPAN class="op">&amp;</SPAN> c3<SPAN class="op">,</SPAN> 
+                             <SPAN class="kw1">const</SPAN> self_type<SPAN class="op">&amp;</SPAN> c4<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            r <SPAN class="op">=</SPAN> b1<SPAN class="op">*</SPAN>c1<SPAN class="op">.</SPAN>r <SPAN class="op">+</SPAN> b2<SPAN class="op">*</SPAN>c2<SPAN class="op">.</SPAN>r <SPAN class="op">+</SPAN> b3<SPAN class="op">*</SPAN>c3<SPAN class="op">.</SPAN>r <SPAN class="op">+</SPAN> b4<SPAN class="op">*</SPAN>c4<SPAN class="op">.</SPAN>r<SPAN class="op">;</SPAN>
+            g <SPAN class="op">=</SPAN> b1<SPAN class="op">*</SPAN>c1<SPAN class="op">.</SPAN>g <SPAN class="op">+</SPAN> b2<SPAN class="op">*</SPAN>c2<SPAN class="op">.</SPAN>g <SPAN class="op">+</SPAN> b3<SPAN class="op">*</SPAN>c3<SPAN class="op">.</SPAN>g <SPAN class="op">+</SPAN> b4<SPAN class="op">*</SPAN>c4<SPAN class="op">.</SPAN>g<SPAN class="op">;</SPAN>
+            b <SPAN class="op">=</SPAN> b1<SPAN class="op">*</SPAN>c1<SPAN class="op">.</SPAN>b <SPAN class="op">+</SPAN> b2<SPAN class="op">*</SPAN>c2<SPAN class="op">.</SPAN>b <SPAN class="op">+</SPAN> b3<SPAN class="op">*</SPAN>c3<SPAN class="op">.</SPAN>b <SPAN class="op">+</SPAN> b4<SPAN class="op">*</SPAN>c4<SPAN class="op">.</SPAN>b<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> ColorT<SPAN class="op">&gt;</SPAN> 
+        AGG_INLINE <SPAN class="kw1">void</SPAN> to_pix<SPAN class="op">(</SPAN>ColorT<SPAN class="op">&amp;</SPAN> c<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">typedef</SPAN> <SPAN class="kw1">typename</SPAN> ColorT::value_type cv_type<SPAN class="op">;</SPAN>
+            c<SPAN class="op">.</SPAN>r <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>cv_type<SPAN class="op">)</SPAN><A href="agg_basics.h.html#uround">uround</A><SPAN class="op">(</SPAN>r<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            c<SPAN class="op">.</SPAN>g <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>cv_type<SPAN class="op">)</SPAN><A href="agg_basics.h.html#uround">uround</A><SPAN class="op">(</SPAN>g<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            c<SPAN class="op">.</SPAN>b <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>cv_type<SPAN class="op">)</SPAN><A href="agg_basics.h.html#uround">uround</A><SPAN class="op">(</SPAN>b<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+    <SPAN class="rem">//================================================<A name="recursive_blur_calc_gray"><B></B></A><A href="agg_blur.h.html#recursive_blur_calc_gray">recursive_blur_calc_gray</A></SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> T<SPAN class="op">=</SPAN><SPAN class="kw1">double</SPAN><SPAN class="op">&gt;</SPAN> <SPAN class="kw1">struct</SPAN> <A href="agg_blur.h.html#recursive_blur_calc_gray">recursive_blur_calc_gray</A>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">typedef</SPAN> T value_type<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">typedef</SPAN> <A href="agg_blur.h.html#recursive_blur_calc_gray">recursive_blur_calc_gray</A><SPAN class="op">&lt;</SPAN>T<SPAN class="op">&gt;</SPAN> self_type<SPAN class="op">;</SPAN>
+
+        value_type v<SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> ColorT<SPAN class="op">&gt;</SPAN> 
+        AGG_INLINE <SPAN class="kw1">void</SPAN> from_pix<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> ColorT<SPAN class="op">&amp;</SPAN> c<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            v <SPAN class="op">=</SPAN> c<SPAN class="op">.</SPAN>v<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        AGG_INLINE <SPAN class="kw1">void</SPAN> calc<SPAN class="op">(</SPAN>value_type b1<SPAN class="op">,</SPAN> 
+                             value_type b2<SPAN class="op">,</SPAN> 
+                             value_type b3<SPAN class="op">,</SPAN> 
+                             value_type b4<SPAN class="op">,</SPAN>
+                             <SPAN class="kw1">const</SPAN> self_type<SPAN class="op">&amp;</SPAN> c1<SPAN class="op">,</SPAN> 
+                             <SPAN class="kw1">const</SPAN> self_type<SPAN class="op">&amp;</SPAN> c2<SPAN class="op">,</SPAN> 
+                             <SPAN class="kw1">const</SPAN> self_type<SPAN class="op">&amp;</SPAN> c3<SPAN class="op">,</SPAN> 
+                             <SPAN class="kw1">const</SPAN> self_type<SPAN class="op">&amp;</SPAN> c4<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            v <SPAN class="op">=</SPAN> b1<SPAN class="op">*</SPAN>c1<SPAN class="op">.</SPAN>v <SPAN class="op">+</SPAN> b2<SPAN class="op">*</SPAN>c2<SPAN class="op">.</SPAN>v <SPAN class="op">+</SPAN> b3<SPAN class="op">*</SPAN>c3<SPAN class="op">.</SPAN>v <SPAN class="op">+</SPAN> b4<SPAN class="op">*</SPAN>c4<SPAN class="op">.</SPAN>v<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> ColorT<SPAN class="op">&gt;</SPAN> 
+        AGG_INLINE <SPAN class="kw1">void</SPAN> to_pix<SPAN class="op">(</SPAN>ColorT<SPAN class="op">&amp;</SPAN> c<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">typedef</SPAN> <SPAN class="kw1">typename</SPAN> ColorT::value_type cv_type<SPAN class="op">;</SPAN>
+            c<SPAN class="op">.</SPAN>v <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>cv_type<SPAN class="op">)</SPAN><A href="agg_basics.h.html#uround">uround</A><SPAN class="op">(</SPAN>v<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+<SPAN class="op">}</SPAN>
+
+
+
+
+<SPAN class="kw2">#endif</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT><TABLE width="640px" bgcolor="#583927" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0">
+<TR><TD><CENTER><SPAN class="authors">
+Copyright <SPAN class="larger">&#169;</SPAN> 2002-2006
+<A href="../../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+<TR><TD><CENTER><SPAN class="authors">
+Web Design and Programming
+<A href="../../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+</TABLE>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+</HTML>

@@ -1,0 +1,472 @@
+<HTML><HEAD><TITLE>Anti-Grain Geometry - </TITLE>
+<META http-equiv="Content-Type" content="text/html"/>
+<LINK rel="stylesheet" type="text/css" href="../agg.styles.css"/>
+</HEAD>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE><SPAN class="kw2">#include</SPAN> <SPAN class="op">&lt;</SPAN>stdio<SPAN class="op">.</SPAN>h<SPAN class="op">&gt;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="op">&lt;</SPAN>stdlib<SPAN class="op">.</SPAN>h<SPAN class="op">&gt;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="op">&lt;</SPAN>math<SPAN class="op">.</SPAN>h<SPAN class="op">&gt;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_rendering_buffer.h.html">agg_rendering_buffer.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_rasterizer_scanline_aa.h.html">agg_rasterizer_scanline_aa.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_path_storage.h.html">agg_path_storage.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_trans_affine.h.html">agg_trans_affine.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_conv_transform.h.html">agg_conv_transform.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_pixfmt_rgba.h.html">agg_pixfmt_rgba.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_span_image_filter_rgba.h.html">agg_span_image_filter_rgba.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_span_interpolator_linear.h.html">agg_span_interpolator_linear.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_scanline_u.h.html">agg_scanline_u.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_renderer_scanline.h.html">agg_renderer_scanline.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_span_allocator.h.html">agg_span_allocator.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;ctrl/agg_slider_ctrl.h&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;ctrl/agg_rbox_ctrl.h&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;ctrl/agg_cbox_ctrl.h&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;platform/agg_platform_support.h&quot;</SPAN>
+
+<SPAN class="kw1">enum</SPAN> flip_y_e <SPAN class="op">{</SPAN> flip_y <SPAN class="op">=</SPAN> <SPAN class="kw1">true</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+
+
+<SPAN class="kw1">class</SPAN> the_application : <SPAN class="kw1">public</SPAN> agg::platform_support
+<SPAN class="op">{</SPAN>
+    agg::slider_ctrl<SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba">rgba</A><SPAN class="op">&gt;</SPAN> m_polygon_angle<SPAN class="op">;</SPAN>
+    agg::slider_ctrl<SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba">rgba</A><SPAN class="op">&gt;</SPAN> m_polygon_scale<SPAN class="op">;</SPAN>
+
+    agg::slider_ctrl<SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba">rgba</A><SPAN class="op">&gt;</SPAN> m_image_angle<SPAN class="op">;</SPAN>
+    agg::slider_ctrl<SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba">rgba</A><SPAN class="op">&gt;</SPAN> m_image_scale<SPAN class="op">;</SPAN>
+
+    agg::cbox_ctrl<SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba">rgba</A><SPAN class="op">&gt;</SPAN> m_rotate_polygon<SPAN class="op">;</SPAN>
+    agg::cbox_ctrl<SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba">rgba</A><SPAN class="op">&gt;</SPAN> m_rotate_image<SPAN class="op">;</SPAN>
+
+    agg::rbox_ctrl<SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba">rgba</A><SPAN class="op">&gt;</SPAN> m_example<SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">double</SPAN> m_image_center_x<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN> m_image_center_y<SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">double</SPAN> m_polygon_cx<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN> m_polygon_cy<SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">double</SPAN> m_image_cx<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN> m_image_cy<SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">double</SPAN> m_dx<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN> m_dy<SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">int</SPAN> m_flag<SPAN class="op">;</SPAN>
+
+
+<SPAN class="kw1">public</SPAN>:
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    the_application<SPAN class="op">(</SPAN>agg::pix_format_e format<SPAN class="op">,</SPAN> <SPAN class="kw1">bool</SPAN> flip_y<SPAN class="op">)</SPAN> :
+        agg::platform_support<SPAN class="op">(</SPAN>format<SPAN class="op">,</SPAN> flip_y<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_polygon_angle<SPAN class="op">(</SPAN><SPAN class="num">5</SPAN><SPAN class="op">,</SPAN>  <SPAN class="num">5</SPAN><SPAN class="op">,</SPAN>      <SPAN class="num">145</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">11</SPAN><SPAN class="op">,</SPAN>    <SPAN class="op">!</SPAN>flip_y<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_polygon_scale<SPAN class="op">(</SPAN><SPAN class="num">5</SPAN><SPAN class="op">,</SPAN>  <SPAN class="num">5</SPAN><SPAN class="op">+</SPAN><SPAN class="num">14</SPAN><SPAN class="op">,</SPAN>   <SPAN class="num">145</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">12</SPAN><SPAN class="op">+</SPAN><SPAN class="num">14</SPAN><SPAN class="op">,</SPAN> <SPAN class="op">!</SPAN>flip_y<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_image_angle  <SPAN class="op">(</SPAN><SPAN class="num">155</SPAN><SPAN class="op">,</SPAN>  <SPAN class="num">5</SPAN><SPAN class="op">,</SPAN>    <SPAN class="num">300</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">12</SPAN><SPAN class="op">,</SPAN>    <SPAN class="op">!</SPAN>flip_y<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_image_scale  <SPAN class="op">(</SPAN><SPAN class="num">155</SPAN><SPAN class="op">,</SPAN>  <SPAN class="num">5</SPAN><SPAN class="op">+</SPAN><SPAN class="num">14</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">300</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">12</SPAN><SPAN class="op">+</SPAN><SPAN class="num">14</SPAN><SPAN class="op">,</SPAN> <SPAN class="op">!</SPAN>flip_y<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_rotate_polygon<SPAN class="op">(</SPAN><SPAN class="num">5</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">5</SPAN><SPAN class="op">+</SPAN><SPAN class="num">14</SPAN><SPAN class="op">+</SPAN><SPAN class="num">14</SPAN><SPAN class="op">,</SPAN>    <SPAN class="str">&quot;Rotate Polygon&quot;</SPAN><SPAN class="op">,</SPAN> <SPAN class="op">!</SPAN>flip_y<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_rotate_image  <SPAN class="op">(</SPAN><SPAN class="num">5</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">5</SPAN><SPAN class="op">+</SPAN><SPAN class="num">14</SPAN><SPAN class="op">+</SPAN><SPAN class="num">14</SPAN><SPAN class="op">+</SPAN><SPAN class="num">14</SPAN><SPAN class="op">,</SPAN> <SPAN class="str">&quot;Rotate Image&quot;</SPAN><SPAN class="op">,</SPAN> <SPAN class="op">!</SPAN>flip_y<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_example<SPAN class="op">(</SPAN><SPAN class="op">-</SPAN><SPAN class="num">3</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">14</SPAN><SPAN class="op">+</SPAN><SPAN class="num">14</SPAN><SPAN class="op">+</SPAN><SPAN class="num">14</SPAN><SPAN class="op">+</SPAN><SPAN class="num">14</SPAN><SPAN class="op">,</SPAN> <SPAN class="op">-</SPAN><SPAN class="num">3</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">14</SPAN><SPAN class="op">+</SPAN><SPAN class="num">14</SPAN><SPAN class="op">+</SPAN><SPAN class="num">14</SPAN><SPAN class="op">+</SPAN><SPAN class="num">14</SPAN><SPAN class="op">,</SPAN> <SPAN class="op">!</SPAN>flip_y<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_flag<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        add_ctrl<SPAN class="op">(</SPAN>m_polygon_angle<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        add_ctrl<SPAN class="op">(</SPAN>m_polygon_scale<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        add_ctrl<SPAN class="op">(</SPAN>m_image_angle<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        add_ctrl<SPAN class="op">(</SPAN>m_image_scale<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        add_ctrl<SPAN class="op">(</SPAN>m_rotate_polygon<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        add_ctrl<SPAN class="op">(</SPAN>m_rotate_image<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        add_ctrl<SPAN class="op">(</SPAN>m_example<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        m_polygon_angle<SPAN class="op">.</SPAN>label<SPAN class="op">(</SPAN><SPAN class="str">&quot;Polygon Angle=%3.2f&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_polygon_scale<SPAN class="op">.</SPAN>label<SPAN class="op">(</SPAN><SPAN class="str">&quot;Polygon Scale=%3.2f&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_polygon_angle<SPAN class="op">.</SPAN>range<SPAN class="op">(</SPAN><SPAN class="op">-</SPAN><SPAN class="num">180</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">180</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_polygon_scale<SPAN class="op">.</SPAN>range<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">1</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">5</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_polygon_scale<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        m_image_angle<SPAN class="op">.</SPAN>label<SPAN class="op">(</SPAN><SPAN class="str">&quot;Image Angle=%3.2f&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_image_scale<SPAN class="op">.</SPAN>label<SPAN class="op">(</SPAN><SPAN class="str">&quot;Image Scale=%3.2f&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_image_angle<SPAN class="op">.</SPAN>range<SPAN class="op">(</SPAN><SPAN class="op">-</SPAN><SPAN class="num">180</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">180</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_image_scale<SPAN class="op">.</SPAN>range<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">1</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">5</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_image_scale<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        m_example<SPAN class="op">.</SPAN>add_item<SPAN class="op">(</SPAN><SPAN class="str">&quot;0&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_example<SPAN class="op">.</SPAN>add_item<SPAN class="op">(</SPAN><SPAN class="str">&quot;1&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_example<SPAN class="op">.</SPAN>add_item<SPAN class="op">(</SPAN><SPAN class="str">&quot;2&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_example<SPAN class="op">.</SPAN>add_item<SPAN class="op">(</SPAN><SPAN class="str">&quot;3&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_example<SPAN class="op">.</SPAN>add_item<SPAN class="op">(</SPAN><SPAN class="str">&quot;4&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_example<SPAN class="op">.</SPAN>add_item<SPAN class="op">(</SPAN><SPAN class="str">&quot;5&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_example<SPAN class="op">.</SPAN>add_item<SPAN class="op">(</SPAN><SPAN class="str">&quot;6&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_example<SPAN class="op">.</SPAN>cur_item<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">virtual</SPAN> ~the_application<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">virtual</SPAN> <SPAN class="kw1">void</SPAN> on_init<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        m_image_center_x <SPAN class="op">=</SPAN> initial_width<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        m_image_center_y <SPAN class="op">=</SPAN> initial_height<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        m_polygon_cx <SPAN class="op">=</SPAN> m_image_cx <SPAN class="op">=</SPAN> initial_width<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        m_polygon_cy <SPAN class="op">=</SPAN> m_image_cy <SPAN class="op">=</SPAN> initial_height<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">void</SPAN> create_star<SPAN class="op">(</SPAN>agg::<A href="../__code/include/agg_path_storage.h.html#path_storage">path_storage</A><SPAN class="op">&amp;</SPAN> ps<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">double</SPAN> r <SPAN class="op">=</SPAN> initial_width<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>initial_height<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">&lt;</SPAN> r<SPAN class="op">)</SPAN> r <SPAN class="op">=</SPAN> initial_height<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">double</SPAN> r1 <SPAN class="op">=</SPAN> r <SPAN class="op">/</SPAN> <SPAN class="num">3</SPAN> <SPAN class="op">-</SPAN> <SPAN class="num">8</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> r2 <SPAN class="op">=</SPAN> r1 <SPAN class="op">/</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">45</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> nr <SPAN class="op">=</SPAN> <SPAN class="num">14</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">unsigned</SPAN> i<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;</SPAN> nr<SPAN class="op">;</SPAN> i<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">double</SPAN> a <SPAN class="op">=</SPAN> agg::<A href="../__code/include/agg_basics.h.html#pi">pi</A> <SPAN class="op">*</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">*</SPAN> i <SPAN class="op">/</SPAN> nr <SPAN class="op">-</SPAN> agg::<A href="../__code/include/agg_basics.h.html#pi">pi</A> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">double</SPAN> dx <SPAN class="op">=</SPAN> cos<SPAN class="op">(</SPAN>a<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">double</SPAN> dy <SPAN class="op">=</SPAN> sin<SPAN class="op">(</SPAN>a<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">&amp;</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                ps<SPAN class="op">.</SPAN>line_to<SPAN class="op">(</SPAN>m_polygon_cx <SPAN class="op">+</SPAN> dx <SPAN class="op">*</SPAN> r1<SPAN class="op">,</SPAN> m_polygon_cy <SPAN class="op">+</SPAN> dy <SPAN class="op">*</SPAN> r1<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="kw1">else</SPAN>
+            <SPAN class="op">{</SPAN>
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>i<SPAN class="op">)</SPAN> ps<SPAN class="op">.</SPAN>line_to<SPAN class="op">(</SPAN>m_polygon_cx <SPAN class="op">+</SPAN> dx <SPAN class="op">*</SPAN> r2<SPAN class="op">,</SPAN> m_polygon_cy <SPAN class="op">+</SPAN> dy <SPAN class="op">*</SPAN> r2<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">else</SPAN>  ps<SPAN class="op">.</SPAN>move_to<SPAN class="op">(</SPAN>m_polygon_cx <SPAN class="op">+</SPAN> dx <SPAN class="op">*</SPAN> r2<SPAN class="op">,</SPAN> m_polygon_cy <SPAN class="op">+</SPAN> dy <SPAN class="op">*</SPAN> r2<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+
+
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">virtual</SPAN> <SPAN class="kw1">void</SPAN> on_draw<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">typedef</SPAN> agg::<A href="../__code/include/agg_pixfmt_rgba.h.html#pixfmt_bgra32">pixfmt_bgra32</A> <A href="../doc/basic_renderers/basic_renderers.agdoc.html#pixfmt">pixfmt</A><SPAN class="op">;</SPAN> 
+        <SPAN class="kw1">typedef</SPAN> pixfmt::color_type color_type<SPAN class="op">;</SPAN> 
+        <SPAN class="kw1">typedef</SPAN> agg::<A href="../doc/basic_renderers/basic_renderers.agdoc.html#renderer_base">renderer_base</A><SPAN class="op">&lt;</SPAN><A href="../doc/basic_renderers/basic_renderers.agdoc.html#pixfmt">pixfmt</A><SPAN class="op">&gt;</SPAN> <A href="../doc/basic_renderers/basic_renderers.agdoc.html#renderer_base">renderer_base</A><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">typedef</SPAN> agg::<A href="../__code/include/agg_renderer_scanline.h.html#renderer_scanline_aa_solid">renderer_scanline_aa_solid</A><SPAN class="op">&lt;</SPAN><A href="../doc/basic_renderers/basic_renderers.agdoc.html#renderer_base">renderer_base</A><SPAN class="op">&gt;</SPAN> renderer_solid<SPAN class="op">;</SPAN>
+       
+        <A href="../doc/basic_renderers/basic_renderers.agdoc.html#pixfmt">pixfmt</A> pixf<SPAN class="op">(</SPAN>rbuf_window<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <A href="../doc/basic_renderers/basic_renderers.agdoc.html#pixfmt">pixfmt</A> pixf_img<SPAN class="op">(</SPAN>rbuf_img<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <A href="../doc/basic_renderers/basic_renderers.agdoc.html#renderer_base">renderer_base</A> rb<SPAN class="op">(</SPAN>pixf<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        renderer_solid rs<SPAN class="op">(</SPAN>rb<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        rb<SPAN class="op">.</SPAN>clear<SPAN class="op">(</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba">rgba</A><SPAN class="op">(</SPAN><SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine">trans_affine</A> image_mtx<SPAN class="op">;</SPAN>
+        agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine">trans_affine</A> polygon_mtx<SPAN class="op">;</SPAN>
+
+        polygon_mtx <SPAN class="op">*=</SPAN> agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine_translation">trans_affine_translation</A><SPAN class="op">(</SPAN><SPAN class="op">-</SPAN>m_polygon_cx<SPAN class="op">,</SPAN> <SPAN class="op">-</SPAN>m_polygon_cy<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        polygon_mtx <SPAN class="op">*=</SPAN> agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine_rotation">trans_affine_rotation</A><SPAN class="op">(</SPAN>m_polygon_angle<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> agg::<A href="../__code/include/agg_basics.h.html#pi">pi</A> <SPAN class="op">/</SPAN> <SPAN class="num">180</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        polygon_mtx <SPAN class="op">*=</SPAN> agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine_scaling">trans_affine_scaling</A><SPAN class="op">(</SPAN>m_polygon_scale<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        polygon_mtx <SPAN class="op">*=</SPAN> agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine_translation">trans_affine_translation</A><SPAN class="op">(</SPAN>m_polygon_cx<SPAN class="op">,</SPAN> m_polygon_cy<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+
+
+        <SPAN class="kw1">switch</SPAN><SPAN class="op">(</SPAN>m_example<SPAN class="op">.</SPAN>cur_item<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">default</SPAN>:
+        <SPAN class="kw1">case</SPAN> <SPAN class="num">0</SPAN>:
+<SPAN class="rem">// --------------(Example 0, Identity matrix)</SPAN>
+        <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+
+
+        <SPAN class="kw1">case</SPAN> <SPAN class="num">1</SPAN>:
+<SPAN class="rem">// --------------(Example 1)</SPAN>
+        image_mtx <SPAN class="op">*=</SPAN> agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine_translation">trans_affine_translation</A><SPAN class="op">(</SPAN><SPAN class="op">-</SPAN>m_image_center_x<SPAN class="op">,</SPAN> <SPAN class="op">-</SPAN>m_image_center_y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        image_mtx <SPAN class="op">*=</SPAN> agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine_rotation">trans_affine_rotation</A><SPAN class="op">(</SPAN>m_polygon_angle<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> agg::<A href="../__code/include/agg_basics.h.html#pi">pi</A> <SPAN class="op">/</SPAN> <SPAN class="num">180</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        image_mtx <SPAN class="op">*=</SPAN> agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine_scaling">trans_affine_scaling</A><SPAN class="op">(</SPAN>m_polygon_scale<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        image_mtx <SPAN class="op">*=</SPAN> agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine_translation">trans_affine_translation</A><SPAN class="op">(</SPAN>m_polygon_cx<SPAN class="op">,</SPAN> m_polygon_cy<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        image_mtx<SPAN class="op">.</SPAN>invert<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+
+
+
+        <SPAN class="kw1">case</SPAN> <SPAN class="num">2</SPAN>:
+<SPAN class="rem">// --------------(Example 2)</SPAN>
+        image_mtx <SPAN class="op">*=</SPAN> agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine_translation">trans_affine_translation</A><SPAN class="op">(</SPAN><SPAN class="op">-</SPAN>m_image_center_x<SPAN class="op">,</SPAN> <SPAN class="op">-</SPAN>m_image_center_y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        image_mtx <SPAN class="op">*=</SPAN> agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine_rotation">trans_affine_rotation</A><SPAN class="op">(</SPAN>m_image_angle<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> agg::<A href="../__code/include/agg_basics.h.html#pi">pi</A> <SPAN class="op">/</SPAN> <SPAN class="num">180</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        image_mtx <SPAN class="op">*=</SPAN> agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine_scaling">trans_affine_scaling</A><SPAN class="op">(</SPAN>m_image_scale<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        image_mtx <SPAN class="op">*=</SPAN> agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine_translation">trans_affine_translation</A><SPAN class="op">(</SPAN>m_image_cx<SPAN class="op">,</SPAN> m_image_cy<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        image_mtx<SPAN class="op">.</SPAN>invert<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+
+
+
+        <SPAN class="kw1">case</SPAN> <SPAN class="num">3</SPAN>:
+<SPAN class="rem">// --------------(Example 3)</SPAN>
+        image_mtx <SPAN class="op">*=</SPAN> agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine_translation">trans_affine_translation</A><SPAN class="op">(</SPAN><SPAN class="op">-</SPAN>m_image_center_x<SPAN class="op">,</SPAN> <SPAN class="op">-</SPAN>m_image_center_y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        image_mtx <SPAN class="op">*=</SPAN> agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine_rotation">trans_affine_rotation</A><SPAN class="op">(</SPAN>m_image_angle<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> agg::<A href="../__code/include/agg_basics.h.html#pi">pi</A> <SPAN class="op">/</SPAN> <SPAN class="num">180</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        image_mtx <SPAN class="op">*=</SPAN> agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine_scaling">trans_affine_scaling</A><SPAN class="op">(</SPAN>m_image_scale<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        image_mtx <SPAN class="op">*=</SPAN> agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine_translation">trans_affine_translation</A><SPAN class="op">(</SPAN>m_polygon_cx<SPAN class="op">,</SPAN> m_polygon_cy<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        image_mtx<SPAN class="op">.</SPAN>invert<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+
+
+
+        <SPAN class="kw1">case</SPAN> <SPAN class="num">4</SPAN>:
+<SPAN class="rem">// --------------(Example 4)</SPAN>
+        image_mtx <SPAN class="op">*=</SPAN> agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine_translation">trans_affine_translation</A><SPAN class="op">(</SPAN><SPAN class="op">-</SPAN>m_image_cx<SPAN class="op">,</SPAN> <SPAN class="op">-</SPAN>m_image_cy<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        image_mtx <SPAN class="op">*=</SPAN> agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine_rotation">trans_affine_rotation</A><SPAN class="op">(</SPAN>m_polygon_angle<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> agg::<A href="../__code/include/agg_basics.h.html#pi">pi</A> <SPAN class="op">/</SPAN> <SPAN class="num">180</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        image_mtx <SPAN class="op">*=</SPAN> agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine_scaling">trans_affine_scaling</A><SPAN class="op">(</SPAN>m_polygon_scale<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        image_mtx <SPAN class="op">*=</SPAN> agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine_translation">trans_affine_translation</A><SPAN class="op">(</SPAN>m_polygon_cx<SPAN class="op">,</SPAN> m_polygon_cy<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        image_mtx<SPAN class="op">.</SPAN>invert<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+
+
+
+        <SPAN class="kw1">case</SPAN> <SPAN class="num">5</SPAN>:
+<SPAN class="rem">// --------------(Example 5)</SPAN>
+        image_mtx <SPAN class="op">*=</SPAN> agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine_translation">trans_affine_translation</A><SPAN class="op">(</SPAN><SPAN class="op">-</SPAN>m_image_center_x<SPAN class="op">,</SPAN> <SPAN class="op">-</SPAN>m_image_center_y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        image_mtx <SPAN class="op">*=</SPAN> agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine_rotation">trans_affine_rotation</A><SPAN class="op">(</SPAN>m_image_angle<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> agg::<A href="../__code/include/agg_basics.h.html#pi">pi</A> <SPAN class="op">/</SPAN> <SPAN class="num">180</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        image_mtx <SPAN class="op">*=</SPAN> agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine_rotation">trans_affine_rotation</A><SPAN class="op">(</SPAN>m_polygon_angle<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> agg::<A href="../__code/include/agg_basics.h.html#pi">pi</A> <SPAN class="op">/</SPAN> <SPAN class="num">180</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        image_mtx <SPAN class="op">*=</SPAN> agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine_scaling">trans_affine_scaling</A><SPAN class="op">(</SPAN>m_image_scale<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        image_mtx <SPAN class="op">*=</SPAN> agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine_scaling">trans_affine_scaling</A><SPAN class="op">(</SPAN>m_polygon_scale<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        image_mtx <SPAN class="op">*=</SPAN> agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine_translation">trans_affine_translation</A><SPAN class="op">(</SPAN>m_image_cx<SPAN class="op">,</SPAN> m_image_cy<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        image_mtx<SPAN class="op">.</SPAN>invert<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+
+
+
+        <SPAN class="kw1">case</SPAN> <SPAN class="num">6</SPAN>:
+<SPAN class="rem">// --------------(Example 6)</SPAN>
+        image_mtx <SPAN class="op">*=</SPAN> agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine_translation">trans_affine_translation</A><SPAN class="op">(</SPAN><SPAN class="op">-</SPAN>m_image_cx<SPAN class="op">,</SPAN> <SPAN class="op">-</SPAN>m_image_cy<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        image_mtx <SPAN class="op">*=</SPAN> agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine_rotation">trans_affine_rotation</A><SPAN class="op">(</SPAN>m_image_angle<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> agg::<A href="../__code/include/agg_basics.h.html#pi">pi</A> <SPAN class="op">/</SPAN> <SPAN class="num">180</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        image_mtx <SPAN class="op">*=</SPAN> agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine_scaling">trans_affine_scaling</A><SPAN class="op">(</SPAN>m_image_scale<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        image_mtx <SPAN class="op">*=</SPAN> agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine_translation">trans_affine_translation</A><SPAN class="op">(</SPAN>m_image_cx<SPAN class="op">,</SPAN> m_image_cy<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        image_mtx<SPAN class="op">.</SPAN>invert<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">typedef</SPAN> agg::<A href="../__code/include/agg_span_interpolator_linear.h.html#span_interpolator_linear">span_interpolator_linear</A><SPAN class="op">&lt;</SPAN><SPAN class="op">&gt;</SPAN> interpolator_type<SPAN class="op">;</SPAN>
+        interpolator_type interpolator<SPAN class="op">(</SPAN>image_mtx<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        agg::<A href="../__code/include/agg_span_allocator.h.html#span_allocator">span_allocator</A><SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">&gt;</SPAN> sa<SPAN class="op">;</SPAN>
+
+        <SPAN class="rem">// &quot;hardcoded&quot; bilinear filter</SPAN>
+        <SPAN class="rem">//------------------------------------------</SPAN>
+        <SPAN class="kw1">typedef</SPAN> agg::<A href="../__code/include/agg_span_image_filter_rgba.h.html#span_image_filter_rgba_bilinear_clip">span_image_filter_rgba_bilinear_clip</A><SPAN class="op">&lt;</SPAN><A href="../doc/basic_renderers/basic_renderers.agdoc.html#pixfmt">pixfmt</A><SPAN class="op">,</SPAN> 
+                                                          interpolator_type<SPAN class="op">&gt;</SPAN> span_gen_type<SPAN class="op">;</SPAN>
+        span_gen_type sg<SPAN class="op">(</SPAN>pixf_img<SPAN class="op">,</SPAN> agg::<A href="../__code/include/agg_color_rgba.h.html#rgba">rgba</A><SPAN class="op">(</SPAN><SPAN class="num">1</SPAN><SPAN class="op">,</SPAN><SPAN class="num">1</SPAN><SPAN class="op">,</SPAN><SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> interpolator<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="rem">//------------------------------------------</SPAN>
+
+        agg::<A href="../__code/include/agg_rasterizer_scanline_aa.h.html#rasterizer_scanline_aa">rasterizer_scanline_aa</A><SPAN class="op">&lt;</SPAN><SPAN class="op">&gt;</SPAN> ras<SPAN class="op">;</SPAN>
+        agg::<A href="../__code/include/agg_scanline_u.h.html#scanline_u8">scanline_u8</A> sl<SPAN class="op">;</SPAN>
+        agg::<A href="../__code/include/agg_path_storage.h.html#path_storage">path_storage</A> ps<SPAN class="op">;</SPAN>
+        create_star<SPAN class="op">(</SPAN>ps<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        agg::<A href="../__code/include/agg_conv_transform.h.html#conv_transform">conv_transform</A><SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_path_storage.h.html#path_storage">path_storage</A><SPAN class="op">&gt;</SPAN> tr<SPAN class="op">(</SPAN>ps<SPAN class="op">,</SPAN> polygon_mtx<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        ras<SPAN class="op">.</SPAN>add_path<SPAN class="op">(</SPAN>tr<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        agg::<A href="../__code/include/agg_renderer_scanline.h.html#render_scanlines_aa">render_scanlines_aa</A><SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> sl<SPAN class="op">,</SPAN> rb<SPAN class="op">,</SPAN> sa<SPAN class="op">,</SPAN> sg<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        agg::<A href="../__code/include/agg_ellipse.h.html#ellipse">ellipse</A> e1<SPAN class="op">(</SPAN>m_image_cx<SPAN class="op">,</SPAN> m_image_cy<SPAN class="op">,</SPAN> <SPAN class="num">5</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">5</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">20</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        agg::<A href="../__code/include/agg_ellipse.h.html#ellipse">ellipse</A> e2<SPAN class="op">(</SPAN>m_image_cx<SPAN class="op">,</SPAN> m_image_cy<SPAN class="op">,</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">20</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        agg::<A href="../__code/include/agg_conv_stroke.h.html#conv_stroke">conv_stroke</A><SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_ellipse.h.html#ellipse">ellipse</A><SPAN class="op">&gt;</SPAN> c1<SPAN class="op">(</SPAN>e1<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        rs<SPAN class="op">.</SPAN>color<SPAN class="op">(</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba">rgba</A><SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">7</SPAN><SPAN class="op">,</SPAN><SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">8</SPAN><SPAN class="op">,</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        ras<SPAN class="op">.</SPAN>add_path<SPAN class="op">(</SPAN>e1<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        agg::<A href="../__code/include/agg_renderer_scanline.h.html#render_scanlines">render_scanlines</A><SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> sl<SPAN class="op">,</SPAN> rs<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        rs<SPAN class="op">.</SPAN>color<SPAN class="op">(</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba">rgba</A><SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        ras<SPAN class="op">.</SPAN>add_path<SPAN class="op">(</SPAN>c1<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        agg::<A href="../__code/include/agg_renderer_scanline.h.html#render_scanlines">render_scanlines</A><SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> sl<SPAN class="op">,</SPAN> rs<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        ras<SPAN class="op">.</SPAN>add_path<SPAN class="op">(</SPAN>e2<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        agg::<A href="../__code/include/agg_renderer_scanline.h.html#render_scanlines">render_scanlines</A><SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> sl<SPAN class="op">,</SPAN> rs<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        agg::render_ctrl<SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> sl<SPAN class="op">,</SPAN> rb<SPAN class="op">,</SPAN> m_polygon_angle<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        agg::render_ctrl<SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> sl<SPAN class="op">,</SPAN> rb<SPAN class="op">,</SPAN> m_polygon_scale<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        agg::render_ctrl<SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> sl<SPAN class="op">,</SPAN> rb<SPAN class="op">,</SPAN> m_image_angle<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        agg::render_ctrl<SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> sl<SPAN class="op">,</SPAN> rb<SPAN class="op">,</SPAN> m_image_scale<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        agg::render_ctrl<SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> sl<SPAN class="op">,</SPAN> rb<SPAN class="op">,</SPAN> m_rotate_polygon<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        agg::render_ctrl<SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> sl<SPAN class="op">,</SPAN> rb<SPAN class="op">,</SPAN> m_rotate_image<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        agg::render_ctrl<SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> sl<SPAN class="op">,</SPAN> rb<SPAN class="op">,</SPAN> m_example<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">virtual</SPAN> <SPAN class="kw1">void</SPAN> on_mouse_button_down<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> flags<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>flags <SPAN class="op">&amp;</SPAN> agg::mouse_left<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>sqrt<SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>x <SPAN class="op">-</SPAN> m_image_cx<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>x <SPAN class="op">-</SPAN> m_image_cx<SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> 
+                    <SPAN class="op">(</SPAN>y <SPAN class="op">-</SPAN> m_image_cy<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>y <SPAN class="op">-</SPAN> m_image_cy<SPAN class="op">)</SPAN> <SPAN class="op">)</SPAN> <SPAN class="op">&lt;</SPAN> <SPAN class="num">5</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                m_dx <SPAN class="op">=</SPAN> x <SPAN class="op">-</SPAN> m_image_cx<SPAN class="op">;</SPAN>
+                m_dy <SPAN class="op">=</SPAN> y <SPAN class="op">-</SPAN> m_image_cy<SPAN class="op">;</SPAN>
+                m_flag <SPAN class="op">=</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="kw1">else</SPAN>
+            <SPAN class="op">{</SPAN>
+                agg::<A href="../__code/include/agg_rasterizer_scanline_aa.h.html#rasterizer_scanline_aa">rasterizer_scanline_aa</A><SPAN class="op">&lt;</SPAN><SPAN class="op">&gt;</SPAN> ras<SPAN class="op">;</SPAN>
+                agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine">trans_affine</A> polygon_mtx<SPAN class="op">;</SPAN>
+
+                polygon_mtx <SPAN class="op">*=</SPAN> agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine_translation">trans_affine_translation</A><SPAN class="op">(</SPAN><SPAN class="op">-</SPAN>m_polygon_cx<SPAN class="op">,</SPAN> <SPAN class="op">-</SPAN>m_polygon_cy<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                polygon_mtx <SPAN class="op">*=</SPAN> agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine_rotation">trans_affine_rotation</A><SPAN class="op">(</SPAN>m_polygon_angle<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> agg::<A href="../__code/include/agg_basics.h.html#pi">pi</A> <SPAN class="op">/</SPAN> <SPAN class="num">180</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                polygon_mtx <SPAN class="op">*=</SPAN> agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine_scaling">trans_affine_scaling</A><SPAN class="op">(</SPAN>m_polygon_scale<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> m_polygon_scale<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                polygon_mtx <SPAN class="op">*=</SPAN> agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine_translation">trans_affine_translation</A><SPAN class="op">(</SPAN>m_polygon_cx<SPAN class="op">,</SPAN> m_polygon_cy<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                agg::<A href="../__code/include/agg_path_storage.h.html#path_storage">path_storage</A> ps<SPAN class="op">;</SPAN>
+                create_star<SPAN class="op">(</SPAN>ps<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                agg::<A href="../__code/include/agg_conv_transform.h.html#conv_transform">conv_transform</A><SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_path_storage.h.html#path_storage">path_storage</A><SPAN class="op">&gt;</SPAN> tr<SPAN class="op">(</SPAN>ps<SPAN class="op">,</SPAN> polygon_mtx<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                ras<SPAN class="op">.</SPAN>add_path<SPAN class="op">(</SPAN>tr<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>ras<SPAN class="op">.</SPAN>hit_test<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    m_dx <SPAN class="op">=</SPAN> x <SPAN class="op">-</SPAN> m_polygon_cx<SPAN class="op">;</SPAN>
+                    m_dy <SPAN class="op">=</SPAN> y <SPAN class="op">-</SPAN> m_polygon_cy<SPAN class="op">;</SPAN>
+                    m_flag <SPAN class="op">=</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">virtual</SPAN> <SPAN class="kw1">void</SPAN> on_mouse_move<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> flags<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>flags <SPAN class="op">&amp;</SPAN> agg::mouse_left<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_flag <SPAN class="op">==</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                m_image_cx <SPAN class="op">=</SPAN> x <SPAN class="op">-</SPAN> m_dx<SPAN class="op">;</SPAN>
+                m_image_cy <SPAN class="op">=</SPAN> y <SPAN class="op">-</SPAN> m_dy<SPAN class="op">;</SPAN>
+                force_redraw<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_flag <SPAN class="op">==</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                m_polygon_cx <SPAN class="op">=</SPAN> x <SPAN class="op">-</SPAN> m_dx<SPAN class="op">;</SPAN>
+                m_polygon_cy <SPAN class="op">=</SPAN> y <SPAN class="op">-</SPAN> m_dy<SPAN class="op">;</SPAN>
+                force_redraw<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">else</SPAN>
+        <SPAN class="op">{</SPAN>
+            on_mouse_button_up<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> y<SPAN class="op">,</SPAN> flags<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+
+
+
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">virtual</SPAN> <SPAN class="kw1">void</SPAN> on_mouse_button_up<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> flags<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        m_flag <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">virtual</SPAN> <SPAN class="kw1">void</SPAN> on_ctrl_change<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> 
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_rotate_polygon<SPAN class="op">.</SPAN>status<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">||</SPAN> m_rotate_image<SPAN class="op">.</SPAN>status<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            wait_mode<SPAN class="op">(</SPAN><SPAN class="kw1">false</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">else</SPAN>
+        <SPAN class="op">{</SPAN>
+            wait_mode<SPAN class="op">(</SPAN><SPAN class="kw1">true</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        force_redraw<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">virtual</SPAN> <SPAN class="kw1">void</SPAN> on_idle<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> 
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">bool</SPAN> redraw <SPAN class="op">=</SPAN> <SPAN class="kw1">false</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_rotate_polygon<SPAN class="op">.</SPAN>status<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            m_polygon_angle<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN>m_polygon_angle<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">5</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_polygon_angle<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">&gt;=</SPAN> <SPAN class="num">180</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> 
+            <SPAN class="op">{</SPAN>
+                m_polygon_angle<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN>m_polygon_angle<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">-</SPAN> <SPAN class="num">360</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            redraw <SPAN class="op">=</SPAN> <SPAN class="kw1">true</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_rotate_image<SPAN class="op">.</SPAN>status<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            m_image_angle<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN>m_image_angle<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">5</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_image_angle<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">&gt;=</SPAN> <SPAN class="num">180</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> 
+            <SPAN class="op">{</SPAN>
+                m_image_angle<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN>m_image_angle<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">-</SPAN> <SPAN class="num">360</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            redraw <SPAN class="op">=</SPAN> <SPAN class="kw1">true</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>redraw<SPAN class="op">)</SPAN> force_redraw<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="op">}</SPAN>
+
+
+<SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+
+
+
+<SPAN class="kw1">int</SPAN> agg_main<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> argc<SPAN class="op">,</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN> argv<SPAN class="op">[</SPAN><SPAN class="op">]</SPAN><SPAN class="op">)</SPAN>
+<SPAN class="op">{</SPAN>
+    the_application app<SPAN class="op">(</SPAN>agg::pix_format_bgra32<SPAN class="op">,</SPAN> flip_y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    app<SPAN class="op">.</SPAN>caption<SPAN class="op">(</SPAN><SPAN class="str">&quot;Image Affine Transformations with filtering&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">const</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN> img_name <SPAN class="op">=</SPAN> <SPAN class="str">&quot;spheres&quot;</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>argc <SPAN class="op">&gt;=</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">)</SPAN> img_name <SPAN class="op">=</SPAN> argv<SPAN class="op">[</SPAN><SPAN class="num">1</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN><SPAN class="op">!</SPAN>app<SPAN class="op">.</SPAN>load_img<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> img_name<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> 
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">char</SPAN> buf<SPAN class="op">[</SPAN><SPAN class="num">256</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>strcmp<SPAN class="op">(</SPAN>img_name<SPAN class="op">,</SPAN> <SPAN class="str">&quot;spheres&quot;</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            sprintf<SPAN class="op">(</SPAN>buf<SPAN class="op">,</SPAN> <SPAN class="str">&quot;File not found: %s%s. Download http://www.antigrain.com/%s%s\n&quot;</SPAN>
+                         <SPAN class="str">&quot;or copy it from another directory if available.&quot;</SPAN><SPAN class="op">,</SPAN>
+                    img_name<SPAN class="op">,</SPAN> app<SPAN class="op">.</SPAN>img_ext<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> img_name<SPAN class="op">,</SPAN> app<SPAN class="op">.</SPAN>img_ext<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">else</SPAN>
+        <SPAN class="op">{</SPAN>
+            sprintf<SPAN class="op">(</SPAN>buf<SPAN class="op">,</SPAN> <SPAN class="str">&quot;File not found: %s%s&quot;</SPAN><SPAN class="op">,</SPAN> img_name<SPAN class="op">,</SPAN> app<SPAN class="op">.</SPAN>img_ext<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        app<SPAN class="op">.</SPAN>message<SPAN class="op">(</SPAN>buf<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">return</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>app<SPAN class="op">.</SPAN>init<SPAN class="op">(</SPAN>app<SPAN class="op">.</SPAN>rbuf_img<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">.</SPAN>width<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> 
+                app<SPAN class="op">.</SPAN>rbuf_img<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">.</SPAN>height<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> 
+                <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">return</SPAN> app<SPAN class="op">.</SPAN>run<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+    <SPAN class="kw1">return</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+<SPAN class="op">}</SPAN>
+
+
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT><TABLE width="640px" bgcolor="#583927" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0">
+<TR><TD><CENTER><SPAN class="authors">
+Copyright <SPAN class="larger">&#169;</SPAN> 2002-2006
+<A href="../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+<TR><TD><CENTER><SPAN class="authors">
+Web Design and Programming
+<A href="../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+</TABLE>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+</HTML>

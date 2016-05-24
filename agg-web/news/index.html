@@ -1,0 +1,1023 @@
+<HTML><HEAD><TITLE>Anti-Grain Geometry - News and History</TITLE>
+<META http-equiv="Content-Type" content="text/html"/>
+<LINK rel="stylesheet" type="text/css" href="../agg.styles.css"/>
+</HEAD>
+<A name="PAGE_NEWS"><B></B></A>
+
+
+<TABLE width="640px" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR>
+<TD bgcolor="#583927"></TD>
+</TR>
+</TABLE>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR>
+<TD>
+<TABLE width="170px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR><TD><A href="../index.html" class="mpmenu">Home/</A></TD></TR>
+<TR><TD><A href="release_notes/v21.agdoc.html" class="mpmenu">Release Notes v2.1</A></TD></TR>
+<TR><TD><A href="release_notes/v22.agdoc.html" class="mpmenu">Release Notes v2.2</A></TD></TR>
+<TR><TD><A href="release_notes/v23.agdoc.html" class="mpmenu">Release Notes v2.3</A></TD></TR>
+<TR><TD><A href="release_notes/v24.agdoc.html" class="mpmenu">Release Notes v2.4</A></TD></TR>
+<TR><TD><A href="" class="mpmenu"></A></TD></TR>
+</TABLE>
+</TD>
+<TD width="1px" bgcolor="#583927"></TD>
+<TD width="450px" valign="top" style="text-align:right">
+<TABLE border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR>
+<TD><IMG src="../agg_logo.gif" border="0"/></TD>
+</TR>
+<TR>
+<TD>
+<TABLE border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR height="15px">
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../news/index.html">News</A>&nbsp;&nbsp;</TD>
+<TD width="1px" bgcolor="#8e521d"></TD>
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../doc/index.html">Docs</A>&nbsp;&nbsp;</TD>
+<TD width="1px" bgcolor="#8e521d"></TD>
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../download/index.html">Download</A>&nbsp;&nbsp;</TD>
+<TD width="1px" bgcolor="#8e521d"></TD>
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../maillist/index.html">Mailing List</A>&nbsp;&nbsp;</TD>
+<TD width="1px" bgcolor="#8e521d"></TD>
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../cvs/index.html">CVS</A>&nbsp;&nbsp;</TD>
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+<TABLE width="640px" height="1px" bgcolor="#583927" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>
+
+
+
+</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD><H1>News and History</H1></TD></TR></TABLE>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><UL type="disc">
+<LI><B>July 8, 2007</B> New article <A href="../research/font_rasterization/index.html#FONT_RASTERIZATION">Texts Rasterization Exposures</A>. </LI>
+<UL type="disc">
+<LI>In the article I tried to summarize my experience and observations 
+     concerning the situation with text rasterization in Windows and Linux. 
+     The article also contains demo applications to play with my method 
+     of RGB sub-pixel text rendering. I admit some statements may sound 
+     questionable, so, I appreciate any comments, criticism, and discussions. 
+     Please post your comments to the <A href="../maillist/index.html#PAGE_MAILLIST">Mailing List</A>. </LI>
+<LI>I expect to renew active development of <B>AGG</B> in September, 2007.</LI></UL></UL></P></TD></TR></TABLE> 
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><UL type="disc">
+<LI><B>October 23, 2006</B> Changing the license</LI>
+<UL type="disc">
+<LI>Released version 2.5 under the GNU GPL license. Essentially it&#039;s the same as 
+     agg-2.4, so, no efforts to migrate are necessary. However, from now on 
+     all changes and bug fixes will be done in agg-2.5. I do not expect any massive 
+     changes in agg-2.5, only minor ones. Most probably Version 2.6 will have some 
+     differences, in particular, I&#039;m going to make the use of floating point 
+     arithmetic more flexible. </LI>
+<LI>Current <B>AGG</B> users who are willing to continue using <B>AGG</B> under the old terms 
+     and conditions are encouraged to contact me and I will consider their requests.</LI>
+<LI><B>AGG</B> v 2.4 remains available under the old terms and conditions.</LI></UL>
+<LI><B>June 19, 2006</B> Update.</LI>
+<UL type="disc">
+<LI>Radial gradient functoin with focal point is rewritten. Now it
+     works about two times faster than the old one. See <A href="../__code/include/agg_span_gradient.h.html#gradient_radial_focus">gradient_radial_focus</A>.</LI>
+<LI>New utility class template is added, <A href="../__code/include/agg_gradient_lut.h.html#gradient_lut">gradient_lut</A>. It allows you to easily
+     create a color LUT for gradients from a set of color stops as they are
+     defined in SVG, section Gradients and Patterns.</LI>
+<LI>New <A href="../demo/index.html#PAGE_DEMO_gradient_focal">Demo gradient_focal.cpp</A>. It&#039;s evolved from testing code and 
+     performance measurements. In particular, it shows you how to calculate 
+     the parameters of a radial gradient with a separate focal point, considering
+     arbitrary affine transformations. In this example the window resizing
+     transformations are taken into account. It also demonstrates the use case 
+     of <A href="../__code/include/agg_gradient_lut.h.html#gradient_lut">gradient_lut</A> and gamma correction.</LI>
+<LI>Added functions suggested by <B>Bill Baxter</B>. </LI>
+<UL type="disc">
+<LI><A href="../__code/include/agg_basics.h.html#rect_base">rect_base</A>: <CODE>init()</CODE> and <CODE>hit_test()</CODE>;</LI>
+<LI><A href="../__code/include/agg_gsv_text.h.html#gsv_text">gsv_text</A>: <CODE>text_width()</CODE>;</LI>
+<LI><A href="../__code/include/agg_trans_affine.h.html#trans_affine">trans_affine</A>: <CODE>translate()</CODE>, <CODE>rotate()</CODE>, and <CODE>scale()</CODE>;
+       They perform optimized direct transformations, without explicit
+       matrix multiplications.</LI></UL>
+<LI>Finished experimets with <A href="../__code/include/agg_rasterizer_compound_aa.h.html#rasterizer_compound_aa">rasterizer_compound_aa</A> to simulate 
+     Constructive Area Geometry, see <A href="../demo/index.html#PAGE_DEMO_rasterizer_compound">Demo rasterizer_compound.cpp</A>.<BR/>
+     Now function <A href="../__code/include/agg_renderer_scanline.h.html#render_scanlines_compound">render_scanlines_compound</A> works as before, that is, 
+     it assumes logically correct compound shapes and flat geometry, like Flash 
+     data streams provide. To flatten the geometry on demand use
+     <A href="../__code/include/agg_renderer_scanline.h.html#render_scanlines_compound_layered">render_scanlines_compound_layered</A>. It has the same set of argumets except
+     for <CODE>ScanlineBin</CODE> that is not used there.<BR/>
+     The reason to do so is that <A href="../__code/include/agg_renderer_scanline.h.html#render_scanlines_compound">render_scanlines_compound</A> works about
+     20% faster in average, and most of all, it does not perform any
+     operations inside the holes in the shape.</LI>
+<LI>Added method <CODE>layer_order()</CODE> to <A href="../__code/include/agg_rasterizer_compound_aa.h.html#rasterizer_compound_aa">rasterizer_compound_aa</A>. 
+     It allows you to control the order of the layers and accepts values 
+     <A href="../__code/include/agg_rasterizer_compound_aa.h.html#layer_unsorted">layer_unsorted</A>, <A href="../__code/include/agg_rasterizer_compound_aa.h.html#layer_direct">layer_direct</A>, and <A href="../__code/include/agg_rasterizer_compound_aa.h.html#layer_inverse">layer_inverse</A>. The default value
+     is <A href="../__code/include/agg_rasterizer_compound_aa.h.html#layer_direct">layer_direct</A>, which means that greater styles have higher priority.
+     Value <A href="../__code/include/agg_rasterizer_compound_aa.h.html#layer_inverse">layer_inverse</A> inverts the layers. Value <A href="../__code/include/agg_rasterizer_compound_aa.h.html#layer_unsorted">layer_unsorted</A> does 
+     not guarantee any particular order and can be used with 
+     <A href="../__code/include/agg_renderer_scanline.h.html#render_scanlines_compound">render_scanlines_compound</A> to save a few CPU cycles.</LI></UL></UL></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><UL type="disc">
+<LI><B>June 17, 2006</B> Light update.</LI>
+<UL type="disc">
+<LI>New class template <A href="../__code/include/agg_rendering_buffer.h.html#row_accessor">row_accessor</A> is added, thanks to <B>David Piepgrass</B>.
+     Instead of keeping the pointers to each row it calculates the pixel 
+     addresses directly, performing one extra multiplication. It doesn&#039;t affect 
+     the performance on regular rendering operations, but still there&#039;s some 
+     slowdown on massive pixel operations, such as Bresenham line, blur, image 
+     transformations with nearest neighbor and bilinear filters. So, now you can 
+     choose between <A href="../doc/basic_renderers/basic_renderers.agdoc.html#row_ptr_cache">row_ptr_cache</A> and <A href="../__code/include/agg_rendering_buffer.h.html#row_accessor">row_accessor</A>. There&#039;s a typedef in 
+     renderin_buffer.h that can be redefined by default in <A href="../__code/include/agg_config.h.html">agg_config.h</A>. This 
+     file contains some user definitions and supposed to be fully replaced by 
+     your own if necessary.<BR/>
+     The <A href="../doc/basic_renderers/basic_renderers.agdoc.html#rendering_buffer">rendering_buffer</A> is used only in short hand typedefs like <A href="../__code/include/agg_pixfmt_rgba.h.html#pixfmt_rgba32">pixfmt_rgba32</A>. 
+     In your applications you can use both, <A href="../doc/basic_renderers/basic_renderers.agdoc.html#row_ptr_cache">row_ptr_cache</A> and <A href="../__code/include/agg_rendering_buffer.h.html#row_accessor">row_accessor</A>, 
+     depending on your needs. The tip is: for the target rendering buffer you can 
+     freely use <A href="../__code/include/agg_rendering_buffer.h.html#row_accessor">row_accessor</A>, for <A href="../__code/include/agg_blur.h.html#stack_blur">stack_blur</A>, <A href="../__code/include/agg_blur.h.html#recursive_blur">recursive_blur</A> and source images 
+     in image transformers it makes sense to use <A href="../doc/basic_renderers/basic_renderers.agdoc.html#row_ptr_cache">row_ptr_cache</A> sometimes. 
+     Remember, you can attach as many row accessors to one physical buffer 
+     as you need and as many pixel formats as you need.</LI>
+<LI>Added word &#147;explicit&#148; to all constructors that have one argument and 
+     store a pointer in the object. It prevents from implicit type casting via 
+     temporary objects that potentially results in undefined behavior. 
+     Thanks to <B>Vladimir Alemasov</B> for reporting the problem.</LI></UL></UL></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><UL type="disc">
+<LI><B>June 11, 2006</B> Update and new demo examples.</LI>
+<UL type="disc">
+<LI>New <A href="../demo/index.html#PAGE_DEMO_rasterizer_compound">Demo rasterizer_compound.cpp</A> demonstrates a rather advanced 
+     technique of using 
+     the compound rasterizer. The idea is you assign styles to the polygons
+     (left=style, right=-1) and rasterize this &quot;multi-styled&quot; compound shape 
+     as a whole. If the polygons in the shape overlap, the greater styles have 
+     higher priority. That is, the result is as if greater styles were painted 
+     last, but the geometry is flattened before rendering. It means there are 
+     no pixels will be painted twice. Then the style are associated with colors, 
+     gradients, images, etc. in a special style handler. It simulates 
+     Constructive Solid Geometry so that, you can, for example draw a translucent 
+     fill plus translucent stroke without the overlapped part of the fill being 
+     visible through the stroke.</LI>
+<LI>Added new file <A href="../__code/include/agg_pixfmt_transposer.h.html">agg_pixfmt_transposer.h</A>. It provides a simple class 
+     template <A href="../__code/include/agg_pixfmt_transposer.h.html#pixfmt_transposer">pixfmt_transposer</A> that simply exchanges horizontal and 
+     vertical dimensions. It&#039;s mostly used in new blur filters.</LI>
+<LI>Added new overloaded function <CODE>attach()</CODE> to all pixel level renderers.
+     it has the following signature:<BR/>
+     <CODE>template&lt;class PixFmt&gt;</CODE><BR/>
+     <CODE>bool attach(PixFmt&amp; pixf, int x1, int y1, int x2, int y2);</CODE><BR/>
+     That is, now you can attach <CODE>pixfmt_nnnn</CODE> to some existing 
+     one as a child. It still requires a separate <A href="../doc/basic_renderers/basic_renderers.agdoc.html#rendering_buffer">rendering_buffer</A>
+     object, but will use the shared frame buffer. See example in 
+     <A href="../demo/index.html#PAGE_DEMO_blur">Demo blur.cpp</A>.</LI>
+<LI>Added function <CODE>stride()</CODE> to all pixel level renderers.</LI>
+<LI>New <A href="../demo/index.html#PAGE_DEMO_blur">Demo blur.cpp</A>.</LI>
+<LI>Added new file <A href="../__code/include/agg_blur.h.html">agg_blur.h</A> and fast blur functionality. 
+     There two algorithms
+     are used: <A href="http://incubator.quasimondo.com/processing/fast_blur_deluxe.php"><IMG src="../link.gif" border="0"/>Stack Blur</A> by <B>Mario Klingemann</B> and Fast Recursive Gaussian Filter, described
+     <A href="http://www.ph.tn.tudelft.nl/Courses/FIP/noframes/fip-Smoothin.html"><IMG src="../link.gif" border="0"/>here</A> 
+     and <A href="http://www.ph.tn.tudelft.nl/~lucas/publications/1995/SP95TYLV/SP95TYLV.pdf"><IMG src="../link.gif" border="0"/>here (PDF)</A>. The speed of both methods does not depend on the filter radius. 
+     Mario&#039;s method works 3-5 times faster; it doesn&#039;t produce exactly Gaussian 
+     response, but pretty fair for most practical purposes. The recursive filter 
+     uses floating point arithmetic and works slower. But it is true Gaussian filter, 
+     with theoretically infinite impulse response. The radius (actually 2*sigma value)
+     can be fractional and the filter produces quite adequate result.<BR/>
+     There are two class templates: <A href="../__code/include/agg_blur.h.html#stack_blur">stack_blur</A> and <A href="../__code/include/agg_blur.h.html#recursive_blur">recursive_blur</A>. <A href="../__code/include/agg_blur.h.html#stack_blur">stack_blur</A> 
+     is parametrized by color type and calculator type. The calculator 
+     can be: <A href="../__code/include/agg_blur.h.html#stack_blur_calc_rgba">stack_blur_calc_rgba</A>, <A href="../__code/include/agg_blur.h.html#stack_blur_calc_rgb">stack_blur_calc_rgb</A>, and 
+     <A href="../__code/include/agg_blur.h.html#stack_blur_calc_gray">stack_blur_calc_gray</A>. They are parametrized by the basic data
+     type that is typically <CODE>unsigned</CODE> for <A href="../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A> and <CODE><A href="../__code/include/agg_basics.h.html#int64u">int64u</A></CODE> for 
+     <A href="../__code/include/agg_color_rgba.h.html#rgba16">rgba16</A>.<BR/>
+     <A href="../__code/include/agg_blur.h.html#recursive_blur">recursive_blur</A> is also parametrized by the color type and 
+     calculator type. The calculator can be: <A href="../__code/include/agg_blur.h.html#recursive_blur_calc_rgba">recursive_blur_calc_rgba</A>, 
+     <A href="../__code/include/agg_blur.h.html#recursive_blur_calc_rgb">recursive_blur_calc_rgb</A>, and <A href="../__code/include/agg_blur.h.html#recursive_blur_calc_gray">recursive_blur_calc_gray</A>. They 
+     are parametrized by <CODE>float</CODE> or <CODE>double</CODE>. It&#039;s better to use 
+     <CODE>doubles</CODE> because the algorithm is very sensitive to precision.<BR/>
+     Also, there are optimized versions for <CODE>RGBA32</CODE>, <CODE>RGB24</CODE>, 
+     and <CODE>GRAY8</CODE> formats. They are: <A href="../__code/include/agg_blur.h.html#stack_blur_rgba32">stack_blur_rgba32</A>, <A href="../__code/include/agg_blur.h.html#stack_blur_rgb24">stack_blur_rgb24</A>, 
+     and <A href="../__code/include/agg_blur.h.html#stack_blur_gray8">stack_blur_gray8</A> respectively. These functions work only with 
+     8 bits per component colors and with blur radius not exeeded 254.<BR/>
+     Many thanks to <B>Mario Klingemann</B> who generously permitted me to 
+     include his algorithm into <B>AGG</B>.</LI></UL></UL></P></TD></TR></TABLE>
+   
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><UL type="disc">
+<LI><B>May 8, 2006</B> <B>AGG</B> v2.4 is released! After a while of
+   silence <B>AGG</B> is here again. That was the time of active 
+   development and you will have to make some changes in your
+   code too. Hopefully it isn&#039;t that hard. See <A href="release_notes/v24.agdoc.html#PAGE_RELEASE_V24">AGG Version 2.4 Release Notes</A> 
+   for details. Below there&#039;s a brief description of the 
+   achievements.</LI>
+<UL type="disc">
+<LI>Redesigned scanline renderers and span generators. See 
+     <A href="release_notes/v24.agdoc.html#PAGE_RELEASE_V24">AGG Version 2.4 Release Notes</A> for details.</LI>
+<LI>Low level renderers (<A href="../doc/basic_renderers/basic_renderers.agdoc.html#pixfmt">pixfmt</A>) now have a possibility to use 
+     a custom class-accessor to pixel data. </LI>
+<LI>Redesigned image and pattern filters and resamplers. Now 
+     they are considerably generalized and in fact, images and patterns
+     are now combined into single classes. You can use custom pixel 
+     accessors for the images.</LI>
+<LI>The <B>major breaktrough</B> is rendering of <B>Flash</B> compound shapes.
+     Now <B>AGG</B> provides two ways of Flash rendering. One is pretty 
+     simple and in fact, was available before (well, almost), the 
+     other is more complex, but allows you to have absolutely 
+     flawless result. It&#039;s demonstrated in 
+     <A href="../demo/index.html#PAGE_DEMO_flash_rasterizer">Demo flash_rasterizer.cpp</A>. The simple method, that 
+     decomposes the shape into separate multiply connected polygons
+     is in <A href="../demo/index.html#PAGE_DEMO_flash_rasterizer2">Demo flash_rasterizer2.cpp</A>.</LI>
+<LI>New demo examples summary</LI>
+<UL type="disc">
+<LI><A href="../demo/index.html#PAGE_DEMO_flash_rasterizer">Demo flash_rasterizer.cpp</A> - Flash rasterization based on compound shapes</LI>
+<LI><A href="../demo/index.html#PAGE_DEMO_flash_rasterizer2">Demo flash_rasterizer2.cpp</A> - Flash rasterization based in shape decompositing</LI>
+<LI><A href="../demo/index.html#PAGE_DEMO_gouraud_mesh">Demo gouraud_mesh.cpp</A> - Seamless Gouraud triangle mesh</LI>
+<LI><A href="../demo/index.html#PAGE_DEMO_line_patterns_clip">Demo line_patterns_clip.cpp</A> - New line clipping considering image patterns</LI>
+<LI><A href="../demo/index.html#PAGE_DEMO_compositing2">Demo compositing2.cpp</A> - Another extended compositing modes demo</LI>
+<LI><A href="../demo/index.html#PAGE_DEMO_gamma_tuner">Demo gamma_tuner.cpp</A> - Yet another monitor gamma tuner</LI></UL>
+<LI>Redesigned <A href="../__code/include/agg_path_storage.h.html#path_storage">path_storage</A>. Now it&#039;s a class template and it&#039;s 
+     functionality is separated. You can use any kind of data
+     container, like std::vector, std::deque, etc.
+     Also, there are special adaptors added, such as:<BR/>
+     <A href="../__code/include/agg_path_storage.h.html#poly_plain_adaptor">poly_plain_adaptor</A> <BR/>
+     <A href="../__code/include/agg_path_storage.h.html#poly_container_adaptor">poly_container_adaptor</A> <BR/>
+     <A href="../__code/include/agg_path_storage.h.html#poly_container_reverse_adaptor">poly_container_reverse_adaptor</A> <BR/>
+     <A href="../__code/include/agg_path_storage.h.html#line_adaptor">line_adaptor</A> <BR/></LI>
+<LI>Added custom clippers to <A href="../__code/include/agg_rasterizer_scanline_aa.h.html#rasterizer_scanline_aa">rasterizer_scanline_aa</A> and <A href="../__code/include/agg_rasterizer_compound_aa.h.html#rasterizer_compound_aa">rasterizer_compound_aa</A>.</LI>
+<LI>Considerably redesigned clippers for <A href="../__code/include/agg_renderer_outline_image.h.html#renderer_outline_image">renderer_outline_image</A>. Now it 
+     maintains correct pattern repetition even with clipping.</LI>
+<LI>All memory allocations and deallocations are now done via
+     <A href="../__code/include/agg_basics.h.html#pod_allocator">pod_allocator</A> and <A href="../__code/include/agg_basics.h.html#obj_allocator">obj_allocator</A>. You can replace them 
+     if you define <A href="../__code/include/agg_basics.h.html#AGG_CUSTOM_ALLOCATOR">AGG_CUSTOM_ALLOCATOR</A> and provide file 
+     agg_allocator.h (it&#039;s your responsibility to provide this file).</LI>
+<LI>From now on <B>AGG</B> is released under dual licensing, the original <B>AGG</B> one
+     and the <A href="http://www.fsf.org/licensing/licenses/index_html#ModifiedBSD"><IMG src="../link.gif" border="0"/>Modified BSD license</A>. See <A href="../license/index.html#PAGE_LICENSE">The License</A> for details.</LI>
+<LI>Some other improvements.</LI>
+<LI><B>Milan Marusinec</B> AKA <B>Milano</B> ported the whole <B>AGG</B> to Object Pascal.
+     It&#039;s a great job! Don&#039;t forget to visit: <A href="http://www.aggpas.org"><IMG src="../link.gif" border="0"/>http://www.aggpas.org</A></LI></UL></UL></P></TD></TR></TABLE>
+
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><UL type="disc">
+<LI><B>September 15, 2005</B> Update</LI>
+<UL type="disc">
+<LI>Added function <CODE>transform()</CODE> to font engines. Now you can set
+     internal affine transformations. They work <B>before</B> the 
+     glyphs are cached, which means you can now use rotated text 
+     together with fast raster cache. It works only with 
+     glyph_ren_outline, glyph_ren_agg_mono, and glyph_ren_agg_gray8.
+     It&#039;s impossible to use it with glyph_ren_native_mono and 
+     glyph_ren_native_gray8 because the font engine already receives
+     bitmaps. Also, as the practice showed it&#039;s a bad idea to use
+     embedded font engine transformations in both, FreeType and Win32, 
+     because it doesn&#039;t work well with hints in certain cases.<BR/><BR/>
+     Note that the internal transformer is included into the font
+     signature to locate the cache pool. It means that it&#039;s a bad 
+     idea to use it often. If you need to draw 360 lines of text
+     rotated with 1<SPAN class="larger">&#176;</SPAN> step, the internal transformer will work
+     very slow because it will create a new cache pool every time 
+     you change the angle. For this case it&#039;s much better to use 
+     vector cache (glyph_ren_outline) and transform the glyphs 
+     externally.<BR/><BR/>
+     The usecase of the internal transformer is basically to display
+     a whole rotated page of text. Also note that if the angle differs
+     from 0<SPAN class="larger">&#176;</SPAN>, 90<SPAN class="larger">&#176;</SPAN>, 180<SPAN class="larger">&#176;</SPAN>, or 270<SPAN class="larger">&#176;</SPAN>, there&#039;s some positioning 
+     inaccuracy appears when you use raster cache. It&#039;s because
+     pre-rasterized glyphs cannot be positioned with subpixel 
+     accuracy.<BR/><BR/>
+     See modified examples, <A href="../demo/freetype_test.cpp.html">freetype_test.cpp</A> and <A href="../demo/truetype_test.cpp.html">truetype_test.cpp</A>.</LI></UL></UL></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><UL type="disc">
+<LI><B>September 8, 2005</B> Bugfix</LI>
+<UL type="disc">
+<LI>Gouraud shader is modified again. First of all, the calls to 
+     <CODE>floor()</CODE> were replaced to just &#147;manual&#148; rounding. It&#039;s
+     much faster on some compilers (Microsoft). Functions <CODE>floor()</CODE>
+     and <CODE>ceil()</CODE> work terribly slow. Johan Paulsson has 
+     discovered this problem.<BR/>
+     Also, thre were some inconsiderable algorithmic modifications 
+     that resulted in more accurate rendering. Still, there&#039;re some
+     artifacts possible if the triangles are too narrow (narrower than 
+     one pixel).</LI>
+<LI>Fixed a bug in <A href="../__code/include/agg_bezier_arc.h.html#bezier_arc">bezier_arc</A>. It produced NaN or -NaN in cases of
+     zero sweep angle, that resulted in infinite values in consecutive 
+     converters. Thanks to Richard Smolak for reporting it.</LI>
+<LI>All anonymous <CODE>enums</CODE> now have names :-) <BR/>
+     It was some interference of questionable C++ constructs from <A href="http://www.boost.org"><IMG src="../link.gif" border="0"/><B>Boost</B></A> 
+     with unnamed enums in GNU C++ v4. Most probably it&#039;s a bug in GCC, 
+     but I decided to make it GCC compliant because it doesn&#039;t affect 
+     anyhow other compilers. Thanks to Artem Pavlenko for reporting it.</LI>
+<LI>After discussion with Marco Manfredini I still decided to keep
+     the basic compositing formula the same, that is, <BR/>
+     <CODE>alpha = (255 + alpha * cover) / 256</CODE><BR/>
+     Marco is right of course, he has provided more accurate 
+     formula with rounding: <BR/>
+     <CODE>int q=alpha*cover+128; </CODE><BR/>
+     <CODE>return (q+(q&#171;8))&#187;8; </CODE><BR/>
+     But one extra shift operation is critical on Pentium-4
+     processors. The used formula isn&#039;t correct, but it gives
+     appropriate result for the cost of only one extra addition.<BR/>
+     Anyway, thanks Marco for the correct formula, I will keep it
+     in mind for future.</LI></UL></UL></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><UL type="disc">
+<LI><B>August 27, 2005</B> Update</LI>
+<UL type="disc">
+<LI>Considerably modified Gouraud shader. Now it works with <B>Subpixel Accuracy</B>
+     and produces much more accurate results.<BR/>
+     <A href="http://antigrain.com/stuff/gouraud_artifacts.png"><IMG src="../link.gif" border="0"/>http://antigrain.com/stuff/gouraud_artifacts.png</A><BR/>
+     Many thanks to Johan Paulsson for the contribution and the idea.</LI>
+<LI>Modified the &quot;overlay&quot; and &quot;hard-light&quot; compositing operations.
+     Now they are fully compliant with <A href="http://www.w3.org/Graphics/SVG/"><IMG src="../link.gif" border="0"/><B>SVG</B></A> anf <B>PDF</B>. Actually,
+     the &quot;soft-light&quot; and &quot;hard-light&quot; operations produce almost 
+     opposite results, probably because of some mistake introduced
+     by Adobe engineers. However, for the compatibility and historical
+     reasons it works as described in <A href="http://www.w3.org/Graphics/SVG/"><IMG src="../link.gif" border="0"/><B>SVG</B></A>:<BR/>
+     <A href="http://www.w3.org/TR/2004/WD-SVG12-20041027/rendering.html"><IMG src="../link.gif" border="0"/>http://www.w3.org/TR/2004/WD-SVG12-20041027/rendering.html</A></LI>
+<LI>Modified class <A href="../__code/include/agg_alpha_mask_u8.h.html#alpha_mask_u8">alpha_mask_u8</A>. It was my old bug that I used a simple 
+     blending formula:<BR/>
+     <CODE>alpha = (alpha * cover) / 256</CODE><BR/>
+     The correct one is:<BR/>
+     <CODE>alpha = (alpha * cover) / <B>255</B></CODE><BR/>
+     But it works much slower. To keep it fast and reasonably accurate 
+     I now use:<BR/>
+     <CODE>alpha = (255 + alpha * cover) / 256</CODE><BR/>
+     Thanks to Antti Nivala for highlighting it.</LI></UL></UL></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><UL type="disc">
+<LI><B>August 21, 2005</B> Bugfix</LI>
+<UL type="disc">
+<LI>Fixed a bug in <A href="../__code/include/agg_path_storage.h.html#path_storage">path_storage</A>:<BR/> 
+     <CODE>arrange_orientations()</CODE> and <CODE>arrange_orientations_all_paths()</CODE>. 
+     It was rewritten and simplified. Thanks to Stephan Assmus for 
+     finding it.</LI>
+<LI>Fixed the formula for &quot;soft-light&quot; color compositing. Thanks 
+     to Craig Northway for providing the info. Now &quot;soft-light&quot;
+     works correctly, but still, there is an issue with &quot;hard-light&quot;
+     and &quot;overlay&quot;:<BR/>
+     <A href="http://www.w3.org/TR/2004/WD-SVG12-20041027/rendering.html"><IMG src="../link.gif" border="0"/>http://www.w3.org/TR/2004/WD-SVG12-20041027/rendering.html</A>.<BR/>
+     The &quot;hard-light&quot; formula produces &quot;overlay&quot; result and vice versa, 
+     but Craig claims that both formulae are correct. If they are, the 
+     demo pictures are incorrect. </LI>
+<LI>Fixed bugs in <A href="../__code/src/agg_trans_double_path.cpp.html">agg_trans_double_path.cpp</A> and <A href="../__code/src/agg_trans_single_path.cpp.html">agg_trans_single_path.cpp</A>.
+     Thanks to Konrad Kokosa.</LI>
+<LI>Some other inconsiderable fixes.</LI></UL></UL></P></TD></TR></TABLE>
+   
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><UL type="disc">
+<LI><B>July 12, 2005</B> Update</LI>
+<UL type="disc">
+<LI>Updated atricle <A href="../research/adaptive_bezier/index.html#PAGE_ADAPTIVE_BEZIER">Adaptive Subdivision of Bezier Curves</A>.</LI>
+<LI>Improved the stroker algorithm (it will pursue me for the rest 
+     of my life, and I accept my fate). Now you have the following 
+     values for the inner join types:<BR/>
+     <CODE>inner_bevel</CODE><BR/>
+     <CODE>inner_miter</CODE><BR/>
+     <CODE>inner_jag</CODE><BR/>
+     <CODE>inner_round</CODE><BR/>
+     Only <CODE>inner_round</CODE> produces the flawless result in all cases, 
+     But it also produces a lot of inner edges. I hope one day I can
+     implement a filter that simulates the non-zero fill behaviour. 
+     You can see the difference between the methods in the <A href="../demo/bezier_div.cpp.html">bezier_div.cpp</A> 
+     example.</LI>
+<LI><B>Mauricio Piacentini</B> (<A href="http://www.tabuleiro.com"><IMG src="../link.gif" border="0"/>http://www.tabuleiro.com</A>) has made a great
+     contribution. He added directory <CODE>examples/sdl</CODE> and created a single
+     Makefile to build all the examples. This Makefile even attempts to 
+     download the supplementary files from Antigrain.com. That&#039;s very cool! 
+     Our applause to Mauricio! Now the directory linux_sdl is obsolete and 
+     will be removed in the next release.
+     Here&#039;s what Mauricio writes.<BR/><BR/>
+     <CODE>To build all examples using SDL (Mac or Linux) just type:<BR/><BR/>
+     cd /examples/sdl<BR/>
+     make<BR/>
+     Individual examples can be built with<BR/><BR/>
+     make aa_test<BR/><BR/>
+     In the same way the native Carbon examples can be built with<BR/><BR/>
+     cd /examples/macosx_carbon<BR/>
+     make<BR/><BR/>
+     In both cases the static library will be built (if it was not already) 
+     from the existing global Makefile in /src/.<BR/><BR/>
+     The Makefiles for both SDL and Carbon will also attempt to download the 
+     required .bmp files if they are not found in the system for a given 
+     example. If the files could not be fetched (wget) the user will receive 
+     a message explaining where to download the samples from (sphere.bmp, 
+     etc.)  Since all programs reside in the same directory there is no need 
+     to duplicate the .bmp files for each program that needs to use them.</CODE></LI>
+<LI><B>Mauricio Piacentini</B> also added <CODE>examples/macosx_carbon</CODE> using 
+     the very same technique. So that, from now on you can compile <B>AGG</B> 
+     examples on MacOS X with GCC. I will do the same thing with X11 
+     demo examples in the next release (not sure how soon). That&#039;s a 
+     great clean-up.</LI></UL></UL></P></TD></TR></TABLE> 
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><UL type="disc">
+<LI><B>July 1, 2005</B> Update</LI>
+<UL type="disc">
+<LI>Added new article, <A href="../research/adaptive_bezier/index.html#PAGE_ADAPTIVE_BEZIER">Adaptive Subdivision of Bezier Curves</A>. That was a very challenging 
+     research, so I decided to describe all my &#147;throes of composition&#148;.
+     If you don&#039;t read it I&#039;ll be upset. :) Please mail me your comments, 
+     suggestions, criticism.</LI>
+<LI>As the result of the research I have removed curve4_div1 and curve4_div3
+     and replaced it with <A href="../__code/include/agg_curves.h.html#curve4_div">curve4_div</A> that encapsulates all the ideas.</LI>
+<LI><A href="../__code/include/agg_curves.h.html#curve3">curve3</A> and <A href="../__code/include/agg_curves.h.html#curve4">curve4</A> are now not typedefs, but classes that include 
+     both, incremental and subdivision methods. So, you can choose the 
+     approximation method at run-time. See <A href="../__code/include/agg_curves.h.html#curve_approximation_method_e">curve_approximation_method_e</A> and
+     <A href="../__code/include/agg_conv_curve.h.html#conv_curve">conv_curve</A>.</LI>
+<LI>Class <A href="../__code/include/agg_conv_curve.h.html#conv_curve">conv_curve</A> now doesn&#039;t have functions <A href="../__code/include/agg_curves.h.html#curve3">curve3</A>() and <A href="../__code/include/agg_curves.h.html#curve4">curve4</A>(), 
+     instead there are direct functions:</LI>
+<UL type="disc">
+<LI><CODE>approximation_method()</CODE></LI>
+<LI><CODE>approximation_scale()</CODE></LI>
+<LI><CODE>angle_tolerance()</CODE></LI>
+<LI><CODE>cusp_limit()</CODE></LI></UL></UL></UL></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><UL type="disc">
+<LI><B>June 25, 2005</B> Update</LI>
+<UL type="disc">
+<LI>Added new classes of Bezier curves approximation: <A href="../__code/include/agg_curves.h.html#curve3_div">curve3_div</A> and
+     <A href="../__code/include/agg_curves.h.html#curve4_div">curve4_div</A>. The old ones renamed to <A href="../__code/include/agg_curves.h.html#curve3_inc">curve3_inc</A> and <A href="../__code/include/agg_curves.h.html#curve4_inc">curve4_inc</A>. 
+     For the sake of compatibility there are typedefs <A href="../__code/include/agg_curves.h.html#curve3">curve3</A>
+     and <A href="../__code/include/agg_curves.h.html#curve4">curve4</A>. New classes work pretty well with very long curves 
+     and the number of points is proportional to the logarithm of the 
+     curve length keeping the approximation error the same. It allows
+     for handling very large arcs and ellipses, with radius of 10,000,000
+     or more.</LI>
+<LI>Added template parameters Curve3 and Curve4 to <A href="../__code/include/agg_conv_curve.h.html#conv_curve">conv_curve</A>. 
+     Also added methods to access the curve interpolators. So that,
+     you can set parameters, such as <CODE>angle_tolerance()</CODE>. By 
+     default <A href="../__code/include/agg_conv_curve.h.html#conv_curve">conv_curve</A> now uses <A href="../__code/include/agg_curves.h.html#curve3_div">curve3_div</A> and <A href="../__code/include/agg_curves.h.html#curve4_div">curve4_div</A>.</LI>
+<LI>Added new demo example <A href="../demo/index.html#PAGE_DEMO_bezier_div">Demo bezier_div.cpp</A> that demonstrates 
+     the new adaptive subdivision method.</LI>
+<LI>Improved stroke math. First, changed method of estimation of the 
+     angle step for round joins and caps. Now it produces much less 
+     number of points keeping arcs pretty accurate. The new formula
+     is:<BR/>
+     <CODE>da = acos(width / (width + 0.125 / approximation_scale)) * 2;</CODE></LI>
+<LI>Added new types of inner joins for strokes, see <A href="../__code/include/agg_math_stroke.h.html#inner_join_e">inner_join_e</A>.
+     By default there <CODE>inner_miter</CODE> is used in <A href="../__code/include/agg_conv_stroke.h.html#conv_stroke">conv_stroke</A> and 
+     <A href="../__code/include/agg_conv_contour.h.html#conv_contour">conv_contour</A>. <CODE>inner_jag</CODE> simulates the behaviour as if each
+     line segment was covered by a rectangle placed along that segment 
+     and the &#147;outer jags&#148; were filled according to the <A href="../__code/include/agg_math_stroke.h.html#line_join_e">line_join_e</A>
+     type. This is the most accurate inner join method that is consistent 
+     with the stroker in the Adobe 2D engine. But it produces a lot
+     of false line segments, so that, there&#039;s another <CODE>inner_smart</CODE>
+     type that works as <CODE>inner_jag</CODE> only near line caps. It can produce 
+     some defects on very thick lines, but it happens very rear. A 
+     perfect stroker is impossible or it will work terribly slow. Even
+     Adobe stroker can produce defects. The following <A href="http://www.w3.org/Graphics/SVG/"><IMG src="../link.gif" border="0"/><B>SVG</B></A> path
+     fails to draw correct stroke:<BR/>
+     <CODE>&lt;path d=&quot;M 475, 157 C 200, 100, 453, 100, 222, 157&quot;
+     fill=&quot;none&quot; stroke=&quot;green&quot; stroke-width=&quot;100&quot;/&gt;</CODE><BR/>
+     You can play with different types of joins in 
+     <A href="../demo/index.html#PAGE_DEMO_bezier_div">Demo bezier_div.cpp</A>.</LI></UL></UL></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><UL type="disc">
+<LI><B>June 8, 2005</B> Update</LI>
+<UL type="disc">
+<LI>Added function <A href="../__code/include/agg_math.h.html#besj">besj</A>() to <A href="../__code/include/agg_math.h.html">agg_math.h</A>, so that we now don&#039;t depend
+     on Bessel functions j0, j1, jn. The problem was with Borland C++.
+     Many thanks to Andy Wilk.</LI>
+<LI>Fixed a bug in <A href="../__code/include/agg_conv_bspline.h.html#conv_bspline">conv_bspline</A> that resulted in an infinite loop when 
+     the source contained only 2 points. Thanks to Sergey Yershov.</LI>
+<LI>Added operations to <A href="../__code/include/agg_trans_affine.h.html#trans_affine">trans_affine</A>: &quot;/&quot;, &quot;/=&quot;, and functions 
+     multiply_inv() and premultiply_inv().<BR/>
+     Actually, there&#039;s no division operation on matrices, they
+     just multiply the matrix by the inverse matrix. It&#039;s 
+     convenient when you need to remove temporarily some transformation 
+     from a sequence of affine calculations.</LI>
+<LI>Added functions to <A href="../__code/include/agg_trans_viewport.h.html#trans_viewport">trans_viewport</A>: <BR/>
+     transform_scale_only(), 
+     inverse_transform_scale_only(), to_affine_scale_only(), 
+     device_dx(), and device_dy().</LI></UL></UL></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><UL type="disc">
+<LI><B>May 27, 2005</B> Bugfix</LI>
+<UL type="disc">
+<LI>Fixed a bug in scanline renderers that caused occasional crash when
+     using with scanline containers. Many thanks to John Hunter who
+     located it. The following files were changed:<BR/>
+     <A href="../__code/include/agg_renderer_scanline.h.html">agg_renderer_scanline.h</A> <BR/>
+     <A href="../__code/include/agg_scanline_boolean_algebra.h.html">agg_scanline_boolean_algebra.h</A> <BR/>
+     <A href="../__code/include/agg_scanline_storage_aa.h.html">agg_scanline_storage_aa.h</A> <BR/>
+     <A href="../__code/include/agg_scanline_storage_bin.h.html">agg_scanline_storage_bin.h</A></LI></UL></UL></P></TD></TR></TABLE> 
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><UL type="disc">
+<LI><B>May 26, 2005</B> Update</LI>
+<UL type="disc">
+<LI>Redesigned <A href="../__code/include/agg_rasterizer_scanline_aa.h.html#rasterizer_scanline_aa">rasterizer_scanline_aa</A> in such a way that it can  
+     work with 24 bit screen coordinates. So that, you can now use
+     <B>AGG</B> to render images wider than 32767 pixels. Of course, it 
+     requires dividing the whole buffer into horizontal bands. 
+     The performance of the rasterizer is now even better, 
+     not considerablaby, just about 3-5%.
+     Also added classes scanline32_u, scanline32_p, and <A href="../__code/include/agg_scanline_bin.h.html#scanline32_bin">scanline32_bin</A>
+     that support 32 bit coordinates.
+     They are fully compatible with the existing scanline containers
+     but works slightly slower. Accordingly modified files 
+     <A href="../__code/include/agg_scanline_storage_bin.h.html">agg_scanline_storage_bin.h</A> and <A href="../__code/include/agg_scanline_storage_aa.h.html">agg_scanline_storage_aa.h</A>. 
+     This work has been sponsored by <B>Liberty Technology Systems, Inc.</B>,
+     see <A href="../sponsors/index.html#PAGE_SPONSORS">AGG Sponsors</A> and visit <A href="http://www.lib-sys.com"><IMG src="../link.gif" border="0"/>http://www.lib-sys.com</A>.</LI>
+<LI>Updated <A href="http://www.cs.man.ac.uk/aig/staff/alan/software/"><IMG src="../link.gif" border="0"/><B><NOBR>General Polygon Clipper</NOBR></B></A>. Thanks to Pierre Arnaud for the reminder.</LI>
+<LI>Fixed two bugs in the stroker. Thanks to Mark Junker and Pierre Arnaud 
+     who discovered them.</LI>
+<LI>Added <CODE>__BORLANDC__</CODE> to <A href="../__code/include/agg_basics.h.html">agg_basics.h</A>. So that, hopefully <B>AGG</B> 
+     is now compatible with Borland C++ without changes. Many thanks 
+     to Jiri Krivanek for testing <B>AGG</B> in Borland environment.</LI>
+<LI>Pierre Arnaud has added function create_dib_section() to 
+     class <CODE>pixel_map</CODE>, see agg_win32_bmp.h. It&#039;s not a part of <B>AGG</B> 
+     itself, it&#039;s a Win32 dependent class, but it also can be useful
+     in some cases.</LI>
+<LI>Added flag cw/ccw to <A href="../__code/include/agg_ellipse.h.html#ellipse">ellipse</A>. It&#039;s not a big deal, but can be still
+     useful. It allows you to draw a ring using two ellipses with opposite
+     directions. And it also works with the non-zero filling rule.</LI>
+<LI>Fixed a bug in gradients. Thanks to Jens Boschulte for
+     placing an order to map <B>AGG</B> to <B>PDF</B> gradients (axial and radial
+     only).</LI>
+<LI>Added adaptors with horrible names: <BR/>
+     <A href="../__code/include/agg_pixfmt_rgba.h.html#comp_op_adaptor_clip_to_dst_rgba_pre">comp_op_adaptor_clip_to_dst_rgba_pre</A>,<BR/>
+     <A href="../__code/include/agg_pixfmt_rgba.h.html#comp_adaptor_clip_to_dst_rgba">comp_adaptor_clip_to_dst_rgba</A>, <BR/>
+     <A href="../__code/include/agg_pixfmt_rgba.h.html#comp_adaptor_clip_to_dst_rgba_pre">comp_adaptor_clip_to_dst_rgba_pre</A> <BR/>
+     to <A href="../__code/include/agg_pixfmt_rgba.h.html">agg_pixfmt_rgba.h</A>. They perform compositing operations with
+     preliminary multiplication of the source color to destination alpha.
+     So that, if the desination alpha is 0 (transparent) it won&#039;t have 
+     any effect. Thanks to Michael Kleps (reFX) for ordering this work.</LI></UL></UL></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><UL type="disc">
+<LI><B>May 12, 2005</B> Bugfix.</LI>
+<UL type="disc">
+<LI>Fixed a bug in the stroker. In very rear cases there are
+     defects appeared. It was possible when there were very short
+     line segments, less than 1e-12 length.</LI>
+<LI>Fixed a bug in <A href="../__code/include/agg_bezier_arc.h.html#bezier_arc">bezier_arc</A>. In some cases it added degenerate
+     curves that showed up the bug in the stroker. :-)</LI>
+<LI>Fixed a bug in <A href="../__code/font_win32_tt/agg_font_win32_tt.cpp.html">agg_font_win32_tt.cpp</A>. It didn&#039;t update the signature
+     when creating a new font. Many thanks to Michael D. Tajmajer.</LI>
+<LI>Changed the default value of m_char_set from ANSI_CHARSET to 
+     DEFAULT_CHARSET.</LI></UL></UL></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><UL type="disc">
+<LI><B>May 5, 2005</B> AGG is updated.</LI>
+<UL type="disc">
+<LI>Added extended compositing operations and claass to RGBA pixel formats.
+     They correspond to the SVG 1.2 specification:<BR/>
+     <A href="http://www.w3.org/TR/2004/WD-SVG12-20041027/rendering.html#comp-op-prop"><IMG src="../link.gif" border="0"/>http://www.w3.org/TR/2004/WD-SVG12-20041027/rendering.html#comp-op-prop</A></LI>
+<LI>Added new demo example: <A href="../demo/index.html#PAGE_DEMO_compositing">Demo compositing.cpp</A> that demonstrates all 
+     available modes and how to use them.</LI>
+<LI>Removed vertex_iterators as they were never used and there is no reason
+     to use them. If you really need to use the iterator semantics you can
+     always incorporate Iterator Adaptors from BOOST by Dave Abrahams.
+     The changes should not affect your code, but you might have to remove 
+     <CODE>#include &quot;agg_vertex_iterator.h&quot;</CODE> from your files as this line
+     could be added to your code by copy-pasting from <B>AGG</B> examples.</LI>
+<LI>Removed transformations from the font engines. The problem was with both, 
+     FreeType and Win32 font engines. They produced differentfont hinting for
+     <CODE>flip_y=false</CODE> and <CODE>flip_y=true</CODE>. Flipping was implemented
+     using the internal transformation mechanisms, but it resulted in some 
+     nontrivial problems with hinting. The embedded transformations are pretty
+     much useless, especially with hinting. From now on if you want to draw 
+     transformed text you will have to use the vector cache and <B>AGG</B> 
+     transformers. In practice all <B>AGG</B> users did namely so. </LI>
+<LI>Renamed &quot;id&quot; to &quot;path_id&quot; to make the code compliant with Objective-C.
+     Many thanks to Sergey Yershov who successfully tested and used AGG on 
+     MacOS with Cocoa.</LI></UL></UL></P></TD></TR></TABLE>
+
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><UL type="disc">
+<LI><B>April 28, 2005</B> AGG is updated.</LI>
+<UL type="disc">
+<LI>Removed renderer_scanline_aa_opaque and renderer_scanline_bin_opaque. 
+     As the practice shows they are useless, but require a lot of code. 
+     The only purpose of them was to ignore the alpha channel and consider
+     it as 1.0 with slightly better performance. Instead, Added 
+     renderer_scanline_bin_copy that performs direct copying of color 
+     information to the buffer (no blending). Many thanks to 
+     Jiri Krivanek for the help with it.</LI>
+<LI>Added functions to transform curves: <A href="../__code/include/agg_curves.h.html#catrom_to_bezier">catrom_to_bezier</A>, 
+     <A href="../__code/include/agg_curves.h.html#ubspline_to_bezier">ubspline_to_bezier</A>, and <A href="../__code/include/agg_curves.h.html#hermite_to_bezier">hermite_to_bezier</A>. Many thanks to 
+     Tony Juricic, his name is included into <A href="../__code/include/agg_curves.h.html">agg_curves.h</A></LI>
+<LI>The scanline rasterizer was redesigned. Now it uses a faster
+     soring algorithm (a combination of the Radix sort and Quick sort). 
+     The sorting part works about twice faster that is noticeable when
+     rendering thin lines (10-15% overall improvement).</LI>
+<LI>Improved the performance of alpha-blending. Function 
+     blend_from now works about 40% faster on RGBA buffers.</LI></UL></UL></P></TD></TR></TABLE>
+ 
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><UL type="disc">
+<LI><B>April 13, 2005</B></LI>
+<UL type="disc">
+<LI>Finished image and pattern transformations with resampling 
+     for all available pixel formats, RGB, RGBA, and GRAY.<BR/>
+     There are new files: <BR/>
+     agg_span_image_resample.h <BR/>
+     agg_span_image_resample_gray.h <BR/>
+     agg_span_image_resample_rgb.h <BR/>
+     agg_span_image_resample_rgba.h <BR/>
+     agg_span_pattern_resample_gray.h <BR/>
+     agg_span_pattern_resample_rgb.h <BR/>
+     agg_span_pattern_resample_rgba.h <BR/>
+     And new classes: <BR/>
+     <A href="../__code/include/agg_span_image_filter_gray.h.html#span_image_resample_gray_affine">span_image_resample_gray_affine</A> <BR/>
+     <A href="../__code/include/agg_span_image_filter_gray.h.html#span_image_resample_gray">span_image_resample_gray</A> <BR/>
+     <A href="../__code/include/agg_span_image_filter_rgb.h.html#span_image_resample_rgb_affine">span_image_resample_rgb_affine</A> <BR/>
+     <A href="../__code/include/agg_span_image_filter_rgb.h.html#span_image_resample_rgb">span_image_resample_rgb</A> <BR/>
+     <A href="../__code/include/agg_span_image_filter_rgba.h.html#span_image_resample_rgba_affine">span_image_resample_rgba_affine</A> <BR/>
+     <A href="../__code/include/agg_span_image_filter_rgba.h.html#span_image_resample_rgba">span_image_resample_rgba</A> <BR/>
+     span_pattern_resample_gray_affine <BR/>
+     span_pattern_resample_gray <BR/>
+     span_pattern_resample_rgb_affine <BR/>
+     span_pattern_resample_rgb <BR/>
+     span_pattern_resample_rgba_affine <BR/>
+     span_pattern_resample_rgba. <BR/></LI>
+<LI><A href="../demo/index.html#PAGE_DEMO_image_resample">Demo image_resample.cpp</A> is modified and added new 
+     <A href="../demo/index.html#PAGE_DEMO_pattern_resample">Demo pattern_resample.cpp</A>.</LI>
+<LI>The basic interger types can be redefined from the compiler
+     command line or by generating file <A href="../__code/include/agg_config.h.html">agg_config.h</A>. By default 
+     this file is empty, and the 64-bit integers are defined 
+     as before, that is, <CODE>__<A href="../__code/include/agg_basics.h.html#int64">int64</A></CODE> for MSVC and <CODE>long long</CODE> 
+     for all other compilers. In most cases it&#039;s fair enough. 
+     Also see comments in <A href="../__code/include/agg_config.h.html">agg_config.h</A>. From now on the 64-bit 
+     types are legalized in the official package. The testing
+     version with &#147;a&#148; suffix has been removed. See <A href="../download/index.html#PAGE_DOWNLOAD">Download</A>.</LI>
+<LI>Added a new type of a XOR operation in scanline boolean algebra, 
+     it&#039;s <A href="../__code/include/agg_scanline_boolean_algebra.h.html#sbool_xor_abs_diff">sbool_xor_abs_diff</A>. This operation calculates the <B><NOBR>Anti-Aliasing</NOBR></B> values
+     as <CODE>abs(a-b)</CODE> which guarantees zero result when XORing two 
+     coinciding Anti-Aliased shapes. See pictures:<BR/>
+     <A href="http://antigrain.com/stuff/scanline_boolean_xor_linear.gif"><IMG src="../link.gif" border="0"/>http://antigrain.com/stuff/scanline_boolean_xor_linear.gif</A><BR/>
+     <A href="http://antigrain.com/stuff/scanline_boolean_xor_saddle.gif"><IMG src="../link.gif" border="0"/>http://antigrain.com/stuff/scanline_boolean_xor_saddle.gif</A><BR/>
+     <A href="http://antigrain.com/stuff/scanline_boolean_xor_abs_diff.gif"><IMG src="../link.gif" border="0"/>http://antigrain.com/stuff/scanline_boolean_xor_abs_diff.gif</A><BR/></LI>
+<LI>Fixed some typos on the site, thanks to Kirill Smelkov.</LI>
+<LI>The <B>AGG</B> project has a new sponsor! <A href="http://www.epsitec.ch"><IMG src="../link.gif" border="0"/>http://www.epsitec.ch</A>
+     See <A href="../sponsors/index.html#PAGE_SPONSORS">AGG Sponsors</A>.</LI></UL></UL></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><UL type="disc">
+<LI><B>April 4, 2005</B> Breakthrough in image resampling!<BR/></LI>
+<UL type="disc">
+<LI>Finally implemented images transformations with resampling
+     to achieve best possible quality when creating thumbnails.
+     Currently it&#039;s implemented only for RGB color space, but the 
+     rest of the job is simple and will be done soon. <BR/>
+     There are two major transformation methods:<BR/>
+     <A href="../__code/include/agg_span_image_filter_rgb.h.html#span_image_resample_rgb_affine">span_image_resample_rgb_affine</A> <BR/>
+     <A href="../__code/include/agg_span_image_filter_rgb.h.html#span_image_resample_rgb">span_image_resample_rgb</A> <BR/>
+     The differerence is that <A href="../__code/include/agg_span_image_filter_rgb.h.html#span_image_resample_rgb_affine">span_image_resample_rgb_affine</A> works 
+     with constant scale factors by X and Y, so, it&#039;s faster.<BR/>
+     <A href="../__code/include/agg_span_image_filter_rgb.h.html#span_image_resample_rgb">span_image_resample_rgb</A> allows you to have arbitrary local scale. 
+     It&#039;s suitable for perspective transformations or any other ones
+     if you write an appropriate span interpolator. Currently there is 
+     only perspective interpolator available.</LI>
+<LI>Added new span interpolator classes:</LI>
+<UL type="disc">
+<LI><A href="../__code/include/agg_span_interpolator_linear.h.html#span_interpolator_linear_subdiv">span_interpolator_linear_subdiv</A>. It works as <A href="../__code/include/agg_span_interpolator_linear.h.html#span_interpolator_linear">span_interpolator_linear</A>, 
+        that is, it interpolates between the points along a straight line, 
+        but it resynchronizes the result at every 8th, 16th, etc pixels 
+        (defined by subdiv_shift). So that, it can be used together with 
+        <A href="../__code/include/agg_trans_perspective.h.html#trans_perspective">trans_perspective</A>. It produces some inaccuracy, but speeds up 
+        perspective image transformations almost twice!</LI>
+<LI><A href="../__code/include/agg_span_subdiv_adaptor.h.html#span_subdiv_adaptor">span_subdiv_adaptor</A>. Essentially it&#039;s the same as 
+        <A href="../__code/include/agg_span_interpolator_linear.h.html#span_interpolator_linear_subdiv">span_interpolator_linear_subdiv</A>. The difference is in the interface
+        and it supports a function to calculate local scale. This 
+        adaptor is used mostly with perspective transformations with
+        resampling.</LI>
+<LI><A href="../__code/include/agg_span_interpolator_persp.h.html#span_interpolator_persp_exact">span_interpolator_persp_exact</A>. Used together with <A href="../__code/include/agg_span_subdiv_adaptor.h.html#span_subdiv_adaptor">span_subdiv_adaptor</A>
+        to transform images with resampling. Provides exact calculation 
+        of the coordinates (no interpolation) and the linear interpolation 
+        of the scale factors.</LI>
+<LI><A href="../__code/include/agg_span_interpolator_persp.h.html#span_interpolator_persp_lerp">span_interpolator_persp_lerp</A>. The same as the above, but uses 
+        linear interpolation for calculating of the coordinates. So, it&#039;s 
+        less accurate, but faster.</LI></UL>
+<LI>Two new demo examples: <A href="../demo/index.html#PAGE_DEMO_image_filters2">Demo image_filters2.cpp</A><BR/>
+     and <A href="../demo/index.html#PAGE_DEMO_image_resample">Demo image_resample.cpp</A></LI>
+<LI>Bugfix. </LI>
+<UL type="disc">
+<LI>Fixed a bug in <A href="../__code/include/agg_font_cache_manager.h.html">agg_font_cache_manager.h</A> that resulted in Bus Error
+        on Sun SPARC architecture. Many thanks to Marcus.Gruendler.</LI>
+<LI>Fixed a bug in <A href="../__code/include/agg_renderer_outline_aa.h.html">agg_renderer_outline_aa.h</A> that hid line segments 
+        returning exactly along the path.</LI></UL>
+<LI>Introduced new basic data types, <A href="../__code/include/agg_basics.h.html#int64">int64</A>, <A href="../__code/include/agg_basics.h.html#int64u">int64u</A>. They are defined
+     as <CODE>__<A href="../__code/include/agg_basics.h.html#int64">int64</A></CODE> for MSVC and <CODE>long long</CODE> for all other compilers and
+     platforms. However, I temporarily created separate packages, 
+     agg23a.zip and agg23a.tar.gz, see <A href="../download/index.html#PAGE_DOWNLOAD">Download</A>.
+     If there are no compatibility problems I&#039;ll include it into the 
+     official package.</LI></UL></UL></P></TD></TR></TABLE> 
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><UL type="disc">
+<LI><B>March 2, 2005</B> Some fixes.<BR/></LI>
+<UL type="disc">
+<LI>Color types (<A href="../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A>, <A href="../__code/include/agg_color_rgba.h.html#rgba16">rgba16</A>, <A href="../__code/include/agg_color_gray.h.html#gray8">gray8</A>, <A href="../__code/include/agg_color_gray.h.html#gray16">gray16</A>) are redesigned. 
+     I just returned to the old design where the color types were
+     simple structures, not templates. There is some duplicate code,
+     but it&#039;s more convenient in use. Now you can construct <A href="../__code/include/agg_color_rgba.h.html#rgba16">rgba16</A>, 
+     <A href="../__code/include/agg_color_gray.h.html#gray8">gray8</A>, and <A href="../__code/include/agg_color_gray.h.html#gray16">gray16</A> from <A href="../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A>. The <A href="release_notes/v23.agdoc.html#PAGE_RELEASE_V23">AGG Version 2.3 Release Notes</A> are updated.</LI></UL></UL></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><UL type="disc">
+<LI><B>February 28, 2005</B> AGG v2.3 is released!.<BR/>
+   See <A href="release_notes/v23.agdoc.html#PAGE_RELEASE_V23">AGG Version 2.3 Release Notes</A> for details. The old version is still available 
+   to make it easier for you to track changes.</LI>
+<UL type="disc">
+<LI>Added support for high capacity colors, such as RGB48 and RGBA64.
+     Many thanks to Liberty Technology Systems, Inc., who has sponsored
+     this work. Visit <A href="http://lib-sys.com"><IMG src="../link.gif" border="0"/>http://lib-sys.com</A>. </LI>
+<LI>Added repeat/reflect wrap modes to pattern transformers. </LI>
+<LI>Fixed some inconsiderable bugs.</LI>
+<LI>Added functions blend_from to pixel formats as well as some
+     utility functions such as for_each_pixel(), premultiply(), 
+     demultiply(), apply_gamma_dir(), apply_gamma_inv().</LI>
+<LI>Added page <A href="../sponsors/index.html#PAGE_SPONSORS">AGG Sponsors</A>.</LI></UL></UL></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><UL type="disc">
+<LI><B>November 14, 2004</B> Update. </LI>
+<UL type="disc">
+<LI>Fixed some bugs and glitches in the code and files.</LI>
+<LI>Added new demo example <A href="../demo/index.html#PAGE_DEMO_pattern_perspective">Demo pattern_perspective.cpp</A>.</LI></UL></UL></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><UL type="disc">
+<LI><B>November 7, 2004</B> Update. </LI>
+<UL type="disc">
+<LI>The stroke converter has been considerably redesigned and now 
+     it works more correctly. In general the task of stroke generating  
+     is very difficult and I&#039;m afraid it cannot be solved with 
+     <NOBR><B>O(N)</B></NOBR> algorithm complexity. Although, the algorithm was 
+     numerically stable, 
+     it could produce some artifacts, like the following:<BR/>
+     <A href="http://antigrain.com/stuff/stroke_defect1.png"><IMG src="../link.gif" border="0"/>http://antigrain.com/stuff/stroke_defect1.png</A><BR/>
+     <A href="http://antigrain.com/stuff/stroke_defect2.png"><IMG src="../link.gif" border="0"/>http://antigrain.com/stuff/stroke_defect2.png</A><BR/>
+     Now <A href="../__code/include/agg_conv_stroke.h.html#conv_stroke">conv_stroke</A> generates more self-intersecting segments, but they all 
+     are completely eliminated when using the Non-Zero filling rule. 
+     From the point of view of the final result this behaviour is more correct.<BR/>
+     <A href="http://antigrain.com/stuff/stroke_correct1.png"><IMG src="../link.gif" border="0"/>http://antigrain.com/stuff/stroke_correct1.png</A><BR/>
+     <A href="http://antigrain.com/stuff/stroke_correct2.png"><IMG src="../link.gif" border="0"/>http://antigrain.com/stuff/stroke_correct2.png</A><BR/>
+     First, the result is now correct when there are &quot;returning&quot; segments 
+     (a segment that comes back exactly along the path). Second, There were 
+     added  the <CODE>inner_line_join</CODE> and <CODE>inner_miter_limit</CODE> parameters to  
+     <CODE><A href="../__code/include/agg_conv_stroke.h.html#conv_stroke">conv_stroke</A></CODE> and <CODE><A href="../__code/include/agg_conv_contour.h.html#conv_contour">conv_contour</A></CODE>. They are used when calculating inner 
+     joins and by default <CODE>inner_miter_limit</CODE> has minimal value of 
+     <NOBR><B>1+1/64</B></NOBR>. <BR/>
+     By default it uses <CODE>miter_join_revert</CODE>, that is, it doesn&#039;t cut the 
+     miter at the <CODE>inner_miter_limit</CODE> value, but switches to the bevel join. 
+     For the outer joins there are still <CODE>miter_join</CODE> and <CODE>miter_join_revert</CODE>, 
+     as it was before. Inner and outer joins are considered as follows. 
+     If the next segment turns right, the join on the right is inner one, 
+     the join on the left is outer. <BR/>
+     <A href="http://www.antigrain.com/stuff/stroke_defect.zip"><IMG src="../link.gif" border="0"/>http://www.antigrain.com/stuff/stroke_defect.zip</A> (Win32 exe) - it&#039;s how it 
+     works now. The <CODE><A href="../__code/include/agg_conv_contour.h.html#conv_contour">conv_contour</A></CODE> also has been changed. Now it has the same 
+     join types as <CODE><A href="../__code/include/agg_conv_stroke.h.html#conv_stroke">conv_stroke</A></CODE> (before there was only miter join): <BR/>
+     <A href="http://www.antigrain.com/stuff/conv_contour.zip"><IMG src="../link.gif" border="0"/>http://www.antigrain.com/stuff/conv_contour.zip</A> <BR/>
+     So, there&#039;s a new file, <A href="../__code/include/agg_math_stroke.h.html">agg_math_stroke.h</A> and since this code is now 
+     reused by the stroker and contour converters, I had to move enums 
+     <A href="../__code/include/agg_math_stroke.h.html#line_cap_e">line_cap_e</A> and <A href="../__code/include/agg_math_stroke.h.html#line_join_e">line_join_e</A> to the agg namespace (before it was in 
+     the <A href="../__code/include/agg_vcgen_stroke.h.html#vcgen_stroke">vcgen_stroke</A> class). In the updated version you will have to remove 
+     those <CODE><A href="../__code/include/agg_vcgen_stroke.h.html#vcgen_stroke">vcgen_stroke</A>::</CODE> specifiers. <CODE><A href="../__code/include/agg_math_stroke.h.html#line_cap_e">line_cap_e</A></CODE> and <CODE><A href="../__code/include/agg_math_stroke.h.html#line_join_e">line_join_e</A></CODE>
+     are now defined in the <A href="../__code/include/agg_math_stroke.h.html">agg_math_stroke.h</A> and it&#039;s automatically included 
+     when you include <A href="../__code/include/agg_conv_stroke.h.html">agg_conv_stroke.h</A> or <A href="../__code/include/agg_conv_contour.h.html">agg_conv_contour.h</A>.</LI>
+<LI>Added new demo example <A href="../demo/index.html#PAGE_DEMO_line_patterns">Demo line_patterns.cpp</A></LI></UL></UL></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><UL type="disc">
+<LI><B>October 26, 2004</B> Update. </LI>
+<UL type="disc">
+<LI><B>AGG</B> has been tested on AmigaOS. Many thanks to Steven Solie, 
+     <A href="http://www3.telus.net/public/ssolie"><IMG src="../link.gif" border="0"/>http://www3.telus.net/public/ssolie</A> <BR/>
+     When building on AmigaOS 4.0 or higher type the following for
+     instructions on what targets are available.<BR/>
+     <CODE>make -f Makefile.AmigaOS</CODE><BR/>
+     To just build and install AGG into the standard AmigaOS SDK
+     ready for use type:<BR/>
+     <CODE>make -f Makefile.AmigaOS install</CODE><BR/>
+     If you just want to build one demo (e.g. lion) use:<BR/>
+     <CODE>make -f Makefile.AmigaOS bin/lion</CODE></LI>
+<LI>Added binaries for AmigaOS to the <A href="../demo/index.html#PAGE_DEMO">Demo</A> page</LI></UL></UL></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><UL type="disc">
+<LI><B>October 7, 2004</B> Update. </LI>
+<UL type="disc">
+<LI>Changed <A href="../__code/include/agg_span_converter.h.html">agg_span_converter.h</A>, added two arguments 
+     <CODE>(x,y)</CODE> to function <NOBR><CODE>convert()</CODE></NOBR>. It allows you for 
+     creating pipelines when generating spans.</LI>
+<LI>Added <A href="../__code/include/agg_span_gradient_alpha.h.html">agg_span_gradient_alpha.h</A> that can be used to apply arbitrary
+     alpha gradients (transparency). This is a <B>span converter</B> that 
+     can be used with any span generator, such as images, gradients, 
+     gouraud shading, patterns, etc.</LI>
+<LI>Added new example <A href="../demo/index.html#PAGE_DEMO_alpha_gradient">Demo alpha_gradient.cpp</A></LI>
+<LI>Added radial gradient with focal center, see <A href="../__code/include/agg_span_gradient.h.html#gradient_radial_focus">gradient_radial_focus</A></LI>
+<LI>Added gradient repeat and reflect adaptors, 
+     see <A href="../__code/include/agg_span_gradient.h.html#gradient_repeat_adaptor">gradient_repeat_adaptor</A> and <A href="../__code/include/agg_span_gradient.h.html#gradient_reflect_adaptor">gradient_reflect_adaptor</A></LI></UL></UL></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><UL type="disc">
+<LI><B>September 18, 2004</B></LI>
+<UL type="disc">
+<LI>Update. Fixed some inconsiderable bugs.</LI>
+<LI>Added page <A href="../customers/index.html#PAGE_CUSTOMERS">Users and Customers</A>.</LI>
+<LI>Finally solved the issue of &#147;0.5 pixel&#148; when transforming 
+     images. See <A href="http://article.gmane.org/gmane.comp.graphics.agg/193"><IMG src="../link.gif" border="0"/>http://article.gmane.org/gmane.comp.graphics.agg/193</A>
+     for details. </LI>
+<LI>Convenience functions were added to the <A href="../__code/include/agg_trans_affine.h.html#trans_affine">trans_affine</A>.</LI>
+<LI>Added new demo: <A href="../demo/index.html#PAGE_DEMO_aa_test">Demo aa_test.cpp</A>.</LI></UL></UL></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><UL type="disc">
+<LI><B>September 12, 2004</B></LI>
+<UL type="disc">
+<LI><B>AGG</B> v2.2 released! See <A href="release_notes/v22.agdoc.html#PAGE_RELEASE_V22">AGG Version 2.2 Release Notes</A> and <A href="../download/index.html#PAGE_DOWNLOAD">Download</A>.</LI></UL></UL></P></TD></TR></TABLE> 
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><UL type="disc">
+<LI><B>August 27, 2004</B></LI>
+<UL type="disc">
+<LI>Added a possibility to the font engines to use a 32-bit vector
+     cache. Before it was &quot;hardcoded&quot; 16-bit coordinates (10.6 format)
+     which caused integer overflow when caching glyphs of large sizes 
+     (200 and more). Now you have a choice whether to use the compact 
+     16-bit vector cache or 32-bit one. Changed names of the font engines. 
+     Now, instead of <CODE>font_engine_freetype</CODE> and <CODE>font_engine_win32_tt</CODE> 
+     there are: <BR/>
+     <CODE><A href="../__code/font_freetype/agg_font_freetype.h.html#font_engine_freetype_int16">font_engine_freetype_int16</A></CODE>, <CODE><A href="../__code/font_freetype/agg_font_freetype.h.html#font_engine_freetype_int32">font_engine_freetype_int32</A></CODE>, <BR/>
+     <CODE><A href="../__code/font_win32_tt/agg_font_win32_tt.h.html#font_engine_win32_tt_int16">font_engine_win32_tt_int16</A></CODE>, and <CODE><A href="../__code/font_win32_tt/agg_font_win32_tt.h.html#font_engine_win32_tt_int32">font_engine_win32_tt_int32</A></CODE>.<BR/>
+     See <A href="../download/index.html#PAGE_DOWNLOAD">Download</A>.</LI></UL></UL></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><UL type="disc">
+<LI><B>August 25, 2004</B></LI>
+<UL type="disc">
+<LI>Fixed some bugs in <A href="../__code/include/agg_path_storage_integer.h.html">agg_path_storage_integer.h</A>. Added method
+     <CODE>premultiply()</CODE> to <A href="../__code/include/agg_trans_affine.h.html#trans_affine">trans_affine</A>. Fixed a bug in <A href="../svg/index.html#PAGE_SVG">SVG Viewer</A> with
+     the order of affine transformations.</LI>
+<LI>Added two new non-linear transformers, <A href="../__code/include/agg_trans_single_path.h.html#trans_single_path">trans_single_path</A> and 
+     <A href="../__code/include/agg_trans_double_path.h.html#trans_double_path">trans_double_path</A>.</LI>
+<LI>Added two new &quot;kinda-c00l-stuff&quot; demo to draw text along an arbitrary
+     curve and between two curves. See <A href="../demo/index.html#PAGE_DEMO_trans_curve1">Demo trans_curve1.cpp</A> and 
+     <A href="../demo/index.html#PAGE_DEMO_trans_curve2">Demo trans_curve2.cpp</A>.</LI></UL></UL></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><UL type="disc">
+<LI><B>August 15, 2004</B></LI>
+<UL type="disc">
+<LI><B>AGG</B> code is cleaned up and now it&#039;s ANSI C++ standard compliant.
+     It can be compiled with g++ version 3.4. The problem was in classes
+     derived from template base. </LI>
+<LI>Added support for MacOS, Carbon API and the building environment
+     for Code Warrior. Many thanks and regards to <B>Hansruedi Baer</B>
+     (<A href="http://www.karto.ethz.ch/baer/agg"><IMG src="../link.gif" border="0"/>http://www.karto.ethz.ch/baer/agg</A>).
+     The project file is rather big (3MB), so it isn&#039;t included into
+     the main distribution package. Please download 
+     <A href="http://www.antigrain.com/agg2.mcp.xml.zip"><IMG src="../link.gif" border="0"/>http://www.antigrain.com/agg2.mcp.xml.zip</A> and unzip it into
+     agg2/examples/macos_cw/agg2.mcp.xml.
+     Also, to build the SVG example, you need to obtain expat.lib and put it
+     to agg2/svg/macos_cw/expat.lib.
+     Download: <A href="http://www.antigrain.com/expat.lib.zip"><IMG src="../link.gif" border="0"/>http://www.antigrain.com/expat.lib.zip</A>
+     If you don&#039;t need to compile the SVG example, just remove 
+     svg_test from the project.</LI>
+<LI>Added support for BeOS, many thanks to <B>Stephan Assmus</B>, <BR/>
+     <A href="http://www.yellowbites.com/index.html"><IMG src="../link.gif" border="0"/>http://www.yellowbites.com/index.html</A>.</LI>
+<LI>Resumed support for <B>SDL</B> (<A href="http://www.libsdl.org/index.php"><IMG src="../link.gif" border="0"/>http://www.libsdl.org/index.php</A>). 
+     Many thanks to <B>Mauricio Piacentini</B> who fixed some things in 
+     <CODE>agg_platform_support.cpp</CODE> for <B>SDL</B>.</LI>
+<LI>Added <CODE>automake</CODE> building environment. Thanks to <B>Nikolas Zimmermann</B> <BR/>
+     (<A href="http://sourceforge.net/users/wildfox"><IMG src="../link.gif" border="0"/>http://sourceforge.net/users/wildfox</A>/).</LI>
+<LI>Added <B>AGG</B> newsgroup to the gmane server:<BR/></LI>
+<UL type="disc">
+<LI>News URL: <A href="news://news.gmane.org/gmane.comp.graphics.agg"><IMG src="../link.gif" border="0"/>news://news.gmane.org/gmane.comp.graphics.agg</A> <BR/></LI>
+<LI>Web URL: <A href="http://news.gmane.org/gmane.comp.graphics.agg"><IMG src="../link.gif" border="0"/>http://news.gmane.org/gmane.comp.graphics.agg</A> <BR/>
+     Thanks to <B>Adam Megacz</B> <A href="http://www.megacz.com"><IMG src="../link.gif" border="0"/>http://www.megacz.com</A></LI></UL>
+<LI><B>Finally!</B> added support for FreeType font rendering engine 
+     with cache. Now one can render any fonts very easily. The speed
+     is pretty good too. When caching vectorial glyphs, it&#039;s about 30-40
+     microseconds per glyph on a typical <NOBR>P-IV 2.0 GHz</NOBR>, when 
+     caching scanline shapes, it&#039;s 3-4 microseconds.
+     See also <A href="../demo/index.html#PAGE_DEMO_truetype_test">Demo truetype_test.cpp</A>.</LI>
+<LI>Added support for TrueType fonts, based on WinAPI <CODE>GetGlyphOutline()</CODE>.
+     There&#039;s a general caching system that can be used with any font source, 
+     and two different font engine wrappers, for FreeType and Win32 API. One 
+     can write his own font engine, based on some API or library.</LI></UL></UL></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><UL type="disc">
+<LI><B>June 4, 2004</B></LI>
+<UL type="disc">
+<LI>Fixed a bug in the AGG Lite rasterizer. The rasterizer 
+     did not produce any result if all poins of the polygon 
+     fell to one pixel. See <A href="../download/index.html#PAGE_DOWNLOAD">Download</A>.</LI>
+<LI>Added new page <A href="../tips/line_alignment/line_alignment.agdoc.html#PAGE_LINE_ALIGNMENT">The Problem of Line Alignment</A> to <A href="../tips/index.html#PAGE_TIPS">Tips and Tricks</A>.</LI></UL></UL></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><UL type="disc">
+<LI><B>May 27, 2004</B></LI>
+<UL type="disc">
+<LI><B>AGG</B> is updated. There is a new method of the polygon boolean 
+     algebra is added. In the distribution package (<A href="../download/index.html#PAGE_DOWNLOAD">Download</A>)
+     there are two new demo examples, <A href="../demo/scanline_boolean.cpp.html">scanline_boolean.cpp</A> and 
+     <A href="../demo/scanline_boolean2.cpp.html">scanline_boolean2.cpp</A>. <BR/>
+     See also <A href="../demo/index.html#PAGE_DEMO_scanline_boolean">Demo scanline_boolean.cpp</A> and 
+     <A href="../demo/index.html#PAGE_DEMO_scanline_boolean2">Demo scanline_boolean2.cpp</A>.</LI></UL></UL></P></TD></TR></TABLE>
+ 
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><UL type="disc">
+<LI><B>May 18, 2004</B></LI>
+<UL type="disc">
+<LI>Added new page <A href="../tips/gradients_tutorial/gradients_tutorial.agdoc.html#PAGE_GRADIENTS_TUTORIAL">Working with Gradients</A> to <A href="../tips/index.html#PAGE_TIPS">Tips and Tricks</A>.</LI>
+<LI><B>AGG</B> is updated, see <A href="../download/index.html#PAGE_DOWNLOAD">Download</A>. There was fixed a bug in the 
+     rasterizer and added
+     iterator-like methods to retrieve the scanlines. The work on 
+     the scanline shape algebra (Intersection, Union, Substraction, 
+     and Exclusive OR operations) is in progress.</LI></UL></UL></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><UL type="disc">
+<LI><B>May 9, 2004</B></LI>
+<UL type="disc">
+<LI><B>AGG</B> is updated. The alpha-mask classes were modified in order 
+     to achieve better performance.</LI>
+<LI>Added a new example, <A href="../demo/alpha_mask3.cpp.html">alpha_mask3.cpp</A> with functionality similar to
+     <A href="../demo/gpc_test.cpp.html">gpc_test.cpp</A>. See the <A href="../demo/index.html#PAGE_DEMO">Demo</A> page. It&#039;s polygon clipping based on 
+     the alpha-mask that is more restrictive than <A href="http://www.cs.man.ac.uk/aig/staff/alan/software/"><IMG src="../link.gif" border="0"/><B><NOBR>General Polygon Clipper</NOBR></B></A>, but works much 
+     faster.</LI></UL></UL></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><UL type="disc">
+<LI><B>May 8, 2004</B></LI>
+<UL type="disc">
+<LI><B>AGG</B> is updated. Added new classes <A href="../doc/basic_renderers/basic_renderers.agdoc.html#pixfmt_amask_adaptor">pixfmt_amask_adaptor</A> and <A href="../__code/include/agg_alpha_mask_u8.h.html#amask_no_clip_u8">amask_no_clip_u8</A>.
+     It allows you to use the alpha-mask with all possible primitives
+     and renderers. Besides, if the alpha-mask buffer is of the same
+     size as the main rendering buffer (usually it is) we don&#039;t have
+     to perform clipping for the alpha-mask, because all the primitives
+     are already clipped at the higher level, so, it works faster.
+     New demo example <A href="../demo/alpha_mask2.cpp.html">alpha_mask2.cpp</A> is added.</LI>
+<LI>Added a new section to the Documentation page decribing the use 
+     of <A href="../doc/basic_renderers/basic_renderers.agdoc.html#pixfmt_amask_adaptor">pixfmt_amask_adaptor</A>.</LI>
+<LI>Added new page <A href="../tips/win_ce/win_ce.agdoc.html#PAGE_WIN_CE">Compiling AGG under Microsoft eMbedded VC 4.0</A>.</LI></UL></UL></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><UL type="disc">
+<LI><B>May 5, 2004</B></LI>
+<UL type="disc">
+<LI>The library has been updated, see the <A href="../download/index.html#PAGE_DOWNLOAD">Download</A> page. 
+     There are some minor changes and
+     bug fix (not critical). The only change that affects
+     the interface is that there was removed the default value
+     of the 4-th template argument from <A href="../__code/include/agg_span_gradient.h.html#span_gradient">span_gradient</A>. Before there was
+     <CODE>class ColorF = const ColorT*</CODE>. It was 
+     done in order to compile <B>AGG</B> successfully on <B>SunOS</B>. 
+     It can affect your code if you use an array of 256 <A href="../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A>
+     values as a color function of gradients (most probably you do 
+     because it&#039;s the easiest way). Just add 
+     one extra argument <CODE>const agg::<A href="../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A>*</CODE> when declaring the 
+     <A href="../__code/include/agg_span_gradient.h.html#span_gradient">span_gradient</A>.</LI>
+<LI>Added new type of line joins to <A href="../__code/include/agg_conv_stroke.h.html#conv_stroke">conv_stroke</A> (<A href="../__code/include/agg_vcgen_stroke.h.html#vcgen_stroke">vcgen_stroke</A> to be 
+     exact). Many thanks to Dirck Blaskey for the contribution. 
+     Now there is one more type
+     <CODE>join_miter_revert</CODE> that is used for compatibility with the PDF
+     and SVG specifications. It works like <CODE>miter_join</CODE>, but when the 
+     miter limit is exceeded it turns into the <CODE>bevel_join</CODE>. <B>AGG</B> type
+     of <CODE>miter_join</CODE> works &#147;smoother&#148; and (in my opinion) more
+     correct. See the <A href="../demo/conv_stroke.cpp.html">conv_stroke.cpp</A> example for details and demo.</LI>
+<LI>The library and the demo examples were successfully compiled under
+     <B>SunOS</B> and <B>Irix64</B>. Page <A href="../demo/index.html#PAGE_DEMO">Demo</A> is updated (actually, 
+     written at last). There you can find screenshots, brief 
+     description, and the executables for different hardware/OS 
+     platforms.</LI>
+<LI>Added new example <A href="../demo/lion_lens.cpp.html">lion_lens.cpp</A> that demonstrates non-linear
+     &#147;fish-eye like&#148; transformations. See page <A href="../demo/index.html#PAGE_DEMO">Demo</A> at the end.
+     The <A href="../__code/include/agg_trans_warp_magnifier.h.html#trans_warp_magnifier">trans_warp_magnifier</A> and <A href="../__code/include/agg_conv_segmentator.h.html#conv_segmentator">conv_segmentator</A> classes were 
+     in <B>AGG</B> before, but they were not exposed.</LI>
+<LI>New page <A href="../tips/win_glyph/win_glyph.agdoc.html#PAGE_WIN_GLYPH">Using WinAPI to Render Text</A> was added to <A href="../tips/index.html#PAGE_TIPS">Tips and Tricks</A>.</LI>
+<LI>Little progress in writing the docs. See <A href="../doc/basic_renderers/basic_renderers.agdoc.html#PAGE_BASIC_RENDERERS">Basic Renderers</A>.</LI></UL></UL></P></TD></TR></TABLE>
+
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><UL type="disc">
+<LI><B>April 17, 2004.</B></LI>
+<UL type="disc">
+<LI>Official <B><NOBR>Anti-Grain</NOBR> Geometry</B> v2.1 released. See <A href="release_notes/v21.agdoc.html#PAGE_RELEASE_V21">AGG Version 2.1 Release Notes</A> and <A href="../download/index.html#PAGE_DOWNLOAD">Download</A>. </LI>
+<LI>Added page <A href="../tips/index.html#PAGE_TIPS">Tips and Tricks</A>.</LI>
+<LI>The docs are in process. From now on I will update the documentation
+     pages, as well as the source files. I do not expect any changes in 
+     code or interfaces; I&#039;ll just add some comments and cross references.</LI></UL></UL></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><UL type="disc">
+<LI><B>April 09, 2004.</B> Antigrain.com reopened. I have created my own 
+   documenting tool (see <A href="../agdoc/index.html#PAGE_AGDOC">AGDoc Formatter</A>), so that, now I can easily write new pages 
+   and update the site. Actually, <B>HTML</B> with its terrible
+   syntax was the main obstacle to maintain the web-site. <BR/>
+   All this time I&#039;ve been working on new algorithms and the design of the library. 
+   There are some things that were implemented:</LI>
+<UL type="disc">
+<LI>Gradients and Gouraud Shading.</LI>
+<LI>Image affine transformations.</LI>
+<LI>Strokes with different types of line joins and line caps.</LI>
+<LI>Dashed line generator.</LI>
+<LI>Markers, such as arrowheads/arrowtails.</LI>
+<LI>Fast vectorial polygon clipping to a rectangle.</LI>
+<LI>Low-level clipping to multiple rectangular regions.</LI>
+<LI>Alpha-Masking.</LI>
+<LI>A fast anti-alias line algorithm.</LI>
+<LI>Using arbitrary images as line patterns.</LI>
+<LI>Rendering in separate color channels.</LI>
+<LI>Perspective and bilinear transformations of vector and image data.</LI>
+<LI>Boolean polygon operations (and, or, xor, sub) based on Alan Murta&#039;s <BR/><A href="http://www.cs.man.ac.uk/aig/staff/alan/software/"><IMG src="../link.gif" border="0"/><B><NOBR>General Polygon Clipper</NOBR></B></A>.</LI></UL></UL></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><UL type="disc">
+<LI><B>Two years of silence.</B> It was a period of active development of <B><NOBR>Anti-Grain</NOBR> Geometry</B>
+   as well as discussions with very nice people.</LI></UL></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><UL type="disc">
+<LI><B>April 09, 2002.</B> Antigrain.com opened
+</LI></UL></P></TD></TR></TABLE><TABLE width="640px" bgcolor="#583927" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0">
+<TR><TD><CENTER><SPAN class="authors">
+Copyright <SPAN class="larger">&#169;</SPAN> 2002-2006
+<A href="../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+<TR><TD><CENTER><SPAN class="authors">
+Web Design and Programming
+<A href="../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+</TABLE>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+</HTML>

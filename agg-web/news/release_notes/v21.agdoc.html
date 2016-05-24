@@ -1,0 +1,166 @@
+<HTML><HEAD><TITLE>Anti-Grain Geometry - Version 2.1 Release Notes</TITLE>
+<META http-equiv="Content-Type" content="text/html"/>
+<LINK rel="stylesheet" type="text/css" href="../../agg.styles.css"/>
+</HEAD>
+<A name="PAGE_RELEASE_V21"><B></B></A>
+
+
+<TABLE width="640px" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR>
+<TD bgcolor="#583927"></TD>
+</TR>
+</TABLE>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR>
+<TD>
+<TABLE width="170px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR><TD><A href="../../index.html" class="mpmenu">Home/</A></TD></TR>
+<TR><TD><A href="../index.html" class="mpmenu">News/</A></TD></TR>
+<TR><TD><A href="" class="mpmenu"></A></TD></TR>
+<TR><TD><A href="" class="mpmenu"></A></TD></TR>
+<TR><TD><A href="" class="mpmenu"></A></TD></TR>
+<TR><TD><A href="" class="mpmenu"></A></TD></TR>
+</TABLE>
+</TD>
+<TD width="1px" bgcolor="#583927"></TD>
+<TD width="450px" valign="top" style="text-align:right">
+<TABLE border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR>
+<TD><IMG src="../../agg_logo.gif" border="0"/></TD>
+</TR>
+<TR>
+<TD>
+<TABLE border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR height="15px">
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../../news/index.html">News</A>&nbsp;&nbsp;</TD>
+<TD width="1px" bgcolor="#8e521d"></TD>
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../../doc/index.html">Docs</A>&nbsp;&nbsp;</TD>
+<TD width="1px" bgcolor="#8e521d"></TD>
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../../download/index.html">Download</A>&nbsp;&nbsp;</TD>
+<TD width="1px" bgcolor="#8e521d"></TD>
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../../maillist/index.html">Mailing List</A>&nbsp;&nbsp;</TD>
+<TD width="1px" bgcolor="#8e521d"></TD>
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../../cvs/index.html">CVS</A>&nbsp;&nbsp;</TD>
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+<TABLE width="640px" height="1px" bgcolor="#583927" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>
+</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD><H1>Version 2.1 Release Notes</H1></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The new official version 2.1 is mostly a clean-up of the snapshot of 
+<B>AGG2</B>. From now on the names of the archives will be 
+<A href="http://www.antigrain.com/agg21.zip"><IMG src="../../link.gif" border="0"/><B>agg21.zip</B></A> and
+and <A href="http://www.antigrain.com/agg21.tar.gz"><IMG src="../../link.gif" border="0"/><B>agg21.tar.gz</B></A>, 
+but inside the archives the directory name remains <CODE>agg2</CODE>.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>There are the following changes:</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><UL type="disc">
+<LI>Changed the formulae of calculculating Alpha in agg_pixfmt_rgba32.h
+   (thanks to Pierre Arnaud). Now it calculates the alpha channel 
+   correctly.</LI>
+<LI>Removed <CODE>alpha_type</CODE> from pixel format and renderer classes. Now 
+   there is a uniform <A href="../../__code/include/agg_basics.h.html#cover_type">cover_type</A> is used in all renderers. However, 
+   in pixel format classes it&#039;s still defined as <CODE>const <A href="../../__code/include/agg_basics.h.html#int8u">int8u</A>*</CODE>. 
+   The reason to do so is that currently pixel format classes can work
+   with 8-bit pixel coverage values only, while <A href="../../__code/include/agg_basics.h.html#cover_type">cover_type</A> can be 
+   potentially different (16 bits). For now <A href="../../__code/include/agg_basics.h.html#cover_type">cover_type</A> is 8-bit too.</LI>
+<LI>Removed static method <CODE>opaque()</CODE> from all color types.</LI>
+<LI>The interface of the scanline classes is slightly simplified. Method 
+   <CODE>bool is_ready(int y)</CODE> has been removed.</LI>
+<LI>File <CODE>agg_scanline_u8.h</CODE> renamed to 
+   <CODE><A href="../../__code/include/agg_scanline_u.h.html">agg_scanline_u.h</A></CODE> and file <CODE>agg_scanline.cpp</CODE> is
+   removed. scanline_u is now a class template parametrized with 
+   data type. However, you still use types <A href="../../__code/include/agg_scanline_u.h.html#scanline_u8">scanline_u8</A> and <A href="../../__code/include/agg_scanline_p.h.html#scanline_p8">scanline_p8</A>
+   in the code. See the table of renamings below.</LI>
+<LI>File agg_matrix.h removed. Class matrix renamed to <A href="../../doc/basic_renderers/basic_renderers.agdoc.html#row_ptr_cache">row_ptr_cache</A>
+   (&#147;matrix&#148; is a lame name for that functionality). Class
+   template <A href="../../doc/basic_renderers/basic_renderers.agdoc.html#row_ptr_cache">row_ptr_cache</A> is now in <A href="../../__code/include/agg_rendering_buffer.h.html">agg_rendering_buffer.h</A>. See the
+   definition of <A href="../../doc/basic_renderers/basic_renderers.agdoc.html#rendering_buffer">rendering_buffer</A>.</LI>
+<LI>Class affine_matrix renamed to <A href="../../__code/include/agg_trans_affine.h.html#trans_affine">trans_affine</A> for the sake of 
+   consistency with all other transformers (see table below).
+   Also, the explicit copy constructor and the assignment operators
+   were removed from <A href="../../__code/include/agg_trans_affine.h.html#trans_affine">trans_affine</A>.</LI>
+<LI>Class viewport renamed to <A href="../../__code/include/agg_trans_viewport.h.html#trans_viewport">trans_viewport</A></LI>
+<LI>Classes gen_nnnnn renamed to vcgen_nnnnn. The abbreviation
+   &#147;vcgen&#148; is &#147;Vertex acCumulating Generator&#148; to distinguish
+   it from &#147;vpgen&#148; that means &#147;Vertex Pass-through Generator&#148;.</LI>
+<LI>Class conv_generator is renamed to <A href="../../__code/include/agg_conv_adaptor_vcgen.h.html#conv_adaptor_vcgen">conv_adaptor_vcgen</A>. It&#039;s used
+   mostly internally, so it shouldn&#039;t affect your code.</LI>
+<LI>Class <A href="../../__code/include/agg_rasterizer_scanline_aa.h.html#rasterizer_scanline_aa">rasterizer_scanline_aa</A> modified. Now, after rendering 
+   you can call <CODE>min_x()</CODE>, <CODE>min_y()</CODE>, <CODE>max_x()</CODE>, <CODE>max_y()</CODE>
+   that will tell you the exact bounding box of the rendered 
+   path in pixels. It can be useful in some cases.</LI></UL></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><BR/><BR/>
+</P></TD></TR></TABLE><TABLE width="640px"><TR><TD style="text-align:center"><P><B>Renamed and removed files:</B></P></TD></TR></TABLE>
+
+<TABLE class="tbl" width="640px" border="0" cellspacing="1px" cellpadding="5px">
+<TH>Old Name</TH><TH>New Name</TH>
+<TR><TD><CODE>include/agg_matrix.h</CODE></TD><TD><I>removed</I></TD></TR>
+<TR><TD><CODE>include/agg_affine_matrix.h</CODE></TD><TD><CODE>include/<A href="../../__code/include/agg_trans_affine.h.html">agg_trans_affine.h</A></CODE></TD></TR>
+<TR><TD><CODE>include/agg_scanline_u8.h</CODE></TD><TD><CODE>include/<A href="../../__code/include/agg_scanline_u.h.html">agg_scanline_u.h</A></CODE></TD></TR>
+<TR><TD><CODE>include/agg_scanline_p8.h</CODE></TD><TD><CODE>include/<A href="../../__code/include/agg_scanline_p.h.html">agg_scanline_p.h</A></CODE></TD></TR>
+<TR><TD><CODE>include/agg_viewport.h</CODE></TD><TD><CODE>include/<A href="../../__code/include/agg_trans_viewport.h.html">agg_trans_viewport.h</A></CODE></TD></TR>
+<TR><TD><CODE>include/agg_gen_contour.h</CODE></TD><TD><CODE>include/<A href="../../__code/include/agg_vcgen_contour.h.html">agg_vcgen_contour.h</A></CODE></TD></TR>
+<TR><TD><CODE>include/agg_gen_dash.h</CODE></TD><TD><CODE>include/<A href="../../__code/include/agg_vcgen_dash.h.html">agg_vcgen_dash.h</A></CODE></TD></TR>
+<TR><TD><CODE>include/agg_gen_markers_term.h</CODE></TD><TD><CODE>include/<A href="../../__code/include/agg_vcgen_markers_term.h.html">agg_vcgen_markers_term.h</A></CODE></TD></TR>
+<TR><TD><CODE>include/agg_gen_smooth_poly1.h</CODE></TD><TD><CODE>include/<A href="../../__code/include/agg_vcgen_smooth_poly1.h.html">agg_vcgen_smooth_poly1.h</A></CODE></TD></TR>
+<TR><TD><CODE>include/agg_gen_stroke.h</CODE></TD><TD><CODE>include/<A href="../../__code/include/agg_vcgen_stroke.h.html">agg_vcgen_stroke.h</A></CODE></TD></TR>
+<TR><TD><CODE>include/agg_gen_vertex_sequence.h</CODE></TD><TD><CODE>include/<A href="../../__code/include/agg_vcgen_vertex_sequence.h.html">agg_vcgen_vertex_sequence.h</A></CODE></TD></TR>
+<TR><TD><CODE>include/agg_conv_generator.h</CODE></TD><TD><CODE>include/<A href="../../__code/include/agg_conv_adaptor_vcgen.h.html">agg_conv_adaptor_vcgen.h</A></CODE></TD></TR>
+<TR><TD><CODE>src/agg_scanline_u8.cpp</CODE></TD><TD><I>removed</I></TD></TR>
+<TR><TD><CODE>src/agg_affine_matrix.cpp</CODE></TD><TD><CODE>src/<A href="../../__code/src/agg_trans_affine.cpp.html">agg_trans_affine.cpp</A></CODE></TD></TR>
+<TR><TD><CODE>src/agg_gen_contour.cpp</CODE></TD><TD><CODE>src/<A href="../../__code/src/agg_vcgen_contour.cpp.html">agg_vcgen_contour.cpp</A></CODE></TD></TR>
+<TR><TD><CODE>src/agg_gen_dash.cpp</CODE></TD><TD><CODE>src/<A href="../../__code/src/agg_vcgen_dash.cpp.html">agg_vcgen_dash.cpp</A></CODE></TD></TR>
+<TR><TD><CODE>src/agg_gen_markers_term.cpp</CODE></TD><TD><CODE>src/<A href="../../__code/src/agg_vcgen_markers_term.cpp.html">agg_vcgen_markers_term.cpp</A></CODE></TD></TR>
+<TR><TD><CODE>src/agg_gen_smooth_poly1.cpp</CODE></TD><TD><CODE>src/<A href="../../__code/src/agg_vcgen_smooth_poly1.cpp.html">agg_vcgen_smooth_poly1.cpp</A></CODE></TD></TR>
+<TR><TD><CODE>src/agg_gen_stroke.cpp</CODE></TD><TD><CODE>src/<A href="../../__code/src/agg_vcgen_stroke.cpp.html">agg_vcgen_stroke.cpp</A></CODE></TD></TR>
+</TABLE><FONT style="margin-left:1em"><I>Table 1. Renamed and removed files</I></FONT>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><BR/><BR/>
+</P></TD></TR></TABLE><TABLE width="640px"><TR><TD style="text-align:center"><P><B>Renamed classes and types:</B></P></TD></TR></TABLE>
+
+<TABLE class="tbl" width="640px" border="0" cellspacing="1px" cellpadding="5px">
+<TH>Old Name</TH><TH>New Name</TH>
+<TR><TD><CODE>matrix</CODE></TD><TD><CODE><A href="../../doc/basic_renderers/basic_renderers.agdoc.html#row_ptr_cache">row_ptr_cache</A></CODE></TD></TR>
+<TR><TD><CODE>affine_matrix</CODE></TD><TD><CODE><A href="../../__code/include/agg_trans_affine.h.html#trans_affine">trans_affine</A></CODE></TD></TR>
+<TR><TD><CODE>rotation_matrix</CODE></TD><TD><CODE><A href="../../__code/include/agg_trans_affine.h.html#trans_affine_rotation">trans_affine_rotation</A></CODE></TD></TR>
+<TR><TD><CODE>scaling_matrix</CODE></TD><TD><CODE><A href="../../__code/include/agg_trans_affine.h.html#trans_affine_scaling">trans_affine_scaling</A></CODE></TD></TR>
+<TR><TD><CODE>translation_matrix</CODE></TD><TD><CODE><A href="../../__code/include/agg_trans_affine.h.html#trans_affine_translation">trans_affine_translation</A></CODE></TD></TR>
+<TR><TD><CODE>skewing_matrix</CODE></TD><TD><CODE><A href="../../__code/include/agg_trans_affine.h.html#trans_affine_skewing">trans_affine_skewing</A></CODE></TD></TR>
+<TR><TD><CODE>viewport</CODE></TD><TD><CODE><A href="../../__code/include/agg_trans_viewport.h.html#trans_viewport">trans_viewport</A></CODE></TD></TR>
+<TR><TD><CODE>gen_contour</CODE></TD><TD><CODE><A href="../../__code/include/agg_vcgen_contour.h.html#vcgen_contour">vcgen_contour</A></CODE></TD></TR>
+<TR><TD><CODE>gen_dash</CODE></TD><TD><CODE><A href="../../__code/include/agg_vcgen_dash.h.html#vcgen_dash">vcgen_dash</A></CODE></TD></TR>
+<TR><TD><CODE>gen_markers_term</CODE></TD><TD><CODE><A href="../../__code/include/agg_vcgen_markers_term.h.html#vcgen_markers_term">vcgen_markers_term</A></CODE></TD></TR>
+<TR><TD><CODE>gen_smooth_poly1</CODE></TD><TD><CODE><A href="../../__code/include/agg_vcgen_smooth_poly1.h.html#vcgen_smooth_poly1">vcgen_smooth_poly1</A></CODE></TD></TR>
+<TR><TD><CODE>gen_stroke</CODE></TD><TD><CODE><A href="../../__code/include/agg_vcgen_stroke.h.html#vcgen_stroke">vcgen_stroke</A></CODE></TD></TR>
+<TR><TD><CODE>gen_vertex_sequence</CODE></TD><TD><CODE><A href="../../__code/include/agg_vcgen_vertex_sequence.h.html#vcgen_vertex_sequence">vcgen_vertex_sequence</A></CODE></TD></TR>
+<TR><TD><CODE>conv_generator</CODE></TD><TD><CODE><A href="../../__code/include/agg_conv_adaptor_vcgen.h.html#conv_adaptor_vcgen">conv_adaptor_vcgen</A></CODE></TD></TR>
+</TABLE><FONT style="margin-left:1em"><I>Table 2. Renamed classes and types</I></FONT>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><BR/><BR/></P></TD></TR></TABLE><TABLE width="640px" bgcolor="#583927" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0">
+<TR><TD><CENTER><SPAN class="authors">
+Copyright <SPAN class="larger">&#169;</SPAN> 2002-2006
+<A href="../../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+<TR><TD><CENTER><SPAN class="authors">
+Web Design and Programming
+<A href="../../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+</TABLE>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+</HTML>

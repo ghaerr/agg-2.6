@@ -1,0 +1,473 @@
+<HTML><HEAD><TITLE>Anti-Grain Geometry - </TITLE>
+<META http-equiv="Content-Type" content="text/html"/>
+<LINK rel="stylesheet" type="text/css" href="../../agg.styles.css"/>
+</HEAD>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE><SPAN class="rem">//----------------------------------------------------------------------------</SPAN>
+<SPAN class="rem">// Anti-Grain Geometry (AGG) - Version 2.5</SPAN>
+<SPAN class="rem">// A high quality rendering engine for C++</SPAN>
+<SPAN class="rem">// Copyright (C) 2002-2006 Maxim Shemanarev</SPAN>
+<SPAN class="rem">// Contact: mcseem@antigrain.com</SPAN>
+<SPAN class="rem">//          mcseemagg@yahoo.com</SPAN>
+<SPAN class="rem">//          http://antigrain.com</SPAN>
+<SPAN class="rem">// </SPAN>
+<SPAN class="rem">// AGG is free software; you can redistribute it and/or</SPAN>
+<SPAN class="rem">// modify it under the terms of the GNU General Public License</SPAN>
+<SPAN class="rem">// as published by the Free Software Foundation; either version 2</SPAN>
+<SPAN class="rem">// of the License, or (at your option) any later version.</SPAN>
+<SPAN class="rem">// </SPAN>
+<SPAN class="rem">// AGG is distributed in the hope that it will be useful,</SPAN>
+<SPAN class="rem">// but WITHOUT ANY WARRANTY; without even the implied warranty of</SPAN>
+<SPAN class="rem">// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</SPAN>
+<SPAN class="rem">// GNU General Public License for more details.</SPAN>
+<SPAN class="rem">// </SPAN>
+<SPAN class="rem">// You should have received a copy of the GNU General Public License</SPAN>
+<SPAN class="rem">// along with AGG; if not, write to the Free Software</SPAN>
+<SPAN class="rem">// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, </SPAN>
+<SPAN class="rem">// MA 02110-1301, USA.</SPAN>
+<SPAN class="rem">//----------------------------------------------------------------------------</SPAN>
+
+<SPAN class="kw2">#ifndef</SPAN> AGG_IMAGE_FILTERS_INCLUDED
+<SPAN class="kw2">#define</SPAN> AGG_IMAGE_FILTERS_INCLUDED
+
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="agg_array.h.html">agg_array.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="agg_math.h.html">agg_math.h</A>&quot;</SPAN>
+
+<SPAN class="kw1">namespace</SPAN> agg
+<SPAN class="op">{</SPAN>
+
+    <SPAN class="rem">// See Implementation <A href="../src/agg_image_filters.cpp.html">agg_image_filters.cpp</A> </SPAN>
+
+    <SPAN class="kw1">enum</SPAN> image_filter_scale_e
+    <SPAN class="op">{</SPAN>
+        <A href="agg_image_filters.h.html#image_filter_shift">image_filter_shift</A> <SPAN class="op">=</SPAN> <SPAN class="num">14</SPAN><SPAN class="op">,</SPAN>                      <SPAN class="rem">//----<A name="image_filter_shift"><B></B></A><A href="agg_image_filters.h.html#image_filter_shift">image_filter_shift</A></SPAN>
+        <A href="agg_image_filters.h.html#image_filter_scale">image_filter_scale</A> <SPAN class="op">=</SPAN> <SPAN class="num">1</SPAN> <SPAN class="op">&lt;&lt;</SPAN> <A href="agg_image_filters.h.html#image_filter_shift">image_filter_shift</A><SPAN class="op">,</SPAN> <SPAN class="rem">//----<A name="image_filter_scale"><B></B></A><A href="agg_image_filters.h.html#image_filter_scale">image_filter_scale</A> </SPAN>
+        <A href="agg_image_filters.h.html#image_filter_mask">image_filter_mask</A>  <SPAN class="op">=</SPAN> <A href="agg_image_filters.h.html#image_filter_scale">image_filter_scale</A> <SPAN class="op">-</SPAN> <SPAN class="num">1</SPAN>   <SPAN class="rem">//----<A name="image_filter_mask"><B></B></A><A href="agg_image_filters.h.html#image_filter_mask">image_filter_mask</A> </SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">enum</SPAN> image_subpixel_scale_e
+    <SPAN class="op">{</SPAN>
+        <A href="agg_image_filters.h.html#image_subpixel_shift">image_subpixel_shift</A> <SPAN class="op">=</SPAN> <SPAN class="num">8</SPAN><SPAN class="op">,</SPAN>                         <SPAN class="rem">//----<A name="image_subpixel_shift"><B></B></A><A href="agg_image_filters.h.html#image_subpixel_shift">image_subpixel_shift</A></SPAN>
+        <A href="agg_image_filters.h.html#image_subpixel_scale">image_subpixel_scale</A> <SPAN class="op">=</SPAN> <SPAN class="num">1</SPAN> <SPAN class="op">&lt;&lt;</SPAN> <A href="agg_image_filters.h.html#image_subpixel_shift">image_subpixel_shift</A><SPAN class="op">,</SPAN> <SPAN class="rem">//----<A name="image_subpixel_scale"><B></B></A><A href="agg_image_filters.h.html#image_subpixel_scale">image_subpixel_scale</A> </SPAN>
+        <A href="agg_image_filters.h.html#image_subpixel_mask">image_subpixel_mask</A>  <SPAN class="op">=</SPAN> <A href="agg_image_filters.h.html#image_subpixel_scale">image_subpixel_scale</A> <SPAN class="op">-</SPAN> <SPAN class="num">1</SPAN>   <SPAN class="rem">//----<A name="image_subpixel_mask"><B></B></A><A href="agg_image_filters.h.html#image_subpixel_mask">image_subpixel_mask</A> </SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+    <SPAN class="rem">//-----------------------------------------------------<A name="image_filter_lut"><B></B></A><A href="agg_image_filters.h.html#image_filter_lut">image_filter_lut</A></SPAN>
+    <SPAN class="kw1">class</SPAN> <A href="agg_image_filters.h.html#image_filter_lut">image_filter_lut</A>
+    <SPAN class="op">{</SPAN>
+    <SPAN class="kw1">public</SPAN>:
+        <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> FilterF<SPAN class="op">&gt;</SPAN> <SPAN class="kw1">void</SPAN> calculate<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> FilterF<SPAN class="op">&amp;</SPAN> filter<SPAN class="op">,</SPAN>
+                                               <SPAN class="kw1">bool</SPAN> normalization<SPAN class="op">=</SPAN><SPAN class="kw1">true</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">double</SPAN> r <SPAN class="op">=</SPAN> filter<SPAN class="op">.</SPAN>radius<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            realloc_lut<SPAN class="op">(</SPAN>r<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">unsigned</SPAN> i<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">unsigned</SPAN> pivot <SPAN class="op">=</SPAN> diameter<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">&lt;&lt;</SPAN> <SPAN class="op">(</SPAN><A href="agg_image_filters.h.html#image_subpixel_shift">image_subpixel_shift</A> <SPAN class="op">-</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;</SPAN> pivot<SPAN class="op">;</SPAN> i<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                <SPAN class="kw1">double</SPAN> x <SPAN class="op">=</SPAN> <SPAN class="kw1">double</SPAN><SPAN class="op">(</SPAN>i<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="kw1">double</SPAN><SPAN class="op">(</SPAN><A href="agg_image_filters.h.html#image_subpixel_scale">image_subpixel_scale</A><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">double</SPAN> y <SPAN class="op">=</SPAN> filter<SPAN class="op">.</SPAN>calc_weight<SPAN class="op">(</SPAN>x<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                m_weight_array<SPAN class="op">[</SPAN>pivot <SPAN class="op">+</SPAN> i<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> 
+                m_weight_array<SPAN class="op">[</SPAN>pivot <SPAN class="op">-</SPAN> i<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN><A href="agg_basics.h.html#int16">int16</A><SPAN class="op">)</SPAN><A href="agg_basics.h.html#iround">iround</A><SPAN class="op">(</SPAN>y <SPAN class="op">*</SPAN> <A href="agg_image_filters.h.html#image_filter_scale">image_filter_scale</A><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="kw1">unsigned</SPAN> end <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>diameter<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">&lt;&lt;</SPAN> <A href="agg_image_filters.h.html#image_subpixel_shift">image_subpixel_shift</A><SPAN class="op">)</SPAN> <SPAN class="op">-</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+            m_weight_array<SPAN class="op">[</SPAN><SPAN class="num">0</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> m_weight_array<SPAN class="op">[</SPAN>end<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>normalization<SPAN class="op">)</SPAN> 
+            <SPAN class="op">{</SPAN>
+                normalize<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <A href="agg_image_filters.h.html#image_filter_lut">image_filter_lut</A><SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> : m_radius<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> m_diameter<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> m_start<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN><SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> FilterF<SPAN class="op">&gt;</SPAN> <A href="agg_image_filters.h.html#image_filter_lut">image_filter_lut</A><SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> FilterF<SPAN class="op">&amp;</SPAN> filter<SPAN class="op">,</SPAN> 
+                                                 <SPAN class="kw1">bool</SPAN> normalization<SPAN class="op">=</SPAN><SPAN class="kw1">true</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            calculate<SPAN class="op">(</SPAN>filter<SPAN class="op">,</SPAN> normalization<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">double</SPAN>       radius<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>       <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_radius<SPAN class="op">;</SPAN>   <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">unsigned</SPAN>     diameter<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>     <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_diameter<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">int</SPAN>          start<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>        <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_start<SPAN class="op">;</SPAN>    <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">const</SPAN> <A href="agg_basics.h.html#int16">int16</A><SPAN class="op">*</SPAN> weight_array<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> <SPAN class="op">&amp;</SPAN>m_weight_array<SPAN class="op">[</SPAN><SPAN class="num">0</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">void</SPAN>         normalize<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">private</SPAN>:
+        <SPAN class="kw1">void</SPAN> realloc_lut<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> radius<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <A href="agg_image_filters.h.html#image_filter_lut">image_filter_lut</A><SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <A href="agg_image_filters.h.html#image_filter_lut">image_filter_lut</A><SPAN class="op">&amp;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">const</SPAN> <A href="agg_image_filters.h.html#image_filter_lut">image_filter_lut</A><SPAN class="op">&amp;</SPAN> <SPAN class="kw1">operator</SPAN> <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <A href="agg_image_filters.h.html#image_filter_lut">image_filter_lut</A><SPAN class="op">&amp;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">double</SPAN>           m_radius<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN>         m_diameter<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN>              m_start<SPAN class="op">;</SPAN>
+        <A href="agg_array.h.html#pod_array">pod_array</A><SPAN class="op">&lt;</SPAN><A href="agg_basics.h.html#int16">int16</A><SPAN class="op">&gt;</SPAN> m_weight_array<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+
+    <SPAN class="rem">//--------------------------------------------------------<A name="image_filter"><B></B></A><A href="agg_image_filters.h.html#image_filter">image_filter</A></SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> FilterF<SPAN class="op">&gt;</SPAN> <SPAN class="kw1">class</SPAN> <A href="agg_image_filters.h.html#image_filter">image_filter</A> : <SPAN class="kw1">public</SPAN> <A href="agg_image_filters.h.html#image_filter_lut">image_filter_lut</A>
+    <SPAN class="op">{</SPAN>
+    <SPAN class="kw1">public</SPAN>:
+        <A href="agg_image_filters.h.html#image_filter">image_filter</A><SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            calculate<SPAN class="op">(</SPAN>m_filter_function<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="kw1">private</SPAN>:
+        FilterF m_filter_function<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+    <SPAN class="rem">//-----------------------------------------------<A name="image_filter_bilinear"><B></B></A><A href="agg_image_filters.h.html#image_filter_bilinear">image_filter_bilinear</A></SPAN>
+    <SPAN class="kw1">struct</SPAN> <A href="agg_image_filters.h.html#image_filter_bilinear">image_filter_bilinear</A>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">static</SPAN> <SPAN class="kw1">double</SPAN> radius<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">static</SPAN> <SPAN class="kw1">double</SPAN> calc_weight<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">return</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">-</SPAN> x<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+    <SPAN class="rem">//-----------------------------------------------<A name="image_filter_hanning"><B></B></A><A href="agg_image_filters.h.html#image_filter_hanning">image_filter_hanning</A></SPAN>
+    <SPAN class="kw1">struct</SPAN> <A href="agg_image_filters.h.html#image_filter_hanning">image_filter_hanning</A>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">static</SPAN> <SPAN class="kw1">double</SPAN> radius<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">static</SPAN> <SPAN class="kw1">double</SPAN> calc_weight<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">return</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">5</SPAN> <SPAN class="op">+</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">5</SPAN> <SPAN class="op">*</SPAN> cos<SPAN class="op">(</SPAN><A href="agg_basics.h.html#pi">pi</A> <SPAN class="op">*</SPAN> x<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+    <SPAN class="rem">//-----------------------------------------------<A name="image_filter_hamming"><B></B></A><A href="agg_image_filters.h.html#image_filter_hamming">image_filter_hamming</A></SPAN>
+    <SPAN class="kw1">struct</SPAN> <A href="agg_image_filters.h.html#image_filter_hamming">image_filter_hamming</A>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">static</SPAN> <SPAN class="kw1">double</SPAN> radius<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">static</SPAN> <SPAN class="kw1">double</SPAN> calc_weight<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">return</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">54</SPAN> <SPAN class="op">+</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">46</SPAN> <SPAN class="op">*</SPAN> cos<SPAN class="op">(</SPAN><A href="agg_basics.h.html#pi">pi</A> <SPAN class="op">*</SPAN> x<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="rem">//-----------------------------------------------<A name="image_filter_hermite"><B></B></A><A href="agg_image_filters.h.html#image_filter_hermite">image_filter_hermite</A></SPAN>
+    <SPAN class="kw1">struct</SPAN> <A href="agg_image_filters.h.html#image_filter_hermite">image_filter_hermite</A>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">static</SPAN> <SPAN class="kw1">double</SPAN> radius<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">static</SPAN> <SPAN class="kw1">double</SPAN> calc_weight<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">return</SPAN> <SPAN class="op">(</SPAN><SPAN class="num">2</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">*</SPAN> x <SPAN class="op">-</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> x <SPAN class="op">*</SPAN> x <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+   
+    <SPAN class="rem">//------------------------------------------------<A name="image_filter_quadric"><B></B></A><A href="agg_image_filters.h.html#image_filter_quadric">image_filter_quadric</A></SPAN>
+    <SPAN class="kw1">struct</SPAN> <A href="agg_image_filters.h.html#image_filter_quadric">image_filter_quadric</A>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">static</SPAN> <SPAN class="kw1">double</SPAN> radius<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">5</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">static</SPAN> <SPAN class="kw1">double</SPAN> calc_weight<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">double</SPAN> t<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>x <SPAN class="op">&lt;</SPAN>  <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">5</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">return</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">75</SPAN> <SPAN class="op">-</SPAN> x <SPAN class="op">*</SPAN> x<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>x <SPAN class="op">&lt;</SPAN>  <SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">5</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN>t <SPAN class="op">=</SPAN> x <SPAN class="op">-</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">5</SPAN><SPAN class="op">;</SPAN> <SPAN class="kw1">return</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">5</SPAN> <SPAN class="op">*</SPAN> t <SPAN class="op">*</SPAN> t<SPAN class="op">;</SPAN><SPAN class="op">}</SPAN>
+            <SPAN class="kw1">return</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------<A name="image_filter_bicubic"><B></B></A><A href="agg_image_filters.h.html#image_filter_bicubic">image_filter_bicubic</A></SPAN>
+    <SPAN class="kw1">class</SPAN> <A href="agg_image_filters.h.html#image_filter_bicubic">image_filter_bicubic</A>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">static</SPAN> <SPAN class="kw1">double</SPAN> pow3<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">return</SPAN> <SPAN class="op">(</SPAN>x <SPAN class="op">&lt;=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> ? <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> : x <SPAN class="op">*</SPAN> x <SPAN class="op">*</SPAN> x<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+    <SPAN class="kw1">public</SPAN>:
+        <SPAN class="kw1">static</SPAN> <SPAN class="kw1">double</SPAN> radius<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">static</SPAN> <SPAN class="kw1">double</SPAN> calc_weight<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">return</SPAN>
+                <SPAN class="op">(</SPAN><SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">/</SPAN><SPAN class="num">6</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> 
+                <SPAN class="op">(</SPAN>pow3<SPAN class="op">(</SPAN>x <SPAN class="op">+</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">-</SPAN> <SPAN class="num">4</SPAN> <SPAN class="op">*</SPAN> pow3<SPAN class="op">(</SPAN>x <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> <SPAN class="num">6</SPAN> <SPAN class="op">*</SPAN> pow3<SPAN class="op">(</SPAN>x<SPAN class="op">)</SPAN> <SPAN class="op">-</SPAN> <SPAN class="num">4</SPAN> <SPAN class="op">*</SPAN> pow3<SPAN class="op">(</SPAN>x <SPAN class="op">-</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="rem">//-------------------------------------------------<A name="image_filter_kaiser"><B></B></A><A href="agg_image_filters.h.html#image_filter_kaiser">image_filter_kaiser</A></SPAN>
+    <SPAN class="kw1">class</SPAN> <A href="agg_image_filters.h.html#image_filter_kaiser">image_filter_kaiser</A>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">double</SPAN> a<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> i0a<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> epsilon<SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">public</SPAN>:
+        <A href="agg_image_filters.h.html#image_filter_kaiser">image_filter_kaiser</A><SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> b <SPAN class="op">=</SPAN> <SPAN class="num">6</SPAN><SPAN class="op">.</SPAN><SPAN class="num">33</SPAN><SPAN class="op">)</SPAN> :
+            a<SPAN class="op">(</SPAN>b<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> epsilon<SPAN class="op">(</SPAN><SPAN class="num">1e</SPAN><SPAN class="op">-</SPAN><SPAN class="num">12</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            i0a <SPAN class="op">=</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">/</SPAN> bessel_i0<SPAN class="op">(</SPAN>b<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">static</SPAN> <SPAN class="kw1">double</SPAN> radius<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">double</SPAN> calc_weight<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">return</SPAN> bessel_i0<SPAN class="op">(</SPAN>a <SPAN class="op">*</SPAN> sqrt<SPAN class="op">(</SPAN><SPAN class="num">1</SPAN><SPAN class="op">.</SPAN> <SPAN class="op">-</SPAN> x <SPAN class="op">*</SPAN> x<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> i0a<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+    <SPAN class="kw1">private</SPAN>:
+        <SPAN class="kw1">double</SPAN> bessel_i0<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">int</SPAN> i<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">double</SPAN> sum<SPAN class="op">,</SPAN> y<SPAN class="op">,</SPAN> t<SPAN class="op">;</SPAN>
+
+            sum <SPAN class="op">=</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="op">;</SPAN>
+            y <SPAN class="op">=</SPAN> x <SPAN class="op">*</SPAN> x <SPAN class="op">/</SPAN> <SPAN class="num">4</SPAN><SPAN class="op">.</SPAN><SPAN class="op">;</SPAN>
+            t <SPAN class="op">=</SPAN> y<SPAN class="op">;</SPAN>
+        
+            <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN> t <SPAN class="op">&gt;</SPAN> epsilon<SPAN class="op">;</SPAN> i<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                sum <SPAN class="op">+=</SPAN> t<SPAN class="op">;</SPAN>
+                t <SPAN class="op">*=</SPAN> <SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN><SPAN class="op">)</SPAN>y <SPAN class="op">/</SPAN> <SPAN class="op">(</SPAN>i <SPAN class="op">*</SPAN> i<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="kw1">return</SPAN> sum<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="rem">//----------------------------------------------<A name="image_filter_catrom"><B></B></A><A href="agg_image_filters.h.html#image_filter_catrom">image_filter_catrom</A></SPAN>
+    <SPAN class="kw1">struct</SPAN> <A href="agg_image_filters.h.html#image_filter_catrom">image_filter_catrom</A>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">static</SPAN> <SPAN class="kw1">double</SPAN> radius<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">static</SPAN> <SPAN class="kw1">double</SPAN> calc_weight<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>x <SPAN class="op">&lt;</SPAN>  <SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">return</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">5</SPAN> <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN><SPAN class="num">2</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">+</SPAN> x <SPAN class="op">*</SPAN> x <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN><SPAN class="op">-</SPAN><SPAN class="num">5</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">+</SPAN> x <SPAN class="op">*</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>x <SPAN class="op">&lt;</SPAN>  <SPAN class="num">2</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">return</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">5</SPAN> <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN><SPAN class="num">4</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">+</SPAN> x <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN><SPAN class="op">-</SPAN><SPAN class="num">8</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">+</SPAN> x <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN><SPAN class="num">5</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">-</SPAN> x<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">return</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="rem">//---------------------------------------------<A name="image_filter_mitchell"><B></B></A><A href="agg_image_filters.h.html#image_filter_mitchell">image_filter_mitchell</A></SPAN>
+    <SPAN class="kw1">class</SPAN> <A href="agg_image_filters.h.html#image_filter_mitchell">image_filter_mitchell</A>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">double</SPAN> p0<SPAN class="op">,</SPAN> p2<SPAN class="op">,</SPAN> p3<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> q0<SPAN class="op">,</SPAN> q1<SPAN class="op">,</SPAN> q2<SPAN class="op">,</SPAN> q3<SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">public</SPAN>:
+        <A href="agg_image_filters.h.html#image_filter_mitchell">image_filter_mitchell</A><SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> b <SPAN class="op">=</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">/</SPAN><SPAN class="num">3</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> c <SPAN class="op">=</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">/</SPAN><SPAN class="num">3</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> :
+            p0<SPAN class="op">(</SPAN><SPAN class="op">(</SPAN><SPAN class="num">6</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">-</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">*</SPAN> b<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">6</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            p2<SPAN class="op">(</SPAN><SPAN class="op">(</SPAN><SPAN class="op">-</SPAN><SPAN class="num">18</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">+</SPAN> <SPAN class="num">12</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">*</SPAN> b <SPAN class="op">+</SPAN> <SPAN class="num">6</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">*</SPAN> c<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">6</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            p3<SPAN class="op">(</SPAN><SPAN class="op">(</SPAN><SPAN class="num">12</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">-</SPAN> <SPAN class="num">9</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">*</SPAN> b <SPAN class="op">-</SPAN> <SPAN class="num">6</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">*</SPAN> c<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">6</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            q0<SPAN class="op">(</SPAN><SPAN class="op">(</SPAN><SPAN class="num">8</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">*</SPAN> b <SPAN class="op">+</SPAN> <SPAN class="num">24</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">*</SPAN> c<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">6</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            q1<SPAN class="op">(</SPAN><SPAN class="op">(</SPAN><SPAN class="op">-</SPAN><SPAN class="num">12</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">*</SPAN> b <SPAN class="op">-</SPAN> <SPAN class="num">48</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">*</SPAN> c<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">6</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            q2<SPAN class="op">(</SPAN><SPAN class="op">(</SPAN><SPAN class="num">6</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">*</SPAN> b <SPAN class="op">+</SPAN> <SPAN class="num">30</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">*</SPAN> c<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">6</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            q3<SPAN class="op">(</SPAN><SPAN class="op">(</SPAN><SPAN class="op">-</SPAN>b <SPAN class="op">-</SPAN> <SPAN class="num">6</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">*</SPAN> c<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">6</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN><SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">static</SPAN> <SPAN class="kw1">double</SPAN> radius<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">double</SPAN> calc_weight<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>x <SPAN class="op">&lt;</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">return</SPAN> p0 <SPAN class="op">+</SPAN> x <SPAN class="op">*</SPAN> x <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>p2 <SPAN class="op">+</SPAN> x <SPAN class="op">*</SPAN> p3<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>x <SPAN class="op">&lt;</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">return</SPAN> q0 <SPAN class="op">+</SPAN> x <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>q1 <SPAN class="op">+</SPAN> x <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>q2 <SPAN class="op">+</SPAN> x <SPAN class="op">*</SPAN> q3<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">return</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+    <SPAN class="rem">//----------------------------------------------<A name="image_filter_spline16"><B></B></A><A href="agg_image_filters.h.html#image_filter_spline16">image_filter_spline16</A></SPAN>
+    <SPAN class="kw1">struct</SPAN> <A href="agg_image_filters.h.html#image_filter_spline16">image_filter_spline16</A>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">static</SPAN> <SPAN class="kw1">double</SPAN> radius<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">static</SPAN> <SPAN class="kw1">double</SPAN> calc_weight<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>x <SPAN class="op">&lt;</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                <SPAN class="kw1">return</SPAN> <SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>x <SPAN class="op">-</SPAN> <SPAN class="num">9</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">/</SPAN><SPAN class="num">5</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> x <SPAN class="op">-</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">/</SPAN><SPAN class="num">5</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> x <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="kw1">return</SPAN> <SPAN class="op">(</SPAN><SPAN class="op">(</SPAN><SPAN class="op">-</SPAN><SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">/</SPAN><SPAN class="num">3</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>x<SPAN class="op">-</SPAN><SPAN class="num">1</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> <SPAN class="num">4</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">/</SPAN><SPAN class="num">5</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>x<SPAN class="op">-</SPAN><SPAN class="num">1</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">-</SPAN> <SPAN class="num">7</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">/</SPAN><SPAN class="num">15</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>x<SPAN class="op">-</SPAN><SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+    <SPAN class="rem">//---------------------------------------------<A name="image_filter_spline36"><B></B></A><A href="agg_image_filters.h.html#image_filter_spline36">image_filter_spline36</A></SPAN>
+    <SPAN class="kw1">struct</SPAN> <A href="agg_image_filters.h.html#image_filter_spline36">image_filter_spline36</A>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">static</SPAN> <SPAN class="kw1">double</SPAN> radius<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">static</SPAN> <SPAN class="kw1">double</SPAN> calc_weight<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+           <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>x <SPAN class="op">&lt;</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+           <SPAN class="op">{</SPAN>
+              <SPAN class="kw1">return</SPAN> <SPAN class="op">(</SPAN><SPAN class="op">(</SPAN><SPAN class="num">13</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">/</SPAN><SPAN class="num">11</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">*</SPAN> x <SPAN class="op">-</SPAN> <SPAN class="num">453</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">/</SPAN><SPAN class="num">209</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> x <SPAN class="op">-</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">/</SPAN><SPAN class="num">209</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> x <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+           <SPAN class="op">}</SPAN>
+           <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>x <SPAN class="op">&lt;</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+           <SPAN class="op">{</SPAN>
+              <SPAN class="kw1">return</SPAN> <SPAN class="op">(</SPAN><SPAN class="op">(</SPAN><SPAN class="op">-</SPAN><SPAN class="num">6</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">/</SPAN><SPAN class="num">11</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>x<SPAN class="op">-</SPAN><SPAN class="num">1</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> <SPAN class="num">270</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">/</SPAN><SPAN class="num">209</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>x<SPAN class="op">-</SPAN><SPAN class="num">1</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">-</SPAN> <SPAN class="num">156</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">/</SPAN> <SPAN class="num">209</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>x<SPAN class="op">-</SPAN><SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+           <SPAN class="op">}</SPAN>
+           <SPAN class="kw1">return</SPAN> <SPAN class="op">(</SPAN><SPAN class="op">(</SPAN><SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">/</SPAN><SPAN class="num">11</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>x<SPAN class="op">-</SPAN><SPAN class="num">2</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">-</SPAN> <SPAN class="num">45</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">/</SPAN><SPAN class="num">209</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>x<SPAN class="op">-</SPAN><SPAN class="num">2</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN>  <SPAN class="num">26</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">/</SPAN><SPAN class="num">209</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>x<SPAN class="op">-</SPAN><SPAN class="num">2</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+    <SPAN class="rem">//----------------------------------------------<A name="image_filter_gaussian"><B></B></A><A href="agg_image_filters.h.html#image_filter_gaussian">image_filter_gaussian</A></SPAN>
+    <SPAN class="kw1">struct</SPAN> <A href="agg_image_filters.h.html#image_filter_gaussian">image_filter_gaussian</A>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">static</SPAN> <SPAN class="kw1">double</SPAN> radius<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">static</SPAN> <SPAN class="kw1">double</SPAN> calc_weight<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x<SPAN class="op">)</SPAN> 
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">return</SPAN> exp<SPAN class="op">(</SPAN><SPAN class="op">-</SPAN><SPAN class="num">2</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">*</SPAN> x <SPAN class="op">*</SPAN> x<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> sqrt<SPAN class="op">(</SPAN><SPAN class="num">2</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">/</SPAN> <A href="agg_basics.h.html#pi">pi</A><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+    <SPAN class="rem">//------------------------------------------------<A name="image_filter_bessel"><B></B></A><A href="agg_image_filters.h.html#image_filter_bessel">image_filter_bessel</A></SPAN>
+    <SPAN class="kw1">struct</SPAN> <A href="agg_image_filters.h.html#image_filter_bessel">image_filter_bessel</A>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">static</SPAN> <SPAN class="kw1">double</SPAN> radius<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">.</SPAN><SPAN class="num">2383</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN> 
+        <SPAN class="kw1">static</SPAN> <SPAN class="kw1">double</SPAN> calc_weight<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">return</SPAN> <SPAN class="op">(</SPAN>x <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> ? <A href="agg_basics.h.html#pi">pi</A> <SPAN class="op">/</SPAN> <SPAN class="num">4</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> : <A href="agg_math.h.html#besj">besj</A><SPAN class="op">(</SPAN><A href="agg_basics.h.html#pi">pi</A> <SPAN class="op">*</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="op">(</SPAN><SPAN class="num">2</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">*</SPAN> x<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+    <SPAN class="rem">//-------------------------------------------------<A name="image_filter_sinc"><B></B></A><A href="agg_image_filters.h.html#image_filter_sinc">image_filter_sinc</A></SPAN>
+    <SPAN class="kw1">class</SPAN> <A href="agg_image_filters.h.html#image_filter_sinc">image_filter_sinc</A>
+    <SPAN class="op">{</SPAN>
+    <SPAN class="kw1">public</SPAN>:
+        <A href="agg_image_filters.h.html#image_filter_sinc">image_filter_sinc</A><SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> r<SPAN class="op">)</SPAN> : m_radius<SPAN class="op">(</SPAN>r <SPAN class="op">&lt;</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> ? <SPAN class="num">2</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> : r<SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN><SPAN class="op">}</SPAN>
+        <SPAN class="kw1">double</SPAN> radius<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_radius<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">double</SPAN> calc_weight<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>x <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">return</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+            x <SPAN class="op">*=</SPAN> <A href="agg_basics.h.html#pi">pi</A><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">return</SPAN> sin<SPAN class="op">(</SPAN>x<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> x<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="kw1">private</SPAN>:
+        <SPAN class="kw1">double</SPAN> m_radius<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+    <SPAN class="rem">//-----------------------------------------------<A name="image_filter_lanczos"><B></B></A><A href="agg_image_filters.h.html#image_filter_lanczos">image_filter_lanczos</A></SPAN>
+    <SPAN class="kw1">class</SPAN> <A href="agg_image_filters.h.html#image_filter_lanczos">image_filter_lanczos</A>
+    <SPAN class="op">{</SPAN>
+    <SPAN class="kw1">public</SPAN>:
+        <A href="agg_image_filters.h.html#image_filter_lanczos">image_filter_lanczos</A><SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> r<SPAN class="op">)</SPAN> : m_radius<SPAN class="op">(</SPAN>r <SPAN class="op">&lt;</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> ? <SPAN class="num">2</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> : r<SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN><SPAN class="op">}</SPAN>
+        <SPAN class="kw1">double</SPAN> radius<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_radius<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">double</SPAN> calc_weight<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN>
+        <SPAN class="op">{</SPAN>
+           <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>x <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">return</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+           <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>x <SPAN class="op">&gt;</SPAN> m_radius<SPAN class="op">)</SPAN> <SPAN class="kw1">return</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+           x <SPAN class="op">*=</SPAN> <A href="agg_basics.h.html#pi">pi</A><SPAN class="op">;</SPAN>
+           <SPAN class="kw1">double</SPAN> xr <SPAN class="op">=</SPAN> x <SPAN class="op">/</SPAN> m_radius<SPAN class="op">;</SPAN>
+           <SPAN class="kw1">return</SPAN> <SPAN class="op">(</SPAN>sin<SPAN class="op">(</SPAN>x<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> x<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>sin<SPAN class="op">(</SPAN>xr<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> xr<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="kw1">private</SPAN>:
+        <SPAN class="kw1">double</SPAN> m_radius<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+    <SPAN class="rem">//----------------------------------------------<A name="image_filter_blackman"><B></B></A><A href="agg_image_filters.h.html#image_filter_blackman">image_filter_blackman</A></SPAN>
+    <SPAN class="kw1">class</SPAN> <A href="agg_image_filters.h.html#image_filter_blackman">image_filter_blackman</A>
+    <SPAN class="op">{</SPAN>
+    <SPAN class="kw1">public</SPAN>:
+        <A href="agg_image_filters.h.html#image_filter_blackman">image_filter_blackman</A><SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> r<SPAN class="op">)</SPAN> : m_radius<SPAN class="op">(</SPAN>r <SPAN class="op">&lt;</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> ? <SPAN class="num">2</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> : r<SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN><SPAN class="op">}</SPAN>
+        <SPAN class="kw1">double</SPAN> radius<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_radius<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">double</SPAN> calc_weight<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN>
+        <SPAN class="op">{</SPAN>
+           <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>x <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">return</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+           <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>x <SPAN class="op">&gt;</SPAN> m_radius<SPAN class="op">)</SPAN> <SPAN class="kw1">return</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+           x <SPAN class="op">*=</SPAN> <A href="agg_basics.h.html#pi">pi</A><SPAN class="op">;</SPAN>
+           <SPAN class="kw1">double</SPAN> xr <SPAN class="op">=</SPAN> x <SPAN class="op">/</SPAN> m_radius<SPAN class="op">;</SPAN>
+           <SPAN class="kw1">return</SPAN> <SPAN class="op">(</SPAN>sin<SPAN class="op">(</SPAN>x<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> x<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">42</SPAN> <SPAN class="op">+</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">5</SPAN><SPAN class="op">*</SPAN>cos<SPAN class="op">(</SPAN>xr<SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">08</SPAN><SPAN class="op">*</SPAN>cos<SPAN class="op">(</SPAN><SPAN class="num">2</SPAN><SPAN class="op">*</SPAN>xr<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="kw1">private</SPAN>:
+        <SPAN class="kw1">double</SPAN> m_radius<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------<A name="image_filter_sinc36"><B></B></A><A href="agg_image_filters.h.html#image_filter_sinc36">image_filter_sinc36</A></SPAN>
+    <SPAN class="kw1">class</SPAN> <A href="agg_image_filters.h.html#image_filter_sinc36">image_filter_sinc36</A> : <SPAN class="kw1">public</SPAN> <A href="agg_image_filters.h.html#image_filter_sinc">image_filter_sinc</A>
+    <SPAN class="op">{</SPAN> <SPAN class="kw1">public</SPAN>: <A href="agg_image_filters.h.html#image_filter_sinc36">image_filter_sinc36</A><SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> : <A href="agg_image_filters.h.html#image_filter_sinc">image_filter_sinc</A><SPAN class="op">(</SPAN><SPAN class="num">3</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">{</SPAN><SPAN class="op">}</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------<A name="image_filter_sinc64"><B></B></A><A href="agg_image_filters.h.html#image_filter_sinc64">image_filter_sinc64</A></SPAN>
+    <SPAN class="kw1">class</SPAN> <A href="agg_image_filters.h.html#image_filter_sinc64">image_filter_sinc64</A> : <SPAN class="kw1">public</SPAN> <A href="agg_image_filters.h.html#image_filter_sinc">image_filter_sinc</A>
+    <SPAN class="op">{</SPAN> <SPAN class="kw1">public</SPAN>: <A href="agg_image_filters.h.html#image_filter_sinc64">image_filter_sinc64</A><SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> : <A href="agg_image_filters.h.html#image_filter_sinc">image_filter_sinc</A><SPAN class="op">(</SPAN><SPAN class="num">4</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">{</SPAN><SPAN class="op">}</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="rem">//-----------------------------------------------<A name="image_filter_sinc100"><B></B></A><A href="agg_image_filters.h.html#image_filter_sinc100">image_filter_sinc100</A></SPAN>
+    <SPAN class="kw1">class</SPAN> <A href="agg_image_filters.h.html#image_filter_sinc100">image_filter_sinc100</A> : <SPAN class="kw1">public</SPAN> <A href="agg_image_filters.h.html#image_filter_sinc">image_filter_sinc</A>
+    <SPAN class="op">{</SPAN> <SPAN class="kw1">public</SPAN>: <A href="agg_image_filters.h.html#image_filter_sinc100">image_filter_sinc100</A><SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> : <A href="agg_image_filters.h.html#image_filter_sinc">image_filter_sinc</A><SPAN class="op">(</SPAN><SPAN class="num">5</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">{</SPAN><SPAN class="op">}</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="rem">//-----------------------------------------------<A name="image_filter_sinc144"><B></B></A><A href="agg_image_filters.h.html#image_filter_sinc144">image_filter_sinc144</A></SPAN>
+    <SPAN class="kw1">class</SPAN> <A href="agg_image_filters.h.html#image_filter_sinc144">image_filter_sinc144</A> : <SPAN class="kw1">public</SPAN> <A href="agg_image_filters.h.html#image_filter_sinc">image_filter_sinc</A>
+    <SPAN class="op">{</SPAN> <SPAN class="kw1">public</SPAN>: <A href="agg_image_filters.h.html#image_filter_sinc144">image_filter_sinc144</A><SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> : <A href="agg_image_filters.h.html#image_filter_sinc">image_filter_sinc</A><SPAN class="op">(</SPAN><SPAN class="num">6</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">{</SPAN><SPAN class="op">}</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="rem">//-----------------------------------------------<A name="image_filter_sinc196"><B></B></A><A href="agg_image_filters.h.html#image_filter_sinc196">image_filter_sinc196</A></SPAN>
+    <SPAN class="kw1">class</SPAN> <A href="agg_image_filters.h.html#image_filter_sinc196">image_filter_sinc196</A> : <SPAN class="kw1">public</SPAN> <A href="agg_image_filters.h.html#image_filter_sinc">image_filter_sinc</A>
+    <SPAN class="op">{</SPAN> <SPAN class="kw1">public</SPAN>: <A href="agg_image_filters.h.html#image_filter_sinc196">image_filter_sinc196</A><SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> : <A href="agg_image_filters.h.html#image_filter_sinc">image_filter_sinc</A><SPAN class="op">(</SPAN><SPAN class="num">7</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">{</SPAN><SPAN class="op">}</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="rem">//-----------------------------------------------<A name="image_filter_sinc256"><B></B></A><A href="agg_image_filters.h.html#image_filter_sinc256">image_filter_sinc256</A></SPAN>
+    <SPAN class="kw1">class</SPAN> <A href="agg_image_filters.h.html#image_filter_sinc256">image_filter_sinc256</A> : <SPAN class="kw1">public</SPAN> <A href="agg_image_filters.h.html#image_filter_sinc">image_filter_sinc</A>
+    <SPAN class="op">{</SPAN> <SPAN class="kw1">public</SPAN>: <A href="agg_image_filters.h.html#image_filter_sinc256">image_filter_sinc256</A><SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> : <A href="agg_image_filters.h.html#image_filter_sinc">image_filter_sinc</A><SPAN class="op">(</SPAN><SPAN class="num">8</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">{</SPAN><SPAN class="op">}</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="rem">//---------------------------------------------<A name="image_filter_lanczos36"><B></B></A><A href="agg_image_filters.h.html#image_filter_lanczos36">image_filter_lanczos36</A></SPAN>
+    <SPAN class="kw1">class</SPAN> <A href="agg_image_filters.h.html#image_filter_lanczos36">image_filter_lanczos36</A> : <SPAN class="kw1">public</SPAN> <A href="agg_image_filters.h.html#image_filter_lanczos">image_filter_lanczos</A>
+    <SPAN class="op">{</SPAN> <SPAN class="kw1">public</SPAN>: <A href="agg_image_filters.h.html#image_filter_lanczos36">image_filter_lanczos36</A><SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> : <A href="agg_image_filters.h.html#image_filter_lanczos">image_filter_lanczos</A><SPAN class="op">(</SPAN><SPAN class="num">3</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">{</SPAN><SPAN class="op">}</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="rem">//---------------------------------------------<A name="image_filter_lanczos64"><B></B></A><A href="agg_image_filters.h.html#image_filter_lanczos64">image_filter_lanczos64</A></SPAN>
+    <SPAN class="kw1">class</SPAN> <A href="agg_image_filters.h.html#image_filter_lanczos64">image_filter_lanczos64</A> : <SPAN class="kw1">public</SPAN> <A href="agg_image_filters.h.html#image_filter_lanczos">image_filter_lanczos</A>
+    <SPAN class="op">{</SPAN> <SPAN class="kw1">public</SPAN>: <A href="agg_image_filters.h.html#image_filter_lanczos64">image_filter_lanczos64</A><SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> : <A href="agg_image_filters.h.html#image_filter_lanczos">image_filter_lanczos</A><SPAN class="op">(</SPAN><SPAN class="num">4</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">{</SPAN><SPAN class="op">}</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="rem">//--------------------------------------------<A name="image_filter_lanczos100"><B></B></A><A href="agg_image_filters.h.html#image_filter_lanczos100">image_filter_lanczos100</A></SPAN>
+    <SPAN class="kw1">class</SPAN> <A href="agg_image_filters.h.html#image_filter_lanczos100">image_filter_lanczos100</A> : <SPAN class="kw1">public</SPAN> <A href="agg_image_filters.h.html#image_filter_lanczos">image_filter_lanczos</A>
+    <SPAN class="op">{</SPAN> <SPAN class="kw1">public</SPAN>: <A href="agg_image_filters.h.html#image_filter_lanczos100">image_filter_lanczos100</A><SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> : <A href="agg_image_filters.h.html#image_filter_lanczos">image_filter_lanczos</A><SPAN class="op">(</SPAN><SPAN class="num">5</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">{</SPAN><SPAN class="op">}</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="rem">//--------------------------------------------<A name="image_filter_lanczos144"><B></B></A><A href="agg_image_filters.h.html#image_filter_lanczos144">image_filter_lanczos144</A></SPAN>
+    <SPAN class="kw1">class</SPAN> <A href="agg_image_filters.h.html#image_filter_lanczos144">image_filter_lanczos144</A> : <SPAN class="kw1">public</SPAN> <A href="agg_image_filters.h.html#image_filter_lanczos">image_filter_lanczos</A>
+    <SPAN class="op">{</SPAN> <SPAN class="kw1">public</SPAN>: <A href="agg_image_filters.h.html#image_filter_lanczos144">image_filter_lanczos144</A><SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> : <A href="agg_image_filters.h.html#image_filter_lanczos">image_filter_lanczos</A><SPAN class="op">(</SPAN><SPAN class="num">6</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">{</SPAN><SPAN class="op">}</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="rem">//--------------------------------------------<A name="image_filter_lanczos196"><B></B></A><A href="agg_image_filters.h.html#image_filter_lanczos196">image_filter_lanczos196</A></SPAN>
+    <SPAN class="kw1">class</SPAN> <A href="agg_image_filters.h.html#image_filter_lanczos196">image_filter_lanczos196</A> : <SPAN class="kw1">public</SPAN> <A href="agg_image_filters.h.html#image_filter_lanczos">image_filter_lanczos</A>
+    <SPAN class="op">{</SPAN> <SPAN class="kw1">public</SPAN>: <A href="agg_image_filters.h.html#image_filter_lanczos196">image_filter_lanczos196</A><SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> : <A href="agg_image_filters.h.html#image_filter_lanczos">image_filter_lanczos</A><SPAN class="op">(</SPAN><SPAN class="num">7</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">{</SPAN><SPAN class="op">}</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="rem">//--------------------------------------------<A name="image_filter_lanczos256"><B></B></A><A href="agg_image_filters.h.html#image_filter_lanczos256">image_filter_lanczos256</A></SPAN>
+    <SPAN class="kw1">class</SPAN> <A href="agg_image_filters.h.html#image_filter_lanczos256">image_filter_lanczos256</A> : <SPAN class="kw1">public</SPAN> <A href="agg_image_filters.h.html#image_filter_lanczos">image_filter_lanczos</A>
+    <SPAN class="op">{</SPAN> <SPAN class="kw1">public</SPAN>: <A href="agg_image_filters.h.html#image_filter_lanczos256">image_filter_lanczos256</A><SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> : <A href="agg_image_filters.h.html#image_filter_lanczos">image_filter_lanczos</A><SPAN class="op">(</SPAN><SPAN class="num">8</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">{</SPAN><SPAN class="op">}</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="rem">//--------------------------------------------<A name="image_filter_blackman36"><B></B></A><A href="agg_image_filters.h.html#image_filter_blackman36">image_filter_blackman36</A></SPAN>
+    <SPAN class="kw1">class</SPAN> <A href="agg_image_filters.h.html#image_filter_blackman36">image_filter_blackman36</A> : <SPAN class="kw1">public</SPAN> <A href="agg_image_filters.h.html#image_filter_blackman">image_filter_blackman</A>
+    <SPAN class="op">{</SPAN> <SPAN class="kw1">public</SPAN>: <A href="agg_image_filters.h.html#image_filter_blackman36">image_filter_blackman36</A><SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> : <A href="agg_image_filters.h.html#image_filter_blackman">image_filter_blackman</A><SPAN class="op">(</SPAN><SPAN class="num">3</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">{</SPAN><SPAN class="op">}</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="rem">//--------------------------------------------<A name="image_filter_blackman64"><B></B></A><A href="agg_image_filters.h.html#image_filter_blackman64">image_filter_blackman64</A></SPAN>
+    <SPAN class="kw1">class</SPAN> <A href="agg_image_filters.h.html#image_filter_blackman64">image_filter_blackman64</A> : <SPAN class="kw1">public</SPAN> <A href="agg_image_filters.h.html#image_filter_blackman">image_filter_blackman</A>
+    <SPAN class="op">{</SPAN> <SPAN class="kw1">public</SPAN>: <A href="agg_image_filters.h.html#image_filter_blackman64">image_filter_blackman64</A><SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> : <A href="agg_image_filters.h.html#image_filter_blackman">image_filter_blackman</A><SPAN class="op">(</SPAN><SPAN class="num">4</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">{</SPAN><SPAN class="op">}</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="rem">//-------------------------------------------<A name="image_filter_blackman100"><B></B></A><A href="agg_image_filters.h.html#image_filter_blackman100">image_filter_blackman100</A></SPAN>
+    <SPAN class="kw1">class</SPAN> <A href="agg_image_filters.h.html#image_filter_blackman100">image_filter_blackman100</A> : <SPAN class="kw1">public</SPAN> <A href="agg_image_filters.h.html#image_filter_blackman">image_filter_blackman</A>
+    <SPAN class="op">{</SPAN> <SPAN class="kw1">public</SPAN>: <A href="agg_image_filters.h.html#image_filter_blackman100">image_filter_blackman100</A><SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> : <A href="agg_image_filters.h.html#image_filter_blackman">image_filter_blackman</A><SPAN class="op">(</SPAN><SPAN class="num">5</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">{</SPAN><SPAN class="op">}</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="rem">//-------------------------------------------<A name="image_filter_blackman144"><B></B></A><A href="agg_image_filters.h.html#image_filter_blackman144">image_filter_blackman144</A></SPAN>
+    <SPAN class="kw1">class</SPAN> <A href="agg_image_filters.h.html#image_filter_blackman144">image_filter_blackman144</A> : <SPAN class="kw1">public</SPAN> <A href="agg_image_filters.h.html#image_filter_blackman">image_filter_blackman</A>
+    <SPAN class="op">{</SPAN> <SPAN class="kw1">public</SPAN>: <A href="agg_image_filters.h.html#image_filter_blackman144">image_filter_blackman144</A><SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> : <A href="agg_image_filters.h.html#image_filter_blackman">image_filter_blackman</A><SPAN class="op">(</SPAN><SPAN class="num">6</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">{</SPAN><SPAN class="op">}</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="rem">//-------------------------------------------<A name="image_filter_blackman196"><B></B></A><A href="agg_image_filters.h.html#image_filter_blackman196">image_filter_blackman196</A></SPAN>
+    <SPAN class="kw1">class</SPAN> <A href="agg_image_filters.h.html#image_filter_blackman196">image_filter_blackman196</A> : <SPAN class="kw1">public</SPAN> <A href="agg_image_filters.h.html#image_filter_blackman">image_filter_blackman</A>
+    <SPAN class="op">{</SPAN> <SPAN class="kw1">public</SPAN>: <A href="agg_image_filters.h.html#image_filter_blackman196">image_filter_blackman196</A><SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> : <A href="agg_image_filters.h.html#image_filter_blackman">image_filter_blackman</A><SPAN class="op">(</SPAN><SPAN class="num">7</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">{</SPAN><SPAN class="op">}</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="rem">//-------------------------------------------<A name="image_filter_blackman256"><B></B></A><A href="agg_image_filters.h.html#image_filter_blackman256">image_filter_blackman256</A></SPAN>
+    <SPAN class="kw1">class</SPAN> <A href="agg_image_filters.h.html#image_filter_blackman256">image_filter_blackman256</A> : <SPAN class="kw1">public</SPAN> <A href="agg_image_filters.h.html#image_filter_blackman">image_filter_blackman</A>
+    <SPAN class="op">{</SPAN> <SPAN class="kw1">public</SPAN>: <A href="agg_image_filters.h.html#image_filter_blackman256">image_filter_blackman256</A><SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> : <A href="agg_image_filters.h.html#image_filter_blackman">image_filter_blackman</A><SPAN class="op">(</SPAN><SPAN class="num">8</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">{</SPAN><SPAN class="op">}</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+<SPAN class="op">}</SPAN>
+
+<SPAN class="kw2">#endif</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT><TABLE width="640px" bgcolor="#583927" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0">
+<TR><TD><CENTER><SPAN class="authors">
+Copyright <SPAN class="larger">&#169;</SPAN> 2002-2006
+<A href="../../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+<TR><TD><CENTER><SPAN class="authors">
+Web Design and Programming
+<A href="../../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+</TABLE>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+</HTML>

@@ -1,0 +1,270 @@
+<HTML><HEAD><TITLE>Anti-Grain Geometry - </TITLE>
+<META http-equiv="Content-Type" content="text/html"/>
+<LINK rel="stylesheet" type="text/css" href="../../agg.styles.css"/>
+</HEAD>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE><SPAN class="rem">//----------------------------------------------------------------------------</SPAN>
+<SPAN class="rem">// Anti-Grain Geometry (AGG) - Version 2.5</SPAN>
+<SPAN class="rem">// A high quality rendering engine for C++</SPAN>
+<SPAN class="rem">// Copyright (C) 2002-2006 Maxim Shemanarev</SPAN>
+<SPAN class="rem">// Contact: mcseem@antigrain.com</SPAN>
+<SPAN class="rem">//          mcseemagg@yahoo.com</SPAN>
+<SPAN class="rem">//          http://antigrain.com</SPAN>
+<SPAN class="rem">// </SPAN>
+<SPAN class="rem">// AGG is free software; you can redistribute it and/or</SPAN>
+<SPAN class="rem">// modify it under the terms of the GNU General Public License</SPAN>
+<SPAN class="rem">// as published by the Free Software Foundation; either version 2</SPAN>
+<SPAN class="rem">// of the License, or (at your option) any later version.</SPAN>
+<SPAN class="rem">// </SPAN>
+<SPAN class="rem">// AGG is distributed in the hope that it will be useful,</SPAN>
+<SPAN class="rem">// but WITHOUT ANY WARRANTY; without even the implied warranty of</SPAN>
+<SPAN class="rem">// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</SPAN>
+<SPAN class="rem">// GNU General Public License for more details.</SPAN>
+<SPAN class="rem">// </SPAN>
+<SPAN class="rem">// You should have received a copy of the GNU General Public License</SPAN>
+<SPAN class="rem">// along with AGG; if not, write to the Free Software</SPAN>
+<SPAN class="rem">// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, </SPAN>
+<SPAN class="rem">// MA 02110-1301, USA.</SPAN>
+<SPAN class="rem">//----------------------------------------------------------------------------</SPAN>
+<SPAN class="rem">//</SPAN>
+<SPAN class="rem">// Adaptation for high precision colors has been sponsored by </SPAN>
+<SPAN class="rem">// Liberty Technology Systems, Inc., visit http://lib-sys.com</SPAN>
+<SPAN class="rem">//</SPAN>
+<SPAN class="rem">// Liberty Technology Systems, Inc. is the provider of</SPAN>
+<SPAN class="rem">// PostScript and PDF technology for software developers.</SPAN>
+<SPAN class="rem">// </SPAN>
+<SPAN class="rem">//----------------------------------------------------------------------------</SPAN>
+
+<SPAN class="kw2">#ifndef</SPAN> AGG_SPAN_GOURAUD_GRAY_INCLUDED
+<SPAN class="kw2">#define</SPAN> AGG_SPAN_GOURAUD_GRAY_INCLUDED
+
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="agg_basics.h.html">agg_basics.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="agg_color_gray.h.html">agg_color_gray.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="agg_dda_line.h.html">agg_dda_line.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="agg_span_gouraud.h.html">agg_span_gouraud.h</A>&quot;</SPAN>
+
+<SPAN class="kw1">namespace</SPAN> agg
+<SPAN class="op">{</SPAN>
+
+    <SPAN class="rem">//=======================================================<A name="span_gouraud_gray"><B></B></A><A href="agg_span_gouraud_gray.h.html#span_gouraud_gray">span_gouraud_gray</A></SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> ColorT<SPAN class="op">&gt;</SPAN> <SPAN class="kw1">class</SPAN> <A href="agg_span_gouraud_gray.h.html#span_gouraud_gray">span_gouraud_gray</A> : <SPAN class="kw1">public</SPAN> <A href="agg_span_gouraud.h.html#span_gouraud">span_gouraud</A><SPAN class="op">&lt;</SPAN>ColorT<SPAN class="op">&gt;</SPAN>
+    <SPAN class="op">{</SPAN>
+    <SPAN class="kw1">public</SPAN>:
+        <SPAN class="kw1">typedef</SPAN> ColorT color_type<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">typedef</SPAN> <SPAN class="kw1">typename</SPAN> color_type::value_type value_type<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">typedef</SPAN> <A href="agg_span_gouraud.h.html#span_gouraud">span_gouraud</A><SPAN class="op">&lt;</SPAN>color_type<SPAN class="op">&gt;</SPAN> base_type<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">typedef</SPAN> <SPAN class="kw1">typename</SPAN> base_type::coord_type coord_type<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">enum</SPAN> subpixel_scale_e
+        <SPAN class="op">{</SPAN> 
+            subpixel_shift <SPAN class="op">=</SPAN> <SPAN class="num">4</SPAN><SPAN class="op">,</SPAN> 
+            subpixel_scale <SPAN class="op">=</SPAN> <SPAN class="num">1</SPAN> <SPAN class="op">&lt;&lt;</SPAN> subpixel_shift
+        <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">private</SPAN>:
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">struct</SPAN> gray_calc
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">void</SPAN> init<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> coord_type<SPAN class="op">&amp;</SPAN> c1<SPAN class="op">,</SPAN> <SPAN class="kw1">const</SPAN> coord_type<SPAN class="op">&amp;</SPAN> c2<SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                m_x1  <SPAN class="op">=</SPAN> c1<SPAN class="op">.</SPAN>x <SPAN class="op">-</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">5</SPAN><SPAN class="op">;</SPAN>
+                m_y1  <SPAN class="op">=</SPAN> c1<SPAN class="op">.</SPAN>y <SPAN class="op">-</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">5</SPAN><SPAN class="op">;</SPAN>
+                m_dx  <SPAN class="op">=</SPAN> c2<SPAN class="op">.</SPAN>x <SPAN class="op">-</SPAN> c1<SPAN class="op">.</SPAN>x<SPAN class="op">;</SPAN>
+                <SPAN class="kw1">double</SPAN> dy <SPAN class="op">=</SPAN> c2<SPAN class="op">.</SPAN>y <SPAN class="op">-</SPAN> c1<SPAN class="op">.</SPAN>y<SPAN class="op">;</SPAN>
+                m_1dy <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>fabs<SPAN class="op">(</SPAN>dy<SPAN class="op">)</SPAN> <SPAN class="op">&lt;</SPAN> <SPAN class="num">1e</SPAN><SPAN class="op">-</SPAN><SPAN class="num">10</SPAN><SPAN class="op">)</SPAN> ? <SPAN class="num">1e10</SPAN> : <SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">/</SPAN> dy<SPAN class="op">;</SPAN>
+                m_v1 <SPAN class="op">=</SPAN> c1<SPAN class="op">.</SPAN>color<SPAN class="op">.</SPAN>v<SPAN class="op">;</SPAN>
+                m_a1 <SPAN class="op">=</SPAN> c1<SPAN class="op">.</SPAN>color<SPAN class="op">.</SPAN>a<SPAN class="op">;</SPAN>
+                m_dv <SPAN class="op">=</SPAN> c2<SPAN class="op">.</SPAN>color<SPAN class="op">.</SPAN>v <SPAN class="op">-</SPAN> m_v1<SPAN class="op">;</SPAN>
+                m_da <SPAN class="op">=</SPAN> c2<SPAN class="op">.</SPAN>color<SPAN class="op">.</SPAN>a <SPAN class="op">-</SPAN> m_a1<SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+
+            <SPAN class="kw1">void</SPAN> calc<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> y<SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                <SPAN class="kw1">double</SPAN> k <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>y <SPAN class="op">-</SPAN> m_y1<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> m_1dy<SPAN class="op">;</SPAN>
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>k <SPAN class="op">&lt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> k <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>k <SPAN class="op">&gt;</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> k <SPAN class="op">=</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+                m_v <SPAN class="op">=</SPAN> m_v1 <SPAN class="op">+</SPAN> <A href="agg_basics.h.html#iround">iround</A><SPAN class="op">(</SPAN>m_dv <SPAN class="op">*</SPAN> k<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                m_a <SPAN class="op">=</SPAN> m_a1 <SPAN class="op">+</SPAN> <A href="agg_basics.h.html#iround">iround</A><SPAN class="op">(</SPAN>m_da <SPAN class="op">*</SPAN> k<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                m_x <SPAN class="op">=</SPAN> <A href="agg_basics.h.html#iround">iround</A><SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>m_x1 <SPAN class="op">+</SPAN> m_dx <SPAN class="op">*</SPAN> k<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> subpixel_scale<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+
+            <SPAN class="kw1">double</SPAN> m_x1<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">double</SPAN> m_y1<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">double</SPAN> m_dx<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">double</SPAN> m_1dy<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">int</SPAN>    m_v1<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">int</SPAN>    m_a1<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">int</SPAN>    m_dv<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">int</SPAN>    m_da<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">int</SPAN>    m_v<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">int</SPAN>    m_a<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">int</SPAN>    m_x<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+    <SPAN class="kw1">public</SPAN>:
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <A href="agg_span_gouraud_gray.h.html#span_gouraud_gray">span_gouraud_gray</A><SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN><SPAN class="op">}</SPAN>
+        <A href="agg_span_gouraud_gray.h.html#span_gouraud_gray">span_gouraud_gray</A><SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> color_type<SPAN class="op">&amp;</SPAN> c1<SPAN class="op">,</SPAN> 
+                          <SPAN class="kw1">const</SPAN> color_type<SPAN class="op">&amp;</SPAN> c2<SPAN class="op">,</SPAN> 
+                          <SPAN class="kw1">const</SPAN> color_type<SPAN class="op">&amp;</SPAN> c3<SPAN class="op">,</SPAN>
+                          <SPAN class="kw1">double</SPAN> x1<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y1<SPAN class="op">,</SPAN> 
+                          <SPAN class="kw1">double</SPAN> x2<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y2<SPAN class="op">,</SPAN>
+                          <SPAN class="kw1">double</SPAN> x3<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y3<SPAN class="op">,</SPAN> 
+                          <SPAN class="kw1">double</SPAN> d <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> : 
+            base_type<SPAN class="op">(</SPAN>c1<SPAN class="op">,</SPAN> c2<SPAN class="op">,</SPAN> c3<SPAN class="op">,</SPAN> x1<SPAN class="op">,</SPAN> y1<SPAN class="op">,</SPAN> x2<SPAN class="op">,</SPAN> y2<SPAN class="op">,</SPAN> x3<SPAN class="op">,</SPAN> y3<SPAN class="op">,</SPAN> d<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN><SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">void</SPAN> prepare<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            coord_type coord<SPAN class="op">[</SPAN><SPAN class="num">3</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+            base_type::arrange_vertices<SPAN class="op">(</SPAN>coord<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+            m_y2 <SPAN class="op">=</SPAN> <SPAN class="kw1">int</SPAN><SPAN class="op">(</SPAN>coord<SPAN class="op">[</SPAN><SPAN class="num">1</SPAN><SPAN class="op">]</SPAN><SPAN class="op">.</SPAN>y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+            m_swap <SPAN class="op">=</SPAN> <A href="agg_math.h.html#cross_product">cross_product</A><SPAN class="op">(</SPAN>coord<SPAN class="op">[</SPAN><SPAN class="num">0</SPAN><SPAN class="op">]</SPAN><SPAN class="op">.</SPAN>x<SPAN class="op">,</SPAN> coord<SPAN class="op">[</SPAN><SPAN class="num">0</SPAN><SPAN class="op">]</SPAN><SPAN class="op">.</SPAN>y<SPAN class="op">,</SPAN> 
+                                   coord<SPAN class="op">[</SPAN><SPAN class="num">2</SPAN><SPAN class="op">]</SPAN><SPAN class="op">.</SPAN>x<SPAN class="op">,</SPAN> coord<SPAN class="op">[</SPAN><SPAN class="num">2</SPAN><SPAN class="op">]</SPAN><SPAN class="op">.</SPAN>y<SPAN class="op">,</SPAN>
+                                   coord<SPAN class="op">[</SPAN><SPAN class="num">1</SPAN><SPAN class="op">]</SPAN><SPAN class="op">.</SPAN>x<SPAN class="op">,</SPAN> coord<SPAN class="op">[</SPAN><SPAN class="num">1</SPAN><SPAN class="op">]</SPAN><SPAN class="op">.</SPAN>y<SPAN class="op">)</SPAN> <SPAN class="op">&lt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+
+            m_c1<SPAN class="op">.</SPAN>init<SPAN class="op">(</SPAN>coord<SPAN class="op">[</SPAN><SPAN class="num">0</SPAN><SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> coord<SPAN class="op">[</SPAN><SPAN class="num">2</SPAN><SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            m_c2<SPAN class="op">.</SPAN>init<SPAN class="op">(</SPAN>coord<SPAN class="op">[</SPAN><SPAN class="num">0</SPAN><SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> coord<SPAN class="op">[</SPAN><SPAN class="num">1</SPAN><SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            m_c3<SPAN class="op">.</SPAN>init<SPAN class="op">(</SPAN>coord<SPAN class="op">[</SPAN><SPAN class="num">1</SPAN><SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> coord<SPAN class="op">[</SPAN><SPAN class="num">2</SPAN><SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">void</SPAN> generate<SPAN class="op">(</SPAN>color_type<SPAN class="op">*</SPAN> span<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> len<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            m_c1<SPAN class="op">.</SPAN>calc<SPAN class="op">(</SPAN>y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">const</SPAN> gray_calc<SPAN class="op">*</SPAN> pc1 <SPAN class="op">=</SPAN> <SPAN class="op">&amp;</SPAN>m_c1<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">const</SPAN> gray_calc<SPAN class="op">*</SPAN> pc2 <SPAN class="op">=</SPAN> <SPAN class="op">&amp;</SPAN>m_c2<SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>y <SPAN class="op">&lt;</SPAN> m_y2<SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                <SPAN class="rem">// Bottom part of the triangle (first subtriangle)</SPAN>
+                <SPAN class="rem">//-------------------------</SPAN>
+                m_c2<SPAN class="op">.</SPAN>calc<SPAN class="op">(</SPAN>y <SPAN class="op">+</SPAN> m_c2<SPAN class="op">.</SPAN>m_1dy<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="kw1">else</SPAN>
+            <SPAN class="op">{</SPAN>
+                <SPAN class="rem">// Upper part (second subtriangle)</SPAN>
+                <SPAN class="rem">//-------------------------</SPAN>
+                m_c3<SPAN class="op">.</SPAN>calc<SPAN class="op">(</SPAN>y <SPAN class="op">-</SPAN> m_c3<SPAN class="op">.</SPAN>m_1dy<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                pc2 <SPAN class="op">=</SPAN> <SPAN class="op">&amp;</SPAN>m_c3<SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_swap<SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                <SPAN class="rem">// It means that the triangle is oriented clockwise, </SPAN>
+                <SPAN class="rem">// so that we need to swap the controlling structures</SPAN>
+                <SPAN class="rem">//-------------------------</SPAN>
+                <SPAN class="kw1">const</SPAN> gray_calc<SPAN class="op">*</SPAN> t <SPAN class="op">=</SPAN> pc2<SPAN class="op">;</SPAN>
+                pc2 <SPAN class="op">=</SPAN> pc1<SPAN class="op">;</SPAN>
+                pc1 <SPAN class="op">=</SPAN> t<SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+
+            <SPAN class="rem">// Get the horizontal length with subpixel accuracy</SPAN>
+            <SPAN class="rem">// and protect it from division by zero</SPAN>
+            <SPAN class="rem">//-------------------------</SPAN>
+            <SPAN class="kw1">int</SPAN> nlen <SPAN class="op">=</SPAN> abs<SPAN class="op">(</SPAN>pc2<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>m_x <SPAN class="op">-</SPAN> pc1<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>m_x<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>nlen <SPAN class="op">&lt;=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> nlen <SPAN class="op">=</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+
+            <A href="agg_dda_line.h.html#dda_line_interpolator">dda_line_interpolator</A><SPAN class="op">&lt;</SPAN><SPAN class="num">14</SPAN><SPAN class="op">&gt;</SPAN> v<SPAN class="op">(</SPAN>pc1<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>m_v<SPAN class="op">,</SPAN> pc2<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>m_v<SPAN class="op">,</SPAN> nlen<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <A href="agg_dda_line.h.html#dda_line_interpolator">dda_line_interpolator</A><SPAN class="op">&lt;</SPAN><SPAN class="num">14</SPAN><SPAN class="op">&gt;</SPAN> a<SPAN class="op">(</SPAN>pc1<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>m_a<SPAN class="op">,</SPAN> pc2<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>m_a<SPAN class="op">,</SPAN> nlen<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+            <SPAN class="rem">// Calculate the starting point of the gradient with subpixel </SPAN>
+            <SPAN class="rem">// accuracy and correct (roll back) the interpolators.</SPAN>
+            <SPAN class="rem">// This operation will also clip the beginning of the span</SPAN>
+            <SPAN class="rem">// if necessary.</SPAN>
+            <SPAN class="rem">//-------------------------</SPAN>
+            <SPAN class="kw1">int</SPAN> start <SPAN class="op">=</SPAN> pc1<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>m_x <SPAN class="op">-</SPAN> <SPAN class="op">(</SPAN>x <SPAN class="op">&lt;&lt;</SPAN> subpixel_shift<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            v    <SPAN class="op">-=</SPAN> start<SPAN class="op">;</SPAN> 
+            a    <SPAN class="op">-=</SPAN> start<SPAN class="op">;</SPAN>
+            nlen <SPAN class="op">+=</SPAN> start<SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">int</SPAN> vv<SPAN class="op">,</SPAN> va<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">enum</SPAN> lim_e <SPAN class="op">{</SPAN> lim <SPAN class="op">=</SPAN> color_type::base_mask <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+            <SPAN class="rem">// Beginning part of the span. Since we rolled back the </SPAN>
+            <SPAN class="rem">// interpolators, the color values may have overflow.</SPAN>
+            <SPAN class="rem">// So that, we render the beginning part with checking </SPAN>
+            <SPAN class="rem">// for overflow. It lasts until &quot;start&quot; is positive;</SPAN>
+            <SPAN class="rem">// typically it&#039;s 1-2 pixels, but may be more in some cases.</SPAN>
+            <SPAN class="rem">//-------------------------</SPAN>
+            <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN>len <SPAN class="op">&amp;&amp;</SPAN> start <SPAN class="op">&gt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                vv <SPAN class="op">=</SPAN> v<SPAN class="op">.</SPAN>y<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                va <SPAN class="op">=</SPAN> a<SPAN class="op">.</SPAN>y<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>vv <SPAN class="op">&lt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> vv <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>vv <SPAN class="op">&gt;</SPAN> lim<SPAN class="op">)</SPAN> vv <SPAN class="op">=</SPAN> lim<SPAN class="op">;</SPAN>
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>va <SPAN class="op">&lt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> va <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>va <SPAN class="op">&gt;</SPAN> lim<SPAN class="op">)</SPAN> va <SPAN class="op">=</SPAN> lim<SPAN class="op">;</SPAN>
+                span<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>v <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>value_type<SPAN class="op">)</SPAN>vv<SPAN class="op">;</SPAN>
+                span<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>a <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>value_type<SPAN class="op">)</SPAN>va<SPAN class="op">;</SPAN>
+                v     <SPAN class="op">+=</SPAN> subpixel_scale<SPAN class="op">;</SPAN> 
+                a     <SPAN class="op">+=</SPAN> subpixel_scale<SPAN class="op">;</SPAN>
+                nlen  <SPAN class="op">-=</SPAN> subpixel_scale<SPAN class="op">;</SPAN>
+                start <SPAN class="op">-=</SPAN> subpixel_scale<SPAN class="op">;</SPAN>
+                <SPAN class="op">++</SPAN>span<SPAN class="op">;</SPAN>
+                <SPAN class="op">--</SPAN>len<SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+
+            <SPAN class="rem">// Middle part, no checking for overflow.</SPAN>
+            <SPAN class="rem">// Actual spans can be longer than the calculated length</SPAN>
+            <SPAN class="rem">// because of anti-aliasing, thus, the interpolators can </SPAN>
+            <SPAN class="rem">// overflow. But while &quot;nlen&quot; is positive we are safe.</SPAN>
+            <SPAN class="rem">//-------------------------</SPAN>
+            <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN>len <SPAN class="op">&amp;&amp;</SPAN> nlen <SPAN class="op">&gt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                span<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>v <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>value_type<SPAN class="op">)</SPAN>v<SPAN class="op">.</SPAN>y<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                span<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>a <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>value_type<SPAN class="op">)</SPAN>a<SPAN class="op">.</SPAN>y<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                v    <SPAN class="op">+=</SPAN> subpixel_scale<SPAN class="op">;</SPAN> 
+                a    <SPAN class="op">+=</SPAN> subpixel_scale<SPAN class="op">;</SPAN>
+                nlen <SPAN class="op">-=</SPAN> subpixel_scale<SPAN class="op">;</SPAN>
+                <SPAN class="op">++</SPAN>span<SPAN class="op">;</SPAN>
+                <SPAN class="op">--</SPAN>len<SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+
+            <SPAN class="rem">// Ending part; checking for overflow.</SPAN>
+            <SPAN class="rem">// Typically it&#039;s 1-2 pixels, but may be more in some cases.</SPAN>
+            <SPAN class="rem">//-------------------------</SPAN>
+            <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN>len<SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                vv <SPAN class="op">=</SPAN> v<SPAN class="op">.</SPAN>y<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                va <SPAN class="op">=</SPAN> a<SPAN class="op">.</SPAN>y<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>vv <SPAN class="op">&lt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> vv <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>vv <SPAN class="op">&gt;</SPAN> lim<SPAN class="op">)</SPAN> vv <SPAN class="op">=</SPAN> lim<SPAN class="op">;</SPAN>
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>va <SPAN class="op">&lt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> va <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>va <SPAN class="op">&gt;</SPAN> lim<SPAN class="op">)</SPAN> va <SPAN class="op">=</SPAN> lim<SPAN class="op">;</SPAN>
+                span<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>v <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>value_type<SPAN class="op">)</SPAN>vv<SPAN class="op">;</SPAN>
+                span<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>a <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>value_type<SPAN class="op">)</SPAN>va<SPAN class="op">;</SPAN>
+                v <SPAN class="op">+=</SPAN> subpixel_scale<SPAN class="op">;</SPAN> 
+                a <SPAN class="op">+=</SPAN> subpixel_scale<SPAN class="op">;</SPAN>
+                <SPAN class="op">++</SPAN>span<SPAN class="op">;</SPAN>
+                <SPAN class="op">--</SPAN>len<SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="kw1">private</SPAN>:
+        <SPAN class="kw1">bool</SPAN>      m_swap<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN>       m_y2<SPAN class="op">;</SPAN>
+        gray_calc m_c1<SPAN class="op">;</SPAN>
+        gray_calc m_c2<SPAN class="op">;</SPAN>
+        gray_calc m_c3<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+<SPAN class="op">}</SPAN>
+
+<SPAN class="kw2">#endif</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT><TABLE width="640px" bgcolor="#583927" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0">
+<TR><TD><CENTER><SPAN class="authors">
+Copyright <SPAN class="larger">&#169;</SPAN> 2002-2006
+<A href="../../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+<TR><TD><CENTER><SPAN class="authors">
+Web Design and Programming
+<A href="../../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+</TABLE>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+</HTML>

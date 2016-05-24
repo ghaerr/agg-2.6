@@ -1,0 +1,290 @@
+<HTML><HEAD><TITLE>Anti-Grain Geometry - Interpolation with Bezier Curves</TITLE>
+<META http-equiv="Content-Type" content="text/html"/>
+<LINK rel="stylesheet" type="text/css" href="../../agg.styles.css"/>
+</HEAD>
+<A name="PAGE_BEZIER_INTERPOLATION"><B></B></A>
+
+
+<TABLE width="640px" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR>
+<TD bgcolor="#583927"></TD>
+</TR>
+</TABLE>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR>
+<TD>
+<TABLE width="170px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR><TD><A href="../../index.html" class="mpmenu">Home/</A></TD></TR>
+<TR><TD><A href="../index.html" class="mpmenu">Research/</A></TD></TR>
+<TR><TD><A href="" class="mpmenu"></A></TD></TR>
+<TR><TD><A href="" class="mpmenu"></A></TD></TR>
+<TR><TD><A href="" class="mpmenu"></A></TD></TR>
+<TR><TD><A href="" class="mpmenu"></A></TD></TR>
+</TABLE>
+</TD>
+<TD width="1px" bgcolor="#583927"></TD>
+<TD width="450px" valign="top" style="text-align:right">
+<TABLE border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR>
+<TD><IMG src="../../agg_logo.gif" border="0"/></TD>
+</TR>
+<TR>
+<TD>
+<TABLE border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR height="15px">
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../../news/index.html">News</A>&nbsp;&nbsp;</TD>
+<TD width="1px" bgcolor="#8e521d"></TD>
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../../doc/index.html">Docs</A>&nbsp;&nbsp;</TD>
+<TD width="1px" bgcolor="#8e521d"></TD>
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../../download/index.html">Download</A>&nbsp;&nbsp;</TD>
+<TD width="1px" bgcolor="#8e521d"></TD>
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../../maillist/index.html">Mailing List</A>&nbsp;&nbsp;</TD>
+<TD width="1px" bgcolor="#8e521d"></TD>
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../../cvs/index.html">CVS</A>&nbsp;&nbsp;</TD>
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+<TABLE width="640px" height="1px" bgcolor="#583927" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>
+</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD><H1>Interpolation with Bezier Curves<SPAN class="subtitle"><BR/>A very simple method of smoothing polygons</SPAN></H1></TD></TR></TABLE>
+
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Initially, there was a question in
+<A href="http://groups.google.com/groups?hl=ru&group=comp.graphics.algorithms"><IMG src="../../link.gif" border="0"/>comp.graphic.algorithms</A>
+how to interpolate a polygon with a curve in such a way that the 
+resulting curve would be smooth and hit all its vertices. 
+<A href="http://www.fho-emden.de/~hoffmann/"><IMG src="../../link.gif" border="0"/>Gernot Hoffmann</A> suggested
+to use a well-known <NOBR>B-Spline</NOBR> interpolation.
+<A href="http://www.fho-emden.de/~hoffmann/spline04112001.pdf"><IMG src="../../link.gif" border="0"/>Here is his original article</A>.
+<NOBR>B-Spline</NOBR> works good and it behaves like an elastic ruler fixed 
+in the polygon vertices.
+</P></TD></TR></TABLE><TABLE width="640px"><TR><TD style="text-align:center"><P>
+    <IMG src="spline_polygon1.gif" title="" border="0"/><!---->
+    <IMG src="spline_polygon2.gif" title="" border="0"/><!---->
+</P></TD></TR></TABLE>
+<TABLE width="640px" bgcolor="#583927" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><IMG src="bezier_interpolation.gif" title="" align="right" border="4" style="border-color:#FFFFFF"/><!---->
+But I had a gut feeling that there must be a simpler method.
+For example, approximation with cubic Bezier curves. 
+A Bezier curve has two anchor points (begin and end) and two 
+control ones (CP) that determine its shape. 
+More information about Bezier curves can be found using any 
+<A href="http://www.google.com"><IMG src="../../link.gif" border="0"/>search engine</A>, for example, on
+<A href="http://astronomy.swin.edu.au/~pbourke/curves/bezier/"><IMG src="../../link.gif" border="0"/>Paul Bourke&#039;s excellent site</A>.
+Our anchor points are given, they are pair of vertices of the polygon. 
+The question was, how to calculate the control points. 
+I ran <A href="http://www.xara.com"><IMG src="../../link.gif" border="0"/><B><NOBR>Xara X</NOBR></B></A> and drew this picture. It was pretty easy and 
+I decided to try to calculate their coordinates.
+It was obvious that the control points of two adjacent edges 
+plus the vertex between them should form one straight line. 
+Only in this case the two adjacent curves will be connected smoothly. 
+So, the two CP should be the a reflection of each other, 
+but&#133; not quite. Reflection assumes equal distances from 
+the central point. For our case it&#039;s not correct. 
+First, I tried to calculate a <A href="../../__code/include/agg_line_aa_basics.h.html#bisectrix">bisectrix</A> between two edges and 
+then take points on the perpendicular to it. But as shown 
+in the picture, the CP not always lie on the perpendicular 
+to the <A href="../../__code/include/agg_line_aa_basics.h.html#bisectrix">bisectrix</A>.
+</P></TD></TR></TABLE><TABLE width="640px" bgcolor="#583927" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><IMG src="bezier_interpolation_s1.gif" title="" align="left" border="4" style="border-color:#FFFFFF"/><!---->
+Finally, I found a very simple method that does not require any 
+complicated math. First, we take the polygon and calculate the 
+middle points A<SUB>i</SUB> of its edges.
+</P></TD></TR></TABLE><TABLE width="640px" bgcolor="#583927" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><IMG src="bezier_interpolation_s2.gif" title="" align="right" border="4" style="border-color:#FFFFFF"/><!---->
+Here we have line segments C<SUB>i</SUB> that connect two points A<SUB>i</SUB> of the
+adjacent segments. Then, we should calculate points B<SUB>i</SUB> as shown in 
+this picture.
+</P></TD></TR></TABLE><TABLE width="640px" bgcolor="#583927" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><IMG src="bezier_interpolation_s3.gif" title="" align="left" border="4" style="border-color:#FFFFFF"/><!---->
+The third step is final. We simply move the line segments C<SUB>i</SUB> in 
+such a way that their points B<SUB>i</SUB> coincide with the respective vertices. 
+That&#039;s it, we calculated the control points for our Bezier curve and 
+the result looks good.
+</P></TD></TR></TABLE><TABLE width="640px" bgcolor="#583927" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><IMG src="bezier_interpolation_s4.gif" title="" align="left" border="4" style="border-color:#FFFFFF"/><!---->
+One little improvement. Since we have a straight line that 
+determines the place of our control points, we can move them 
+as we want, changing the shape of the resulting curve. 
+I used a simple coefficient K that moves the points along 
+the line relatively to the initial distance between vertices 
+and control points. The closer the control points to the vertices 
+are the sharper figure will be obtained.
+</P></TD></TR></TABLE><TABLE width="640px" bgcolor="#583927" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Below is the result of rendering a popular in <A href="http://www.w3.org/Graphics/SVG/"><IMG src="../../link.gif" border="0"/><B>SVG</B></A>
+lion in its original form and with Bezier interpolation with K=1.0
+</P></TD></TR></TABLE><TABLE width="640px"><TR><TD style="text-align:center"><P>
+    <IMG src="bezier_lion1.gif" title="" border="0"/><!---->
+    <IMG src="bezier_lion2.gif" title="" border="0"/><!---->
+</P></TD></TR></TABLE>
+<TABLE width="640px" bgcolor="#583927" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>And the enlarged ones.
+</P></TD></TR></TABLE><TABLE width="640px"><TR><TD style="text-align:center"><P>
+    <IMG src="bezier_lion3.gif" title="" border="0"/><!---->
+    <IMG src="bezier_lion4.gif" title="" border="0"/><!---->
+</P></TD></TR></TABLE>
+<TABLE width="640px" bgcolor="#583927" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The method works quite well with self-intersecting polygons.
+The examples below show that the result is pretty interesting.
+</P></TD></TR></TABLE><TABLE width="640px"><TR><TD><CENTER><IMG src="bezier_self_intersecting1.gif" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+<TABLE width="640px" bgcolor="#583927" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+<TABLE width="640px"><TR><TD><CENTER><IMG src="bezier_self_intersecting2.gif" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+<TABLE width="640px" bgcolor="#583927" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+<TABLE width="640px"><TR><TD><CENTER><IMG src="bezier_self_intersecting3.gif" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+<TABLE width="640px" bgcolor="#583927" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>This method is pure heuristic and empiric. It probably gives 
+a wrong result from the point of view of strict mathematical 
+modeling. But in practice the result is good enough and it 
+requires absolute minimum of calculations. Below is the source code
+that has been used to generate the lions shown above. It&#039;s
+not optimal and just an illustration. It calculates some variables 
+twice, while in real programs we can store and reuse them in the 
+consecutive steps.
+</P></TD></TR></TABLE><TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+    <SPAN class="rem">// Assume we need to calculate the control</SPAN>
+    <SPAN class="rem">// points between (x1,y1) and (x2,y2).</SPAN>
+    <SPAN class="rem">// Then x0,y0 - the previous vertex,</SPAN>
+    <SPAN class="rem">//      x3,y3 - the next one.</SPAN>
+
+    <SPAN class="kw1">double</SPAN> xc1 <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>x0 <SPAN class="op">+</SPAN> x1<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN> yc1 <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>y0 <SPAN class="op">+</SPAN> y1<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN> xc2 <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>x1 <SPAN class="op">+</SPAN> x2<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN> yc2 <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>y1 <SPAN class="op">+</SPAN> y2<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN> xc3 <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>x2 <SPAN class="op">+</SPAN> x3<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN> yc3 <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>y2 <SPAN class="op">+</SPAN> y3<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">double</SPAN> len1 <SPAN class="op">=</SPAN> sqrt<SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>x1<SPAN class="op">-</SPAN>x0<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>x1<SPAN class="op">-</SPAN>x0<SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> <SPAN class="op">(</SPAN>y1<SPAN class="op">-</SPAN>y0<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>y1<SPAN class="op">-</SPAN>y0<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN> len2 <SPAN class="op">=</SPAN> sqrt<SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>x2<SPAN class="op">-</SPAN>x1<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>x2<SPAN class="op">-</SPAN>x1<SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> <SPAN class="op">(</SPAN>y2<SPAN class="op">-</SPAN>y1<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>y2<SPAN class="op">-</SPAN>y1<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN> len3 <SPAN class="op">=</SPAN> sqrt<SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>x3<SPAN class="op">-</SPAN>x2<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>x3<SPAN class="op">-</SPAN>x2<SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> <SPAN class="op">(</SPAN>y3<SPAN class="op">-</SPAN>y2<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>y3<SPAN class="op">-</SPAN>y2<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">double</SPAN> k1 <SPAN class="op">=</SPAN> len1 <SPAN class="op">/</SPAN> <SPAN class="op">(</SPAN>len1 <SPAN class="op">+</SPAN> len2<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN> k2 <SPAN class="op">=</SPAN> len2 <SPAN class="op">/</SPAN> <SPAN class="op">(</SPAN>len2 <SPAN class="op">+</SPAN> len3<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">double</SPAN> xm1 <SPAN class="op">=</SPAN> xc1 <SPAN class="op">+</SPAN> <SPAN class="op">(</SPAN>xc2 <SPAN class="op">-</SPAN> xc1<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> k1<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN> ym1 <SPAN class="op">=</SPAN> yc1 <SPAN class="op">+</SPAN> <SPAN class="op">(</SPAN>yc2 <SPAN class="op">-</SPAN> yc1<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> k1<SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">double</SPAN> xm2 <SPAN class="op">=</SPAN> xc2 <SPAN class="op">+</SPAN> <SPAN class="op">(</SPAN>xc3 <SPAN class="op">-</SPAN> xc2<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> k2<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN> ym2 <SPAN class="op">=</SPAN> yc2 <SPAN class="op">+</SPAN> <SPAN class="op">(</SPAN>yc3 <SPAN class="op">-</SPAN> yc2<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> k2<SPAN class="op">;</SPAN>
+
+    <SPAN class="rem">// Resulting control points. Here smooth_value is mentioned</SPAN>
+    <SPAN class="rem">// above coefficient K whose value should be in range [0...1].</SPAN>
+    ctrl1_x <SPAN class="op">=</SPAN> xm1 <SPAN class="op">+</SPAN> <SPAN class="op">(</SPAN>xc2 <SPAN class="op">-</SPAN> xm1<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> smooth_value <SPAN class="op">+</SPAN> x1 <SPAN class="op">-</SPAN> xm1<SPAN class="op">;</SPAN>
+    ctrl1_y <SPAN class="op">=</SPAN> ym1 <SPAN class="op">+</SPAN> <SPAN class="op">(</SPAN>yc2 <SPAN class="op">-</SPAN> ym1<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> smooth_value <SPAN class="op">+</SPAN> y1 <SPAN class="op">-</SPAN> ym1<SPAN class="op">;</SPAN>
+
+    ctrl2_x <SPAN class="op">=</SPAN> xm2 <SPAN class="op">+</SPAN> <SPAN class="op">(</SPAN>xc2 <SPAN class="op">-</SPAN> xm2<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> smooth_value <SPAN class="op">+</SPAN> x2 <SPAN class="op">-</SPAN> xm2<SPAN class="op">;</SPAN>
+    ctrl2_y <SPAN class="op">=</SPAN> ym2 <SPAN class="op">+</SPAN> <SPAN class="op">(</SPAN>yc2 <SPAN class="op">-</SPAN> ym2<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> smooth_value <SPAN class="op">+</SPAN> y2 <SPAN class="op">-</SPAN> ym2<SPAN class="op">;</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><BR/><BR/>
+And the source code of an approximation with a cubic Bezier curve.
+</P></TD></TR></TABLE><TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+<SPAN class="rem">// Number of intermediate points between two source ones,</SPAN>
+<SPAN class="rem">// Actually, this value should be calculated in some way,</SPAN>
+<SPAN class="rem">// Obviously, depending on the real length of the curve.</SPAN>
+<SPAN class="rem">// But I don&#039;t know any elegant and fast solution for this</SPAN>
+<SPAN class="rem">// problem.</SPAN>
+<SPAN class="kw2">#define</SPAN> NUM_STEPS <SPAN class="num">20</SPAN>
+
+<SPAN class="kw1">void</SPAN> <A href="../../__code/include/agg_curves.h.html#curve4">curve4</A><SPAN class="op">(</SPAN>Polygon<SPAN class="op">*</SPAN> p<SPAN class="op">,</SPAN>
+            <SPAN class="kw1">double</SPAN> x1<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y1<SPAN class="op">,</SPAN>   <SPAN class="rem">//Anchor1</SPAN>
+            <SPAN class="kw1">double</SPAN> x2<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y2<SPAN class="op">,</SPAN>   <SPAN class="rem">//Control1</SPAN>
+            <SPAN class="kw1">double</SPAN> x3<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y3<SPAN class="op">,</SPAN>   <SPAN class="rem">//Control2</SPAN>
+            <SPAN class="kw1">double</SPAN> x4<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y4<SPAN class="op">)</SPAN>   <SPAN class="rem">//Anchor2</SPAN>
+<SPAN class="op">{</SPAN>
+    <SPAN class="kw1">double</SPAN> dx1 <SPAN class="op">=</SPAN> x2 <SPAN class="op">-</SPAN> x1<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN> dy1 <SPAN class="op">=</SPAN> y2 <SPAN class="op">-</SPAN> y1<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN> dx2 <SPAN class="op">=</SPAN> x3 <SPAN class="op">-</SPAN> x2<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN> dy2 <SPAN class="op">=</SPAN> y3 <SPAN class="op">-</SPAN> y2<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN> dx3 <SPAN class="op">=</SPAN> x4 <SPAN class="op">-</SPAN> x3<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN> dy3 <SPAN class="op">=</SPAN> y4 <SPAN class="op">-</SPAN> y3<SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">double</SPAN> subdiv_step  <SPAN class="op">=</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">/</SPAN> <SPAN class="op">(</SPAN>NUM_STEPS <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN> subdiv_step2 <SPAN class="op">=</SPAN> subdiv_step<SPAN class="op">*</SPAN>subdiv_step<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN> subdiv_step3 <SPAN class="op">=</SPAN> subdiv_step<SPAN class="op">*</SPAN>subdiv_step<SPAN class="op">*</SPAN>subdiv_step<SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">double</SPAN> pre1 <SPAN class="op">=</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">*</SPAN> subdiv_step<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN> pre2 <SPAN class="op">=</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">*</SPAN> subdiv_step2<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN> pre4 <SPAN class="op">=</SPAN> <SPAN class="num">6</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">*</SPAN> subdiv_step2<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN> pre5 <SPAN class="op">=</SPAN> <SPAN class="num">6</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">*</SPAN> subdiv_step3<SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">double</SPAN> tmp1x <SPAN class="op">=</SPAN> x1 <SPAN class="op">-</SPAN> x2 <SPAN class="op">*</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">+</SPAN> x3<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN> tmp1y <SPAN class="op">=</SPAN> y1 <SPAN class="op">-</SPAN> y2 <SPAN class="op">*</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">+</SPAN> y3<SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">double</SPAN> tmp2x <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>x2 <SPAN class="op">-</SPAN> x3<SPAN class="op">)</SPAN><SPAN class="op">*</SPAN><SPAN class="num">3</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">-</SPAN> x1 <SPAN class="op">+</SPAN> x4<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN> tmp2y <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>y2 <SPAN class="op">-</SPAN> y3<SPAN class="op">)</SPAN><SPAN class="op">*</SPAN><SPAN class="num">3</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">-</SPAN> y1 <SPAN class="op">+</SPAN> y4<SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">double</SPAN> fx <SPAN class="op">=</SPAN> x1<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN> fy <SPAN class="op">=</SPAN> y1<SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">double</SPAN> dfx <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>x2 <SPAN class="op">-</SPAN> x1<SPAN class="op">)</SPAN><SPAN class="op">*</SPAN>pre1 <SPAN class="op">+</SPAN> tmp1x<SPAN class="op">*</SPAN>pre2 <SPAN class="op">+</SPAN> tmp2x<SPAN class="op">*</SPAN>subdiv_step3<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN> dfy <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>y2 <SPAN class="op">-</SPAN> y1<SPAN class="op">)</SPAN><SPAN class="op">*</SPAN>pre1 <SPAN class="op">+</SPAN> tmp1y<SPAN class="op">*</SPAN>pre2 <SPAN class="op">+</SPAN> tmp2y<SPAN class="op">*</SPAN>subdiv_step3<SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">double</SPAN> ddfx <SPAN class="op">=</SPAN> tmp1x<SPAN class="op">*</SPAN>pre4 <SPAN class="op">+</SPAN> tmp2x<SPAN class="op">*</SPAN>pre5<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN> ddfy <SPAN class="op">=</SPAN> tmp1y<SPAN class="op">*</SPAN>pre4 <SPAN class="op">+</SPAN> tmp2y<SPAN class="op">*</SPAN>pre5<SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">double</SPAN> dddfx <SPAN class="op">=</SPAN> tmp2x<SPAN class="op">*</SPAN>pre5<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN> dddfy <SPAN class="op">=</SPAN> tmp2y<SPAN class="op">*</SPAN>pre5<SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">int</SPAN> step <SPAN class="op">=</SPAN> NUM_STEPS<SPAN class="op">;</SPAN>
+
+    <SPAN class="rem">// Suppose, we have some abstract object Polygon which</SPAN>
+    <SPAN class="rem">// has method AddVertex(x, y), similar to LineTo in</SPAN>
+    <SPAN class="rem">// many graphical APIs.</SPAN>
+    <SPAN class="rem">// Note, that the loop has only operation add!</SPAN>
+    <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN>step<SPAN class="op">--</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        fx   <SPAN class="op">+=</SPAN> dfx<SPAN class="op">;</SPAN>
+        fy   <SPAN class="op">+=</SPAN> dfy<SPAN class="op">;</SPAN>
+        dfx  <SPAN class="op">+=</SPAN> ddfx<SPAN class="op">;</SPAN>
+        dfy  <SPAN class="op">+=</SPAN> ddfy<SPAN class="op">;</SPAN>
+        ddfx <SPAN class="op">+=</SPAN> dddfx<SPAN class="op">;</SPAN>
+        ddfy <SPAN class="op">+=</SPAN> dddfy<SPAN class="op">;</SPAN>
+        p<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>AddVertex<SPAN class="op">(</SPAN>fx<SPAN class="op">,</SPAN> fy<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+    p<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>AddVertex<SPAN class="op">(</SPAN>x4<SPAN class="op">,</SPAN> y4<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> <SPAN class="rem">// Last step must go exactly to x4, y4</SPAN>
+<SPAN class="op">}</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>You can download a working application for Windows that renders the lion,
+rotates and scales it, and generates random polygons.
+<A href="bezier_interpolation.zip"><IMG src="../../download.gif" border="0"/>Interpolation with Bezier curves &#160;(bezier_interpolation.zip)</A>.
+Press left mouse button and drag to rotate and scale the image around 
+the center point. Press right mouse button and drag left-right 
+to change the coefficient of smoothing (K). Value K=1 is about 
+100 pixels from the left border of the window. Each left double-click 
+generates a random polygon. You can also rotate and scale it, 
+and change K.
+</P></TD></TR></TABLE><TABLE width="640px" bgcolor="#583927" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0">
+<TR><TD><CENTER><SPAN class="authors">
+Copyright <SPAN class="larger">&#169;</SPAN> 2002-2006
+<A href="../../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+<TR><TD><CENTER><SPAN class="authors">
+Web Design and Programming
+<A href="../../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+</TABLE>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+</HTML>

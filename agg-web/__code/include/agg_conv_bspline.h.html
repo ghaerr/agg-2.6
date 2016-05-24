@@ -1,0 +1,78 @@
+<HTML><HEAD><TITLE>Anti-Grain Geometry - </TITLE>
+<META http-equiv="Content-Type" content="text/html"/>
+<LINK rel="stylesheet" type="text/css" href="../../agg.styles.css"/>
+</HEAD>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE><SPAN class="rem">//----------------------------------------------------------------------------</SPAN>
+<SPAN class="rem">// Anti-Grain Geometry (AGG) - Version 2.5</SPAN>
+<SPAN class="rem">// A high quality rendering engine for C++</SPAN>
+<SPAN class="rem">// Copyright (C) 2002-2006 Maxim Shemanarev</SPAN>
+<SPAN class="rem">// Contact: mcseem@antigrain.com</SPAN>
+<SPAN class="rem">//          mcseemagg@yahoo.com</SPAN>
+<SPAN class="rem">//          http://antigrain.com</SPAN>
+<SPAN class="rem">// </SPAN>
+<SPAN class="rem">// AGG is free software; you can redistribute it and/or</SPAN>
+<SPAN class="rem">// modify it under the terms of the GNU General Public License</SPAN>
+<SPAN class="rem">// as published by the Free Software Foundation; either version 2</SPAN>
+<SPAN class="rem">// of the License, or (at your option) any later version.</SPAN>
+<SPAN class="rem">// </SPAN>
+<SPAN class="rem">// AGG is distributed in the hope that it will be useful,</SPAN>
+<SPAN class="rem">// but WITHOUT ANY WARRANTY; without even the implied warranty of</SPAN>
+<SPAN class="rem">// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</SPAN>
+<SPAN class="rem">// GNU General Public License for more details.</SPAN>
+<SPAN class="rem">// </SPAN>
+<SPAN class="rem">// You should have received a copy of the GNU General Public License</SPAN>
+<SPAN class="rem">// along with AGG; if not, write to the Free Software</SPAN>
+<SPAN class="rem">// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, </SPAN>
+<SPAN class="rem">// MA 02110-1301, USA.</SPAN>
+<SPAN class="rem">//----------------------------------------------------------------------------</SPAN>
+
+<SPAN class="kw2">#ifndef</SPAN> AGG_CONV_BSPLINE_INCLUDED
+<SPAN class="kw2">#define</SPAN> AGG_CONV_BSPLINE_INCLUDED
+
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="agg_basics.h.html">agg_basics.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="agg_vcgen_bspline.h.html">agg_vcgen_bspline.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="agg_conv_adaptor_vcgen.h.html">agg_conv_adaptor_vcgen.h</A>&quot;</SPAN>
+
+
+<SPAN class="kw1">namespace</SPAN> agg
+<SPAN class="op">{</SPAN>
+
+    <SPAN class="rem">//---------------------------------------------------------<A name="conv_bspline"><B></B></A><A href="agg_conv_bspline.h.html#conv_bspline">conv_bspline</A></SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> VertexSource<SPAN class="op">&gt;</SPAN> 
+    <SPAN class="kw1">struct</SPAN> <A href="agg_conv_bspline.h.html#conv_bspline">conv_bspline</A> : <SPAN class="kw1">public</SPAN> <A href="agg_conv_adaptor_vcgen.h.html#conv_adaptor_vcgen">conv_adaptor_vcgen</A><SPAN class="op">&lt;</SPAN>VertexSource<SPAN class="op">,</SPAN> <A href="agg_vcgen_bspline.h.html#vcgen_bspline">vcgen_bspline</A><SPAN class="op">&gt;</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">typedef</SPAN> <A href="agg_conv_adaptor_vcgen.h.html#conv_adaptor_vcgen">conv_adaptor_vcgen</A><SPAN class="op">&lt;</SPAN>VertexSource<SPAN class="op">,</SPAN> <A href="agg_vcgen_bspline.h.html#vcgen_bspline">vcgen_bspline</A><SPAN class="op">&gt;</SPAN> base_type<SPAN class="op">;</SPAN>
+
+        <A href="agg_conv_bspline.h.html#conv_bspline">conv_bspline</A><SPAN class="op">(</SPAN>VertexSource<SPAN class="op">&amp;</SPAN> vs<SPAN class="op">)</SPAN> : 
+            <A href="agg_conv_adaptor_vcgen.h.html#conv_adaptor_vcgen">conv_adaptor_vcgen</A><SPAN class="op">&lt;</SPAN>VertexSource<SPAN class="op">,</SPAN> <A href="agg_vcgen_bspline.h.html#vcgen_bspline">vcgen_bspline</A><SPAN class="op">&gt;</SPAN><SPAN class="op">(</SPAN>vs<SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN><SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">void</SPAN>   interpolation_step<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> v<SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN> base_type::generator<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">.</SPAN>interpolation_step<SPAN class="op">(</SPAN>v<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">double</SPAN> interpolation_step<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> base_type::generator<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">.</SPAN>interpolation_step<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+
+    <SPAN class="kw1">private</SPAN>:
+        <A href="agg_conv_bspline.h.html#conv_bspline">conv_bspline</A><SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <A href="agg_conv_bspline.h.html#conv_bspline">conv_bspline</A><SPAN class="op">&lt;</SPAN>VertexSource<SPAN class="op">&gt;</SPAN><SPAN class="op">&amp;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">const</SPAN> <A href="agg_conv_bspline.h.html#conv_bspline">conv_bspline</A><SPAN class="op">&lt;</SPAN>VertexSource<SPAN class="op">&gt;</SPAN><SPAN class="op">&amp;</SPAN> 
+            <SPAN class="kw1">operator</SPAN> <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <A href="agg_conv_bspline.h.html#conv_bspline">conv_bspline</A><SPAN class="op">&lt;</SPAN>VertexSource<SPAN class="op">&gt;</SPAN><SPAN class="op">&amp;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+<SPAN class="op">}</SPAN>
+
+
+<SPAN class="kw2">#endif</SPAN>
+
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT><TABLE width="640px" bgcolor="#583927" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0">
+<TR><TD><CENTER><SPAN class="authors">
+Copyright <SPAN class="larger">&#169;</SPAN> 2002-2006
+<A href="../../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+<TR><TD><CENTER><SPAN class="authors">
+Web Design and Programming
+<A href="../../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+</TABLE>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+</HTML>

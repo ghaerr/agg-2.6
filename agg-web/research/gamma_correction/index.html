@@ -1,0 +1,165 @@
+<HTML><HEAD><TITLE>Anti-Grain Geometry - Gamma Correction</TITLE>
+<META http-equiv="Content-Type" content="text/html"/>
+<LINK rel="stylesheet" type="text/css" href="../../agg.styles.css"/>
+</HEAD>
+<A name="PAGE_GAMMA_CORRECTION"><B></B></A>
+
+
+<TABLE width="640px" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR>
+<TD bgcolor="#583927"></TD>
+</TR>
+</TABLE>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR>
+<TD>
+<TABLE width="170px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR><TD><A href="../../index.html" class="mpmenu">Home/</A></TD></TR>
+<TR><TD><A href="../index.html" class="mpmenu">Research/</A></TD></TR>
+<TR><TD><A href="" class="mpmenu"></A></TD></TR>
+<TR><TD><A href="" class="mpmenu"></A></TD></TR>
+<TR><TD><A href="" class="mpmenu"></A></TD></TR>
+<TR><TD><A href="" class="mpmenu"></A></TD></TR>
+</TABLE>
+</TD>
+<TD width="1px" bgcolor="#583927"></TD>
+<TD width="450px" valign="top" style="text-align:right">
+<TABLE border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR>
+<TD><IMG src="../../agg_logo.gif" border="0"/></TD>
+</TR>
+<TR>
+<TD>
+<TABLE border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR height="15px">
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../../news/index.html">News</A>&nbsp;&nbsp;</TD>
+<TD width="1px" bgcolor="#8e521d"></TD>
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../../doc/index.html">Docs</A>&nbsp;&nbsp;</TD>
+<TD width="1px" bgcolor="#8e521d"></TD>
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../../download/index.html">Download</A>&nbsp;&nbsp;</TD>
+<TD width="1px" bgcolor="#8e521d"></TD>
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../../maillist/index.html">Mailing List</A>&nbsp;&nbsp;</TD>
+<TD width="1px" bgcolor="#8e521d"></TD>
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../../cvs/index.html">CVS</A>&nbsp;&nbsp;</TD>
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+<TABLE width="640px" height="1px" bgcolor="#583927" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>
+</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD><H1>Gamma Correction<SPAN class="subtitle"><BR/>Using Gamma Correction in Anti-Aliasing</SPAN></H1></TD></TR></TABLE>
+
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><B><NOBR>Anti-Aliasing</NOBR></B> technology is always difficult. The difficulty here
+is not only in algorithms, but also because the visual quality of 
+the image depends on the displaying equipment. <B><NOBR>Anti-Aliasing</NOBR></B> images look 
+differently on CRT monitors and on LCD ones. In general it&#039;s a 
+science (or maybe even art) called Color Management.
+<B><NOBR>Anti-Grain</NOBR> Geometry</B> uses the approach of <B><NOBR>Anti-Aliasing</NOBR></B> that potentially allows us to
+obtain the best result. The rendering procedure calculates the 
+exact coverage values for every boundary pixel and as a result 
+one can have any number of <B><NOBR>Anti-Aliasing</NOBR></B> levels.
+<B><NOBR>Anti-Grain</NOBR> Geometry</B> uses 256 levels which is quite enough for any practical 
+purpose and much better than 5-level <B><NOBR>Anti-Aliasing</NOBR></B> used in many applications, 
+for example, True-Type font renderers, almost all 
+<A href="http://www.adobe.com/"><IMG src="../../link.gif" border="0"/>Adobe</A> products and so on. 
+I was absolutely sure that the rendering method I use gives 
+the best result. But when I tried to render the same image 
+with <B><NOBR>Anti-Grain</NOBR> Geometry</B> and <A href="http://www.adobe.com/svg/"><IMG src="../../link.gif" border="0"/>Adobe SVG Viewer</A> 
+I found out that the Adobe SVG Viewer uses only 5 levels of <B><NOBR>Anti-Aliasing</NOBR></B>, 
+but the result sometimes looks better than in <B><NOBR>Anti-Grain</NOBR> Geometry</B>.</P></TD></TR></TABLE> 
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><IMG src="gamma_lion1.jpg" title="" border="0"/><!----> &#160;&#160;&#160; <IMG src="gamma_lion2.jpg" title="" border="0"/><!----></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The left image is rendered with <B><NOBR>Anti-Grain</NOBR> Geometry</B>, the right one with the
+<A href="http://www.adobe.com/svg/"><IMG src="../../link.gif" border="0"/>Adobe SVG Viewer</A>.
+</P></TD></TR></TABLE><TABLE width="640px" bgcolor="#583927" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The lion&#039;s moustache look smoother when rendering with 5-level 
+Adobe SVG Viewer, al least on CRT monitors. But still, the enlarged 
+images show us the lack of the <B><NOBR>Anti-Aliasing</NOBR></B> levels used in Adobe Viewer.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><IMG src="gamma_lion1e.jpg" title="" border="0"/><!----> &#160;&#160;&#160; <IMG src="gamma_lion2e.jpg" title="" border="0"/><!----></P></TD></TR></TABLE>
+
+<TABLE width="640px" bgcolor="#583927" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><IMG src="gamma.gif" title="" align="left" border="4" style="border-color:#FFFFFF"/><!---->
+Obviously, <B><NOBR>Anti-Grain</NOBR> Geometry</B> can render better, but using a simple linear dependance 
+Pixel Coverage <SPAN class="larger">&#8594;</SPAN> Brightness is not the best and should be corrected. 
+In color management it&#039;s called Gamma Correction. For gamma correction 
+I use a simple array of 256 values that give the desired value of brightness
+depending on the pixel coverage. If all the values in the array are equal 
+to their index, i.e., 0,1,2,3,4,&#133; it means that there&#039;s no gamma correction. 
+The array can be calculated using any approach, but the simplest method 
+is to use a B-Spline curve with two reference points and four coeffitiens 
+(kx1, ky1, kx2, ky2) that determine its shape. So, I created an application 
+with a special gamma correction control that allows for calculation of the 
+array of the gamma values. 
+It draws 6 very narrow ellipses, 6 circles and some other figures that 
+can be used as a visual test of the quality of <B><NOBR>Anti-Aliasing</NOBR></B>.
+</P></TD></TR></TABLE><TABLE width="640px" bgcolor="#583927" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD><CENTER><IMG src="gamma1.gif" title="Default Shape - No Gamma Correction" border="0"/><BR/><I>Default Shape - No Gamma Correction</I></CENTER></TD></TR></TABLE>
+<TABLE width="640px" bgcolor="#583927" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The control points can be moved inside their quadrants. 
+The following image looks much better at least on CRT monitors.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD><CENTER><IMG src="gamma2.gif" title="Gamma Correction for CRT Monitors" border="0"/><BR/><I>Gamma Correction for CRT Monitors</I></CENTER></TD></TR></TABLE>
+<TABLE width="640px" bgcolor="#583927" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>We actually can obtain much better result of certain thickness and 
+brightness, but it cannot be used for general case. The shown above 
+example is a kind of an average case which is not the best for certain 
+parameters, but gives us rather a good average result on CRT monitors,
+as well as on LCD ones. Below are the examples of other shapes of the 
+gamma curve.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD><CENTER><IMG src="gamma3.gif" title="Test Gamma 1" border="0"/><BR/><I>Test Gamma 1</I></CENTER></TD></TR></TABLE>
+<TABLE width="640px"><TR><TD><CENTER><IMG src="gamma4.gif" title="Test Gamma 2" border="0"/><BR/><I>Test Gamma 2</I></CENTER></TD></TR></TABLE>
+<TABLE width="640px"><TR><TD><CENTER><IMG src="gamma5.gif" title="Test Gamma 3" border="0"/><BR/><I>Test Gamma 3</I></CENTER></TD></TR></TABLE>
+<TABLE width="640px" bgcolor="#583927" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Besides, the gamma correction strongly depends on the content of the image. 
+The values that are good enough for rendering ellipses like shown above 
+may give a very bad result when rendering small text glyphs. The latest 
+require sharper forms, while large geometric figures look better with 
+very smooth edges.
+</P></TD></TR></TABLE><TABLE width="640px" bgcolor="#583927" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Finally, this is the result of rendering the same lion with gamma correction 
+for CRT monitors. Now it looks better than the one rendered with Adobe SVG Viewer.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><IMG src="gamma_lion3.jpg" title="" border="0"/><!----> &#160;&#160;&#160; <IMG src="gamma_lion3e.jpg" title="" border="0"/><!----></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>You can download the working application for Windows: 
+<A href="gamma_ctrl.zip"><IMG src="../../download.gif" border="0"/>Gamma Control &#160;(gamma_ctrl.zip)</A></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The source code can be found in the <CODE>examples</CODE> directory of the
+distribution package. Visit the <A href="../../download/index.html#PAGE_DOWNLOAD">Download</A> page.</P></TD></TR></TABLE>
+
+
+<TABLE width="640px" bgcolor="#583927" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0">
+<TR><TD><CENTER><SPAN class="authors">
+Copyright <SPAN class="larger">&#169;</SPAN> 2002-2006
+<A href="../../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+<TR><TD><CENTER><SPAN class="authors">
+Web Design and Programming
+<A href="../../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+</TABLE>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+</HTML>

@@ -1,0 +1,833 @@
+<HTML><HEAD><TITLE>Anti-Grain Geometry - Demo Examples</TITLE>
+<META http-equiv="Content-Type" content="text/html"/>
+<LINK rel="stylesheet" type="text/css" href="../agg.styles.css"/>
+</HEAD>
+<A name="PAGE_DEMO"><B></B></A>
+
+
+<TABLE width="640px" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR>
+<TD bgcolor="#583927"></TD>
+</TR>
+</TABLE>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR>
+<TD>
+<TABLE width="170px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR><TD><A href="../index.html" class="mpmenu">Home/</A></TD></TR>
+<TR><TD><A href="" class="mpmenu"></A></TD></TR>
+<TR><TD><A href="" class="mpmenu"></A></TD></TR>
+<TR><TD><A href="" class="mpmenu"></A></TD></TR>
+<TR><TD><A href="" class="mpmenu"></A></TD></TR>
+<TR><TD><A href="" class="mpmenu"></A></TD></TR>
+</TABLE>
+</TD>
+<TD width="1px" bgcolor="#583927"></TD>
+<TD width="450px" valign="top" style="text-align:right">
+<TABLE border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR>
+<TD><IMG src="../agg_logo.gif" border="0"/></TD>
+</TR>
+<TR>
+<TD>
+<TABLE border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR height="15px">
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../news/index.html">News</A>&nbsp;&nbsp;</TD>
+<TD width="1px" bgcolor="#8e521d"></TD>
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../doc/index.html">Docs</A>&nbsp;&nbsp;</TD>
+<TD width="1px" bgcolor="#8e521d"></TD>
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../download/index.html">Download</A>&nbsp;&nbsp;</TD>
+<TD width="1px" bgcolor="#8e521d"></TD>
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../maillist/index.html">Mailing List</A>&nbsp;&nbsp;</TD>
+<TD width="1px" bgcolor="#8e521d"></TD>
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../cvs/index.html">CVS</A>&nbsp;&nbsp;</TD>
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+<TABLE width="640px" height="1px" bgcolor="#583927" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD><H1>Demo Examples</H1></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>All the demo examples are in the distribution package, see <A href="../download/index.html#PAGE_DOWNLOAD">Download</A>. 
+This page contains precompiled executables with screenshots and brief 
+explanations. It is safe to download and run the executables, there are 
+no viruses and no any trojan code. Also, there is nothing installed 
+on your computer, you just download, unpack, run, and see the examples.
+However, it&#039;s always a good idea to double check everything with your 
+favorite anti-virus software before running. 
+If you don&#039;t trust it, you can download the sources 
+(see <A href="../download/index.html#PAGE_DOWNLOAD">Download</A>), compile and run the examples, and of course, 
+analyse the source code for any possible destructive subroutines.
+I have no responsibility if your computer is infected with some 
+virus program.</P></TD></TR></TABLE> 
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The image examples require file <CODE>spheres.bmp</CODE> for Windows executables, 
+and <CODE>spheres.ppm</CODE> for Linux ones. Download them from here:<BR/>
+<A href="../spheres.bmp"><IMG src="../download.gif" border="0"/>&#160;(../spheres.bmp)</A><BR/>
+<A href="../spheres.ppm"><IMG src="../download.gif" border="0"/>&#160;(../spheres.ppm)</A><BR/>
+You can also use any other .BMP or .PPM file of about the same size. 
+The .BMP file must be of 24 bit TrueColor, the .PPM one must be of type P6 
+(24 bit per pixel RGB). There are two ways to use your own files in image 
+demo examples. You can simply call it <CODE>spheres.bmp</CODE> or <CODE>spheres.ppm</CODE> 
+and put them to the directory
+where you run the examples, or indicate the name of the file in the 
+command line, for example,
+<CODE>image_filters.exe my_image.bmp</CODE></P></TD></TR></TABLE>
+
+
+<TABLE class="tbl" width="640px" border="0" cellspacing="1px" cellpadding="5px">
+<TH>Screenshot</TH><TH>Source Code and Description</TH><TH>Executable</TH>
+<TR><TD><A href="examples.jpg"><IMG src="examples_s.jpg" border="0" title="Click to enlarge"/></A></TD><TD style="text-align:justify"><B>All examples in one package</B></TD><TD><A href="examples.zip"><IMG src="../dl_win32.gif" border="0"/></A><BR/>
+<A href="examples.tar.gz"><IMG src="../dl_linux.gif" border="0"/></A><BR/>
+<A href="examples_sgi.tar.gz"><IMG src="../dl_irix64.gif" border="0"/></A><BR/>
+<A href="examples_sun.tar.gz"><IMG src="../dl_sunos.gif" border="0"/></A><BR/>
+<A href="examples_amiga.tar.gz"><IMG src="../dl_amigaos.gif" border="0"/></A><BR/></TD></TR>
+<TR><TD><A href="lion.png"><IMG src="lion_s.png" border="0" title="Click to enlarge"/></A></TD><TD style="text-align:justify"><A name="PAGE_DEMO_lion"><B></B></A><CODE><A href="lion.cpp.html">lion.cpp</A></CODE>
+This is the first example I used to implement and debug the 
+scanline rasterizer, affine transformer, and basic renderers.
+You can rotate and scale the &#147;Lion&#148; with the left mouse button.
+Right mouse button adds &#147;skewing&#148; transformations, proportional 
+to the &#147;X&#148; coordinate. The image is drawn over the old one with 
+a cetrain opacity value. Change &#147;Alpha&#148; to draw funny looking
+&#147;lions&#148;. Change window size to clear the window.</TD><TD><A href="lion.zip"><IMG src="../dl_win32.gif" border="0"/></A><BR/>
+<A href="lion.tar.gz"><IMG src="../dl_linux.gif" border="0"/></A><BR/>
+<A href="lion_sgi.tar.gz"><IMG src="../dl_irix64.gif" border="0"/></A><BR/>
+<A href="lion_sun.tar.gz"><IMG src="../dl_sunos.gif" border="0"/></A><BR/>
+<A href="lion_amiga.gz"><IMG src="../dl_amigaos.gif" border="0"/></A><BR/></TD></TR>
+<TR><TD><A href="idea.gif"><IMG src="idea_s.gif" border="0" title="Click to enlarge"/></A></TD><TD style="text-align:justify"><A name="PAGE_DEMO_idea"><B></B></A>
+<CODE><A href="idea.cpp.html">idea.cpp</A></CODE>
+The polygons for this &#147;idea&#148; were taken from the book 
+&quot;Dynamic HTML in Action&quot; by Eric Schurman. An example of using 
+Microsoft Direct Animation can be found here: <A href="ideaDA.html"><IMG src="../link.gif" border="0"/>ideaDA.html</A>.
+If you use Microsoft Internet Explorer you can compare the quality
+of rendering in <B>AGG</B> and Microsoft Direct Animation. Note that even 
+when you click &quot;Rotate with High Quality&quot;, you will see it &#147;jitters&#148;.
+It&#039;s because there are actually no <B>Subpixel Accuracy</B> used in the Microsoft Direct Animation.
+In the <B>AGG</B> example, there&#039;s no jitter even in the &#147;Draft&#148; (low quality) mode.
+You can see the simulated jittering if you turn on the &#147;Roundoff&#148; mode, 
+in which there integer pixel coordinated are used. As for the performance, 
+note, that the image in <B>AGG</B> is rotated with step of 0.01 degree (initially), 
+while in the Direct Animation Example the angle step is 0.1 degree.</TD><TD><A href="idea.zip"><IMG src="../dl_win32.gif" border="0"/></A><BR/>
+<A href="idea.tar.gz"><IMG src="../dl_linux.gif" border="0"/></A><BR/>
+<A href="idea_sgi.tar.gz"><IMG src="../dl_irix64.gif" border="0"/></A><BR/>
+<A href="idea_sun.tar.gz"><IMG src="../dl_sunos.gif" border="0"/></A><BR/>
+<A href="idea_amiga.gz"><IMG src="../dl_amigaos.gif" border="0"/></A><BR/></TD></TR>
+<TR><TD><A href="lion_outline.gif"><IMG src="lion_outline_s.gif" border="0" title="Click to enlarge"/></A></TD><TD style="text-align:justify"><A name="PAGE_DEMO_lion_outline"><B></B></A>
+<CODE><A href="lion_outline.cpp.html">lion_outline.cpp</A></CODE>
+The example demonstrates my new algorithm of drawing <B>Anti-Aliased</B>
+lines. The algorithm works about 2.5 times faster than the scanline 
+rasterizer but has some restrictions, particularly, line joins can
+be only of the &#147;miter&#148; type, and when so called <B>miter limit</B> is
+exceded, they are not as accurate as generated by the stroke 
+converter (<A href="../__code/include/agg_conv_stroke.h.html#conv_stroke">conv_stroke</A>). To see the difference, maximize the window
+and try to rotate and scale the &#147;lion&#148; with and without using
+the scanline rasterizer (a checkbox at the bottom). The difference
+in performance is obvious.</TD><TD><A href="lion_outline.zip"><IMG src="../dl_win32.gif" border="0"/></A><BR/>
+<A href="lion_outline.tar.gz"><IMG src="../dl_linux.gif" border="0"/></A><BR/>
+<A href="lion_outline_sgi.tar.gz"><IMG src="../dl_irix64.gif" border="0"/></A><BR/>
+<A href="lion_outline_sun.tar.gz"><IMG src="../dl_sunos.gif" border="0"/></A><BR/>
+<A href="lion_outline_amiga.gz"><IMG src="../dl_amigaos.gif" border="0"/></A><BR/></TD></TR>
+<TR><TD><A href="aa_demo.gif"><IMG src="aa_demo_s.gif" border="0" title="Click to enlarge"/></A></TD><TD style="text-align:justify"><A name="PAGE_DEMO_aa_demo"><B></B></A>
+<CODE><A href="aa_demo.cpp.html">aa_demo.cpp</A></CODE>
+Demonstration of the <B><NOBR>Anti-Aliasing</NOBR></B> principle with <B>Subpixel Accuracy</B>. The triangle is
+rendered two times, with its &#147;natural&#148; size (at the bottom-left) 
+and enlarged. To draw the enlarged version there is a special scanline
+renderer was written (see class renderer_enlarged in the source code). 
+You can drag the whole triangle as well as each vertex of it. Also 
+change &#147;Gamma&#148; to see how it affects the quality of <B><NOBR>Anti-Aliasing</NOBR></B>.</TD><TD><A href="aa_demo.zip"><IMG src="../dl_win32.gif" border="0"/></A><BR/>
+<A href="aa_demo.tar.gz"><IMG src="../dl_linux.gif" border="0"/></A><BR/>
+<A href="aa_demo_sgi.tar.gz"><IMG src="../dl_irix64.gif" border="0"/></A><BR/>
+<A href="aa_demo_sun.tar.gz"><IMG src="../dl_sunos.gif" border="0"/></A><BR/>
+<A href="aa_demo_amiga.gz"><IMG src="../dl_amigaos.gif" border="0"/></A><BR/></TD></TR>
+<TR><TD><A href="gamma_correction.gif"><IMG src="gamma_correction_s.gif" border="0" title="Click to enlarge"/></A></TD><TD style="text-align:justify"><A name="PAGE_DEMO_gamma_correction"><B></B></A>
+<CODE><A href="gamma_correction.cpp.html">gamma_correction.cpp</A></CODE>
+<B><NOBR>Anti-Aliasing</NOBR></B> is very tricky because everything depends. Particularly, 
+having straight linear dependence <B>&#147;pixel coverage&#148;</B> <SPAN class="larger">&#8594;</SPAN> 
+<B>&#147;brightness&#148;</B> may be not the best. 
+It depends on the type of display (CRT, LCD), contrast, 
+<NOBR>black-on-white</NOBR> vs <NOBR>white-on-black</NOBR>, it even depends on your 
+personal vision. There are no linear dependencies in this World. 
+This example demonstrates the importance of so called <B>Gamma 
+Correction</B> in <B><NOBR>Anti-Aliasing</NOBR></B>. There a traditional <B>power</B> function is used, 
+in terms of <B>C++</B> it&#039;s <CODE>brighness = pow(brighness, gamma)</CODE>. Change 
+&#147;Gamma&#148; and see how the quality changes. Note, that if you improve
+the quality on the white side, it becomes worse on the black side and 
+vice versa.</TD><TD><A href="gamma_correction.zip"><IMG src="../dl_win32.gif" border="0"/></A><BR/>
+<A href="gamma_correction.tar.gz"><IMG src="../dl_linux.gif" border="0"/></A><BR/>
+<A href="gamma_correction_sgi.tar.gz"><IMG src="../dl_irix64.gif" border="0"/></A><BR/>
+<A href="gamma_correction_sun.tar.gz"><IMG src="../dl_sunos.gif" border="0"/></A><BR/>
+<A href="gamma_correction_amiga.gz"><IMG src="../dl_amigaos.gif" border="0"/></A><BR/></TD></TR>
+<TR><TD><A href="gamma_ctrl.gif"><IMG src="gamma_ctrl_s.gif" border="0" title="Click to enlarge"/></A></TD><TD style="text-align:justify"><A name="PAGE_DEMO_gamma_ctrl"><B></B></A>
+<CODE><A href="gamma_ctrl.cpp.html">gamma_ctrl.cpp</A></CODE>
+This is another experiment with gamma correction. 
+See also <A href="../research/gamma_correction/index.html#PAGE_GAMMA_CORRECTION">Gamma Correction</A>. I presumed that we can do better 
+than with a traditional power function. So, I created a 
+special control to have an arbitrary gamma function. The conclusion
+is that we can really achieve a better visual result with this control, 
+but still, in practice, the traditional <B>power function</B> is good enough
+too.</TD><TD><A href="gamma_ctrl.zip"><IMG src="../dl_win32.gif" border="0"/></A><BR/>
+<A href="gamma_ctrl.tar.gz"><IMG src="../dl_linux.gif" border="0"/></A><BR/>
+<A href="gamma_ctrl_sgi.tar.gz"><IMG src="../dl_irix64.gif" border="0"/></A><BR/>
+<A href="gamma_ctrl_sun.tar.gz"><IMG src="../dl_sunos.gif" border="0"/></A><BR/>
+<A href="gamma_ctrl_amiga.gz"><IMG src="../dl_amigaos.gif" border="0"/></A><BR/></TD></TR>
+<TR><TD><A href="rounded_rect.gif"><IMG src="rounded_rect_s.gif" border="0" title="Click to enlarge"/></A></TD><TD style="text-align:justify"><A name="PAGE_DEMO_rounded_rect"><B></B></A>
+<CODE><A href="rounded_rect.cpp.html">rounded_rect.cpp</A></CODE>
+Yet another example dedicated to Gamma Correction. 
+If you have a CRT monitor: The rectangle looks bad - the rounded corners are 
+thicker than its side lines. First try to drag the <B>&#147;subpixel offset&#148;</B> 
+control &#151; it simply adds some fractional value to the coordinates. When dragging 
+you will see that the rectangle is &quot;blinking&quot;. Then increase <B>&#147;Gamma&#148;</B> 
+to about 1.5. The result will look almost perfect &#151; the visual thickness of 
+the rectangle remains the same. That&#039;s good, but turn the checkbox 
+<B>&#147;White on black&#148;</B> on &#151; what do we see? Our rounded rectangle looks terrible. 
+Drag the <B>&#147;subpixel offset&#148;</B> slider &#151; it&#039;s blinking as hell. 
+Now decrease &quot;Gamma&quot; to about 0.6. What do we see now? Perfect result! 
+If you use an LCD monitor, the good value of gamma will be closer to 1.0 in
+both cases &#151; black on white or white on black. There&#039;s no perfection in this 
+world, but at least you can control Gamma in <B><NOBR>Anti-Grain</NOBR> Geometry</B> :-)</TD><TD><A href="rounded_rect.zip"><IMG src="../dl_win32.gif" border="0"/></A><BR/>
+<A href="rounded_rect.tar.gz"><IMG src="../dl_linux.gif" border="0"/></A><BR/>
+<A href="rounded_rect_sgi.tar.gz"><IMG src="../dl_irix64.gif" border="0"/></A><BR/>
+<A href="rounded_rect_sun.tar.gz"><IMG src="../dl_sunos.gif" border="0"/></A><BR/>
+<A href="rounded_rect_amiga.gz"><IMG src="../dl_amigaos.gif" border="0"/></A><BR/></TD></TR>
+<TR><TD><A href="gamma_tuner.png"><IMG src="gamma_tuner_s.png" border="0" title="Click to enlarge"/></A></TD><TD style="text-align:justify"><A name="PAGE_DEMO_gamma_tuner"><B></B></A>
+<CODE><A href="gamma_tuner.cpp.html">gamma_tuner.cpp</A></CODE>
+Yet another gamma tuner. Set gamma value with the slider, and then
+try to tune your monitor so that the vertical strips would be 
+almost invisible.</TD><TD><A href="gamma_tuner.zip"><IMG src="../dl_win32.gif" border="0"/></A><BR/></TD></TR>
+<TR><TD><A href="rasterizers.gif"><IMG src="rasterizers_s.gif" border="0" title="Click to enlarge"/></A></TD><TD style="text-align:justify"><A name="PAGE_DEMO_rasterizers"><B></B></A>
+<CODE><A href="rasterizers.cpp.html">rasterizers.cpp</A></CODE>
+It&#039;s a very simple example that was written to compare the performance 
+between Anti-Aliased and regular polygon filling. It appears that the most
+expensive operation is rendering of horizontal scanlines. So that, 
+we can use the very same rasterization algorithm to draw regular, aliased 
+polygons. Of course, it&#039;s possible to write a special version of the rasterizer
+that will work faster, but won&#039;t calculate the pixel coverage values. But 
+on the other hand, the existing version of the <A href="../__code/include/agg_rasterizer_scanline_aa.h.html#rasterizer_scanline_aa">rasterizer_scanline_aa</A> allows
+you to change gamma, and to &quot;dilate&quot; or &quot;shrink&quot; the polygons in range of <SPAN class="larger">&#177;</SPAN> 1 
+pixel. As usual, you can drag the triangles as well as the vertices of them. 
+Compare the performance with different shapes and opacity.</TD><TD><A href="rasterizers.zip"><IMG src="../dl_win32.gif" border="0"/></A><BR/>
+<A href="rasterizers.tar.gz"><IMG src="../dl_linux.gif" border="0"/></A><BR/>
+<A href="rasterizers_sgi.tar.gz"><IMG src="../dl_irix64.gif" border="0"/></A><BR/>
+<A href="rasterizers_sun.tar.gz"><IMG src="../dl_sunos.gif" border="0"/></A><BR/>
+<A href="rasterizers_amiga.gz"><IMG src="../dl_amigaos.gif" border="0"/></A><BR/></TD></TR>
+<TR><TD><A href="rasterizers2.gif"><IMG src="rasterizers2_s.gif" border="0" title="Click to enlarge"/></A></TD><TD style="text-align:justify"><A name="PAGE_DEMO_rasterizers2"><B></B></A>
+<CODE><A href="rasterizers2.cpp.html">rasterizers2.cpp</A></CODE>
+More complex example demostrating different rasterizers. Here you can see how the 
+<B>outline</B> rasterizer works, and how to use an image as the line pattern. This 
+capability can be very useful to draw geographical maps.</TD><TD><A href="rasterizers2.zip"><IMG src="../dl_win32.gif" border="0"/></A><BR/>
+<A href="rasterizers2.tar.gz"><IMG src="../dl_linux.gif" border="0"/></A><BR/>
+<A href="rasterizers2_sgi.tar.gz"><IMG src="../dl_irix64.gif" border="0"/></A><BR/>
+<A href="rasterizers2_sun.tar.gz"><IMG src="../dl_sunos.gif" border="0"/></A><BR/>
+<A href="rasterizers2_amiga.gz"><IMG src="../dl_amigaos.gif" border="0"/></A><BR/></TD></TR>
+<TR><TD><A href="component_rendering.gif"><IMG src="component_rendering_s.gif" border="0" title="Click to enlarge"/></A></TD><TD style="text-align:justify"><A name="PAGE_DEMO_component_rendering"><B></B></A>
+<CODE><A href="component_rendering.cpp.html">component_rendering.cpp</A></CODE>
+<B>AGG</B> has a gray-scale renderer that can use any 8-bit color channel of an 
+RGB or RGBA frame buffer. Most likely it will be used to draw gray-scale 
+images directly in the alpha-channel.</TD><TD><A href="component_rendering.zip"><IMG src="../dl_win32.gif" border="0"/></A><BR/>
+<A href="component_rendering.tar.gz"><IMG src="../dl_linux.gif" border="0"/></A><BR/>
+<A href="component_rendering_sgi.tar.gz"><IMG src="../dl_irix64.gif" border="0"/></A><BR/>
+<A href="component_rendering_sun.tar.gz"><IMG src="../dl_sunos.gif" border="0"/></A><BR/>
+<A href="component_rendering_amiga.gz"><IMG src="../dl_amigaos.gif" border="0"/></A><BR/></TD></TR>
+<TR><TD><A href="polymorphic_renderer.gif"><IMG src="polymorphic_renderer_s.gif" border="0" title="Click to enlarge"/></A></TD><TD style="text-align:justify"><A name="PAGE_DEMO_polymorphic_renderer"><B></B></A>
+<CODE><A href="polymorphic_renderer.cpp.html">polymorphic_renderer.cpp</A></CODE>
+There&#039;s nothing looking effective. <B>AGG</B> has renderers for different pixel formats 
+in memory, particularly, for different byte order (RGB or BGR). 
+But the renderers are class templates, where byte order is defined
+at the compile time. It&#039;s done for the sake of performance and in most 
+cases it fits all your needs. Still, if you need to switch between 
+different pixel formats dynamically, you can write a simple polymorphic 
+class wrapper, like the one in this example.</TD><TD><A href="polymorphic_renderer.zip"><IMG src="../dl_win32.gif" border="0"/></A><BR/>
+<A href="polymorphic_renderer.tar.gz"><IMG src="../dl_linux.gif" border="0"/></A><BR/>
+<A href="polymorphic_renderer_sgi.tar.gz"><IMG src="../dl_irix64.gif" border="0"/></A><BR/>
+<A href="polymorphic_renderer_sun.tar.gz"><IMG src="../dl_sunos.gif" border="0"/></A><BR/>
+<A href="polymorphic_renderer_amiga.gz"><IMG src="../dl_amigaos.gif" border="0"/></A><BR/></TD></TR>
+<TR><TD><A href="gouraud.png"><IMG src="gouraud_s.png" border="0" title="Click to enlarge"/></A></TD><TD style="text-align:justify"><A name="PAGE_DEMO_gouraud"><B></B></A>
+<CODE><A href="gouraud.cpp.html">gouraud.cpp</A></CODE>
+Gouraud shading. It&#039;s a simple method of interpolating colors in a triangle.
+There&#039;s no &#147;cube&#148; drawn, there&#039;re just 6 triangles.
+You define a triangle and colors in its vertices. When rendering, the 
+colors will be linearly interpolated. But there&#039;s a problem that appears when
+drawing adjacent triangles with <B><NOBR>Anti-Aliasing</NOBR></B>. Anti-Aliased polygons do not &quot;dock&quot; to 
+each other correctly, there visual artifacts at the edges appear. I call it
+&#147;the problem of adjacent edges&#148;. <B>AGG</B> has a simple mechanism that allows you
+to get rid of the artifacts, just dilating the polygons and/or changing 
+the gamma-correction value. But it&#039;s tricky, because the values depend 
+on the opacity of the polygons. In this example you can change the opacity,
+the dilation value and gamma. Also you can drag the Red, Green and Blue 
+corners of the &#147;cube&#148;.</TD><TD><A href="gouraud.zip"><IMG src="../dl_win32.gif" border="0"/></A><BR/>
+<A href="gouraud.tar.gz"><IMG src="../dl_linux.gif" border="0"/></A><BR/>
+<A href="gouraud_sgi.tar.gz"><IMG src="../dl_irix64.gif" border="0"/></A><BR/>
+<A href="gouraud_sun.tar.gz"><IMG src="../dl_sunos.gif" border="0"/></A><BR/>
+<A href="gouraud_amiga.gz"><IMG src="../dl_amigaos.gif" border="0"/></A><BR/></TD></TR>
+<TR><TD><A href="gradients.png"><IMG src="gradients_s.png" border="0" title="Click to enlarge"/></A></TD><TD style="text-align:justify"><A name="PAGE_DEMO_gradients"><B></B></A>
+<CODE><A href="gradients.cpp.html">gradients.cpp</A></CODE>
+This &#147;sphere&#148; is rendered with color gradients only. Initially there was an idea
+to compensate so called <A href="http://www.cquest.utoronto.ca/psych/psy280f/ch3/mb/mb.html"><IMG src="../link.gif" border="0"/>Mach Bands effect</A>. To do so I added a gradient profile functor. 
+Then the concept was extended to set a color profile. As a result you can
+render simple geometrical objects in 2D looking like 3D ones.
+In this example you can construct your own color profile and select the gradient
+function. There&#039;re not so many gradient functions in <B>AGG</B>, but you can easily
+add your own. Also, drag the &#147;gradient&#148; with the left mouse button, scale and 
+rotate it with the right one.</TD><TD><A href="gradients.zip"><IMG src="../dl_win32.gif" border="0"/></A><BR/>
+<A href="gradients.tar.gz"><IMG src="../dl_linux.gif" border="0"/></A><BR/>
+<A href="gradients_sgi.tar.gz"><IMG src="../dl_irix64.gif" border="0"/></A><BR/>
+<A href="gradients_sun.tar.gz"><IMG src="../dl_sunos.gif" border="0"/></A><BR/>
+<A href="gradients_amiga.gz"><IMG src="../dl_amigaos.gif" border="0"/></A><BR/></TD></TR>
+<TR><TD><A href="gradient_focal.png"><IMG src="gradient_focal_s.png" border="0" title="Click to enlarge"/></A></TD><TD style="text-align:justify"><A name="PAGE_DEMO_gradient_focal"><B></B></A>
+<CODE><A href="gradient_focal.cpp.html">gradient_focal.cpp</A></CODE>
+This demo evolved from testing code and performance measurements. 
+In particular, it shows you how to calculate 
+the parameters of a radial gradient with a separate focal point, considering
+arbitrary affine transformations. In this example window resizing
+transformations are taken into account. It also demonstrates the use case 
+of <A href="../__code/include/agg_gradient_lut.h.html#gradient_lut">gradient_lut</A> and gamma correction.</TD><TD><A href="gradient_focal.zip"><IMG src="../dl_win32.gif" border="0"/></A><BR/></TD></TR>
+<TR><TD><A href="conv_contour.gif"><IMG src="conv_contour_s.gif" border="0" title="Click to enlarge"/></A></TD><TD style="text-align:justify"><A name="PAGE_DEMO_conv_contour"><B></B></A>
+<CODE><A href="conv_contour.cpp.html">conv_contour.cpp</A></CODE>
+One of the converters in <B>AGG</B> is <A href="../__code/include/agg_conv_contour.h.html#conv_contour">conv_contour</A>. It allows you to
+extend or shrink polygons. Initially, it was implemented to eliminate
+the &#147;problem of adjacent edges&#148; in the <A href="../svg/index.html#PAGE_SVG">SVG Viewer</A>, but it can be 
+very useful in many other applications, for example, to change 
+the font weight on the fly. The trick here is that the sign (dilation
+or shrinking) depends on the vertex order - clockwise or counterclockwise.
+In the <A href="../__code/include/agg_conv_contour.h.html#conv_contour">conv_contour</A> you can control the behavior. Sometimes you need to
+preserve the dilation regardless of the initial orientation, sometimes 
+it should depend on the orientation. The glyph &#145;<B>a</B>&#146; has
+a &#147;hole&#148; whose orientation differs from the main contour. To change
+the &#147;weight&#148; correctly, you need to keep the orientation as it is 
+originally defined. If you turn &#147;Autodetect orientation&#133;&#148; on, 
+the glyph will be extended or shrinked incorrectly. The radio buttons
+control the orientation flad assigned to all polygons. &#147;Close&#148; doesn&#039;t
+add the flag, &#147;Close CW&#148; and &#147;Close CCW&#148; add &#147;clockwise&#148; or
+&#147;counterclockwise&#148; flag respectively. Note, that the actual order 
+of vertices remains the same, the flag is being added despite of the 
+real orientation. Try to play with it.</TD><TD><A href="conv_contour.zip"><IMG src="../dl_win32.gif" border="0"/></A><BR/>
+<A href="conv_contour.tar.gz"><IMG src="../dl_linux.gif" border="0"/></A><BR/>
+<A href="conv_contour_sgi.tar.gz"><IMG src="../dl_irix64.gif" border="0"/></A><BR/>
+<A href="conv_contour_sun.tar.gz"><IMG src="../dl_sunos.gif" border="0"/></A><BR/>
+<A href="conv_contour_amiga.gz"><IMG src="../dl_amigaos.gif" border="0"/></A><BR/></TD></TR>
+<TR><TD><A href="conv_dash_marker.gif"><IMG src="conv_dash_marker_s.gif" border="0" title="Click to enlarge"/></A></TD><TD style="text-align:justify"><A name="PAGE_DEMO_conv_dash_marker"><B></B></A>
+<CODE><A href="conv_dash_marker.cpp.html">conv_dash_marker.cpp</A></CODE>
+The example demonstrates rather a complex pipeline that consists of 
+diffrerent converters, particularly, of the dash generator, marker 
+generator, and of course, the stroke converter. There is also a 
+converter that allows you to draw smooth curves based on polygons, 
+see <A href="../research/bezier_interpolation/index.html#PAGE_BEZIER_INTERPOLATION">Interpolation with Bezier Curves</A>. You can drag the three vertices of
+the &#147;main&#148; triangle.</TD><TD><A href="conv_dash_marker.zip"><IMG src="../dl_win32.gif" border="0"/></A><BR/>
+<A href="conv_dash_marker.tar.gz"><IMG src="../dl_linux.gif" border="0"/></A><BR/>
+<A href="conv_dash_marker_sgi.tar.gz"><IMG src="../dl_irix64.gif" border="0"/></A><BR/>
+<A href="conv_dash_marker_sun.tar.gz"><IMG src="../dl_sunos.gif" border="0"/></A><BR/>
+<A href="conv_dash_marker_amiga.gz"><IMG src="../dl_amigaos.gif" border="0"/></A><BR/></TD></TR>
+<TR><TD><A href="conv_stroke.gif"><IMG src="conv_stroke_s.gif" border="0" title="Click to enlarge"/></A></TD><TD style="text-align:justify"><A name="PAGE_DEMO_conv_stroke"><B></B></A>
+<CODE><A href="conv_stroke.cpp.html">conv_stroke.cpp</A></CODE>
+Another example that demonstrates the power of the custom pipeline 
+concept. First, we calculate a thick outline (stroke), then generate
+dashes, and then, calculate the outlines (strokes) of the dashes
+again. Drag the verices as in the previous example.</TD><TD><A href="conv_stroke.zip"><IMG src="../dl_win32.gif" border="0"/></A><BR/>
+<A href="conv_stroke.tar.gz"><IMG src="../dl_linux.gif" border="0"/></A><BR/>
+<A href="conv_stroke_sgi.tar.gz"><IMG src="../dl_irix64.gif" border="0"/></A><BR/>
+<A href="conv_stroke_sun.tar.gz"><IMG src="../dl_sunos.gif" border="0"/></A><BR/>
+<A href="conv_stroke_amiga.gz"><IMG src="../dl_amigaos.gif" border="0"/></A><BR/></TD></TR>
+<TR><TD><A href="mol_view.gif"><IMG src="mol_view_s.gif" border="0" title="Click to enlarge"/></A></TD><TD style="text-align:justify"><A name="PAGE_DEMO_mol_view"><B></B></A>
+<CODE><A href="mol_view.cpp.html">mol_view.cpp</A></CODE>
+This is rather a complex but effective example that renders 
+2D organic molecules from the popular MDL Molecule Format (SDF). 
+Press the left mouse button to rotate and scale the molecule, 
+and the right one to drag it. PageUp, PageDown keys switch 
+between the molecules in the file. Look at the performance, 
+and note, that the molecules are being drawn from scratch 
+every time you change anything.<BR/>
+A little note for chemists. There&#039;s no ring perception 
+is done, so that, the double bonds in rings are drawn 
+incorrectly, but understandable. Also note, that 
+even very complex molecules with macrocycles,  
+drawn in limited space still remain consistent 
+and recognizable.</TD><TD><A href="mol_view.zip"><IMG src="../dl_win32.gif" border="0"/></A><BR/>
+<A href="mol_view.tar.gz"><IMG src="../dl_linux.gif" border="0"/></A><BR/>
+<A href="mol_view_sgi.tar.gz"><IMG src="../dl_irix64.gif" border="0"/></A><BR/>
+<A href="mol_view_sun.tar.gz"><IMG src="../dl_sunos.gif" border="0"/></A><BR/>
+<A href="mol_view_amiga.gz"><IMG src="../dl_amigaos.gif" border="0"/></A><BR/></TD></TR>
+<TR><TD><A href="alpha_mask.gif"><IMG src="alpha_mask_s.gif" border="0" title="Click to enlarge"/></A></TD><TD style="text-align:justify"><A name="PAGE_DEMO_alpha_mask"><B></B></A>
+<CODE><A href="alpha_mask.cpp.html">alpha_mask.cpp</A></CODE>
+Alpha-mask is a simple method of clipping and masking 
+polygons to a number of other arbitrary polygons. Alpha mask 
+is a buffer that is mixed to the scanline container and controls
+the <B><NOBR>Anti-Aliasing</NOBR></B> values in it. It&#039;s not the perfect mechanism of clipping, 
+but it allows you not only to clip the polygons, but also to 
+change the opacity in certain areas, i.e., the clipping can be 
+translucent. Press and drag the left mouse button to scale and
+rotate the &#147;lion&#148;, resize the window to grnerate new alpha-mask.</TD><TD><A href="alpha_mask.zip"><IMG src="../dl_win32.gif" border="0"/></A><BR/>
+<A href="alpha_mask.tar.gz"><IMG src="../dl_linux.gif" border="0"/></A><BR/>
+<A href="alpha_mask_sgi.tar.gz"><IMG src="../dl_irix64.gif" border="0"/></A><BR/>
+<A href="alpha_mask_sun.tar.gz"><IMG src="../dl_sunos.gif" border="0"/></A><BR/>
+<A href="alpha_mask_amiga.gz"><IMG src="../dl_amigaos.gif" border="0"/></A><BR/></TD></TR>
+<TR><TD><A href="alpha_mask2.jpg"><IMG src="alpha_mask2_s.jpg" border="0" title="Click to enlarge"/></A></TD><TD style="text-align:justify"><A name="PAGE_DEMO_alpha_mask2"><B></B></A>
+<CODE><A href="alpha_mask2.cpp.html">alpha_mask2.cpp</A></CODE>
+Another example of alpha-masking. In the previous example
+the alpha-mask is applied to the scan line container with
+unpacked data (scanline_u), while in this one there a special
+adapter of a pixel format renderer is used (<A href="../doc/basic_renderers/basic_renderers.agdoc.html#pixfmt_amask_adaptor">pixfmt_amask_adaptor</A>).
+It allows you to use the alpha-mask with all possible primitives
+and renderers. Besides, if the alpha-mask buffer is of the same
+size as the main rendering buffer (usually it is) we don&#039;t have
+to perform clipping for the alpha-mask, because all the primitives
+are already clipped at the higher level, see class <A href="../__code/include/agg_alpha_mask_u8.h.html#amask_no_clip_u8">amask_no_clip_u8</A>.
+Press and drag the left mouse button to scale and rotate the &#147;lion&#148; 
+and generate a new set of other primitives, change the <B>&#147;N&#148;</B> 
+value to generate a new set of masking ellipses.</TD><TD><A href="alpha_mask2.zip"><IMG src="../dl_win32.gif" border="0"/></A><BR/>
+<A href="alpha_mask2_amiga.gz"><IMG src="../dl_amigaos.gif" border="0"/></A><BR/></TD></TR>
+<TR><TD><A href="alpha_mask3.gif"><IMG src="alpha_mask3_s.gif" border="0" title="Click to enlarge"/></A></TD><TD style="text-align:justify"><A name="PAGE_DEMO_alpha_mask3"><B></B></A>
+<CODE><A href="alpha_mask3.cpp.html">alpha_mask3.cpp</A></CODE>
+Yet another example of alpha-masking. It simulates arbitrary
+polygon clipping similar to <A href="gpc_test.cpp.html">gpc_test.cpp</A>. Alpha-Masking 
+allows you to perform only the Intersection (AND) and 
+Difference (SUB) operations, but works much faster that 
+<A href="../__code/include/agg_conv_gpc.h.html#conv_gpc">conv_gpc</A>. Actually, there&#039;re different compexities and 
+different dependencies. The performance of <A href="../__code/include/agg_conv_gpc.h.html#conv_gpc">conv_gpc</A> depends on 
+the number of vertices, while Alpha-Masking depends on the 
+area of the rendered polygons. Still, with typical screen 
+resolutions, Alpha-Masking works much faster than <A href="http://www.cs.man.ac.uk/aig/staff/alan/software/"><IMG src="../link.gif" border="0"/><B><NOBR>General Polygon Clipper</NOBR></B></A>. 
+Compare the timings between <A href="alpha_mask3.cpp.html">alpha_mask3.cpp</A> and <A href="gpc_test.cpp.html">gpc_test.cpp</A>.</TD><TD><A href="alpha_mask3.zip"><IMG src="../dl_win32.gif" border="0"/></A><BR/>
+<A href="alpha_mask3_amiga.gz"><IMG src="../dl_amigaos.gif" border="0"/></A><BR/></TD></TR>
+<TR><TD><A href="circles.gif"><IMG src="circles_s.gif" border="0" title="Click to enlarge"/></A></TD><TD style="text-align:justify"><A name="PAGE_DEMO_circles"><B></B></A>
+<CODE><A href="circles.cpp.html">circles.cpp</A></CODE>
+This example just demonstrates that <B>AGG</B> can be used in different
+scatter plot apllications. There&#039;s a number of small circles drawn. You can 
+change the parameters of drawing, watching for the performance and 
+the number of circles simultaneously rendered. Press the left mouse button
+to generate a new set of points. Press the right mouse 
+button to make the points randomly change their coordinates. Note, that
+the circles are drawn with high quality, possibly translucent, and 
+with subpixel accuracy.</TD><TD><A href="circles.zip"><IMG src="../dl_win32.gif" border="0"/></A><BR/>
+<A href="circles.tar.gz"><IMG src="../dl_linux.gif" border="0"/></A><BR/>
+<A href="circles_sgi.tar.gz"><IMG src="../dl_irix64.gif" border="0"/></A><BR/>
+<A href="circles_sun.tar.gz"><IMG src="../dl_sunos.gif" border="0"/></A><BR/>
+<A href="circles_amiga.gz"><IMG src="../dl_amigaos.gif" border="0"/></A><BR/></TD></TR>
+<TR><TD><A href="graph_test.gif"><IMG src="graph_test_s.gif" border="0" title="Click to enlarge"/></A></TD><TD style="text-align:justify"><A name="PAGE_DEMO_graph_test"><B></B></A>
+<IMG src="gdip_curves.gif" title="" align="right" border="4" style="border-color:#FFFFFF"/><!---->
+<CODE><A href="graph_test.cpp.html">graph_test.cpp</A></CODE>
+Yet another example of the &quot;general&quot; kind. It was used mostly
+to compare the performance of different steps of rendering in order
+to see the weaknesses. The WIn GDI+ analog of it looks worse and 
+works slower. Try <A href="GDI_graph_test.zip"><IMG src="../download.gif" border="0"/>&#160;(GDI_graph_test.zip)</A> and compare it with 
+the <B>AGG</B> one. The most disappointing thing in GDI+ is that it 
+cannot draw Bezier curves correctly. Run the GDI+ example, choose
+menu <B>Image/Bezier curves</B>, expand the window to about 1000x1000 pixels, 
+and then gradually change the size of the window. You will see that some
+curves miss the destination points (the centers of the node circles). 
+That looks really ridiculous, so, I overcame my laziness and made an animated 
+GIF of 5 screenshots.</TD><TD><A href="graph_test.zip"><IMG src="../dl_win32.gif" border="0"/></A><BR/>
+<A href="graph_test.tar.gz"><IMG src="../dl_linux.gif" border="0"/></A><BR/>
+<A href="graph_test_sgi.tar.gz"><IMG src="../dl_irix64.gif" border="0"/></A><BR/>
+<A href="graph_test_sun.tar.gz"><IMG src="../dl_sunos.gif" border="0"/></A><BR/>
+<A href="graph_test_amiga.gz"><IMG src="../dl_amigaos.gif" border="0"/></A><BR/></TD></TR>
+<TR><TD><A href="multi_clip.png"><IMG src="multi_clip_s.gif" border="0" title="Click to enlarge"/></A></TD><TD style="text-align:justify"><A name="PAGE_DEMO_multi_clip"><B></B></A>
+<CODE><A href="multi_clip.cpp.html">multi_clip.cpp</A></CODE>
+A testing example that demonstrates clipping to multiple rectangular
+regions. It&#039;s a low-level (pixel) clipping that can be useful to 
+draw images clipped to a complex region with orthogonal boundaries.
+It can be useful in some window interfaces that use a custom mechanism
+to draw window content. The example uses all possible rendering 
+mechanisms.</TD><TD><A href="multi_clip.zip"><IMG src="../dl_win32.gif" border="0"/></A><BR/>
+<A href="multi_clip.tar.gz"><IMG src="../dl_linux.gif" border="0"/></A><BR/>
+<A href="multi_clip_sgi.tar.gz"><IMG src="../dl_irix64.gif" border="0"/></A><BR/>
+<A href="multi_clip_sun.tar.gz"><IMG src="../dl_sunos.gif" border="0"/></A><BR/>
+<A href="multi_clip_amiga.gz"><IMG src="../dl_amigaos.gif" border="0"/></A><BR/></TD></TR>
+<TR><TD><A href="perspective.gif"><IMG src="perspective_s.gif" border="0" title="Click to enlarge"/></A></TD><TD style="text-align:justify"><A name="PAGE_DEMO_perspective"><B></B></A>
+<CODE><A href="perspective.cpp.html">perspective.cpp</A></CODE>
+Perspective and bilinear transformations. In general, 
+these classes can transform an arbitrary quadrangle to another
+arbitrary quadrangle (with some restrictions). The example 
+demonstrates how to transform a rectangle to a quadrangle defined 
+by 4 vertices. You can drag the 4 corners of the quadrangle, as well
+as its boundaries. Note, that the perspective transformations don&#039;t
+work correctly if the destination quadrangle is concave. Bilinear 
+thansformations give a different result, but remain valid with any
+shape of the destination quadrangle.</TD><TD><A href="perspective.zip"><IMG src="../dl_win32.gif" border="0"/></A><BR/>
+<A href="perspective.tar.gz"><IMG src="../dl_linux.gif" border="0"/></A><BR/>
+<A href="perspective_sgi.tar.gz"><IMG src="../dl_irix64.gif" border="0"/></A><BR/>
+<A href="perspective_sun.tar.gz"><IMG src="../dl_sunos.gif" border="0"/></A><BR/>
+<A href="perspective_amiga.gz"><IMG src="../dl_amigaos.gif" border="0"/></A><BR/></TD></TR>
+<TR><TD><A href="simple_blur.gif"><IMG src="simple_blur_s.gif" border="0" title="Click to enlarge"/></A></TD><TD style="text-align:justify"><A name="PAGE_DEMO_simple_blur"><B></B></A>
+<CODE><A href="simple_blur.cpp.html">simple_blur.cpp</A></CODE>
+The example demonstrates how to write custom span generators. This one 
+just applies the simplest &#147;blur&#148; filter 3x3 to a prerendered image. 
+It calculates the average value of 9 neighbor pixels. 
+Just press the left mouse button and drag.</TD><TD><A href="simple_blur.zip"><IMG src="../dl_win32.gif" border="0"/></A><BR/>
+<A href="simple_blur.tar.gz"><IMG src="../dl_linux.gif" border="0"/></A><BR/>
+<A href="simple_blur_sgi.tar.gz"><IMG src="../dl_irix64.gif" border="0"/></A><BR/>
+<A href="simple_blur_sun.tar.gz"><IMG src="../dl_sunos.gif" border="0"/></A><BR/>
+<A href="simple_blur_amiga.gz"><IMG src="../dl_amigaos.gif" border="0"/></A><BR/></TD></TR>
+<TR><TD><A href="gpc_test.gif"><IMG src="gpc_test_s.gif" border="0" title="Click to enlarge"/></A></TD><TD style="text-align:justify"><A name="PAGE_DEMO_gpc_test"><B></B></A>
+<CODE><A href="gpc_test.cpp.html">gpc_test.cpp</A></CODE>
+<A href="http://www.cs.man.ac.uk/aig/staff/alan/software/"><IMG src="../link.gif" border="0"/><B><NOBR>General Polygon Clipper</NOBR></B></A> by Alan Murta is the most reliable implementation of the polygon 
+boolean algebra. It implements Bala R. Vatti&#039;s algorithm of arbitrary 
+polygon clipping and allows you to calculate the Union, Intersection, 
+Difference, and Exclusive OR between two poly-polygons (i.e., polygonal
+areas consisted of several contours). <B>AGG</B> has a simple wrapper class
+that can be used in the coordinate conversion pipeline. The implementation
+by Alan Murta has restrictions of using it in commercial software, so that, 
+please contact the author to settle the legal issues. The example 
+demonstrates the use of GPC. You can drag one polygon with the left 
+mouse button pressed. Note, that all operations are done in the vectorial
+representation of the contours before rendering.</TD><TD><A href="gpc_test.zip"><IMG src="../dl_win32.gif" border="0"/></A><BR/>
+<A href="gpc_test.tar.gz"><IMG src="../dl_linux.gif" border="0"/></A><BR/>
+<A href="gpc_test_sgi.tar.gz"><IMG src="../dl_irix64.gif" border="0"/></A><BR/>
+<A href="gpc_test_sun.tar.gz"><IMG src="../dl_sunos.gif" border="0"/></A><BR/>
+<A href="gpc_test_amiga.gz"><IMG src="../dl_amigaos.gif" border="0"/></A><BR/></TD></TR>
+<TR><TD><A href="pattern_fill.gif"><IMG src="pattern_fill_s.gif" border="0" title="Click to enlarge"/></A></TD><TD style="text-align:justify"><A name="PAGE_DEMO_pattern_fill"><B></B></A>
+<CODE><A href="pattern_fill.cpp.html">pattern_fill.cpp</A></CODE>
+The example demonstrates how to use arbitrary images as fill patterns.
+This span generator is very simple, so, it doesn&#039;t allow you to apply
+arbitrary transformations to the pattern, i.e., it cannot be used as a 
+texturing tool. But it works pretty fast and can be useful in some 
+applications.</TD><TD><A href="pattern_fill.zip"><IMG src="../dl_win32.gif" border="0"/></A><BR/>
+<A href="pattern_fill.tar.gz"><IMG src="../dl_linux.gif" border="0"/></A><BR/>
+<A href="pattern_fill_sgi.tar.gz"><IMG src="../dl_irix64.gif" border="0"/></A><BR/>
+<A href="pattern_fill_sun.tar.gz"><IMG src="../dl_sunos.gif" border="0"/></A><BR/>
+<A href="pattern_fill_amiga.gz"><IMG src="../dl_amigaos.gif" border="0"/></A><BR/></TD></TR>
+<TR><TD><A href="raster_text.gif"><IMG src="raster_text_s.gif" border="0" title="Click to enlarge"/></A></TD><TD style="text-align:justify"><A name="PAGE_DEMO_raster_text"><B></B></A>
+<CODE><A href="raster_text.cpp.html">raster_text.cpp</A></CODE>
+Classes that render raster text was added in <B>AGG</B> mostly 
+to prove the concept of the design. They can be used to 
+draw simple (aliased) raster text. The example demonstrates 
+how to use text as a custom scanline generator together 
+with any span generator (in this example it&#039;s gradient filling).
+The font format is propriatory, but there are some predefined
+fonts that are shown in the example.</TD><TD><A href="raster_text.zip"><IMG src="../dl_win32.gif" border="0"/></A><BR/>
+<A href="raster_text.tar.gz"><IMG src="../dl_linux.gif" border="0"/></A><BR/>
+<A href="raster_text_sgi.tar.gz"><IMG src="../dl_irix64.gif" border="0"/></A><BR/>
+<A href="raster_text_sun.tar.gz"><IMG src="../dl_sunos.gif" border="0"/></A><BR/>
+<A href="raster_text_amiga.gz"><IMG src="../dl_amigaos.gif" border="0"/></A><BR/></TD></TR>
+<TR><TD><A href="image1.jpg"><IMG src="image1_s.jpg" border="0" title="Click to enlarge"/></A></TD><TD style="text-align:justify"><A name="PAGE_DEMO_image1"><B></B></A>
+<CODE><A href="image1.cpp.html">image1.cpp</A></CODE>
+This is the first example with the new &quot;reincarnation&quot; of the image 
+transformation algorithms. The example allows you to rotate and scale 
+the image with respect to its center. Also, the image is scaled
+when resizing the window.</TD><TD><A href="image1.zip"><IMG src="../dl_win32.gif" border="0"/></A><BR/>
+<A href="image1.tar.gz"><IMG src="../dl_linux.gif" border="0"/></A><BR/>
+<A href="image1_sgi.tar.gz"><IMG src="../dl_irix64.gif" border="0"/></A><BR/>
+<A href="image1_sun.tar.gz"><IMG src="../dl_sunos.gif" border="0"/></A><BR/>
+<A href="image1_amiga.gz"><IMG src="../dl_amigaos.gif" border="0"/></A><BR/></TD></TR>
+<TR><TD><A href="image_alpha.png"><IMG src="image_alpha_s.png" border="0" title="Click to enlarge"/></A></TD><TD style="text-align:justify"><A name="PAGE_DEMO_image_alpha"><B></B></A>
+<CODE><A href="image_alpha.cpp.html">image_alpha.cpp</A></CODE>
+A very powerful feature that allows you to simulate the alpha-channel 
+on the basis of some functioon. In this example it&#039;s brightness, but 
+it can be of any complexity. In the example you can form the brightness
+function and watch for the translucency. Resize the windows to move the
+image over the backgraund.</TD><TD><A href="image_alpha.zip"><IMG src="../dl_win32.gif" border="0"/></A><BR/>
+<A href="image_alpha.tar.gz"><IMG src="../dl_linux.gif" border="0"/></A><BR/>
+<A href="image_alpha_sgi.tar.gz"><IMG src="../dl_irix64.gif" border="0"/></A><BR/>
+<A href="image_alpha_sun.tar.gz"><IMG src="../dl_sunos.gif" border="0"/></A><BR/>
+<A href="image_alpha_amiga.gz"><IMG src="../dl_amigaos.gif" border="0"/></A><BR/></TD></TR>
+<TR><TD><A href="image_filters.jpg"><IMG src="image_filters_s.jpg" border="0" title="Click to enlarge"/></A></TD><TD style="text-align:justify"><A name="PAGE_DEMO_image_filters"><B></B></A>
+<CODE><A href="image_filters.cpp.html">image_filters.cpp</A></CODE>
+The image transformer algorithm can work with different interpolation 
+filters, such as Bilinear, Bicubic, Sinc, Blackman. The example 
+demonstrates the difference in quality between different filters.
+When switch the &#147;Run Test&#148; on, the image starts rotating. But 
+at each step there is the previously rotated image taken, so 
+the quality degrades. This degradation as well as the performance 
+depend on the type of the interpolation filter.</TD><TD><A href="image_filters.zip"><IMG src="../dl_win32.gif" border="0"/></A><BR/>
+<A href="image_filters.tar.gz"><IMG src="../dl_linux.gif" border="0"/></A><BR/>
+<A href="image_filters_sgi.tar.gz"><IMG src="../dl_irix64.gif" border="0"/></A><BR/>
+<A href="image_filters_sun.tar.gz"><IMG src="../dl_sunos.gif" border="0"/></A><BR/>
+<A href="image_filters_amiga.gz"><IMG src="../dl_amigaos.gif" border="0"/></A><BR/></TD></TR>
+<TR><TD><A href="image_fltr_graph.gif"><IMG src="image_fltr_graph_s.gif" border="0" title="Click to enlarge"/></A></TD><TD style="text-align:justify"><A name="PAGE_DEMO_image_fltr_graph"><B></B></A>
+<CODE><A href="image_fltr_graph.cpp.html">image_fltr_graph.cpp</A></CODE>
+Demonstration of the shapes of different interpolation filters. Just 
+in case if you are curious.</TD><TD><A href="image_fltr_graph.zip"><IMG src="../dl_win32.gif" border="0"/></A><BR/>
+<A href="image_fltr_graph.tar.gz"><IMG src="../dl_linux.gif" border="0"/></A><BR/>
+<A href="image_fltr_graph_sgi.tar.gz"><IMG src="../dl_irix64.gif" border="0"/></A><BR/>
+<A href="image_fltr_graph_sun.tar.gz"><IMG src="../dl_sunos.gif" border="0"/></A><BR/>
+<A href="image_fltr_graph_amiga.gz"><IMG src="../dl_amigaos.gif" border="0"/></A><BR/></TD></TR>
+<TR><TD><A href="image_transforms.jpg"><IMG src="image_transforms_s.jpg" border="0" title="Click to enlarge"/></A></TD><TD style="text-align:justify"><A name="PAGE_DEMO_image_transforms"><B></B></A>
+<CODE><A href="image_transforms.cpp.html">image_transforms.cpp</A></CODE>
+Affine transformations of the images. The examples demonstrates 
+how to construct the affine transformer matrix for different
+cases. See the &#147;<CODE>readme!</CODE>&#148; file for details. Now there are 
+methods in <A href="../__code/include/agg_trans_affine.h.html#trans_affine">trans_affine</A> that allow you to construct transformations
+from an arbitrary parallelogram to another parallelogram. It&#039;s very
+convenient and easy.</TD><TD><A href="image_transforms.zip"><IMG src="../dl_win32.gif" border="0"/></A><BR/>
+<A href="image_transforms.tar.gz"><IMG src="../dl_linux.gif" border="0"/></A><BR/>
+<A href="image_transforms_sgi.tar.gz"><IMG src="../dl_irix64.gif" border="0"/></A><BR/>
+<A href="image_transforms_sun.tar.gz"><IMG src="../dl_sunos.gif" border="0"/></A><BR/>
+<A href="image_transforms_amiga.gz"><IMG src="../dl_amigaos.gif" border="0"/></A><BR/></TD></TR>
+<TR><TD><A href="image_perspective.jpg"><IMG src="image_perspective_s.jpg" border="0" title="Click to enlarge"/></A></TD><TD style="text-align:justify"><A name="PAGE_DEMO_image_perspective"><B></B></A>
+<CODE><A href="image_perspective.cpp.html">image_perspective.cpp</A></CODE>
+Image perspective transformations. There are two types of arbitrary 
+quadrangle transformations, Perspective and Bilinear. The image 
+transformer always uses reverse transformations, and there is a problem.
+The Perspective transformations are perfectly reversible, so they 
+work correctly with images, but the Bilinear transformer behave
+somehow strange. It can transform a rectangle to a quadrangle, but
+not vice versa. In this example you can see this effect, when 
+the edges of the image &quot;sag&quot;. I&#039;d highly appreciate if someone
+could help me with math for transformations similar to Bilinear ones, 
+but correctly reversible (i.e., that can transform an arbitrary quadrangle 
+to a rectangle). The bilinear transformations are simple, see 
+<A href="../__code/include/agg_trans_bilinear.h.html">agg_trans_bilinear.h</A> and <A href="../__code/include/agg_simul_eq.h.html">agg_simul_eq.h</A></TD><TD><A href="image_perspective.zip"><IMG src="../dl_win32.gif" border="0"/></A><BR/>
+<A href="image_perspective.tar.gz"><IMG src="../dl_linux.gif" border="0"/></A><BR/>
+<A href="image_perspective_sgi.tar.gz"><IMG src="../dl_irix64.gif" border="0"/></A><BR/>
+<A href="image_perspective_sun.tar.gz"><IMG src="../dl_sunos.gif" border="0"/></A><BR/>
+<A href="image_perspective_amiga.gz"><IMG src="../dl_amigaos.gif" border="0"/></A><BR/></TD></TR>
+<TR><TD><A href="distortions.png"><IMG src="distortions_s.png" border="0" title="Click to enlarge"/></A></TD><TD style="text-align:justify"><A name="PAGE_DEMO_distortions"><B></B></A>
+<CODE><A href="distortions.cpp.html">distortions.cpp</A></CODE>
+To transform an image as well as to define a color gradient you have 
+to write several declarations. This approach can seem difficult to handle 
+(compared with one function call), but it&#039;s very flexible. For example, 
+you can add an arbitrary distortion function. This mechanism is pretty much 
+the same in image transformers and color gradients. Try to play with this 
+example changing different parameters of the distortions.</TD><TD><A href="distortions.zip"><IMG src="../dl_win32.gif" border="0"/></A><BR/>
+<A href="distortions.tar.gz"><IMG src="../dl_linux.gif" border="0"/></A><BR/>
+<A href="distortions_sgi.tar.gz"><IMG src="../dl_irix64.gif" border="0"/></A><BR/>
+<A href="distortions_sun.tar.gz"><IMG src="../dl_sunos.gif" border="0"/></A><BR/>
+<A href="distortions_amiga.gz"><IMG src="../dl_amigaos.gif" border="0"/></A><BR/></TD></TR>
+<TR><TD><A href="lion_lens.gif"><IMG src="lion_lens_s.gif" border="0" title="Click to enlarge"/></A></TD><TD style="text-align:justify"><A name="PAGE_DEMO_lion_lens"><B></B></A>
+<CODE><A href="lion_lens.cpp.html">lion_lens.cpp</A></CODE>
+This example exhibits a non-linear transformer that &#147;magnifies&#148;
+vertices that fall inside a circle and extends the rest (<A href="../__code/include/agg_trans_warp_magnifier.h.html#trans_warp_magnifier">trans_warp_magnifier</A>). 
+Non-linear transformations are tricky because straight lines become curves. 
+To achieve the correct result we need to divide long line segments into
+short ones. The example also demonstrates the use of <A href="../__code/include/agg_conv_segmentator.h.html#conv_segmentator">conv_segmentator</A> that
+does this division job. 
+Drag the center of the &#147;lens&#148; with the left mouse button and change 
+the &#147;Scale&#148; and &#147;Radius&#148;. The transformer can also shrink away
+the image if the scaling value is less than 1. To watch for 
+an amazing effect, set the scale to the minimum (0.01), decrease 
+the radius to about 1 and drag the &#147;lens&#148;. You will see it behaves 
+like a black hole consuming space around it. Move the lens somewhere to the 
+side of the window and change the radius. It looks like changing the 
+event horizon of the &#147;black hole&#148;. There are some more screenshots
+of the poor lion: 
+<A href="lion_lens_sad.gif"><IMG src="../link.gif" border="0"/><B>Sad Lion</B></A>,
+<A href="lion_lens_cyclop.gif"><IMG src="../link.gif" border="0"/><B>Cyclop Lion</B></A>,
+<A href="lion_lens_black_hole.gif"><IMG src="../link.gif" border="0"/><B>Lion in Trouble</B> (being eaten by the black hole), 
+an animated GIF</A>.</TD><TD><A href="lion_lens.zip"><IMG src="../dl_win32.gif" border="0"/></A><BR/>
+<A href="lion_lens.tar.gz"><IMG src="../dl_linux.gif" border="0"/></A><BR/>
+<A href="lion_lens_sgi.tar.gz"><IMG src="../dl_irix64.gif" border="0"/></A><BR/>
+<A href="lion_lens_sun.tar.gz"><IMG src="../dl_sunos.gif" border="0"/></A><BR/>
+<A href="lion_lens_amiga.gz"><IMG src="../dl_amigaos.gif" border="0"/></A><BR/></TD></TR>
+<TR><TD><A href="trans_polar.gif"><IMG src="trans_polar_s.gif" border="0" title="Click to enlarge"/></A></TD><TD style="text-align:justify"><A name="PAGE_DEMO_trans_polar"><B></B></A>
+<CODE><A href="trans_polar.cpp.html">trans_polar.cpp</A></CODE>
+Another example of non-linear transformations requested by one of my friends.
+Here we render a standard <B>AGG</B> control in its original form (the slider
+in the bottom) and after the transformation. The transformer itself is not
+a part of <B>AGG</B> and just demonstrates how to write custom transformers (class 
+<CODE>trans_polar</CODE>). Note that because the transformer is non-linear, we need to use
+<A href="../__code/include/agg_conv_segmentator.h.html#conv_segmentator">conv_segmentator</A> first. Try to drag the value of the slider at the bottom 
+and watch how it&#039;s being synchronized in the polar coordinates. Also 
+change two other parameters (<B>Spiral</B> and <B>Base&#160;Y</B>) and the size of the window.
+Don&#039;t worry much about the <CODE>transformed_control</CODE> class, it&#039;s just an 
+adaptor used to render the controls with additional transformations.
+The use of <CODE>trans_polar</CODE> is quite standard: <BR/>
+<PRE>
+agg::trans_polar tr;
+agg::<A href="../__code/include/agg_conv_transform.h.html#conv_transform">conv_transform</A>&lt;SomeVertexSource, 
+                    trans_polar&gt; tp(some_source, tr);
+</PRE></TD><TD><A href="trans_polar.zip"><IMG src="../dl_win32.gif" border="0"/></A><BR/>
+<A href="trans_polar_amiga.gz"><IMG src="../dl_amigaos.gif" border="0"/></A><BR/></TD></TR>
+<TR><TD><A href="scanline_boolean.gif"><IMG src="scanline_boolean_s.gif" border="0" title="Click to enlarge"/></A></TD><TD style="text-align:justify"><A name="PAGE_DEMO_scanline_boolean"><B></B></A>
+<CODE><A href="scanline_boolean.cpp.html">scanline_boolean.cpp</A></CODE>
+A new method to perform boolean operations on polygons (<B>Union</B>, 
+<B>Intersection</B>, <B>XOR</B>, and <B>Difference</B>). It uses the scanline
+approach and in typical screen resolutions works much faster 
+(about 10 times) than vectorial algorithms like <A href="http://www.cs.man.ac.uk/aig/staff/alan/software/"><IMG src="../link.gif" border="0"/><B><NOBR>General Polygon Clipper</NOBR></B></A>. It 
+preserves perfect <B><NOBR>Anti-Aliasing</NOBR></B> and besides, can work with translucency.
+There are two <B>XOR</B> operations, <B>Linear&#160;XOR</B> and 
+<B>Saddle&#160;XOR</B>. The only difference is in the formula
+of XORing of the two cells with <B><NOBR>Anti-Aliasing</NOBR></B>. The first one is:
+<PRE>cover = a+b; if(cover &gt; 1) cover = 2.0 - cover;</PRE>
+<BR/>
+The second uses the classical &#147;Saddle&#148; formula:
+<PRE>cover = 1.0 - (1.0 - a + a*b) * (1.0 - b + a*b);</PRE>
+The <B>Linear&#160;XOR</B> produces
+more correct intersections and works constistently with the 
+scanline rasterizer algorithm. The <B>Saddle&#160;XOR</B> works better
+with semi-transparent polygons.</TD><TD><A href="scanline_boolean.zip"><IMG src="../dl_win32.gif" border="0"/></A><BR/>
+<A href="scanline_boolean_amiga.gz"><IMG src="../dl_amigaos.gif" border="0"/></A><BR/></TD></TR>
+<TR><TD><A href="scanline_boolean2.gif"><IMG src="scanline_boolean2_s.gif" border="0" title="Click to enlarge"/></A></TD><TD style="text-align:justify"><A name="PAGE_DEMO_scanline_boolean2"><B></B></A>
+<CODE><A href="scanline_boolean2.cpp.html">scanline_boolean2.cpp</A></CODE>
+This is another example of using of the scanline boolean algebra. 
+The example is similar to <A href="index.html#PAGE_DEMO_gpc_test">Demo gpc_test.cpp</A>. Note that the cost
+of the boolean operation with <B><NOBR>Anti-Aliasing</NOBR></B> is comparable with rendering
+(the rasterization time is not included). Also note that there is
+a difference in timings between using of <CODE>scanline_u</CODE> and 
+<CODE>scanline_p</CODE>. Most often <CODE>scanline_u</CODE> works faster, but it&#039;s
+because of much less number of produced spans. Actually, when using
+the <CODE>scanline_u</CODE> the complexity of the algorithm becomes proportional
+to the <B>area</B> of the polygons, while in <CODE>scanline_p</CODE> it&#039;s
+proportional to the <B>perimeter</B>. Of course, the binary variant
+works much faster than the <B>Anti-Aliased</B> one.</TD><TD><A href="scanline_boolean2.zip"><IMG src="../dl_win32.gif" border="0"/></A><BR/>
+<A href="scanline_boolean2_amiga.gz"><IMG src="../dl_amigaos.gif" border="0"/></A><BR/></TD></TR>
+<TR><TD><A href="freetype_test.gif"><IMG src="freetype_test_s.gif" border="0" title="Click to enlarge"/></A></TD><TD style="text-align:justify"><A name="PAGE_DEMO_freetype_test"><B></B></A>
+<CODE><A href="freetype_test.cpp.html">freetype_test.cpp</A></CODE>
+This example demonstrates the use of the <A href="http://www.freetype.org"><IMG src="../link.gif" border="0"/><B>FreeType</B></A> font engine with cache.
+Cache can keep three types of data, vector path, <B>Anti-Aliased</B> 
+scanline shape, and monochrome scanline shape. In case of caching
+scanline shapes the speed is pretty good and comparable with 
+Windows hardware accelerated font rendering.</TD><TD><A href="freetype_test.zip"><IMG src="../dl_win32.gif" border="0"/></A><BR/>
+<A href="freetype_test_amiga.gz"><IMG src="../dl_amigaos.gif" border="0"/></A><BR/></TD></TR>
+<TR><TD><A href="freetype_test.gif"><IMG src="freetype_test_s.gif" border="0" title="Click to enlarge"/></A></TD><TD style="text-align:justify"><A name="PAGE_DEMO_truetype_test"><B></B></A>
+<CODE><A href="truetype_test.cpp.html">truetype_test.cpp</A></CODE>
+The same as the above, but with using Win32 API as the 
+font engine (<CODE>GetGlyphOutline()</CODE>).</TD><TD><A href="truetype_test.zip"><IMG src="../dl_win32.gif" border="0"/></A><BR/></TD></TR>
+<TR><TD><A href="trans_curve1.gif"><IMG src="trans_curve1_s.gif" border="0" title="Click to enlarge"/></A></TD><TD style="text-align:justify"><A name="PAGE_DEMO_trans_curve1"><B></B></A>
+<CODE><A href="trans_curve1.cpp.html">trans_curve1.cpp</A></CODE>
+This is a &quot;kinda-cool-stuff&quot; demo that performs non-linear 
+transformations and draws vector text along a curve. 
+Note that it&#039;s not just calculating of the glyph angles 
+and positions, they are transformed as if they were elastic.
+The curve
+is calculated as a bicubic spline. The option &quot;Preserve X scale&quot;
+makes the converter distribute all the points uniformly along
+the curve. If it&#039;s unchechked, the scale will be proportional 
+to the distance between the control points.</TD><TD><A href="trans_curve1.zip"><IMG src="../dl_win32.gif" border="0"/></A><BR/>
+<A href="trans_curve1_ft_amiga.gz"><IMG src="../dl_amigaos.gif" border="0"/></A><BR/></TD></TR>
+<TR><TD><A href="trans_curve2.gif"><IMG src="trans_curve2_s.gif" border="0" title="Click to enlarge"/></A></TD><TD style="text-align:justify"><A name="PAGE_DEMO_trans_curve2"><B></B></A>
+<CODE><A href="trans_curve2.cpp.html">trans_curve2.cpp</A></CODE>
+Similar to the previous demo, but here the transformer operates 
+with two arbitrary curves. It requires more calculations, but gives
+you more freedom. In other words you will see :-).</TD><TD><A href="trans_curve2.zip"><IMG src="../dl_win32.gif" border="0"/></A><BR/>
+<A href="trans_curve2_ft_amiga.gz"><IMG src="../dl_amigaos.gif" border="0"/></A><BR/></TD></TR>
+<TR><TD><A href="aa_test.png"><IMG src="aa_test_s.png" border="0" title="Click to enlarge"/></A></TD><TD style="text-align:justify"><A name="PAGE_DEMO_aa_test"><B></B></A>
+<CODE><A href="aa_test.cpp.html">aa_test.cpp</A></CODE>
+A test of <B><NOBR>Anti-Aliasing</NOBR></B> the same as in <BR/>
+<A href="http://homepage.mac.com/arekkusu/bugs/invariance"><IMG src="../link.gif" border="0"/>http://homepage.mac.com/arekkusu/bugs/invariance</A><BR/>
+The performance of <B>AGG</B> on a typical P-IV 2GHz is: <BR/>
+Points: 37.46K/sec, Lines: 5.04K/sec, Triangles: 7.43K/sec</TD><TD><A href="aa_test.zip"><IMG src="../dl_win32.gif" border="0"/></A><BR/>
+<A href="aa_test_amiga.gz"><IMG src="../dl_amigaos.gif" border="0"/></A><BR/></TD></TR>
+<TR><TD><A href="alpha_gradient.png"><IMG src="alpha_gradient_s.png" border="0" title="Click to enlarge"/></A></TD><TD style="text-align:justify"><A name="PAGE_DEMO_alpha_gradient"><B></B></A>
+<CODE><A href="alpha_gradient.cpp.html">alpha_gradient.cpp</A></CODE>
+The demo shows how to combine any span generator with alpha-channel gradient.</TD><TD><A href="alpha_gradient.zip"><IMG src="../dl_win32.gif" border="0"/></A><BR/>
+<A href="alpha_gradient_amiga.gz"><IMG src="../dl_amigaos.gif" border="0"/></A><BR/></TD></TR>
+<TR><TD><A href="line_patterns.gif"><IMG src="line_patterns_s.gif" border="0" title="Click to enlarge"/></A></TD><TD style="text-align:justify"><A name="PAGE_DEMO_line_patterns"><B></B></A>
+<CODE><A href="line_patterns.cpp.html">line_patterns.cpp</A></CODE>
+The demo shows a very powerful mechanism of using arbitrary images as line patterns.
+The main point of it is that the images are drawn along the path. It allows you
+to draw very fancy looking lines quite easily and very useful in GIS/cartography 
+applications. There the bilinear filtering is used, but it&#039;s also possible 
+to add any other filtering methods, or just use the nearest neighbour one for the 
+sake of speed. <BR/>
+Before running this demo make sure that you have files <CODE>1.bmp</CODE>&#133;<CODE>9.bmp</CODE> for Win32, 
+MacOS, AmigaOS, and SDL platforms and <CODE>1.ppm</CODE>&#133;<CODE>9.ppm</CODE> for X11. <BR/>
+In the demo you can drag the control points of the curves and observe that the images are 
+transformed quite consistently and smoothly. You can also try to replace the image files 
+(1&#133;9) with your own. The BMP files must have 24bit colors (TrueColor), the PPM ones
+must be of type &quot;P6&quot;. Also, the heigh should not exceed 64 pixels, and the background
+should be white or very close to white. Actually, the algorithm uses 32bit images 
+with alpha channel, but in this demo alpha is simulated in such a way that wite 
+is transparent, black is opaque. The intermediate colors have intermediate opacity
+that is defined by the <CODE>brightness_to_alpha</CODE> array.</TD><TD><A href="line_patterns.zip"><IMG src="../dl_win32.gif" border="0"/></A><BR/></TD></TR>
+<TR><TD><A href="line_patterns_clip.png"><IMG src="line_patterns_clip_s.png" border="0" title="Click to enlarge"/></A></TD><TD style="text-align:justify"><A name="PAGE_DEMO_line_patterns_clip"><B></B></A>
+<CODE><A href="line_patterns_clip.cpp.html">line_patterns_clip.cpp</A></CODE>
+Demonstrates the mechanism of clipping the polylines and/or polygons
+with image patterns. Shows that the clipper maintains correct pattern 
+repetition along the line, considering clipped parts.</TD><TD><A href="line_patterns_clip.zip"><IMG src="../dl_win32.gif" border="0"/></A><BR/></TD></TR>
+<TR><TD><A href="pattern_perspective.jpg"><IMG src="pattern_perspective_s.jpg" border="0" title="Click to enlarge"/></A></TD><TD style="text-align:justify"><A name="PAGE_DEMO_pattern_perspective"><B></B></A>
+<CODE><A href="pattern_perspective.cpp.html">pattern_perspective.cpp</A></CODE>
+Pattern perspective transformations. Essentially it&#039;s 
+the same as <A href="index.html#PAGE_DEMO_image_perspective">Demo image_perspective.cpp</A>, but working with a repeating pattern.
+Can be used for texturing.</TD><TD><A href="pattern_perspective.zip"><IMG src="../dl_win32.gif" border="0"/></A><BR/></TD></TR>
+<TR><TD><A href="image_filters2.png"><IMG src="image_filters2_s.png" border="0" title="Click to enlarge"/></A></TD><TD style="text-align:justify"><A name="PAGE_DEMO_image_filters2"><B></B></A>
+<CODE><A href="image_filters2.cpp.html">image_filters2.cpp</A></CODE>
+Another example that demonstrates the difference of image filters. It just 
+displays a simple 4x4 pixels image with huge zoom. You can see how different 
+filters affect the result. Also see how gamma correction works.</TD><TD><A href="image_filters2.zip"><IMG src="../dl_win32.gif" border="0"/></A><BR/></TD></TR>
+<TR><TD><A href="image_resample.jpg"><IMG src="image_resample_s.jpg" border="0" title="Click to enlarge"/></A></TD><TD style="text-align:justify"><A name="PAGE_DEMO_image_resample"><B></B></A>
+<CODE><A href="image_resample.cpp.html">image_resample.cpp</A></CODE>
+The demonstration of image transformations with resampling. You can 
+see the difference in quality between regular image transformers and 
+the ones with resampling. Of course, image tranformations with resampling
+work slower because they provide the best possible quality.</TD><TD><A href="image_resample.zip"><IMG src="../dl_win32.gif" border="0"/></A><BR/></TD></TR>
+<TR><TD><A href="pattern_resample.jpg"><IMG src="pattern_resample_s.jpg" border="0" title="Click to enlarge"/></A></TD><TD style="text-align:justify"><A name="PAGE_DEMO_pattern_resample"><B></B></A>
+<CODE><A href="image_resample.cpp.html">image_resample.cpp</A></CODE>
+The demonstration of pattern transformations with resampling. The same as
+the above but with texturing patterns.</TD><TD><A href="pattern_resample.zip"><IMG src="../dl_win32.gif" border="0"/></A><BR/></TD></TR>
+<TR><TD><A href="compositing.png"><IMG src="compositing_s.png" border="0" title="Click to enlarge"/></A></TD><TD style="text-align:justify"><A name="PAGE_DEMO_compositing"><B></B></A>
+<CODE><A href="compositing.cpp.html">compositing.cpp</A></CODE>
+Extended compositing modes fully compatible with 
+<A href="http://www.w3.org/TR/2004/WD-SVG12-20041027/rendering.html#comp-op-prop"><IMG src="../link.gif" border="0"/>SVG 1.2</A></TD><TD><A href="compositing.zip"><IMG src="../dl_win32.gif" border="0"/></A><BR/></TD></TR>
+<TR><TD><A href="compositing2.png"><IMG src="compositing2_s.png" border="0" title="Click to enlarge"/></A></TD><TD style="text-align:justify"><A name="PAGE_DEMO_compositing2"><B></B></A>
+<CODE><A href="compositing2.cpp.html">compositing2.cpp</A></CODE>
+Another demo example with extended compositing modes.</TD><TD><A href="compositing2.zip"><IMG src="../dl_win32.gif" border="0"/></A><BR/></TD></TR>
+<TR><TD><A href="bezier_div.png"><IMG src="bezier_div_s.png" border="0" title="Click to enlarge"/></A></TD><TD style="text-align:justify"><A name="PAGE_DEMO_bezier_div"><B></B></A>
+<CODE><A href="bezier_div.cpp.html">bezier_div.cpp</A></CODE>
+Demonstration of new methods of Bezier curve approximation. You can compare 
+the old, incremental method with adaptive De Casteljau&#039;s subdivion. The 
+new method uses two criteria to stop subdivision: estimation of distance and 
+estimation of angle. It gives us perfectly smooth result even for very sharp
+turns and loops.</TD><TD><A href="bezier_div.zip"><IMG src="../dl_win32.gif" border="0"/></A><BR/></TD></TR>
+<TR><TD><A href="flash_rasterizer.png"><IMG src="flash_rasterizer_s.png" border="0" title="Click to enlarge"/></A></TD><TD style="text-align:justify"><A name="PAGE_DEMO_flash_rasterizer"><B></B></A>
+<CODE><A href="flash_rasterizer.cpp.html">flash_rasterizer.cpp</A></CODE>
+Demonstration of Flash compound shape rasterizer. The rasterizer 
+accepts vectorial data in a form of Flash paths, that is, with two 
+fill styles, fill on the left and fill on the right of the path.
+Then it produces a number of scanlines with corresponding styles
+and requests for the colors and/or gradients, images, etc. The 
+algorithm takes care of anti-aliasing and perfect stitching 
+between fill areas.</TD><TD><A href="flash_rasterizer.zip"><IMG src="../dl_win32.gif" border="0"/></A><BR/></TD></TR>
+<TR><TD><A href="flash_rasterizer2.png"><IMG src="flash_rasterizer2_s.png" border="0" title="Click to enlarge"/></A></TD><TD style="text-align:justify"><A name="PAGE_DEMO_flash_rasterizer2"><B></B></A>
+<CODE><A href="flash_rasterizer2.cpp.html">flash_rasterizer2.cpp</A></CODE>
+Another possible way to render Flash compound shapes. The idea behind 
+it is prety simple. You just use the regular rasterizer, but in a 
+mode when it doesn&#039;t automatically close the contours. Every compound 
+shape is decomposed into a number of single shapes that are rasterized 
+and rendered separately.</TD><TD><A href="flash_rasterizer2.zip"><IMG src="../dl_win32.gif" border="0"/></A><BR/></TD></TR>
+<TR><TD><A href="gouraud_mesh.png"><IMG src="gouraud_mesh_s.png" border="0" title="Click to enlarge"/></A></TD><TD style="text-align:justify"><A name="PAGE_DEMO_gouraud_mesh"><B></B></A>
+<CODE><A href="gouraud_mesh.cpp.html">gouraud_mesh.cpp</A></CODE>
+Yet another example that demonstrates the power of compound shape rasterization.
+Here we create a mesh of triangles and render them in one pass with multiple 
+Gouraud shaders (<A href="../__code/include/agg_span_gouraud_rgba.h.html#span_gouraud_rgba">span_gouraud_rgba</A>). The example demonstrates perfect
+<B><NOBR>Anti-Aliasing</NOBR></B> and perfect triangle stitching (seamless edges) at the same time.</TD><TD><A href="gouraud_mesh.zip"><IMG src="../dl_win32.gif" border="0"/></A><BR/></TD></TR>
+<TR><TD><A href="rasterizer_compound.png"><IMG src="rasterizer_compound_s.png" border="0" title="Click to enlarge"/></A></TD><TD style="text-align:justify"><A name="PAGE_DEMO_rasterizer_compound"><B></B></A>
+<CODE><A href="rasterizer_compound.cpp.html">rasterizer_compound.cpp</A></CODE>
+This simple example demonstrates a rather advanced technique of using 
+the compound rasterizer. The idea is you assign styles to the polygons
+(left=style, right=-1) and rasterize this &quot;multi-styled&quot; compound shape 
+as a whole. If the polygons in the shape overlap, the greater styles have 
+higher priority. That is, the result is as if greater styles were painted 
+last, but the geometry is flattened before rendering. It means there are 
+no pixels will be painted twice. Then the style are associated with colors, 
+gradients, images, etc. in a special style handler. It simulates 
+Constructive Solid Geometry so that, you can, for example draw a translucent 
+fill plus translucent stroke without the overlapped part of the fill being 
+visible through the stroke.</TD><TD><A href="rasterizer_compound.zip"><IMG src="../dl_win32.gif" border="0"/></A><BR/></TD></TR>
+<TR><TD><A href="blur.png"><IMG src="blur_s.png" border="0" title="Click to enlarge"/></A></TD><TD style="text-align:justify"><A name="PAGE_DEMO_blur"><B></B></A>
+<CODE><A href="blur.cpp.html">blur.cpp</A></CODE>
+Now you can blur rendered images rather fast! There two algorithms
+are used: <A href="http://incubator.quasimondo.com/processing/fast_blur_deluxe.php"><IMG src="../link.gif" border="0"/>Stack Blur</A> by Mario Klingemann and Fast Recursive Gaussian Filter, described
+<A href="http://www.ph.tn.tudelft.nl/Courses/FIP/noframes/fip-Smoothin.html"><IMG src="../link.gif" border="0"/>here</A> 
+and <A href="http://www.ph.tn.tudelft.nl/~lucas/publications/1995/SP95TYLV/SP95TYLV.pdf"><IMG src="../link.gif" border="0"/>here (PDF)</A>. The speed of both methods does not depend on the filter radius. 
+Mario&#039;s method works 3-5 times faster; it doesn&#039;t produce exactly Gaussian 
+response, but pretty fair for most practical purposes. The recursive filter 
+uses floating point arithmetic and works slower. But it is true Gaussian filter, 
+with theoretically infinite impulse response. The radius (actually 2*sigma value)
+can be fractional and the filter produces quite adequate result.</TD><TD><A href="blur.zip"><IMG src="../dl_win32.gif" border="0"/></A><BR/></TD></TR>
+</TABLE><FONT style="margin-left:1em"><I></I></FONT>
+
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>&#133;TO BE CONTINUED
+</P></TD></TR></TABLE><TABLE width="640px" bgcolor="#583927" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0">
+<TR><TD><CENTER><SPAN class="authors">
+Copyright <SPAN class="larger">&#169;</SPAN> 2002-2006
+<A href="../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+<TR><TD><CENTER><SPAN class="authors">
+Web Design and Programming
+<A href="../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+</TABLE>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+</HTML>

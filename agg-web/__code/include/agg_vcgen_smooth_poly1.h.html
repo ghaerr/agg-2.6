@@ -1,0 +1,116 @@
+<HTML><HEAD><TITLE>Anti-Grain Geometry - </TITLE>
+<META http-equiv="Content-Type" content="text/html"/>
+<LINK rel="stylesheet" type="text/css" href="../../agg.styles.css"/>
+</HEAD>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE><SPAN class="rem">//----------------------------------------------------------------------------</SPAN>
+<SPAN class="rem">// Anti-Grain Geometry (AGG) - Version 2.5</SPAN>
+<SPAN class="rem">// A high quality rendering engine for C++</SPAN>
+<SPAN class="rem">// Copyright (C) 2002-2006 Maxim Shemanarev</SPAN>
+<SPAN class="rem">// Contact: mcseem@antigrain.com</SPAN>
+<SPAN class="rem">//          mcseemagg@yahoo.com</SPAN>
+<SPAN class="rem">//          http://antigrain.com</SPAN>
+<SPAN class="rem">// </SPAN>
+<SPAN class="rem">// AGG is free software; you can redistribute it and/or</SPAN>
+<SPAN class="rem">// modify it under the terms of the GNU General Public License</SPAN>
+<SPAN class="rem">// as published by the Free Software Foundation; either version 2</SPAN>
+<SPAN class="rem">// of the License, or (at your option) any later version.</SPAN>
+<SPAN class="rem">// </SPAN>
+<SPAN class="rem">// AGG is distributed in the hope that it will be useful,</SPAN>
+<SPAN class="rem">// but WITHOUT ANY WARRANTY; without even the implied warranty of</SPAN>
+<SPAN class="rem">// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</SPAN>
+<SPAN class="rem">// GNU General Public License for more details.</SPAN>
+<SPAN class="rem">// </SPAN>
+<SPAN class="rem">// You should have received a copy of the GNU General Public License</SPAN>
+<SPAN class="rem">// along with AGG; if not, write to the Free Software</SPAN>
+<SPAN class="rem">// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, </SPAN>
+<SPAN class="rem">// MA 02110-1301, USA.</SPAN>
+<SPAN class="rem">//----------------------------------------------------------------------------</SPAN>
+
+<SPAN class="kw2">#ifndef</SPAN> AGG_VCGEN_SMOOTH_POLY1_INCLUDED
+<SPAN class="kw2">#define</SPAN> AGG_VCGEN_SMOOTH_POLY1_INCLUDED
+
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="agg_basics.h.html">agg_basics.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="agg_vertex_sequence.h.html">agg_vertex_sequence.h</A>&quot;</SPAN>
+
+
+<SPAN class="kw1">namespace</SPAN> agg
+<SPAN class="op">{</SPAN>
+
+    <SPAN class="rem">//======================================================<A name="vcgen_smooth_poly1"><B></B></A><A href="agg_vcgen_smooth_poly1.h.html#vcgen_smooth_poly1">vcgen_smooth_poly1</A></SPAN>
+    <SPAN class="rem">//</SPAN>
+    <SPAN class="rem">// See Implementation <A href="../src/agg_vcgen_smooth_poly1.cpp.html">agg_vcgen_smooth_poly1.cpp</A> </SPAN>
+    <SPAN class="rem">// Smooth polygon generator</SPAN>
+    <SPAN class="rem">//</SPAN>
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">class</SPAN> <A href="agg_vcgen_smooth_poly1.h.html#vcgen_smooth_poly1">vcgen_smooth_poly1</A>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">enum</SPAN> status_e
+        <SPAN class="op">{</SPAN>
+            initial<SPAN class="op">,</SPAN>
+            ready<SPAN class="op">,</SPAN>
+            polygon<SPAN class="op">,</SPAN>
+            ctrl_b<SPAN class="op">,</SPAN>
+            ctrl_e<SPAN class="op">,</SPAN>
+            ctrl1<SPAN class="op">,</SPAN>
+            ctrl2<SPAN class="op">,</SPAN>
+            end_poly<SPAN class="op">,</SPAN>
+            stop
+        <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">public</SPAN>:
+        <SPAN class="kw1">typedef</SPAN> <A href="agg_vertex_sequence.h.html#vertex_sequence">vertex_sequence</A><SPAN class="op">&lt;</SPAN><A href="agg_vertex_sequence.h.html#vertex_dist">vertex_dist</A><SPAN class="op">,</SPAN> <SPAN class="num">6</SPAN><SPAN class="op">&gt;</SPAN> vertex_storage<SPAN class="op">;</SPAN>
+
+        <A href="agg_vcgen_smooth_poly1.h.html#vcgen_smooth_poly1">vcgen_smooth_poly1</A><SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">void</SPAN>   smooth_value<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> v<SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN> m_smooth_value <SPAN class="op">=</SPAN> v <SPAN class="op">*</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">5</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">double</SPAN> smooth_value<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_smooth_value <SPAN class="op">*</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">// Vertex Generator Interface</SPAN>
+        <SPAN class="kw1">void</SPAN> remove_all<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">void</SPAN> add_vertex<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> cmd<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="rem">// Vertex Source Interface</SPAN>
+        <SPAN class="kw1">void</SPAN>     rewind<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> path_id<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> vertex<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">private</SPAN>:
+        <A href="agg_vcgen_smooth_poly1.h.html#vcgen_smooth_poly1">vcgen_smooth_poly1</A><SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <A href="agg_vcgen_smooth_poly1.h.html#vcgen_smooth_poly1">vcgen_smooth_poly1</A><SPAN class="op">&amp;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">const</SPAN> <A href="agg_vcgen_smooth_poly1.h.html#vcgen_smooth_poly1">vcgen_smooth_poly1</A><SPAN class="op">&amp;</SPAN> <SPAN class="kw1">operator</SPAN> <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <A href="agg_vcgen_smooth_poly1.h.html#vcgen_smooth_poly1">vcgen_smooth_poly1</A><SPAN class="op">&amp;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">void</SPAN> calculate<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <A href="agg_vertex_sequence.h.html#vertex_dist">vertex_dist</A><SPAN class="op">&amp;</SPAN> v0<SPAN class="op">,</SPAN> 
+                       <SPAN class="kw1">const</SPAN> <A href="agg_vertex_sequence.h.html#vertex_dist">vertex_dist</A><SPAN class="op">&amp;</SPAN> v1<SPAN class="op">,</SPAN> 
+                       <SPAN class="kw1">const</SPAN> <A href="agg_vertex_sequence.h.html#vertex_dist">vertex_dist</A><SPAN class="op">&amp;</SPAN> v2<SPAN class="op">,</SPAN>
+                       <SPAN class="kw1">const</SPAN> <A href="agg_vertex_sequence.h.html#vertex_dist">vertex_dist</A><SPAN class="op">&amp;</SPAN> v3<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        vertex_storage m_src_vertices<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN>         m_smooth_value<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN>       m_closed<SPAN class="op">;</SPAN>
+        status_e       m_status<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN>       m_src_vertex<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN>         m_ctrl1_x<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN>         m_ctrl1_y<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN>         m_ctrl2_x<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN>         m_ctrl2_y<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+<SPAN class="op">}</SPAN>
+
+
+<SPAN class="kw2">#endif</SPAN>
+
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT><TABLE width="640px" bgcolor="#583927" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0">
+<TR><TD><CENTER><SPAN class="authors">
+Copyright <SPAN class="larger">&#169;</SPAN> 2002-2006
+<A href="../../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+<TR><TD><CENTER><SPAN class="authors">
+Web Design and Programming
+<A href="../../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+</TABLE>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+</HTML>

@@ -1,0 +1,468 @@
+<HTML><HEAD><TITLE>Anti-Grain Geometry - Compiling AGG under Microsoft eMbedded VC 4.0</TITLE>
+<META http-equiv="Content-Type" content="text/html"/>
+<LINK rel="stylesheet" type="text/css" href="../../agg.styles.css"/>
+</HEAD>
+<A name="PAGE_WIN_CE"><B></B></A>
+
+
+<TABLE width="640px" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR>
+<TD bgcolor="#583927"></TD>
+</TR>
+</TABLE>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR>
+<TD>
+<TABLE width="170px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR><TD><A href="../../index.html" class="mpmenu">Home/</A></TD></TR>
+<TR><TD><A href="../../tips/index.html" class="mpmenu">Tips &amp; Tricks/</A></TD></TR>
+<TR><TD><A href="" class="mpmenu"></A></TD></TR>
+<TR><TD><A href="" class="mpmenu"></A></TD></TR>
+<TR><TD><A href="" class="mpmenu"></A></TD></TR>
+<TR><TD><A href="" class="mpmenu"></A></TD></TR>
+</TABLE>
+</TD>
+<TD width="1px" bgcolor="#583927"></TD>
+<TD width="450px" valign="top" style="text-align:right">
+<TABLE border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR>
+<TD><IMG src="../../agg_logo.gif" border="0"/></TD>
+</TR>
+<TR>
+<TD>
+<TABLE border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR height="15px">
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../../news/index.html">News</A>&nbsp;&nbsp;</TD>
+<TD width="1px" bgcolor="#8e521d"></TD>
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../../doc/index.html">Docs</A>&nbsp;&nbsp;</TD>
+<TD width="1px" bgcolor="#8e521d"></TD>
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../../download/index.html">Download</A>&nbsp;&nbsp;</TD>
+<TD width="1px" bgcolor="#8e521d"></TD>
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../../maillist/index.html">Mailing List</A>&nbsp;&nbsp;</TD>
+<TD width="1px" bgcolor="#8e521d"></TD>
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../../cvs/index.html">CVS</A>&nbsp;&nbsp;</TD>
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+<TABLE width="640px" height="1px" bgcolor="#583927" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>
+</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD><H1>Compiling AGG under Microsoft eMbedded VC 4.0<SPAN class="subtitle"><BR/>A simple step-by-step tutorial</SPAN></H1></TD></TR></TABLE>
+
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>If you have a Microsoft eMbedded Visual C++ 4.0 (eVC4.0) installed you can 
+develop applications based on <B>AGG</B> for PocketPCs that use Windows CE.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>I didn&#039;t have any problems compiling <B>AGG</B> under eVC4.0, it looks pretty 
+much the same as building of Win32 API applications.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Below there is a spep-by-step instruction how to create a simple WinCE
+application with <B>AGG</B>.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><OL>
+<LI>Create a new <CODE>WCE Application</CODE>, for example in <CODE>agg2/examples/win32_ce/agg_test</CODE>.<BR/>
+    Choose <B>&quot;A typical Hello World Application&quot;</B>.<BR/></LI>
+<LI>Add path to the <B>AGG</B> include directory: <BR/>
+    <B>Project/Settings</B>, set <B>&quot;Setting For:&quot;</B> to <B>&quot;All configurations&quot;</B>.<BR/>
+    Select tab <B>&quot;C/C++&quot;</B>, category <B>&quot;Preprocessor&quot;</B>.<BR/>
+    Type path to the <B>AGG</B> include directory in the <B>&quot;Additional Include Directories&quot;</B>.<BR/>
+    If you put the project to <CODE>agg2/examples/win32_ce/agg_test</CODE>, type <CODE>../../../include</CODE><BR/></LI>
+<LI>Add necessary <B>AGG</B> source files to the project from <CODE>agg2/src</CODE>. You can 
+    actually add all of them (except the ones in the sub-directories).<BR/></LI>
+<LI>Select all the <B>AGG</B> source files in the project (<CODE>agg_*.cpp</CODE>, except <CODE>agg_test.*</CODE>).<BR/></LI>
+<LI>Go to <B>Project/Settings</B>, set <B>&quot;Setting For:&quot;</B> to <B>&quot;All configurations&quot;</B>.<BR/>
+    Select tab <B>&quot;C/C++&quot;</B>, category <B>&quot;Precompiled Headers&quot;</B>.<BR/>
+    Choose option <B>&quot;Not using precompiled headers&quot;</B>.<BR/></LI>
+<LI>Replace the content of <CODE>agg_test.cpp</CODE> to the following (see the source
+    in <A href="agg_test.cpp"><IMG src="../../link.gif" border="0"/>agg_test.cpp</A>). Basically you need to replace 
+    the <CODE>WM_PAINT</CODE> event handler, add the <B>AGG</B> includes, and add the <CODE>agg_draw()</CODE>
+    function.</LI></OL></P></TD></TR></TABLE>
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+<SPAN class="rem">// agg_test.cpp : Defines the entry point for the application.</SPAN>
+<SPAN class="rem">//</SPAN>
+
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;stdafx.h&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;agg_test.h&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="op">&lt;</SPAN>commctrl<SPAN class="op">.</SPAN>h<SPAN class="op">&gt;</SPAN>
+
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../../__code/include/agg_rendering_buffer.h.html">agg_rendering_buffer.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../../__code/include/agg_curves.h.html">agg_curves.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../../__code/include/agg_conv_stroke.h.html">agg_conv_stroke.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../../__code/include/agg_rasterizer_scanline_aa.h.html">agg_rasterizer_scanline_aa.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../../__code/include/agg_scanline_p.h.html">agg_scanline_p.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../../__code/include/agg_renderer_scanline.h.html">agg_renderer_scanline.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;agg_pixfmt_rgb555.h&quot;</SPAN>
+
+<SPAN class="kw2">#define</SPAN> MAX_LOADSTRING <SPAN class="num">100</SPAN>
+
+<SPAN class="rem">// Global Variables:</SPAN>
+HINSTANCE           hInst<SPAN class="op">;</SPAN>          <SPAN class="rem">// The current instance</SPAN>
+HWND                hwndCB<SPAN class="op">;</SPAN>         <SPAN class="rem">// The command bar handle</SPAN>
+
+<SPAN class="rem">// Forward declarations of functions included in this code module:</SPAN>
+ATOM                MyRegisterClass <SPAN class="op">(</SPAN>HINSTANCE<SPAN class="op">,</SPAN> LPTSTR<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+BOOL                InitInstance    <SPAN class="op">(</SPAN>HINSTANCE<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+LRESULT CALLBACK    WndProc         <SPAN class="op">(</SPAN>HWND<SPAN class="op">,</SPAN> UINT<SPAN class="op">,</SPAN> WPARAM<SPAN class="op">,</SPAN> LPARAM<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+LRESULT CALLBACK    About           <SPAN class="op">(</SPAN>HWND<SPAN class="op">,</SPAN> UINT<SPAN class="op">,</SPAN> WPARAM<SPAN class="op">,</SPAN> LPARAM<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+<SPAN class="kw1">int</SPAN> WINAPI WinMain<SPAN class="op">(</SPAN> HINSTANCE hInstance<SPAN class="op">,</SPAN>
+                    HINSTANCE hPrevInstance<SPAN class="op">,</SPAN>
+                    LPTSTR    lpCmdLine<SPAN class="op">,</SPAN>
+                    <SPAN class="kw1">int</SPAN>       nCmdShow<SPAN class="op">)</SPAN>
+<SPAN class="op">{</SPAN>
+    MSG msg<SPAN class="op">;</SPAN>
+    HACCEL hAccelTable<SPAN class="op">;</SPAN>
+
+    <SPAN class="rem">// Perform application initialization:</SPAN>
+    <SPAN class="kw1">if</SPAN> <SPAN class="op">(</SPAN><SPAN class="op">!</SPAN>InitInstance <SPAN class="op">(</SPAN>hInstance<SPAN class="op">,</SPAN> nCmdShow<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> 
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">return</SPAN> FALSE<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    hAccelTable <SPAN class="op">=</SPAN> LoadAccelerators<SPAN class="op">(</SPAN>hInstance<SPAN class="op">,</SPAN> <SPAN class="op">(</SPAN>LPCTSTR<SPAN class="op">)</SPAN>IDC_AGG_TEST<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="rem">// Main message loop:</SPAN>
+    <SPAN class="kw1">while</SPAN> <SPAN class="op">(</SPAN>GetMessage<SPAN class="op">(</SPAN><SPAN class="op">&amp;</SPAN>msg<SPAN class="op">,</SPAN> NULL<SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> 
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">if</SPAN> <SPAN class="op">(</SPAN><SPAN class="op">!</SPAN>TranslateAccelerator<SPAN class="op">(</SPAN>msg<SPAN class="op">.</SPAN>hwnd<SPAN class="op">,</SPAN> hAccelTable<SPAN class="op">,</SPAN> <SPAN class="op">&amp;</SPAN>msg<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> 
+        <SPAN class="op">{</SPAN>
+            TranslateMessage<SPAN class="op">(</SPAN><SPAN class="op">&amp;</SPAN>msg<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            DispatchMessage<SPAN class="op">(</SPAN><SPAN class="op">&amp;</SPAN>msg<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="kw1">return</SPAN> msg<SPAN class="op">.</SPAN>wParam<SPAN class="op">;</SPAN>
+<SPAN class="op">}</SPAN>
+
+<SPAN class="rem">//</SPAN>
+<SPAN class="rem">//  FUNCTION: MyRegisterClass()</SPAN>
+<SPAN class="rem">//</SPAN>
+<SPAN class="rem">//  PURPOSE: Registers the window class.</SPAN>
+<SPAN class="rem">//</SPAN>
+<SPAN class="rem">//  COMMENTS:</SPAN>
+<SPAN class="rem">//</SPAN>
+<SPAN class="rem">//    It is important to call this function so that the application </SPAN>
+<SPAN class="rem">//    will get &#039;well formed&#039; small icons associated with it.</SPAN>
+<SPAN class="rem">//</SPAN>
+ATOM MyRegisterClass<SPAN class="op">(</SPAN>HINSTANCE hInstance<SPAN class="op">,</SPAN> LPTSTR szWindowClass<SPAN class="op">)</SPAN>
+<SPAN class="op">{</SPAN>
+    WNDCLASS    wc<SPAN class="op">;</SPAN>
+
+    wc<SPAN class="op">.</SPAN>style            <SPAN class="op">=</SPAN> CS_HREDRAW <SPAN class="op">|</SPAN> CS_VREDRAW<SPAN class="op">;</SPAN>
+    wc<SPAN class="op">.</SPAN>lpfnWndProc      <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>WNDPROC<SPAN class="op">)</SPAN> WndProc<SPAN class="op">;</SPAN>
+    wc<SPAN class="op">.</SPAN>cbClsExtra       <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+    wc<SPAN class="op">.</SPAN>cbWndExtra       <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+    wc<SPAN class="op">.</SPAN>hInstance        <SPAN class="op">=</SPAN> hInstance<SPAN class="op">;</SPAN>
+    wc<SPAN class="op">.</SPAN>hIcon            <SPAN class="op">=</SPAN> LoadIcon<SPAN class="op">(</SPAN>hInstance<SPAN class="op">,</SPAN> MAKEINTRESOURCE<SPAN class="op">(</SPAN>IDI_AGG_TEST<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    wc<SPAN class="op">.</SPAN>hCursor          <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+    wc<SPAN class="op">.</SPAN>hbrBackground    <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>HBRUSH<SPAN class="op">)</SPAN> GetStockObject<SPAN class="op">(</SPAN>WHITE_BRUSH<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    wc<SPAN class="op">.</SPAN>lpszMenuName     <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+    wc<SPAN class="op">.</SPAN>lpszClassName    <SPAN class="op">=</SPAN> szWindowClass<SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">return</SPAN> RegisterClass<SPAN class="op">(</SPAN><SPAN class="op">&amp;</SPAN>wc<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+<SPAN class="op">}</SPAN>
+
+<SPAN class="rem">//</SPAN>
+<SPAN class="rem">//  FUNCTION: InitInstance(HANDLE, int)</SPAN>
+<SPAN class="rem">//</SPAN>
+<SPAN class="rem">//  PURPOSE: Saves instance handle and creates main window</SPAN>
+<SPAN class="rem">//</SPAN>
+<SPAN class="rem">//  COMMENTS:</SPAN>
+<SPAN class="rem">//</SPAN>
+<SPAN class="rem">//    In this function, we save the instance handle in a global variable and</SPAN>
+<SPAN class="rem">//    create and display the main program window.</SPAN>
+<SPAN class="rem">//</SPAN>
+BOOL InitInstance<SPAN class="op">(</SPAN>HINSTANCE hInstance<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> nCmdShow<SPAN class="op">)</SPAN>
+<SPAN class="op">{</SPAN>
+    HWND    hWnd<SPAN class="op">;</SPAN>
+    TCHAR   szTitle<SPAN class="op">[</SPAN>MAX_LOADSTRING<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>            <SPAN class="rem">// The title bar text</SPAN>
+    TCHAR   szWindowClass<SPAN class="op">[</SPAN>MAX_LOADSTRING<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>      <SPAN class="rem">// The window class name</SPAN>
+
+    hInst <SPAN class="op">=</SPAN> hInstance<SPAN class="op">;</SPAN>      <SPAN class="rem">// Store instance handle in our global variable</SPAN>
+    <SPAN class="rem">// Initialize global strings</SPAN>
+    LoadString<SPAN class="op">(</SPAN>hInstance<SPAN class="op">,</SPAN> IDC_AGG_TEST<SPAN class="op">,</SPAN> szWindowClass<SPAN class="op">,</SPAN> MAX_LOADSTRING<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    MyRegisterClass<SPAN class="op">(</SPAN>hInstance<SPAN class="op">,</SPAN> szWindowClass<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    LoadString<SPAN class="op">(</SPAN>hInstance<SPAN class="op">,</SPAN> IDS_APP_TITLE<SPAN class="op">,</SPAN> szTitle<SPAN class="op">,</SPAN> MAX_LOADSTRING<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    hWnd <SPAN class="op">=</SPAN> CreateWindow<SPAN class="op">(</SPAN>szWindowClass<SPAN class="op">,</SPAN> szTitle<SPAN class="op">,</SPAN> WS_VISIBLE<SPAN class="op">,</SPAN>
+                        CW_USEDEFAULT<SPAN class="op">,</SPAN> CW_USEDEFAULT<SPAN class="op">,</SPAN> CW_USEDEFAULT<SPAN class="op">,</SPAN> 
+                        CW_USEDEFAULT<SPAN class="op">,</SPAN> NULL<SPAN class="op">,</SPAN> NULL<SPAN class="op">,</SPAN> hInstance<SPAN class="op">,</SPAN> NULL<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">if</SPAN> <SPAN class="op">(</SPAN><SPAN class="op">!</SPAN>hWnd<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>   
+        <SPAN class="kw1">return</SPAN> FALSE<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    ShowWindow<SPAN class="op">(</SPAN>hWnd<SPAN class="op">,</SPAN> nCmdShow<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    UpdateWindow<SPAN class="op">(</SPAN>hWnd<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="kw1">if</SPAN> <SPAN class="op">(</SPAN>hwndCB<SPAN class="op">)</SPAN>
+        CommandBar_Show<SPAN class="op">(</SPAN>hwndCB<SPAN class="op">,</SPAN> TRUE<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">return</SPAN> TRUE<SPAN class="op">;</SPAN>
+<SPAN class="op">}</SPAN>
+
+
+
+
+<SPAN class="kw1">void</SPAN> agg_draw<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN> buf<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> w<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> h<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> stride<SPAN class="op">)</SPAN>
+<SPAN class="op">{</SPAN>
+    <SPAN class="kw1">typedef</SPAN> agg::<A href="../../__code/include/agg_pixfmt_rgb_packed.h.html#pixfmt_rgb555">pixfmt_rgb555</A> <A href="../../doc/basic_renderers/basic_renderers.agdoc.html#pixfmt">pixfmt</A><SPAN class="op">;</SPAN>
+
+    <SPAN class="rem">//============================================================ </SPAN>
+    <SPAN class="rem">// AGG lowest level code.</SPAN>
+    agg::<A href="../../doc/basic_renderers/basic_renderers.agdoc.html#rendering_buffer">rendering_buffer</A> rbuf<SPAN class="op">;</SPAN>
+    rbuf<SPAN class="op">.</SPAN>attach<SPAN class="op">(</SPAN><SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN><SPAN class="op">)</SPAN>buf<SPAN class="op">,</SPAN> w<SPAN class="op">,</SPAN> h<SPAN class="op">,</SPAN> stride<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> 
+
+    <SPAN class="rem">// Pixel format and basic primitives renderer</SPAN>
+    <A href="../../doc/basic_renderers/basic_renderers.agdoc.html#pixfmt">pixfmt</A> pixf<SPAN class="op">(</SPAN>rbuf<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    agg::<A href="../../doc/basic_renderers/basic_renderers.agdoc.html#renderer_base">renderer_base</A><SPAN class="op">&lt;</SPAN><A href="../../doc/basic_renderers/basic_renderers.agdoc.html#pixfmt">pixfmt</A><SPAN class="op">&gt;</SPAN> renb<SPAN class="op">(</SPAN>pixf<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    renb<SPAN class="op">.</SPAN>clear<SPAN class="op">(</SPAN>agg::<A href="../../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">(</SPAN><SPAN class="num">255</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="rem">// Scanline renderer for solid filling.</SPAN>
+    agg::<A href="../../__code/include/agg_renderer_scanline.h.html#renderer_scanline_aa_solid">renderer_scanline_aa_solid</A><SPAN class="op">&lt;</SPAN>agg::<A href="../../doc/basic_renderers/basic_renderers.agdoc.html#renderer_base">renderer_base</A><SPAN class="op">&lt;</SPAN><A href="../../doc/basic_renderers/basic_renderers.agdoc.html#pixfmt">pixfmt</A><SPAN class="op">&gt;</SPAN> <SPAN class="op">&gt;</SPAN> ren<SPAN class="op">(</SPAN>renb<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="rem">// Rasterizer &amp; scanline</SPAN>
+    agg::<A href="../../__code/include/agg_rasterizer_scanline_aa.h.html#rasterizer_scanline_aa">rasterizer_scanline_aa</A><SPAN class="op">&lt;</SPAN><SPAN class="op">&gt;</SPAN> ras<SPAN class="op">;</SPAN>
+    agg::<A href="../../__code/include/agg_scanline_p.h.html#scanline_p8">scanline_p8</A> sl<SPAN class="op">;</SPAN>
+
+    agg::<A href="../../__code/include/agg_curves.h.html#curve4">curve4</A> curve<SPAN class="op">;</SPAN>
+    agg::<A href="../../__code/include/agg_conv_stroke.h.html#conv_stroke">conv_stroke</A><SPAN class="op">&lt;</SPAN>agg::<A href="../../__code/include/agg_curves.h.html#curve4">curve4</A><SPAN class="op">&gt;</SPAN> poly<SPAN class="op">(</SPAN>curve<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="kw1">unsigned</SPAN> i<SPAN class="op">;</SPAN>
+
+    srand<SPAN class="op">(</SPAN><SPAN class="num">12365</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;</SPAN> <SPAN class="num">100</SPAN><SPAN class="op">;</SPAN> i<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        poly<SPAN class="op">.</SPAN>width<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN><SPAN class="op">(</SPAN>rand<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">%</SPAN> <SPAN class="num">3500</SPAN> <SPAN class="op">+</SPAN> <SPAN class="num">500</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">500</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        curve<SPAN class="op">.</SPAN>init<SPAN class="op">(</SPAN>rand<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">%</SPAN> w<SPAN class="op">,</SPAN> rand<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">%</SPAN> h<SPAN class="op">,</SPAN> 
+                   rand<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">%</SPAN> w<SPAN class="op">,</SPAN> rand<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">%</SPAN> h<SPAN class="op">,</SPAN> 
+                   rand<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">%</SPAN> w<SPAN class="op">,</SPAN> rand<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">%</SPAN> h<SPAN class="op">,</SPAN> 
+                   rand<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">%</SPAN> w<SPAN class="op">,</SPAN> rand<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">%</SPAN> h<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        ren<SPAN class="op">.</SPAN>color<SPAN class="op">(</SPAN>agg::<A href="../../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">(</SPAN>rand<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">&amp;</SPAN> <SPAN class="num">0xFF</SPAN><SPAN class="op">,</SPAN> 
+                             rand<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">&amp;</SPAN> <SPAN class="num">0xFF</SPAN><SPAN class="op">,</SPAN> 
+                             rand<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">&amp;</SPAN> <SPAN class="num">0xFF</SPAN><SPAN class="op">,</SPAN> 
+                             rand<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">&amp;</SPAN> <SPAN class="num">0xFF</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        ras<SPAN class="op">.</SPAN>add_path<SPAN class="op">(</SPAN>poly<SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        agg::<A href="../../__code/include/agg_renderer_scanline.h.html#render_scanlines">render_scanlines</A><SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> sl<SPAN class="op">,</SPAN> ren<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+    
+    <SPAN class="rem">//============================================================</SPAN>
+<SPAN class="op">}</SPAN>
+
+
+
+
+
+
+<SPAN class="rem">//</SPAN>
+<SPAN class="rem">//  FUNCTION: WndProc(HWND, unsigned, WORD, LONG)</SPAN>
+<SPAN class="rem">//</SPAN>
+<SPAN class="rem">//  PURPOSE:  Processes messages for the main window.</SPAN>
+<SPAN class="rem">//</SPAN>
+<SPAN class="rem">//  WM_COMMAND  - process the application menu</SPAN>
+<SPAN class="rem">//  WM_PAINT    - Paint the main window</SPAN>
+<SPAN class="rem">//  WM_DESTROY  - post a quit message and return</SPAN>
+<SPAN class="rem">//</SPAN>
+<SPAN class="rem">//</SPAN>
+LRESULT CALLBACK WndProc<SPAN class="op">(</SPAN>HWND hWnd<SPAN class="op">,</SPAN> UINT message<SPAN class="op">,</SPAN> WPARAM wParam<SPAN class="op">,</SPAN> LPARAM lParam<SPAN class="op">)</SPAN>
+<SPAN class="op">{</SPAN>
+    HDC hdc<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">int</SPAN> wmId<SPAN class="op">,</SPAN> wmEvent<SPAN class="op">;</SPAN>
+    PAINTSTRUCT ps<SPAN class="op">;</SPAN>
+<SPAN class="rem">//  TCHAR szHello[MAX_LOADSTRING];</SPAN>
+
+    <SPAN class="kw1">switch</SPAN> <SPAN class="op">(</SPAN>message<SPAN class="op">)</SPAN> 
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">case</SPAN> WM_COMMAND:
+            wmId    <SPAN class="op">=</SPAN> LOWORD<SPAN class="op">(</SPAN>wParam<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> 
+            wmEvent <SPAN class="op">=</SPAN> HIWORD<SPAN class="op">(</SPAN>wParam<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> 
+            <SPAN class="rem">// Parse the menu selections:</SPAN>
+            <SPAN class="kw1">switch</SPAN> <SPAN class="op">(</SPAN>wmId<SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                <SPAN class="kw1">case</SPAN> IDM_HELP_ABOUT:
+                   DialogBox<SPAN class="op">(</SPAN>hInst<SPAN class="op">,</SPAN> <SPAN class="op">(</SPAN>LPCTSTR<SPAN class="op">)</SPAN>IDD_ABOUTBOX<SPAN class="op">,</SPAN> hWnd<SPAN class="op">,</SPAN> <SPAN class="op">(</SPAN>DLGPROC<SPAN class="op">)</SPAN>About<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                   <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">case</SPAN> IDM_FILE_EXIT:
+                   DestroyWindow<SPAN class="op">(</SPAN>hWnd<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                   <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">default</SPAN>:
+                   <SPAN class="kw1">return</SPAN> DefWindowProc<SPAN class="op">(</SPAN>hWnd<SPAN class="op">,</SPAN> message<SPAN class="op">,</SPAN> wParam<SPAN class="op">,</SPAN> lParam<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">case</SPAN> WM_CREATE:
+            hwndCB <SPAN class="op">=</SPAN> CommandBar_Create<SPAN class="op">(</SPAN>hInst<SPAN class="op">,</SPAN> hWnd<SPAN class="op">,</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>         
+            CommandBar_InsertMenubar<SPAN class="op">(</SPAN>hwndCB<SPAN class="op">,</SPAN> hInst<SPAN class="op">,</SPAN> IDM_MENU<SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            CommandBar_AddAdornments<SPAN class="op">(</SPAN>hwndCB<SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">case</SPAN> WM_PAINT:
+            <SPAN class="op">{</SPAN>
+                hdc <SPAN class="op">=</SPAN> BeginPaint<SPAN class="op">(</SPAN>hWnd<SPAN class="op">,</SPAN> <SPAN class="op">&amp;</SPAN>ps<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                RECT rt<SPAN class="op">;</SPAN>
+                GetClientRect<SPAN class="op">(</SPAN>hWnd<SPAN class="op">,</SPAN> <SPAN class="op">&amp;</SPAN>rt<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                <SPAN class="kw1">int</SPAN> width <SPAN class="op">=</SPAN> rt<SPAN class="op">.</SPAN>right <SPAN class="op">-</SPAN> rt<SPAN class="op">.</SPAN>left<SPAN class="op">;</SPAN>
+                <SPAN class="kw1">int</SPAN> height <SPAN class="op">=</SPAN> rt<SPAN class="op">.</SPAN>bottom <SPAN class="op">-</SPAN> rt<SPAN class="op">.</SPAN>top<SPAN class="op">;</SPAN>
+
+                <SPAN class="rem">//============================================================ </SPAN>
+                <SPAN class="rem">//Creating compatible DC and a bitmap to render the image </SPAN>
+                BITMAPINFO bmp_info<SPAN class="op">;</SPAN> 
+                bmp_info<SPAN class="op">.</SPAN>bmiHeader<SPAN class="op">.</SPAN>biSize <SPAN class="op">=</SPAN> <SPAN class="kw1">sizeof</SPAN><SPAN class="op">(</SPAN>BITMAPINFOHEADER<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> 
+                bmp_info<SPAN class="op">.</SPAN>bmiHeader<SPAN class="op">.</SPAN>biWidth <SPAN class="op">=</SPAN> width<SPAN class="op">;</SPAN> 
+                bmp_info<SPAN class="op">.</SPAN>bmiHeader<SPAN class="op">.</SPAN>biHeight <SPAN class="op">=</SPAN> height<SPAN class="op">;</SPAN> 
+                bmp_info<SPAN class="op">.</SPAN>bmiHeader<SPAN class="op">.</SPAN>biPlanes <SPAN class="op">=</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN> 
+                bmp_info<SPAN class="op">.</SPAN>bmiHeader<SPAN class="op">.</SPAN>biBitCount <SPAN class="op">=</SPAN> <SPAN class="num">16</SPAN><SPAN class="op">;</SPAN> 
+                bmp_info<SPAN class="op">.</SPAN>bmiHeader<SPAN class="op">.</SPAN>biCompression <SPAN class="op">=</SPAN> BI_RGB<SPAN class="op">;</SPAN> 
+                bmp_info<SPAN class="op">.</SPAN>bmiHeader<SPAN class="op">.</SPAN>biSizeImage <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> 
+                bmp_info<SPAN class="op">.</SPAN>bmiHeader<SPAN class="op">.</SPAN>biXPelsPerMeter <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> 
+                bmp_info<SPAN class="op">.</SPAN>bmiHeader<SPAN class="op">.</SPAN>biYPelsPerMeter <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> 
+                bmp_info<SPAN class="op">.</SPAN>bmiHeader<SPAN class="op">.</SPAN>biClrUsed <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> 
+                bmp_info<SPAN class="op">.</SPAN>bmiHeader<SPAN class="op">.</SPAN>biClrImportant <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> 
+
+                HDC mem_dc <SPAN class="op">=</SPAN> ::CreateCompatibleDC<SPAN class="op">(</SPAN>hdc<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> 
+
+                <SPAN class="kw1">void</SPAN><SPAN class="op">*</SPAN> buf <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> 
+
+                HBITMAP bmp <SPAN class="op">=</SPAN> ::CreateDIBSection<SPAN class="op">(</SPAN> 
+                    mem_dc<SPAN class="op">,</SPAN> 
+                    <SPAN class="op">&amp;</SPAN>bmp_info<SPAN class="op">,</SPAN> 
+                    DIB_RGB_COLORS<SPAN class="op">,</SPAN> 
+                    <SPAN class="op">&amp;</SPAN>buf<SPAN class="op">,</SPAN> 
+                    <SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> 
+                    <SPAN class="num">0</SPAN> 
+                <SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> 
+
+                <SPAN class="rem">// Selecting the object before doing anything allows you </SPAN>
+                <SPAN class="rem">// to use AGG together with native Windows GDI.</SPAN>
+                HBITMAP temp <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>HBITMAP<SPAN class="op">)</SPAN>::SelectObject<SPAN class="op">(</SPAN>mem_dc<SPAN class="op">,</SPAN> bmp<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                <SPAN class="rem">// Calculate the aligned stride value for the 16-bit BMP.</SPAN>
+                <SPAN class="kw1">int</SPAN> stride <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>width <SPAN class="op">*</SPAN> <SPAN class="num">2</SPAN> <SPAN class="op">+</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">&gt;&gt;</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">&lt;&lt;</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+
+                <SPAN class="rem">// Negate the stride value to have the Y-axis flipped</SPAN>
+                agg_draw<SPAN class="op">(</SPAN><SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN><SPAN class="op">)</SPAN>buf<SPAN class="op">,</SPAN> width<SPAN class="op">,</SPAN> height<SPAN class="op">,</SPAN> <SPAN class="op">-</SPAN>stride<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                <SPAN class="rem">//------------------------------------------------------------ </SPAN>
+                <SPAN class="rem">// Display the image. If the image is B-G-R-A (32-bits per pixel)</SPAN>
+                <SPAN class="rem">// one can use AlphaBlend instead of BitBlt. In case of AlphaBlend</SPAN>
+                <SPAN class="rem">// one also should clear the image with zero alpha, i.e. <A href="../../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A>(0,0,0,0)</SPAN>
+
+                ::BitBlt<SPAN class="op">(</SPAN>
+                  hdc<SPAN class="op">,</SPAN>  
+                  rt<SPAN class="op">.</SPAN>left<SPAN class="op">,</SPAN>      
+                  rt<SPAN class="op">.</SPAN>top<SPAN class="op">,</SPAN>      
+                  width<SPAN class="op">,</SPAN>  
+                  height<SPAN class="op">,</SPAN> 
+                  mem_dc<SPAN class="op">,</SPAN>
+                  <SPAN class="num">0</SPAN><SPAN class="op">,</SPAN>
+                  <SPAN class="num">0</SPAN><SPAN class="op">,</SPAN>     
+                  SRCCOPY
+                <SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                <SPAN class="rem">// Free resources </SPAN>
+                ::SelectObject<SPAN class="op">(</SPAN>mem_dc<SPAN class="op">,</SPAN> temp<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> 
+                ::DeleteObject<SPAN class="op">(</SPAN>bmp<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> 
+                ::DeleteObject<SPAN class="op">(</SPAN>mem_dc<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                EndPaint<SPAN class="op">(</SPAN>hWnd<SPAN class="op">,</SPAN> <SPAN class="op">&amp;</SPAN>ps<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">case</SPAN> WM_DESTROY:
+            CommandBar_Destroy<SPAN class="op">(</SPAN>hwndCB<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            PostQuitMessage<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">default</SPAN>:
+            <SPAN class="kw1">return</SPAN> DefWindowProc<SPAN class="op">(</SPAN>hWnd<SPAN class="op">,</SPAN> message<SPAN class="op">,</SPAN> wParam<SPAN class="op">,</SPAN> lParam<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+   <SPAN class="op">}</SPAN>
+   <SPAN class="kw1">return</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+<SPAN class="op">}</SPAN>
+
+<SPAN class="rem">// Mesage handler for the About box.</SPAN>
+LRESULT CALLBACK About<SPAN class="op">(</SPAN>HWND hDlg<SPAN class="op">,</SPAN> UINT message<SPAN class="op">,</SPAN> WPARAM wParam<SPAN class="op">,</SPAN> LPARAM lParam<SPAN class="op">)</SPAN>
+<SPAN class="op">{</SPAN>
+    RECT rt<SPAN class="op">,</SPAN> rt1<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">int</SPAN> DlgWidth<SPAN class="op">,</SPAN> DlgHeight<SPAN class="op">;</SPAN>    <SPAN class="rem">// dialog width and height in pixel units</SPAN>
+    <SPAN class="kw1">int</SPAN> NewPosX<SPAN class="op">,</SPAN> NewPosY<SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">switch</SPAN> <SPAN class="op">(</SPAN>message<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">case</SPAN> WM_INITDIALOG:
+            <SPAN class="rem">// trying to center the About dialog</SPAN>
+            <SPAN class="kw1">if</SPAN> <SPAN class="op">(</SPAN>GetWindowRect<SPAN class="op">(</SPAN>hDlg<SPAN class="op">,</SPAN> <SPAN class="op">&amp;</SPAN>rt1<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN>
+                GetClientRect<SPAN class="op">(</SPAN>GetParent<SPAN class="op">(</SPAN>hDlg<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> <SPAN class="op">&amp;</SPAN>rt<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                DlgWidth    <SPAN class="op">=</SPAN> rt1<SPAN class="op">.</SPAN>right <SPAN class="op">-</SPAN> rt1<SPAN class="op">.</SPAN>left<SPAN class="op">;</SPAN>
+                DlgHeight   <SPAN class="op">=</SPAN> rt1<SPAN class="op">.</SPAN>bottom <SPAN class="op">-</SPAN> rt1<SPAN class="op">.</SPAN>top <SPAN class="op">;</SPAN>
+                NewPosX     <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>rt<SPAN class="op">.</SPAN>right <SPAN class="op">-</SPAN> rt<SPAN class="op">.</SPAN>left <SPAN class="op">-</SPAN> DlgWidth<SPAN class="op">)</SPAN><SPAN class="op">/</SPAN><SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+                NewPosY     <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>rt<SPAN class="op">.</SPAN>bottom <SPAN class="op">-</SPAN> rt<SPAN class="op">.</SPAN>top <SPAN class="op">-</SPAN> DlgHeight<SPAN class="op">)</SPAN><SPAN class="op">/</SPAN><SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+                
+                <SPAN class="rem">// if the About box is larger than the physical screen </SPAN>
+                <SPAN class="kw1">if</SPAN> <SPAN class="op">(</SPAN>NewPosX <SPAN class="op">&lt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> NewPosX <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">if</SPAN> <SPAN class="op">(</SPAN>NewPosY <SPAN class="op">&lt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> NewPosY <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+                SetWindowPos<SPAN class="op">(</SPAN>hDlg<SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> NewPosX<SPAN class="op">,</SPAN> NewPosY<SPAN class="op">,</SPAN>
+                    <SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> SWP_NOZORDER <SPAN class="op">|</SPAN> SWP_NOSIZE<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="kw1">return</SPAN> TRUE<SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">case</SPAN> WM_COMMAND:
+            <SPAN class="kw1">if</SPAN> <SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>LOWORD<SPAN class="op">(</SPAN>wParam<SPAN class="op">)</SPAN> <SPAN class="op">==</SPAN> IDOK<SPAN class="op">)</SPAN> <SPAN class="op">||</SPAN> <SPAN class="op">(</SPAN>LOWORD<SPAN class="op">(</SPAN>wParam<SPAN class="op">)</SPAN> <SPAN class="op">==</SPAN> IDCANCEL<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                EndDialog<SPAN class="op">(</SPAN>hDlg<SPAN class="op">,</SPAN> LOWORD<SPAN class="op">(</SPAN>wParam<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">return</SPAN> TRUE<SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+    <SPAN class="kw1">return</SPAN> FALSE<SPAN class="op">;</SPAN>
+<SPAN class="op">}</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Download the whole project: <A href="agg_test.zip"><IMG src="../../download.gif" border="0"/>&#160;(agg_test.zip)</A>. It&#039;s supposed to 
+be placed in <CODE>agg2/examples/win32_ce/agg_test/</CODE>. Create <CODE>win32_ce</CODE>
+and <CODE>agg_test</CODE> directories. If you choose another directory, modify
+the <B>Additional Include Directories</B> path, and you will have to remove
+all the <B>AGG</B> source files from the project and add new ones from the 
+actual <B>AGG</B> directory (don&#039;t forget to turn <B>Precompiled Headers</B> off).</P></TD></TR></TABLE>
+
+<TABLE class="note" width="640px"><TR><TD><B>NOTE</B><BR/>
+I&#039;m not a pro in WinCE and embedded systems, but I presumed that there&#039;s
+an RGB555 pixel format is used. If it&#039;s not so, use another pixel 
+format that fits the native display format.
+</TD></TR></TABLE>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Change function <CODE>agg_draw()</CODE> and try other <B>AGG</B> stuff. Also note, that 
+the whole scene is being drawn from scratch every time the <CODE>WM_PAINT</CODE>
+event comes. It&#039;s a good idea to cache the rendered image and just 
+<CODE>BitBlt()</CODE> it if there were no changes.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Here&#039;s a screenshot (click to see the enlarged version)   
+</P></TD></TR></TABLE><TABLE width="640px"><TR><TD style="text-align:center"><P>
+<A href="screenshot.png"><IMG src="screenshot_s.png" border="0" title="Click to enlarge"/></A>
+</P></TD></TR></TABLE>
+<TABLE width="640px" bgcolor="#583927" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0">
+<TR><TD><CENTER><SPAN class="authors">
+Copyright <SPAN class="larger">&#169;</SPAN> 2002-2006
+<A href="../../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+<TR><TD><CENTER><SPAN class="authors">
+Web Design and Programming
+<A href="../../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+</TABLE>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+</HTML>

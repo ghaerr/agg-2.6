@@ -1,0 +1,304 @@
+<HTML><HEAD><TITLE>Anti-Grain Geometry - </TITLE>
+<META http-equiv="Content-Type" content="text/html"/>
+<LINK rel="stylesheet" type="text/css" href="../agg.styles.css"/>
+</HEAD>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE><SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_basics.h.html">agg_basics.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;interactive_polygon.h&quot;</SPAN>
+
+<SPAN class="kw1">namespace</SPAN> agg
+<SPAN class="op">{</SPAN>
+    interactive_polygon::interactive_polygon<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> np<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> point_radius<SPAN class="op">)</SPAN> :
+        m_polygon<SPAN class="op">(</SPAN>np <SPAN class="op">*</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_num_points<SPAN class="op">(</SPAN>np<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_node<SPAN class="op">(</SPAN><SPAN class="op">-</SPAN><SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_edge<SPAN class="op">(</SPAN><SPAN class="op">-</SPAN><SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_vs<SPAN class="op">(</SPAN><SPAN class="op">&amp;</SPAN>m_polygon<SPAN class="op">[</SPAN><SPAN class="num">0</SPAN><SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> m_num_points<SPAN class="op">,</SPAN> <SPAN class="kw1">false</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_stroke<SPAN class="op">(</SPAN>m_vs<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_point_radius<SPAN class="op">(</SPAN>point_radius<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_status<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_dx<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_dy<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        m_stroke<SPAN class="op">.</SPAN>width<SPAN class="op">(</SPAN><SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="kw1">void</SPAN> interactive_polygon::rewind<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        m_status <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        m_stroke<SPAN class="op">.</SPAN>rewind<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="kw1">unsigned</SPAN> interactive_polygon::vertex<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> y<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> cmd <SPAN class="op">=</SPAN> <A href="../__code/include/agg_basics.h.html#path_cmd_stop">path_cmd_stop</A><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> r <SPAN class="op">=</SPAN> m_point_radius<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_status <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            cmd <SPAN class="op">=</SPAN> m_stroke<SPAN class="op">.</SPAN>vertex<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN><SPAN class="op">!</SPAN><A href="../__code/include/agg_basics.h.html#is_stop">is_stop</A><SPAN class="op">(</SPAN>cmd<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">return</SPAN> cmd<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_node <SPAN class="op">&gt;=</SPAN> <SPAN class="num">0</SPAN> <SPAN class="op">&amp;&amp;</SPAN> m_node <SPAN class="op">==</SPAN> <SPAN class="kw1">int</SPAN><SPAN class="op">(</SPAN>m_status<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> r <SPAN class="op">*=</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+            m_ellipse<SPAN class="op">.</SPAN>init<SPAN class="op">(</SPAN>xn<SPAN class="op">(</SPAN>m_status<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> yn<SPAN class="op">(</SPAN>m_status<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> r<SPAN class="op">,</SPAN> r<SPAN class="op">,</SPAN> <SPAN class="num">32</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">++</SPAN>m_status<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        cmd <SPAN class="op">=</SPAN> m_ellipse<SPAN class="op">.</SPAN>vertex<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN><SPAN class="op">!</SPAN><A href="../__code/include/agg_basics.h.html#is_stop">is_stop</A><SPAN class="op">(</SPAN>cmd<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">return</SPAN> cmd<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_status <SPAN class="op">&gt;=</SPAN> m_num_points<SPAN class="op">)</SPAN> <SPAN class="kw1">return</SPAN> <A href="../__code/include/agg_basics.h.html#path_cmd_stop">path_cmd_stop</A><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_node <SPAN class="op">&gt;=</SPAN> <SPAN class="num">0</SPAN> <SPAN class="op">&amp;&amp;</SPAN> m_node <SPAN class="op">==</SPAN> <SPAN class="kw1">int</SPAN><SPAN class="op">(</SPAN>m_status<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> r <SPAN class="op">*=</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+        m_ellipse<SPAN class="op">.</SPAN>init<SPAN class="op">(</SPAN>xn<SPAN class="op">(</SPAN>m_status<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> yn<SPAN class="op">(</SPAN>m_status<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> r<SPAN class="op">,</SPAN> r<SPAN class="op">,</SPAN> <SPAN class="num">32</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">++</SPAN>m_status<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">return</SPAN> m_ellipse<SPAN class="op">.</SPAN>vertex<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="kw1">bool</SPAN> interactive_polygon::check_edge<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> i<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN>
+    <SPAN class="op">{</SPAN>
+       <SPAN class="kw1">bool</SPAN> ret <SPAN class="op">=</SPAN> <SPAN class="kw1">false</SPAN><SPAN class="op">;</SPAN>
+
+       <SPAN class="kw1">unsigned</SPAN> n1 <SPAN class="op">=</SPAN> i<SPAN class="op">;</SPAN>
+       <SPAN class="kw1">unsigned</SPAN> n2 <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>i <SPAN class="op">+</SPAN> m_num_points <SPAN class="op">-</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">%</SPAN> m_num_points<SPAN class="op">;</SPAN>
+       <SPAN class="kw1">double</SPAN> x1 <SPAN class="op">=</SPAN> xn<SPAN class="op">(</SPAN>n1<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+       <SPAN class="kw1">double</SPAN> y1 <SPAN class="op">=</SPAN> yn<SPAN class="op">(</SPAN>n1<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+       <SPAN class="kw1">double</SPAN> x2 <SPAN class="op">=</SPAN> xn<SPAN class="op">(</SPAN>n2<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+       <SPAN class="kw1">double</SPAN> y2 <SPAN class="op">=</SPAN> yn<SPAN class="op">(</SPAN>n2<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+       <SPAN class="kw1">double</SPAN> dx <SPAN class="op">=</SPAN> x2 <SPAN class="op">-</SPAN> x1<SPAN class="op">;</SPAN>
+       <SPAN class="kw1">double</SPAN> dy <SPAN class="op">=</SPAN> y2 <SPAN class="op">-</SPAN> y1<SPAN class="op">;</SPAN>
+
+       <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>sqrt<SPAN class="op">(</SPAN>dx<SPAN class="op">*</SPAN>dx <SPAN class="op">+</SPAN> dy<SPAN class="op">*</SPAN>dy<SPAN class="op">)</SPAN> <SPAN class="op">&gt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0000001</SPAN><SPAN class="op">)</SPAN>
+       <SPAN class="op">{</SPAN>
+          <SPAN class="kw1">double</SPAN> x3 <SPAN class="op">=</SPAN> x<SPAN class="op">;</SPAN>
+          <SPAN class="kw1">double</SPAN> y3 <SPAN class="op">=</SPAN> y<SPAN class="op">;</SPAN>
+          <SPAN class="kw1">double</SPAN> x4 <SPAN class="op">=</SPAN> x3 <SPAN class="op">-</SPAN> dy<SPAN class="op">;</SPAN>
+          <SPAN class="kw1">double</SPAN> y4 <SPAN class="op">=</SPAN> y3 <SPAN class="op">+</SPAN> dx<SPAN class="op">;</SPAN>
+
+          <SPAN class="kw1">double</SPAN> den <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>y4<SPAN class="op">-</SPAN>y3<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>x2<SPAN class="op">-</SPAN>x1<SPAN class="op">)</SPAN> <SPAN class="op">-</SPAN> <SPAN class="op">(</SPAN>x4<SPAN class="op">-</SPAN>x3<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>y2<SPAN class="op">-</SPAN>y1<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+          <SPAN class="kw1">double</SPAN> u1 <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>x4<SPAN class="op">-</SPAN>x3<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>y1<SPAN class="op">-</SPAN>y3<SPAN class="op">)</SPAN> <SPAN class="op">-</SPAN> <SPAN class="op">(</SPAN>y4<SPAN class="op">-</SPAN>y3<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>x1<SPAN class="op">-</SPAN>x3<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> den<SPAN class="op">;</SPAN>
+
+          <SPAN class="kw1">double</SPAN> xi <SPAN class="op">=</SPAN> x1 <SPAN class="op">+</SPAN> u1 <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>x2 <SPAN class="op">-</SPAN> x1<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+          <SPAN class="kw1">double</SPAN> yi <SPAN class="op">=</SPAN> y1 <SPAN class="op">+</SPAN> u1 <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>y2 <SPAN class="op">-</SPAN> y1<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+          dx <SPAN class="op">=</SPAN> xi <SPAN class="op">-</SPAN> x<SPAN class="op">;</SPAN>
+          dy <SPAN class="op">=</SPAN> yi <SPAN class="op">-</SPAN> y<SPAN class="op">;</SPAN>
+
+          <SPAN class="kw1">if</SPAN> <SPAN class="op">(</SPAN>u1 <SPAN class="op">&gt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">&amp;&amp;</SPAN> u1 <SPAN class="op">&lt;</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">&amp;&amp;</SPAN> sqrt<SPAN class="op">(</SPAN>dx<SPAN class="op">*</SPAN>dx <SPAN class="op">+</SPAN> dy<SPAN class="op">*</SPAN>dy<SPAN class="op">)</SPAN> <SPAN class="op">&lt;=</SPAN> m_point_radius<SPAN class="op">)</SPAN>
+          <SPAN class="op">{</SPAN>
+             ret <SPAN class="op">=</SPAN> <SPAN class="kw1">true</SPAN><SPAN class="op">;</SPAN>
+          <SPAN class="op">}</SPAN>
+       <SPAN class="op">}</SPAN>
+       <SPAN class="kw1">return</SPAN> ret<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+
+    <SPAN class="kw1">bool</SPAN> interactive_polygon::on_mouse_button_down<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> i<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">bool</SPAN> ret <SPAN class="op">=</SPAN> <SPAN class="kw1">false</SPAN><SPAN class="op">;</SPAN>
+        m_node <SPAN class="op">=</SPAN> <SPAN class="op">-</SPAN><SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+        m_edge <SPAN class="op">=</SPAN> <SPAN class="op">-</SPAN><SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">for</SPAN> <SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;</SPAN> m_num_points<SPAN class="op">;</SPAN> i<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>sqrt<SPAN class="op">(</SPAN> <SPAN class="op">(</SPAN>x<SPAN class="op">-</SPAN>xn<SPAN class="op">(</SPAN>i<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>x<SPAN class="op">-</SPAN>xn<SPAN class="op">(</SPAN>i<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> <SPAN class="op">(</SPAN>y<SPAN class="op">-</SPAN>yn<SPAN class="op">(</SPAN>i<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>y<SPAN class="op">-</SPAN>yn<SPAN class="op">(</SPAN>i<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">)</SPAN> <SPAN class="op">&lt;</SPAN> m_point_radius<SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                m_dx <SPAN class="op">=</SPAN> x <SPAN class="op">-</SPAN> xn<SPAN class="op">(</SPAN>i<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                m_dy <SPAN class="op">=</SPAN> y <SPAN class="op">-</SPAN> yn<SPAN class="op">(</SPAN>i<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                m_node <SPAN class="op">=</SPAN> <SPAN class="kw1">int</SPAN><SPAN class="op">(</SPAN>i<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                ret <SPAN class="op">=</SPAN> <SPAN class="kw1">true</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN><SPAN class="op">!</SPAN>ret<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">for</SPAN> <SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;</SPAN> m_num_points<SPAN class="op">;</SPAN> i<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>check_edge<SPAN class="op">(</SPAN>i<SPAN class="op">,</SPAN> x<SPAN class="op">,</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    m_dx <SPAN class="op">=</SPAN> x<SPAN class="op">;</SPAN>
+                    m_dy <SPAN class="op">=</SPAN> y<SPAN class="op">;</SPAN>
+                    m_edge <SPAN class="op">=</SPAN> <SPAN class="kw1">int</SPAN><SPAN class="op">(</SPAN>i<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    ret <SPAN class="op">=</SPAN> <SPAN class="kw1">true</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN><SPAN class="op">!</SPAN>ret<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>point_in_polygon<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                m_dx <SPAN class="op">=</SPAN> x<SPAN class="op">;</SPAN>
+                m_dy <SPAN class="op">=</SPAN> y<SPAN class="op">;</SPAN>
+                m_node <SPAN class="op">=</SPAN> <SPAN class="kw1">int</SPAN><SPAN class="op">(</SPAN>m_num_points<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                ret <SPAN class="op">=</SPAN> <SPAN class="kw1">true</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">return</SPAN> ret<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="kw1">bool</SPAN> interactive_polygon::on_mouse_move<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">bool</SPAN> ret <SPAN class="op">=</SPAN> <SPAN class="kw1">false</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> dx<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> dy<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_node <SPAN class="op">==</SPAN> <SPAN class="kw1">int</SPAN><SPAN class="op">(</SPAN>m_num_points<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            dx <SPAN class="op">=</SPAN> x <SPAN class="op">-</SPAN> m_dx<SPAN class="op">;</SPAN>
+            dy <SPAN class="op">=</SPAN> y <SPAN class="op">-</SPAN> m_dy<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">unsigned</SPAN> i<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;</SPAN> m_num_points<SPAN class="op">;</SPAN> i<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                xn<SPAN class="op">(</SPAN>i<SPAN class="op">)</SPAN> <SPAN class="op">+=</SPAN> dx<SPAN class="op">;</SPAN>
+                yn<SPAN class="op">(</SPAN>i<SPAN class="op">)</SPAN> <SPAN class="op">+=</SPAN> dy<SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            m_dx <SPAN class="op">=</SPAN> x<SPAN class="op">;</SPAN>
+            m_dy <SPAN class="op">=</SPAN> y<SPAN class="op">;</SPAN>
+            ret <SPAN class="op">=</SPAN> <SPAN class="kw1">true</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">else</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_edge <SPAN class="op">&gt;=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                <SPAN class="kw1">unsigned</SPAN> n1 <SPAN class="op">=</SPAN> m_edge<SPAN class="op">;</SPAN>
+                <SPAN class="kw1">unsigned</SPAN> n2 <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>n1 <SPAN class="op">+</SPAN> m_num_points <SPAN class="op">-</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">%</SPAN> m_num_points<SPAN class="op">;</SPAN>
+                dx <SPAN class="op">=</SPAN> x <SPAN class="op">-</SPAN> m_dx<SPAN class="op">;</SPAN>
+                dy <SPAN class="op">=</SPAN> y <SPAN class="op">-</SPAN> m_dy<SPAN class="op">;</SPAN>
+                xn<SPAN class="op">(</SPAN>n1<SPAN class="op">)</SPAN> <SPAN class="op">+=</SPAN> dx<SPAN class="op">;</SPAN>
+                yn<SPAN class="op">(</SPAN>n1<SPAN class="op">)</SPAN> <SPAN class="op">+=</SPAN> dy<SPAN class="op">;</SPAN>
+                xn<SPAN class="op">(</SPAN>n2<SPAN class="op">)</SPAN> <SPAN class="op">+=</SPAN> dx<SPAN class="op">;</SPAN>
+                yn<SPAN class="op">(</SPAN>n2<SPAN class="op">)</SPAN> <SPAN class="op">+=</SPAN> dy<SPAN class="op">;</SPAN>
+                m_dx <SPAN class="op">=</SPAN> x<SPAN class="op">;</SPAN>
+                m_dy <SPAN class="op">=</SPAN> y<SPAN class="op">;</SPAN>
+                ret <SPAN class="op">=</SPAN> <SPAN class="kw1">true</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="kw1">else</SPAN>
+            <SPAN class="op">{</SPAN>
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_node <SPAN class="op">&gt;=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    xn<SPAN class="op">(</SPAN>m_node<SPAN class="op">)</SPAN> <SPAN class="op">=</SPAN> x <SPAN class="op">-</SPAN> m_dx<SPAN class="op">;</SPAN>
+                    yn<SPAN class="op">(</SPAN>m_node<SPAN class="op">)</SPAN> <SPAN class="op">=</SPAN> y <SPAN class="op">-</SPAN> m_dy<SPAN class="op">;</SPAN>
+                    ret <SPAN class="op">=</SPAN> <SPAN class="kw1">true</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">return</SPAN> ret<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="kw1">bool</SPAN> interactive_polygon::on_mouse_button_up<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">bool</SPAN> ret <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>m_node <SPAN class="op">&gt;=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">||</SPAN> <SPAN class="op">(</SPAN>m_edge <SPAN class="op">&gt;=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_node <SPAN class="op">=</SPAN> <SPAN class="op">-</SPAN><SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+        m_edge <SPAN class="op">=</SPAN> <SPAN class="op">-</SPAN><SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">return</SPAN> ret<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+
+    <SPAN class="rem">//======= Crossings Multiply algorithm of InsideTest ======================== </SPAN>
+    <SPAN class="rem">//</SPAN>
+    <SPAN class="rem">// By Eric Haines, 3D/Eye Inc, erich@eye.com</SPAN>
+    <SPAN class="rem">//</SPAN>
+    <SPAN class="rem">// This version is usually somewhat faster than the original published in</SPAN>
+    <SPAN class="rem">// Graphics Gems IV; by turning the division for testing the X axis crossing</SPAN>
+    <SPAN class="rem">// into a tricky multiplication test this part of the test became faster,</SPAN>
+    <SPAN class="rem">// which had the additional effect of making the test for &quot;both to left or</SPAN>
+    <SPAN class="rem">// both to right&quot; a bit slower for triangles than simply computing the</SPAN>
+    <SPAN class="rem">// intersection each time.  The main increase is in triangle testing speed,</SPAN>
+    <SPAN class="rem">// which was about 15% faster; all other polygon complexities were pretty much</SPAN>
+    <SPAN class="rem">// the same as before.  On machines where division is very expensive (not the</SPAN>
+    <SPAN class="rem">// case on the HP 9000 series on which I tested) this test should be much</SPAN>
+    <SPAN class="rem">// faster overall than the old code.  Your mileage may (in fact, will) vary,</SPAN>
+    <SPAN class="rem">// depending on the machine and the test data, but in general I believe this</SPAN>
+    <SPAN class="rem">// code is both shorter and faster.  This test was inspired by unpublished</SPAN>
+    <SPAN class="rem">// Graphics Gems submitted by Joseph Samosky and Mark Haigh-Hutchinson.</SPAN>
+    <SPAN class="rem">// Related work by Samosky is in:</SPAN>
+    <SPAN class="rem">//</SPAN>
+    <SPAN class="rem">// Samosky, Joseph, &quot;SectionView: A system for interactively specifying and</SPAN>
+    <SPAN class="rem">// visualizing sections through three-dimensional medical image data&quot;,</SPAN>
+    <SPAN class="rem">// M.S. Thesis, Department of Electrical Engineering and Computer Science,</SPAN>
+    <SPAN class="rem">// Massachusetts Institute of Technology, 1993.</SPAN>
+    <SPAN class="rem">//</SPAN>
+    <SPAN class="rem">// Shoot a test ray along +X axis.  The strategy is to compare vertex Y values</SPAN>
+    <SPAN class="rem">// to the testing point&#039;s Y and quickly discard edges which are entirely to one</SPAN>
+    <SPAN class="rem">// side of the test ray.  Note that CONVEX and WINDING code can be added as</SPAN>
+    <SPAN class="rem">// for the CrossingsTest() code; it is left out here for clarity.</SPAN>
+    <SPAN class="rem">//</SPAN>
+    <SPAN class="rem">// Input 2D polygon _pgon_ with _numverts_ number of vertices and test point</SPAN>
+    <SPAN class="rem">// _point_, returns 1 if inside, 0 if outside.</SPAN>
+    <SPAN class="kw1">bool</SPAN> interactive_polygon::point_in_polygon<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> tx<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> ty<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_num_points <SPAN class="op">&lt;</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">return</SPAN> <SPAN class="kw1">false</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">unsigned</SPAN> j<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN> yflag0<SPAN class="op">,</SPAN> yflag1<SPAN class="op">,</SPAN> inside_flag<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN>  vtx0<SPAN class="op">,</SPAN> vty0<SPAN class="op">,</SPAN> vtx1<SPAN class="op">,</SPAN> vty1<SPAN class="op">;</SPAN>
+
+        vtx0 <SPAN class="op">=</SPAN> xn<SPAN class="op">(</SPAN>m_num_points <SPAN class="op">-</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        vty0 <SPAN class="op">=</SPAN> yn<SPAN class="op">(</SPAN>m_num_points <SPAN class="op">-</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="rem">// get test bit for above/below X axis</SPAN>
+        yflag0 <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>vty0 <SPAN class="op">&gt;=</SPAN> ty<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        vtx1 <SPAN class="op">=</SPAN> xn<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        vty1 <SPAN class="op">=</SPAN> yn<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        inside_flag <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">for</SPAN> <SPAN class="op">(</SPAN>j <SPAN class="op">=</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN> j <SPAN class="op">&lt;=</SPAN> m_num_points<SPAN class="op">;</SPAN> <SPAN class="op">++</SPAN>j<SPAN class="op">)</SPAN> 
+        <SPAN class="op">{</SPAN>
+            yflag1 <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>vty1 <SPAN class="op">&gt;=</SPAN> ty<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="rem">// Check if endpoints straddle (are on opposite sides) of X axis</SPAN>
+            <SPAN class="rem">// (i.e. the Y&#039;s differ); if so, +X ray could intersect this edge.</SPAN>
+            <SPAN class="rem">// The old test also checked whether the endpoints are both to the</SPAN>
+            <SPAN class="rem">// right or to the left of the test point.  However, given the faster</SPAN>
+            <SPAN class="rem">// intersection point computation used below, this test was found to</SPAN>
+            <SPAN class="rem">// be a break-even proposition for most polygons and a loser for</SPAN>
+            <SPAN class="rem">// triangles (where 50% or more of the edges which survive this test</SPAN>
+            <SPAN class="rem">// will cross quadrants and so have to have the X intersection computed</SPAN>
+            <SPAN class="rem">// anyway).  I credit Joseph Samosky with inspiring me to try dropping</SPAN>
+            <SPAN class="rem">// the &quot;both left or both right&quot; part of my code.</SPAN>
+            <SPAN class="kw1">if</SPAN> <SPAN class="op">(</SPAN>yflag0 <SPAN class="op">!=</SPAN> yflag1<SPAN class="op">)</SPAN> 
+            <SPAN class="op">{</SPAN>
+                <SPAN class="rem">// Check intersection of pgon segment with +X ray.</SPAN>
+                <SPAN class="rem">// Note if &gt;= point&#039;s X; if so, the ray hits it.</SPAN>
+                <SPAN class="rem">// The division operation is avoided for the &quot;&gt;=&quot; test by checking</SPAN>
+                <SPAN class="rem">// the sign of the first vertex wrto the test point; idea inspired</SPAN>
+                <SPAN class="rem">// by Joseph Samosky&#039;s and Mark Haigh-Hutchinson&#039;s different</SPAN>
+                <SPAN class="rem">// polygon inclusion tests.</SPAN>
+                <SPAN class="kw1">if</SPAN> <SPAN class="op">(</SPAN> <SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>vty1<SPAN class="op">-</SPAN>ty<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>vtx0<SPAN class="op">-</SPAN>vtx1<SPAN class="op">)</SPAN> <SPAN class="op">&gt;=</SPAN>
+                      <SPAN class="op">(</SPAN>vtx1<SPAN class="op">-</SPAN>tx<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>vty0<SPAN class="op">-</SPAN>vty1<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">==</SPAN> yflag1 <SPAN class="op">)</SPAN> 
+                <SPAN class="op">{</SPAN>
+                    inside_flag <SPAN class="op">^=</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+            <SPAN class="op">}</SPAN>
+
+            <SPAN class="rem">// Move to the next pair of vertices, retaining info as possible.</SPAN>
+            yflag0 <SPAN class="op">=</SPAN> yflag1<SPAN class="op">;</SPAN>
+            vtx0 <SPAN class="op">=</SPAN> vtx1<SPAN class="op">;</SPAN>
+            vty0 <SPAN class="op">=</SPAN> vty1<SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">unsigned</SPAN> k <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>j <SPAN class="op">&gt;=</SPAN> m_num_points<SPAN class="op">)</SPAN> ? j <SPAN class="op">-</SPAN> m_num_points : j<SPAN class="op">;</SPAN>
+            vtx1 <SPAN class="op">=</SPAN> xn<SPAN class="op">(</SPAN>k<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            vty1 <SPAN class="op">=</SPAN> yn<SPAN class="op">(</SPAN>k<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">return</SPAN> inside_flag <SPAN class="op">!=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+<SPAN class="op">}</SPAN>
+
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT><TABLE width="640px" bgcolor="#583927" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0">
+<TR><TD><CENTER><SPAN class="authors">
+Copyright <SPAN class="larger">&#169;</SPAN> 2002-2006
+<A href="../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+<TR><TD><CENTER><SPAN class="authors">
+Web Design and Programming
+<A href="../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+</TABLE>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+</HTML>

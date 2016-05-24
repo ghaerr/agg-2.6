@@ -1,0 +1,943 @@
+<HTML><HEAD><TITLE>Anti-Grain Geometry - </TITLE>
+<META http-equiv="Content-Type" content="text/html"/>
+<LINK rel="stylesheet" type="text/css" href="../agg.styles.css"/>
+</HEAD>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE><SPAN class="kw2">#include</SPAN> <SPAN class="op">&lt;</SPAN>math<SPAN class="op">.</SPAN>h<SPAN class="op">&gt;</SPAN> 
+<SPAN class="kw2">#include</SPAN> <SPAN class="op">&lt;</SPAN>stdio<SPAN class="op">.</SPAN>h<SPAN class="op">&gt;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_basics.h.html">agg_basics.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_rendering_buffer.h.html">agg_rendering_buffer.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_rasterizer_scanline_aa.h.html">agg_rasterizer_scanline_aa.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_rasterizer_outline.h.html">agg_rasterizer_outline.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_conv_stroke.h.html">agg_conv_stroke.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_conv_dash.h.html">agg_conv_dash.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_conv_curve.h.html">agg_conv_curve.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_conv_contour.h.html">agg_conv_contour.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_conv_marker.h.html">agg_conv_marker.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_conv_shorten_path.h.html">agg_conv_shorten_path.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_conv_marker_adaptor.h.html">agg_conv_marker_adaptor.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_conv_concat.h.html">agg_conv_concat.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_arrowhead.h.html">agg_arrowhead.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_vcgen_markers_term.h.html">agg_vcgen_markers_term.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_scanline_p.h.html">agg_scanline_p.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_scanline_u.h.html">agg_scanline_u.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_renderer_scanline.h.html">agg_renderer_scanline.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_renderer_primitives.h.html">agg_renderer_primitives.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_span_allocator.h.html">agg_span_allocator.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_span_gradient.h.html">agg_span_gradient.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_span_interpolator_linear.h.html">agg_span_interpolator_linear.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_pixfmt_rgb.h.html">agg_pixfmt_rgb.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;ctrl/agg_slider_ctrl.h&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;ctrl/agg_rbox_ctrl.h&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;ctrl/agg_cbox_ctrl.h&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;platform/agg_platform_support.h&quot;</SPAN>
+
+<SPAN class="kw1">enum</SPAN> flip_y_e <SPAN class="op">{</SPAN> flip_y <SPAN class="op">=</SPAN> <SPAN class="kw1">true</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+<SPAN class="kw1">typedef</SPAN> agg::<A href="../__code/include/agg_pixfmt_rgb.h.html#pixfmt_bgr24">pixfmt_bgr24</A> <A href="../doc/basic_renderers/basic_renderers.agdoc.html#pixfmt">pixfmt</A><SPAN class="op">;</SPAN>
+<SPAN class="kw1">typedef</SPAN> pixfmt::color_type color_type<SPAN class="op">;</SPAN>
+<SPAN class="kw1">typedef</SPAN> agg::<A href="../doc/basic_renderers/basic_renderers.agdoc.html#renderer_base">renderer_base</A><SPAN class="op">&lt;</SPAN><A href="../doc/basic_renderers/basic_renderers.agdoc.html#pixfmt">pixfmt</A><SPAN class="op">&gt;</SPAN> base_renderer<SPAN class="op">;</SPAN>
+<SPAN class="kw1">typedef</SPAN> agg::<A href="../doc/basic_renderers/basic_renderers.agdoc.html#renderer_primitives">renderer_primitives</A><SPAN class="op">&lt;</SPAN>base_renderer<SPAN class="op">&gt;</SPAN> primitives_renderer<SPAN class="op">;</SPAN>
+
+<SPAN class="kw1">typedef</SPAN> agg::<A href="../__code/include/agg_renderer_scanline.h.html#renderer_scanline_aa_solid">renderer_scanline_aa_solid</A><SPAN class="op">&lt;</SPAN>base_renderer<SPAN class="op">&gt;</SPAN>  solid_renderer<SPAN class="op">;</SPAN>
+<SPAN class="kw1">typedef</SPAN> agg::<A href="../__code/include/agg_renderer_scanline.h.html#renderer_scanline_bin_solid">renderer_scanline_bin_solid</A><SPAN class="op">&lt;</SPAN>base_renderer<SPAN class="op">&gt;</SPAN> draft_renderer<SPAN class="op">;</SPAN>
+
+<SPAN class="kw1">typedef</SPAN> agg::<A href="../__code/include/agg_span_gradient.h.html#gradient_radial_d">gradient_radial_d</A> gradient_function<SPAN class="op">;</SPAN>
+<SPAN class="kw1">typedef</SPAN> agg::<A href="../__code/include/agg_span_interpolator_linear.h.html#span_interpolator_linear">span_interpolator_linear</A><SPAN class="op">&lt;</SPAN><SPAN class="op">&gt;</SPAN> interpolator<SPAN class="op">;</SPAN>
+<SPAN class="kw1">typedef</SPAN> agg::<A href="../__code/include/agg_array.h.html#pod_auto_array">pod_auto_array</A><SPAN class="op">&lt;</SPAN>color_type<SPAN class="op">,</SPAN> <SPAN class="num">256</SPAN><SPAN class="op">&gt;</SPAN> color_array_type<SPAN class="op">;</SPAN>
+<SPAN class="kw1">typedef</SPAN> agg::<A href="../__code/include/agg_span_gradient.h.html#span_gradient">span_gradient</A><SPAN class="op">&lt;</SPAN>color_type<SPAN class="op">,</SPAN> 
+                           interpolator<SPAN class="op">,</SPAN> 
+                           gradient_function<SPAN class="op">,</SPAN> 
+                           color_array_type<SPAN class="op">&gt;</SPAN> gradient_span_gen<SPAN class="op">;</SPAN>
+<SPAN class="kw1">typedef</SPAN> agg::<A href="../__code/include/agg_span_allocator.h.html#span_allocator">span_allocator</A><SPAN class="op">&lt;</SPAN>color_type<SPAN class="op">&gt;</SPAN> gradient_span_alloc<SPAN class="op">;</SPAN>
+
+<SPAN class="kw1">typedef</SPAN> agg::<A href="../__code/include/agg_renderer_scanline.h.html#renderer_scanline_aa">renderer_scanline_aa</A><SPAN class="op">&lt;</SPAN>base_renderer<SPAN class="op">,</SPAN> 
+                                  gradient_span_alloc<SPAN class="op">,</SPAN>
+                                  gradient_span_gen<SPAN class="op">&gt;</SPAN> gradient_renderer<SPAN class="op">;</SPAN>
+
+<SPAN class="kw1">typedef</SPAN> agg::<A href="../__code/include/agg_rasterizer_scanline_aa.h.html#rasterizer_scanline_aa">rasterizer_scanline_aa</A><SPAN class="op">&lt;</SPAN><SPAN class="op">&gt;</SPAN> scanline_rasterizer<SPAN class="op">;</SPAN>
+<SPAN class="kw1">typedef</SPAN> agg::<A href="../__code/include/agg_rasterizer_outline.h.html#rasterizer_outline">rasterizer_outline</A><SPAN class="op">&lt;</SPAN>primitives_renderer<SPAN class="op">&gt;</SPAN> outline_rasterizer<SPAN class="op">;</SPAN>
+
+
+
+<SPAN class="rem">//============================================================================</SPAN>
+<SPAN class="kw1">class</SPAN> graph
+<SPAN class="op">{</SPAN>
+<SPAN class="kw1">public</SPAN>:
+    <SPAN class="kw1">struct</SPAN> node
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">double</SPAN> x<SPAN class="op">,</SPAN> y<SPAN class="op">;</SPAN>
+        node<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN><SPAN class="op">}</SPAN>
+        node<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x_<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y_<SPAN class="op">)</SPAN> : x<SPAN class="op">(</SPAN>x_<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> y<SPAN class="op">(</SPAN>y_<SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN><SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">struct</SPAN> edge
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">int</SPAN> node1<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN> node2<SPAN class="op">;</SPAN>
+        edge<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN><SPAN class="op">}</SPAN>
+        edge<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> n1<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> n2<SPAN class="op">)</SPAN> : node1<SPAN class="op">(</SPAN>n1<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> node2<SPAN class="op">(</SPAN>n2<SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN><SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+	~graph<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">delete</SPAN> <SPAN class="op">[</SPAN><SPAN class="op">]</SPAN> m_edges<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">delete</SPAN> <SPAN class="op">[</SPAN><SPAN class="op">]</SPAN> m_nodes<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    graph<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> num_nodes<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> num_edges<SPAN class="op">)</SPAN> :
+        m_num_nodes<SPAN class="op">(</SPAN>num_nodes<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_num_edges<SPAN class="op">(</SPAN>num_edges<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_nodes<SPAN class="op">(</SPAN><SPAN class="kw1">new</SPAN> node<SPAN class="op">[</SPAN>num_nodes<SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_edges<SPAN class="op">(</SPAN><SPAN class="kw1">new</SPAN> edge<SPAN class="op">[</SPAN>num_edges<SPAN class="op">]</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">int</SPAN> i<SPAN class="op">;</SPAN>
+
+	    srand<SPAN class="op">(</SPAN><SPAN class="num">100</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+	    <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;</SPAN> m_num_nodes<SPAN class="op">;</SPAN> i<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            m_nodes<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">.</SPAN>x <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN><SPAN class="op">(</SPAN>rand<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> RAND_MAX<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">75</SPAN> <SPAN class="op">+</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+            m_nodes<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">.</SPAN>y <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN><SPAN class="op">(</SPAN>rand<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> RAND_MAX<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">85</SPAN> <SPAN class="op">+</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+	    <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;</SPAN> m_num_edges<SPAN class="op">;</SPAN> i<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            m_edges<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">.</SPAN>node1 <SPAN class="op">=</SPAN> rand<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">%</SPAN> m_num_nodes<SPAN class="op">;</SPAN>
+            m_edges<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">.</SPAN>node2 <SPAN class="op">=</SPAN> rand<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">%</SPAN> m_num_nodes<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_edges<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">.</SPAN>node1 <SPAN class="op">==</SPAN> m_edges<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">.</SPAN>node2<SPAN class="op">)</SPAN> i<SPAN class="op">--</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="kw1">int</SPAN> get_num_nodes<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_num_nodes<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN> 
+    <SPAN class="kw1">int</SPAN> get_num_edges<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_num_edges<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN> 
+
+	node get_node<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> idx<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> w<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> h<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN>
+    <SPAN class="op">{</SPAN>
+        node p<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>idx <SPAN class="op">&lt;</SPAN> m_num_nodes<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            p <SPAN class="op">=</SPAN> m_nodes<SPAN class="op">[</SPAN>idx<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+            p<SPAN class="op">.</SPAN>x <SPAN class="op">=</SPAN> p<SPAN class="op">.</SPAN>x <SPAN class="op">*</SPAN> w<SPAN class="op">;</SPAN>
+            p<SPAN class="op">.</SPAN>y <SPAN class="op">=</SPAN> p<SPAN class="op">.</SPAN>y <SPAN class="op">*</SPAN> h<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">return</SPAN> p<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+	edge get_edge<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> idx<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN>
+    <SPAN class="op">{</SPAN>
+        edge b<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>idx <SPAN class="op">&lt;</SPAN> m_num_edges<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            b <SPAN class="op">=</SPAN> m_edges<SPAN class="op">[</SPAN>idx<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">return</SPAN> b<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+<SPAN class="kw1">private</SPAN>:
+    graph<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> graph<SPAN class="op">&amp;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="kw1">const</SPAN> graph<SPAN class="op">&amp;</SPAN> <SPAN class="kw1">operator</SPAN> <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> graph<SPAN class="op">&amp;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">int</SPAN> m_num_nodes<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">int</SPAN> m_num_edges<SPAN class="op">;</SPAN>
+    node<SPAN class="op">*</SPAN> m_nodes<SPAN class="op">;</SPAN>
+    edge<SPAN class="op">*</SPAN> m_edges<SPAN class="op">;</SPAN>
+<SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+
+
+
+
+
+
+    
+<SPAN class="rem">//============================================================================</SPAN>
+<SPAN class="kw1">struct</SPAN> line
+<SPAN class="op">{</SPAN>
+    <SPAN class="kw1">double</SPAN> x1<SPAN class="op">,</SPAN> y1<SPAN class="op">,</SPAN> x2<SPAN class="op">,</SPAN> y2<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">int</SPAN> f<SPAN class="op">;</SPAN>
+
+    line<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x1_<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y1_<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> x2_<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y2_<SPAN class="op">)</SPAN> : 
+        x1<SPAN class="op">(</SPAN>x1_<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> y1<SPAN class="op">(</SPAN>y1_<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> x2<SPAN class="op">(</SPAN>x2_<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> y2<SPAN class="op">(</SPAN>y2_<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> f<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN><SPAN class="op">}</SPAN>
+
+    <SPAN class="kw1">void</SPAN> rewind<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN> f <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+    <SPAN class="kw1">unsigned</SPAN> vertex<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> y<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>f <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN> <SPAN class="op">++</SPAN>f<SPAN class="op">;</SPAN> <SPAN class="op">*</SPAN>x <SPAN class="op">=</SPAN> x1<SPAN class="op">;</SPAN> <SPAN class="op">*</SPAN>y <SPAN class="op">=</SPAN> y1<SPAN class="op">;</SPAN> <SPAN class="kw1">return</SPAN> agg::<A href="../__code/include/agg_basics.h.html#path_cmd_move_to">path_cmd_move_to</A><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>f <SPAN class="op">==</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN> <SPAN class="op">++</SPAN>f<SPAN class="op">;</SPAN> <SPAN class="op">*</SPAN>x <SPAN class="op">=</SPAN> x2<SPAN class="op">;</SPAN> <SPAN class="op">*</SPAN>y <SPAN class="op">=</SPAN> y2<SPAN class="op">;</SPAN> <SPAN class="kw1">return</SPAN> agg::<A href="../__code/include/agg_basics.h.html#path_cmd_line_to">path_cmd_line_to</A><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">return</SPAN> agg::<A href="../__code/include/agg_basics.h.html#path_cmd_stop">path_cmd_stop</A><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+<SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+
+
+<SPAN class="rem">//============================================================================</SPAN>
+<SPAN class="kw1">struct</SPAN> curve
+<SPAN class="op">{</SPAN>
+    agg::<A href="../__code/include/agg_curves.h.html#curve4">curve4</A> c<SPAN class="op">;</SPAN>
+
+    curve<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x1<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y1<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> x2<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y2<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> k<SPAN class="op">=</SPAN><SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">5</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        c<SPAN class="op">.</SPAN>init<SPAN class="op">(</SPAN>x1<SPAN class="op">,</SPAN> y1<SPAN class="op">,</SPAN> 
+               x1 <SPAN class="op">-</SPAN> <SPAN class="op">(</SPAN>y2 <SPAN class="op">-</SPAN> y1<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> k<SPAN class="op">,</SPAN>
+               y1 <SPAN class="op">+</SPAN> <SPAN class="op">(</SPAN>x2 <SPAN class="op">-</SPAN> x1<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> k<SPAN class="op">,</SPAN>
+               x2 <SPAN class="op">+</SPAN> <SPAN class="op">(</SPAN>y2 <SPAN class="op">-</SPAN> y1<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> k<SPAN class="op">,</SPAN>
+               y2 <SPAN class="op">-</SPAN> <SPAN class="op">(</SPAN>x2 <SPAN class="op">-</SPAN> x1<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> k<SPAN class="op">,</SPAN>
+               x2<SPAN class="op">,</SPAN> y2<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="kw1">void</SPAN> rewind<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> path_id<SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN> c<SPAN class="op">.</SPAN>rewind<SPAN class="op">(</SPAN>path_id<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+    <SPAN class="kw1">unsigned</SPAN> vertex<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> y<SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> c<SPAN class="op">.</SPAN>vertex<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+<SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+
+<SPAN class="rem">//============================================================================</SPAN>
+<SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Source<SPAN class="op">&gt;</SPAN> <SPAN class="kw1">struct</SPAN> stroke_draft_simple
+<SPAN class="op">{</SPAN>
+    Source<SPAN class="op">&amp;</SPAN> s<SPAN class="op">;</SPAN>
+    stroke_draft_simple<SPAN class="op">(</SPAN>Source<SPAN class="op">&amp;</SPAN> src<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> w<SPAN class="op">)</SPAN> : 
+        s<SPAN class="op">(</SPAN>src<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="kw1">void</SPAN> rewind<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> path_id<SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN> s<SPAN class="op">.</SPAN>rewind<SPAN class="op">(</SPAN>path_id<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+    <SPAN class="kw1">unsigned</SPAN> vertex<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> y<SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> s<SPAN class="op">.</SPAN>vertex<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+<SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+<SPAN class="rem">//============================================================================</SPAN>
+<SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Source<SPAN class="op">&gt;</SPAN> <SPAN class="kw1">struct</SPAN> stroke_draft_arrow
+<SPAN class="op">{</SPAN>
+    <SPAN class="kw1">typedef</SPAN> agg::<A href="../__code/include/agg_conv_marker_adaptor.h.html#conv_marker_adaptor">conv_marker_adaptor</A><SPAN class="op">&lt;</SPAN>Source<SPAN class="op">,</SPAN> agg::<A href="../__code/include/agg_vcgen_markers_term.h.html#vcgen_markers_term">vcgen_markers_term</A><SPAN class="op">&gt;</SPAN>           stroke_type<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">typedef</SPAN> agg::<A href="../__code/include/agg_conv_marker.h.html#conv_marker">conv_marker</A><SPAN class="op">&lt;</SPAN><SPAN class="kw1">typename</SPAN> stroke_type::marker_type<SPAN class="op">,</SPAN> agg::<A href="../__code/include/agg_arrowhead.h.html#arrowhead">arrowhead</A><SPAN class="op">&gt;</SPAN> marker_type<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">typedef</SPAN> agg::<A href="../__code/include/agg_conv_concat.h.html#conv_concat">conv_concat</A><SPAN class="op">&lt;</SPAN>stroke_type<SPAN class="op">,</SPAN> marker_type<SPAN class="op">&gt;</SPAN>                          concat_type<SPAN class="op">;</SPAN>
+
+    stroke_type    s<SPAN class="op">;</SPAN>
+    agg::<A href="../__code/include/agg_arrowhead.h.html#arrowhead">arrowhead</A> ah<SPAN class="op">;</SPAN>
+    marker_type    m<SPAN class="op">;</SPAN>
+    concat_type    c<SPAN class="op">;</SPAN>
+
+    stroke_draft_arrow<SPAN class="op">(</SPAN>Source<SPAN class="op">&amp;</SPAN> src<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> w<SPAN class="op">)</SPAN> : 
+        s<SPAN class="op">(</SPAN>src<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        ah<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m<SPAN class="op">(</SPAN>s<SPAN class="op">.</SPAN>markers<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> ah<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        c<SPAN class="op">(</SPAN>s<SPAN class="op">,</SPAN> m<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        ah<SPAN class="op">.</SPAN>head<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">10</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">5</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        s<SPAN class="op">.</SPAN>shorten<SPAN class="op">(</SPAN><SPAN class="num">10</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="kw1">void</SPAN> rewind<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> path_id<SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN> c<SPAN class="op">.</SPAN>rewind<SPAN class="op">(</SPAN>path_id<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+    <SPAN class="kw1">unsigned</SPAN> vertex<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> y<SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> c<SPAN class="op">.</SPAN>vertex<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+<SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+
+<SPAN class="rem">//============================================================================</SPAN>
+<SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Source<SPAN class="op">&gt;</SPAN> <SPAN class="kw1">struct</SPAN> stroke_fine_simple
+<SPAN class="op">{</SPAN>
+    <SPAN class="kw1">typedef</SPAN> agg::<A href="../__code/include/agg_conv_stroke.h.html#conv_stroke">conv_stroke</A><SPAN class="op">&lt;</SPAN>Source<SPAN class="op">&gt;</SPAN> stroke_type<SPAN class="op">;</SPAN>
+
+    stroke_type    s<SPAN class="op">;</SPAN>
+
+    stroke_fine_simple<SPAN class="op">(</SPAN>Source<SPAN class="op">&amp;</SPAN> src<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> w<SPAN class="op">)</SPAN> : 
+        s<SPAN class="op">(</SPAN>src<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        s<SPAN class="op">.</SPAN>width<SPAN class="op">(</SPAN>w<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> 
+    <SPAN class="op">}</SPAN>
+    <SPAN class="kw1">void</SPAN> rewind<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> path_id<SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN> s<SPAN class="op">.</SPAN>rewind<SPAN class="op">(</SPAN>path_id<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+    <SPAN class="kw1">unsigned</SPAN> vertex<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> y<SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> s<SPAN class="op">.</SPAN>vertex<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+<SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+
+<SPAN class="rem">//============================================================================</SPAN>
+<SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Source<SPAN class="op">&gt;</SPAN> <SPAN class="kw1">struct</SPAN> stroke_fine_arrow
+<SPAN class="op">{</SPAN>
+    <SPAN class="kw1">typedef</SPAN> agg::<A href="../__code/include/agg_conv_stroke.h.html#conv_stroke">conv_stroke</A><SPAN class="op">&lt;</SPAN>Source<SPAN class="op">,</SPAN> agg::<A href="../__code/include/agg_vcgen_markers_term.h.html#vcgen_markers_term">vcgen_markers_term</A><SPAN class="op">&gt;</SPAN>                   stroke_type<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">typedef</SPAN> agg::<A href="../__code/include/agg_conv_marker.h.html#conv_marker">conv_marker</A><SPAN class="op">&lt;</SPAN><SPAN class="kw1">typename</SPAN> stroke_type::marker_type<SPAN class="op">,</SPAN> agg::<A href="../__code/include/agg_arrowhead.h.html#arrowhead">arrowhead</A><SPAN class="op">&gt;</SPAN> marker_type<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">typedef</SPAN> agg::<A href="../__code/include/agg_conv_concat.h.html#conv_concat">conv_concat</A><SPAN class="op">&lt;</SPAN>stroke_type<SPAN class="op">,</SPAN> marker_type<SPAN class="op">&gt;</SPAN>                          concat_type<SPAN class="op">;</SPAN>
+
+    stroke_type    s<SPAN class="op">;</SPAN>
+    agg::<A href="../__code/include/agg_arrowhead.h.html#arrowhead">arrowhead</A> ah<SPAN class="op">;</SPAN>
+    marker_type    m<SPAN class="op">;</SPAN>
+    concat_type    c<SPAN class="op">;</SPAN>
+
+    stroke_fine_arrow<SPAN class="op">(</SPAN>Source<SPAN class="op">&amp;</SPAN> src<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> w<SPAN class="op">)</SPAN> : 
+        s<SPAN class="op">(</SPAN>src<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        ah<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m<SPAN class="op">(</SPAN>s<SPAN class="op">.</SPAN>markers<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> ah<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        c<SPAN class="op">(</SPAN>s<SPAN class="op">,</SPAN> m<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        s<SPAN class="op">.</SPAN>width<SPAN class="op">(</SPAN>w<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> 
+        ah<SPAN class="op">.</SPAN>head<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">10</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">5</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        s<SPAN class="op">.</SPAN>shorten<SPAN class="op">(</SPAN>w <SPAN class="op">*</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="kw1">void</SPAN> rewind<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> path_id<SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN> c<SPAN class="op">.</SPAN>rewind<SPAN class="op">(</SPAN>path_id<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+    <SPAN class="kw1">unsigned</SPAN> vertex<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> y<SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> c<SPAN class="op">.</SPAN>vertex<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+<SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+
+<SPAN class="rem">//============================================================================</SPAN>
+<SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Source<SPAN class="op">&gt;</SPAN> <SPAN class="kw1">struct</SPAN> dash_stroke_draft_simple
+<SPAN class="op">{</SPAN>
+    <SPAN class="kw1">typedef</SPAN> agg::<A href="../__code/include/agg_conv_dash.h.html#conv_dash">conv_dash</A><SPAN class="op">&lt;</SPAN>Source<SPAN class="op">,</SPAN> agg::<A href="../__code/include/agg_vcgen_markers_term.h.html#vcgen_markers_term">vcgen_markers_term</A><SPAN class="op">&gt;</SPAN> dash_type<SPAN class="op">;</SPAN>
+
+    dash_type d<SPAN class="op">;</SPAN>
+    
+    dash_stroke_draft_simple<SPAN class="op">(</SPAN>Source<SPAN class="op">&amp;</SPAN> src<SPAN class="op">,</SPAN> 
+                             <SPAN class="kw1">double</SPAN> dash_len<SPAN class="op">,</SPAN> 
+                             <SPAN class="kw1">double</SPAN> gap_len<SPAN class="op">,</SPAN> 
+                             <SPAN class="kw1">double</SPAN> w<SPAN class="op">)</SPAN> : 
+        d<SPAN class="op">(</SPAN>src<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        d<SPAN class="op">.</SPAN>add_dash<SPAN class="op">(</SPAN>dash_len<SPAN class="op">,</SPAN> gap_len<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="kw1">void</SPAN> rewind<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> path_id<SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN> d<SPAN class="op">.</SPAN>rewind<SPAN class="op">(</SPAN>path_id<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+    <SPAN class="kw1">unsigned</SPAN> vertex<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> y<SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> d<SPAN class="op">.</SPAN>vertex<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+<SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+<SPAN class="rem">//============================================================================</SPAN>
+<SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Source<SPAN class="op">&gt;</SPAN> <SPAN class="kw1">struct</SPAN> dash_stroke_draft_arrow
+<SPAN class="op">{</SPAN>
+    <SPAN class="kw1">typedef</SPAN> agg::<A href="../__code/include/agg_conv_dash.h.html#conv_dash">conv_dash</A><SPAN class="op">&lt;</SPAN>Source<SPAN class="op">,</SPAN> agg::<A href="../__code/include/agg_vcgen_markers_term.h.html#vcgen_markers_term">vcgen_markers_term</A><SPAN class="op">&gt;</SPAN>                   dash_type<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">typedef</SPAN> agg::<A href="../__code/include/agg_conv_marker.h.html#conv_marker">conv_marker</A><SPAN class="op">&lt;</SPAN><SPAN class="kw1">typename</SPAN> dash_type::marker_type<SPAN class="op">,</SPAN> agg::<A href="../__code/include/agg_arrowhead.h.html#arrowhead">arrowhead</A><SPAN class="op">&gt;</SPAN> marker_type<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">typedef</SPAN> agg::<A href="../__code/include/agg_conv_concat.h.html#conv_concat">conv_concat</A><SPAN class="op">&lt;</SPAN>dash_type<SPAN class="op">,</SPAN> marker_type<SPAN class="op">&gt;</SPAN>                          concat_type<SPAN class="op">;</SPAN>
+
+    dash_type      d<SPAN class="op">;</SPAN>
+    agg::<A href="../__code/include/agg_arrowhead.h.html#arrowhead">arrowhead</A> ah<SPAN class="op">;</SPAN>
+    marker_type    m<SPAN class="op">;</SPAN>
+    concat_type    c<SPAN class="op">;</SPAN>
+
+    dash_stroke_draft_arrow<SPAN class="op">(</SPAN>Source<SPAN class="op">&amp;</SPAN> src<SPAN class="op">,</SPAN> 
+                            <SPAN class="kw1">double</SPAN> dash_len<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> gap_len<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> w<SPAN class="op">)</SPAN> : 
+        d<SPAN class="op">(</SPAN>src<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        ah<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m<SPAN class="op">(</SPAN>d<SPAN class="op">.</SPAN>markers<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> ah<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        c<SPAN class="op">(</SPAN>d<SPAN class="op">,</SPAN> m<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        d<SPAN class="op">.</SPAN>add_dash<SPAN class="op">(</SPAN>dash_len<SPAN class="op">,</SPAN> gap_len<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        ah<SPAN class="op">.</SPAN>head<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">10</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">5</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        d<SPAN class="op">.</SPAN>shorten<SPAN class="op">(</SPAN><SPAN class="num">10</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="kw1">void</SPAN> rewind<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> path_id<SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN> c<SPAN class="op">.</SPAN>rewind<SPAN class="op">(</SPAN>path_id<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+    <SPAN class="kw1">unsigned</SPAN> vertex<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> y<SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> c<SPAN class="op">.</SPAN>vertex<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+<SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+
+
+<SPAN class="rem">//============================================================================</SPAN>
+<SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Source<SPAN class="op">&gt;</SPAN> <SPAN class="kw1">struct</SPAN> dash_stroke_fine_simple
+<SPAN class="op">{</SPAN>
+    <SPAN class="kw1">typedef</SPAN> agg::<A href="../__code/include/agg_conv_dash.h.html#conv_dash">conv_dash</A><SPAN class="op">&lt;</SPAN>Source<SPAN class="op">&gt;</SPAN>       dash_type<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">typedef</SPAN> agg::<A href="../__code/include/agg_conv_stroke.h.html#conv_stroke">conv_stroke</A><SPAN class="op">&lt;</SPAN>dash_type<SPAN class="op">&gt;</SPAN>  stroke_type<SPAN class="op">;</SPAN>
+
+    dash_type      d<SPAN class="op">;</SPAN>
+    stroke_type    s<SPAN class="op">;</SPAN>
+
+    dash_stroke_fine_simple<SPAN class="op">(</SPAN>Source<SPAN class="op">&amp;</SPAN> src<SPAN class="op">,</SPAN> 
+                           <SPAN class="kw1">double</SPAN> dash_len<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> gap_len<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> w<SPAN class="op">)</SPAN> : 
+        d<SPAN class="op">(</SPAN>src<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        s<SPAN class="op">(</SPAN>d<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        d<SPAN class="op">.</SPAN>add_dash<SPAN class="op">(</SPAN>dash_len<SPAN class="op">,</SPAN> gap_len<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        s<SPAN class="op">.</SPAN>width<SPAN class="op">(</SPAN>w<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="kw1">void</SPAN> rewind<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> path_id<SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN> s<SPAN class="op">.</SPAN>rewind<SPAN class="op">(</SPAN>path_id<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+    <SPAN class="kw1">unsigned</SPAN> vertex<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> y<SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> s<SPAN class="op">.</SPAN>vertex<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+<SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+
+
+
+
+<SPAN class="rem">//============================================================================</SPAN>
+<SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Source<SPAN class="op">&gt;</SPAN> <SPAN class="kw1">struct</SPAN> dash_stroke_fine_arrow
+<SPAN class="op">{</SPAN>
+    <SPAN class="kw1">typedef</SPAN> agg::<A href="../__code/include/agg_conv_dash.h.html#conv_dash">conv_dash</A><SPAN class="op">&lt;</SPAN>Source<SPAN class="op">,</SPAN> agg::<A href="../__code/include/agg_vcgen_markers_term.h.html#vcgen_markers_term">vcgen_markers_term</A><SPAN class="op">&gt;</SPAN>                   dash_type<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">typedef</SPAN> agg::<A href="../__code/include/agg_conv_stroke.h.html#conv_stroke">conv_stroke</A><SPAN class="op">&lt;</SPAN>dash_type<SPAN class="op">&gt;</SPAN>                                       stroke_type<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">typedef</SPAN> agg::<A href="../__code/include/agg_conv_marker.h.html#conv_marker">conv_marker</A><SPAN class="op">&lt;</SPAN><SPAN class="kw1">typename</SPAN> dash_type::marker_type<SPAN class="op">,</SPAN> agg::<A href="../__code/include/agg_arrowhead.h.html#arrowhead">arrowhead</A><SPAN class="op">&gt;</SPAN> marker_type<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">typedef</SPAN> agg::<A href="../__code/include/agg_conv_concat.h.html#conv_concat">conv_concat</A><SPAN class="op">&lt;</SPAN>stroke_type<SPAN class="op">,</SPAN> marker_type<SPAN class="op">&gt;</SPAN>                        concat_type<SPAN class="op">;</SPAN>
+
+    dash_type      d<SPAN class="op">;</SPAN>
+    stroke_type    s<SPAN class="op">;</SPAN>
+    agg::<A href="../__code/include/agg_arrowhead.h.html#arrowhead">arrowhead</A> ah<SPAN class="op">;</SPAN>
+    marker_type    m<SPAN class="op">;</SPAN>
+    concat_type    c<SPAN class="op">;</SPAN>
+
+    dash_stroke_fine_arrow<SPAN class="op">(</SPAN>Source<SPAN class="op">&amp;</SPAN> src<SPAN class="op">,</SPAN> 
+                           <SPAN class="kw1">double</SPAN> dash_len<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> gap_len<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> w<SPAN class="op">)</SPAN> : 
+        d<SPAN class="op">(</SPAN>src<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        s<SPAN class="op">(</SPAN>d<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        ah<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m<SPAN class="op">(</SPAN>d<SPAN class="op">.</SPAN>markers<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> ah<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        c<SPAN class="op">(</SPAN>s<SPAN class="op">,</SPAN> m<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        d<SPAN class="op">.</SPAN>add_dash<SPAN class="op">(</SPAN>dash_len<SPAN class="op">,</SPAN> gap_len<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        s<SPAN class="op">.</SPAN>width<SPAN class="op">(</SPAN>w<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        ah<SPAN class="op">.</SPAN>head<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">10</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">5</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        d<SPAN class="op">.</SPAN>shorten<SPAN class="op">(</SPAN>w <SPAN class="op">*</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="kw1">void</SPAN> rewind<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> path_id<SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN> c<SPAN class="op">.</SPAN>rewind<SPAN class="op">(</SPAN>path_id<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+    <SPAN class="kw1">unsigned</SPAN> vertex<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> y<SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> c<SPAN class="op">.</SPAN>vertex<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+<SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+
+<SPAN class="rem">//#define stroke_draft      stroke_draft_simple</SPAN>
+<SPAN class="rem">//#define dash_stroke_draft dash_stroke_draft_simple</SPAN>
+<SPAN class="rem">//#define stroke_fine       stroke_fine_simple</SPAN>
+<SPAN class="rem">//#define dash_stroke_fine  dash_stroke_fine_simple</SPAN>
+
+<SPAN class="kw2">#define</SPAN> stroke_draft      stroke_draft_arrow
+<SPAN class="kw2">#define</SPAN> dash_stroke_draft dash_stroke_draft_arrow
+<SPAN class="kw2">#define</SPAN> stroke_fine       stroke_fine_arrow
+<SPAN class="kw2">#define</SPAN> dash_stroke_fine  dash_stroke_fine_arrow
+
+
+
+
+
+<SPAN class="kw1">class</SPAN> the_application : <SPAN class="kw1">public</SPAN> agg::platform_support
+<SPAN class="op">{</SPAN>
+    agg::rbox_ctrl<SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba">rgba</A><SPAN class="op">&gt;</SPAN>   m_type<SPAN class="op">;</SPAN>
+    agg::slider_ctrl<SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba">rgba</A><SPAN class="op">&gt;</SPAN> m_width<SPAN class="op">;</SPAN>
+    agg::cbox_ctrl<SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba">rgba</A><SPAN class="op">&gt;</SPAN>   m_benchmark<SPAN class="op">;</SPAN>
+    agg::cbox_ctrl<SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba">rgba</A><SPAN class="op">&gt;</SPAN>   m_draw_nodes<SPAN class="op">;</SPAN>
+    agg::cbox_ctrl<SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba">rgba</A><SPAN class="op">&gt;</SPAN>   m_draw_edges<SPAN class="op">;</SPAN>
+    agg::cbox_ctrl<SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba">rgba</A><SPAN class="op">&gt;</SPAN>   m_draft<SPAN class="op">;</SPAN>
+    agg::cbox_ctrl<SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba">rgba</A><SPAN class="op">&gt;</SPAN>   m_translucent<SPAN class="op">;</SPAN>
+    graph                       m_graph<SPAN class="op">;</SPAN>
+    color_array_type            m_gradient_colors<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">int</SPAN>                         m_draw<SPAN class="op">;</SPAN>
+    agg::<A href="../__code/include/agg_scanline_u.h.html#scanline_u8">scanline_u8</A>            m_sl<SPAN class="op">;</SPAN>
+
+
+<SPAN class="kw1">public</SPAN>:
+    the_application<SPAN class="op">(</SPAN>agg::pix_format_e format<SPAN class="op">,</SPAN> <SPAN class="kw1">bool</SPAN> flip_y<SPAN class="op">)</SPAN> :
+        agg::platform_support<SPAN class="op">(</SPAN>format<SPAN class="op">,</SPAN> flip_y<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_type<SPAN class="op">(</SPAN><SPAN class="op">-</SPAN><SPAN class="num">1</SPAN><SPAN class="op">,</SPAN> <SPAN class="op">-</SPAN><SPAN class="num">1</SPAN><SPAN class="op">,</SPAN> <SPAN class="op">-</SPAN><SPAN class="num">1</SPAN><SPAN class="op">,</SPAN> <SPAN class="op">-</SPAN><SPAN class="num">1</SPAN><SPAN class="op">,</SPAN> <SPAN class="op">!</SPAN>flip_y<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_width<SPAN class="op">(</SPAN><SPAN class="num">110</SPAN><SPAN class="op">+</SPAN><SPAN class="num">80</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">8</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">110</SPAN><SPAN class="op">+</SPAN><SPAN class="num">200</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">+</SPAN><SPAN class="num">80</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">8</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">+</SPAN> <SPAN class="num">7</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="op">!</SPAN>flip_y<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_benchmark<SPAN class="op">(</SPAN><SPAN class="num">110</SPAN><SPAN class="op">+</SPAN><SPAN class="num">200</SPAN><SPAN class="op">+</SPAN><SPAN class="num">80</SPAN><SPAN class="op">+</SPAN><SPAN class="num">8</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">8</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">-</SPAN><SPAN class="num">2</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="str">&quot;Benchmark&quot;</SPAN><SPAN class="op">,</SPAN> <SPAN class="op">!</SPAN>flip_y<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_draw_nodes<SPAN class="op">(</SPAN><SPAN class="num">110</SPAN><SPAN class="op">+</SPAN><SPAN class="num">200</SPAN><SPAN class="op">+</SPAN><SPAN class="num">80</SPAN><SPAN class="op">+</SPAN><SPAN class="num">8</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">8</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">-</SPAN><SPAN class="num">2</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">+</SPAN><SPAN class="num">15</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="str">&quot;Draw Nodes&quot;</SPAN><SPAN class="op">,</SPAN> <SPAN class="op">!</SPAN>flip_y<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_draw_edges<SPAN class="op">(</SPAN><SPAN class="num">200</SPAN><SPAN class="op">+</SPAN><SPAN class="num">200</SPAN><SPAN class="op">+</SPAN><SPAN class="num">80</SPAN><SPAN class="op">+</SPAN><SPAN class="num">8</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">8</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">-</SPAN><SPAN class="num">2</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">+</SPAN><SPAN class="num">15</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="str">&quot;Draw Edges&quot;</SPAN><SPAN class="op">,</SPAN> <SPAN class="op">!</SPAN>flip_y<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_draft<SPAN class="op">(</SPAN><SPAN class="num">200</SPAN><SPAN class="op">+</SPAN><SPAN class="num">200</SPAN><SPAN class="op">+</SPAN><SPAN class="num">80</SPAN><SPAN class="op">+</SPAN><SPAN class="num">8</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">8</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">-</SPAN><SPAN class="num">2</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="str">&quot;Draft Mode&quot;</SPAN><SPAN class="op">,</SPAN> <SPAN class="op">!</SPAN>flip_y<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_translucent<SPAN class="op">(</SPAN><SPAN class="num">110</SPAN><SPAN class="op">+</SPAN><SPAN class="num">80</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">8</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">-</SPAN><SPAN class="num">2</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">+</SPAN><SPAN class="num">15</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="str">&quot;Translucent Mode&quot;</SPAN><SPAN class="op">,</SPAN> <SPAN class="op">!</SPAN>flip_y<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_graph<SPAN class="op">(</SPAN><SPAN class="num">200</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">100</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_gradient_colors<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_draw<SPAN class="op">(</SPAN><SPAN class="num">3</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        add_ctrl<SPAN class="op">(</SPAN>m_type<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_type<SPAN class="op">.</SPAN>text_size<SPAN class="op">(</SPAN><SPAN class="num">8</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_type<SPAN class="op">.</SPAN>add_item<SPAN class="op">(</SPAN><SPAN class="str">&quot;Solid lines&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_type<SPAN class="op">.</SPAN>add_item<SPAN class="op">(</SPAN><SPAN class="str">&quot;Bezier curves&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_type<SPAN class="op">.</SPAN>add_item<SPAN class="op">(</SPAN><SPAN class="str">&quot;Dashed curves&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_type<SPAN class="op">.</SPAN>add_item<SPAN class="op">(</SPAN><SPAN class="str">&quot;Poygons AA&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_type<SPAN class="op">.</SPAN>add_item<SPAN class="op">(</SPAN><SPAN class="str">&quot;Poygons Bin&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_type<SPAN class="op">.</SPAN>cur_item<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        add_ctrl<SPAN class="op">(</SPAN>m_width<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_width<SPAN class="op">.</SPAN>num_steps<SPAN class="op">(</SPAN><SPAN class="num">20</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_width<SPAN class="op">.</SPAN>range<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">5</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_width<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="num">2</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_width<SPAN class="op">.</SPAN>label<SPAN class="op">(</SPAN><SPAN class="str">&quot;Width=%1.2f&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        m_benchmark<SPAN class="op">.</SPAN>text_size<SPAN class="op">(</SPAN><SPAN class="num">8</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_draw_nodes<SPAN class="op">.</SPAN>text_size<SPAN class="op">(</SPAN><SPAN class="num">8</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_draft<SPAN class="op">.</SPAN>text_size<SPAN class="op">(</SPAN><SPAN class="num">8</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_draw_nodes<SPAN class="op">.</SPAN>status<SPAN class="op">(</SPAN><SPAN class="kw1">true</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_draw_edges<SPAN class="op">.</SPAN>status<SPAN class="op">(</SPAN><SPAN class="kw1">true</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        add_ctrl<SPAN class="op">(</SPAN>m_benchmark<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        add_ctrl<SPAN class="op">(</SPAN>m_draw_nodes<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        add_ctrl<SPAN class="op">(</SPAN>m_draw_edges<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        add_ctrl<SPAN class="op">(</SPAN>m_draft<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        add_ctrl<SPAN class="op">(</SPAN>m_translucent<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        agg::<A href="../__code/include/agg_color_rgba.h.html#rgba">rgba</A> c1<SPAN class="op">(</SPAN><SPAN class="num">1</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">25</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        agg::<A href="../__code/include/agg_color_rgba.h.html#rgba">rgba</A> c2<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">int</SPAN> i<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;</SPAN> <SPAN class="num">256</SPAN><SPAN class="op">;</SPAN> i<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            m_gradient_colors<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> c1<SPAN class="op">.</SPAN>gradient<SPAN class="op">(</SPAN>c2<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN><SPAN class="op">(</SPAN>i<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">255</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+
+
+
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">void</SPAN> draw_nodes_draft<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <A href="../doc/basic_renderers/basic_renderers.agdoc.html#pixfmt">pixfmt</A> pixf<SPAN class="op">(</SPAN>rbuf_window<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        base_renderer rb<SPAN class="op">(</SPAN>pixf<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        primitives_renderer prim<SPAN class="op">(</SPAN>rb<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN> i<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;</SPAN> m_graph<SPAN class="op">.</SPAN>get_num_nodes<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> i<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            graph::node n <SPAN class="op">=</SPAN> m_graph<SPAN class="op">.</SPAN>get_node<SPAN class="op">(</SPAN>i<SPAN class="op">,</SPAN> width<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> height<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            prim<SPAN class="op">.</SPAN>fill_color<SPAN class="op">(</SPAN>m_gradient_colors<SPAN class="op">[</SPAN><SPAN class="num">147</SPAN><SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            prim<SPAN class="op">.</SPAN>line_color<SPAN class="op">(</SPAN>m_gradient_colors<SPAN class="op">[</SPAN><SPAN class="num">255</SPAN><SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            prim<SPAN class="op">.</SPAN>outlined_ellipse<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN><SPAN class="op">(</SPAN>n<SPAN class="op">.</SPAN>x<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN><SPAN class="op">(</SPAN>n<SPAN class="op">.</SPAN>y<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">10</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">10</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            prim<SPAN class="op">.</SPAN>fill_color<SPAN class="op">(</SPAN>m_gradient_colors<SPAN class="op">[</SPAN><SPAN class="num">50</SPAN><SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            prim<SPAN class="op">.</SPAN>solid_ellipse<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN><SPAN class="op">(</SPAN>n<SPAN class="op">.</SPAN>x<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN><SPAN class="op">(</SPAN>n<SPAN class="op">.</SPAN>y<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">4</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">4</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">void</SPAN> draw_nodes_fine<SPAN class="op">(</SPAN>scanline_rasterizer<SPAN class="op">&amp;</SPAN> ras<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        gradient_span_alloc sa<SPAN class="op">;</SPAN>
+        <A href="../doc/basic_renderers/basic_renderers.agdoc.html#pixfmt">pixfmt</A> pixf<SPAN class="op">(</SPAN>rbuf_window<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        base_renderer rb<SPAN class="op">(</SPAN>pixf<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN> i<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;</SPAN> m_graph<SPAN class="op">.</SPAN>get_num_nodes<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> i<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            graph::node n <SPAN class="op">=</SPAN> m_graph<SPAN class="op">.</SPAN>get_node<SPAN class="op">(</SPAN>i<SPAN class="op">,</SPAN> width<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> height<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            agg::<A href="../__code/include/agg_ellipse.h.html#ellipse">ellipse</A> ell<SPAN class="op">(</SPAN>n<SPAN class="op">.</SPAN>x<SPAN class="op">,</SPAN> n<SPAN class="op">.</SPAN>y<SPAN class="op">,</SPAN> <SPAN class="num">5</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">*</SPAN> m_width<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">5</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">*</SPAN> m_width<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">double</SPAN> x<SPAN class="op">,</SPAN> y<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">switch</SPAN><SPAN class="op">(</SPAN>m_draw<SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                <SPAN class="kw1">case</SPAN> <SPAN class="num">0</SPAN>:
+                    ell<SPAN class="op">.</SPAN>rewind<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN><SPAN class="op">!</SPAN>agg::<A href="../__code/include/agg_basics.h.html#is_stop">is_stop</A><SPAN class="op">(</SPAN>ell<SPAN class="op">.</SPAN>vertex<SPAN class="op">(</SPAN><SPAN class="op">&amp;</SPAN>x<SPAN class="op">,</SPAN> <SPAN class="op">&amp;</SPAN>y<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+
+                <SPAN class="kw1">case</SPAN> <SPAN class="num">1</SPAN>:
+                    ras<SPAN class="op">.</SPAN>reset<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    ras<SPAN class="op">.</SPAN>add_path<SPAN class="op">(</SPAN>ell<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+
+                <SPAN class="kw1">case</SPAN> <SPAN class="num">2</SPAN>:
+                    ras<SPAN class="op">.</SPAN>reset<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    ras<SPAN class="op">.</SPAN>add_path<SPAN class="op">(</SPAN>ell<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    ras<SPAN class="op">.</SPAN>sort<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+
+                <SPAN class="kw1">case</SPAN> <SPAN class="num">3</SPAN>:
+                <SPAN class="op">{</SPAN>
+                    gradient_function gf<SPAN class="op">;</SPAN>
+                    agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine">trans_affine</A> mtx<SPAN class="op">;</SPAN>
+                    mtx <SPAN class="op">*=</SPAN> agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine_scaling">trans_affine_scaling</A><SPAN class="op">(</SPAN>m_width<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    mtx <SPAN class="op">*=</SPAN> agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine_translation">trans_affine_translation</A><SPAN class="op">(</SPAN>n<SPAN class="op">.</SPAN>x<SPAN class="op">,</SPAN> n<SPAN class="op">.</SPAN>y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    mtx<SPAN class="op">.</SPAN>invert<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    interpolator inter<SPAN class="op">(</SPAN>mtx<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    gradient_span_gen sg<SPAN class="op">(</SPAN>inter<SPAN class="op">,</SPAN> gf<SPAN class="op">,</SPAN> m_gradient_colors<SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">10</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    gradient_renderer ren<SPAN class="op">(</SPAN>rb<SPAN class="op">,</SPAN> sa<SPAN class="op">,</SPAN> sg<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    ras<SPAN class="op">.</SPAN>add_path<SPAN class="op">(</SPAN>ell<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    agg::<A href="../__code/include/agg_renderer_scanline.h.html#render_scanlines">render_scanlines</A><SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> m_sl<SPAN class="op">,</SPAN> ren<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+                <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+
+
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Source<SPAN class="op">&gt;</SPAN>
+    <SPAN class="kw1">void</SPAN> render_edge_fine<SPAN class="op">(</SPAN>scanline_rasterizer<SPAN class="op">&amp;</SPAN> ras<SPAN class="op">,</SPAN> 
+                          solid_renderer<SPAN class="op">&amp;</SPAN> ren_fine<SPAN class="op">,</SPAN>
+                          draft_renderer<SPAN class="op">&amp;</SPAN> ren_draft<SPAN class="op">,</SPAN>
+                          Source<SPAN class="op">&amp;</SPAN> src<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">double</SPAN> x<SPAN class="op">,</SPAN> y<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">switch</SPAN><SPAN class="op">(</SPAN>m_draw<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">case</SPAN> <SPAN class="num">0</SPAN>:
+                src<SPAN class="op">.</SPAN>rewind<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN><SPAN class="op">!</SPAN>agg::<A href="../__code/include/agg_basics.h.html#is_stop">is_stop</A><SPAN class="op">(</SPAN>src<SPAN class="op">.</SPAN>vertex<SPAN class="op">(</SPAN><SPAN class="op">&amp;</SPAN>x<SPAN class="op">,</SPAN> <SPAN class="op">&amp;</SPAN>y<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">case</SPAN> <SPAN class="num">1</SPAN>:
+                ras<SPAN class="op">.</SPAN>reset<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                ras<SPAN class="op">.</SPAN>add_path<SPAN class="op">(</SPAN>src<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">case</SPAN> <SPAN class="num">2</SPAN>:
+                ras<SPAN class="op">.</SPAN>reset<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                ras<SPAN class="op">.</SPAN>add_path<SPAN class="op">(</SPAN>src<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                ras<SPAN class="op">.</SPAN>sort<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">case</SPAN> <SPAN class="num">3</SPAN>:
+            <SPAN class="op">{</SPAN>
+                <SPAN class="kw1">int</SPAN> r <SPAN class="op">=</SPAN> rand<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">&amp;</SPAN> <SPAN class="num">0x7F</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">int</SPAN> g <SPAN class="op">=</SPAN> rand<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">&amp;</SPAN> <SPAN class="num">0x7F</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">int</SPAN> b <SPAN class="op">=</SPAN> rand<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">&amp;</SPAN> <SPAN class="num">0x7F</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">int</SPAN> a <SPAN class="op">=</SPAN> <SPAN class="num">255</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_translucent<SPAN class="op">.</SPAN>status<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> a <SPAN class="op">=</SPAN> <SPAN class="num">80</SPAN><SPAN class="op">;</SPAN>
+                ras<SPAN class="op">.</SPAN>add_path<SPAN class="op">(</SPAN>src<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_type<SPAN class="op">.</SPAN>cur_item<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">&lt;</SPAN> <SPAN class="num">4</SPAN><SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    ren_fine<SPAN class="op">.</SPAN>color<SPAN class="op">(</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">(</SPAN>r<SPAN class="op">,</SPAN> g<SPAN class="op">,</SPAN> b<SPAN class="op">,</SPAN> a<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    agg::<A href="../__code/include/agg_renderer_scanline.h.html#render_scanlines">render_scanlines</A><SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> m_sl<SPAN class="op">,</SPAN> ren_fine<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+                <SPAN class="kw1">else</SPAN>
+                <SPAN class="op">{</SPAN>
+                    ren_draft<SPAN class="op">.</SPAN>color<SPAN class="op">(</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">(</SPAN>r<SPAN class="op">,</SPAN> g<SPAN class="op">,</SPAN> b<SPAN class="op">,</SPAN> a<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    agg::<A href="../__code/include/agg_renderer_scanline.h.html#render_scanlines">render_scanlines</A><SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> m_sl<SPAN class="op">,</SPAN> ren_draft<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">void</SPAN> draw_lines_draft<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <A href="../doc/basic_renderers/basic_renderers.agdoc.html#pixfmt">pixfmt</A> pixf<SPAN class="op">(</SPAN>rbuf_window<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        base_renderer rb<SPAN class="op">(</SPAN>pixf<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        primitives_renderer prim<SPAN class="op">(</SPAN>rb<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        outline_rasterizer ras<SPAN class="op">(</SPAN>prim<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">int</SPAN> i<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;</SPAN> m_graph<SPAN class="op">.</SPAN>get_num_edges<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> i<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            graph::edge e  <SPAN class="op">=</SPAN> m_graph<SPAN class="op">.</SPAN>get_edge<SPAN class="op">(</SPAN>i<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            graph::node n1 <SPAN class="op">=</SPAN> m_graph<SPAN class="op">.</SPAN>get_node<SPAN class="op">(</SPAN>e<SPAN class="op">.</SPAN>node1<SPAN class="op">,</SPAN> width<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> height<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            graph::node n2 <SPAN class="op">=</SPAN> m_graph<SPAN class="op">.</SPAN>get_node<SPAN class="op">(</SPAN>e<SPAN class="op">.</SPAN>node2<SPAN class="op">,</SPAN> width<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> height<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            line l<SPAN class="op">(</SPAN>n1<SPAN class="op">.</SPAN>x<SPAN class="op">,</SPAN> n1<SPAN class="op">.</SPAN>y<SPAN class="op">,</SPAN> n2<SPAN class="op">.</SPAN>x<SPAN class="op">,</SPAN> n2<SPAN class="op">.</SPAN>y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            stroke_draft<SPAN class="op">&lt;</SPAN>line<SPAN class="op">&gt;</SPAN> s<SPAN class="op">(</SPAN>l<SPAN class="op">,</SPAN> m_width<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">int</SPAN> r <SPAN class="op">=</SPAN> rand<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">&amp;</SPAN> <SPAN class="num">0x7F</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">int</SPAN> g <SPAN class="op">=</SPAN> rand<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">&amp;</SPAN> <SPAN class="num">0x7F</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">int</SPAN> b <SPAN class="op">=</SPAN> rand<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">&amp;</SPAN> <SPAN class="num">0x7F</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">int</SPAN> a <SPAN class="op">=</SPAN> <SPAN class="num">255</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_translucent<SPAN class="op">.</SPAN>status<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> a <SPAN class="op">=</SPAN> <SPAN class="num">80</SPAN><SPAN class="op">;</SPAN>
+            prim<SPAN class="op">.</SPAN>line_color<SPAN class="op">(</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">(</SPAN>r<SPAN class="op">,</SPAN> g<SPAN class="op">,</SPAN> b<SPAN class="op">,</SPAN> a<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            ras<SPAN class="op">.</SPAN>add_path<SPAN class="op">(</SPAN>s<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">void</SPAN> draw_curves_draft<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <A href="../doc/basic_renderers/basic_renderers.agdoc.html#pixfmt">pixfmt</A> pixf<SPAN class="op">(</SPAN>rbuf_window<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        base_renderer rb<SPAN class="op">(</SPAN>pixf<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        primitives_renderer prim<SPAN class="op">(</SPAN>rb<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        outline_rasterizer ras<SPAN class="op">(</SPAN>prim<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">int</SPAN> i<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;</SPAN> m_graph<SPAN class="op">.</SPAN>get_num_edges<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> i<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            graph::edge e  <SPAN class="op">=</SPAN> m_graph<SPAN class="op">.</SPAN>get_edge<SPAN class="op">(</SPAN>i<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            graph::node n1 <SPAN class="op">=</SPAN> m_graph<SPAN class="op">.</SPAN>get_node<SPAN class="op">(</SPAN>e<SPAN class="op">.</SPAN>node1<SPAN class="op">,</SPAN> width<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> height<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            graph::node n2 <SPAN class="op">=</SPAN> m_graph<SPAN class="op">.</SPAN>get_node<SPAN class="op">(</SPAN>e<SPAN class="op">.</SPAN>node2<SPAN class="op">,</SPAN> width<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> height<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            curve c<SPAN class="op">(</SPAN>n1<SPAN class="op">.</SPAN>x<SPAN class="op">,</SPAN> n1<SPAN class="op">.</SPAN>y<SPAN class="op">,</SPAN> n2<SPAN class="op">.</SPAN>x<SPAN class="op">,</SPAN> n2<SPAN class="op">.</SPAN>y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            stroke_draft<SPAN class="op">&lt;</SPAN>curve<SPAN class="op">&gt;</SPAN> s<SPAN class="op">(</SPAN>c<SPAN class="op">,</SPAN> m_width<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">int</SPAN> r <SPAN class="op">=</SPAN> rand<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">&amp;</SPAN> <SPAN class="num">0x7F</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">int</SPAN> g <SPAN class="op">=</SPAN> rand<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">&amp;</SPAN> <SPAN class="num">0x7F</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">int</SPAN> b <SPAN class="op">=</SPAN> rand<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">&amp;</SPAN> <SPAN class="num">0x7F</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">int</SPAN> a <SPAN class="op">=</SPAN> <SPAN class="num">255</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_translucent<SPAN class="op">.</SPAN>status<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> a <SPAN class="op">=</SPAN> <SPAN class="num">80</SPAN><SPAN class="op">;</SPAN>
+            prim<SPAN class="op">.</SPAN>line_color<SPAN class="op">(</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">(</SPAN>r<SPAN class="op">,</SPAN> g<SPAN class="op">,</SPAN> b<SPAN class="op">,</SPAN> a<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            ras<SPAN class="op">.</SPAN>add_path<SPAN class="op">(</SPAN>s<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">void</SPAN> draw_dashes_draft<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <A href="../doc/basic_renderers/basic_renderers.agdoc.html#pixfmt">pixfmt</A> pixf<SPAN class="op">(</SPAN>rbuf_window<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        base_renderer rb<SPAN class="op">(</SPAN>pixf<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        primitives_renderer prim<SPAN class="op">(</SPAN>rb<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        outline_rasterizer ras<SPAN class="op">(</SPAN>prim<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">int</SPAN> i<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;</SPAN> m_graph<SPAN class="op">.</SPAN>get_num_edges<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> i<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            graph::edge e  <SPAN class="op">=</SPAN> m_graph<SPAN class="op">.</SPAN>get_edge<SPAN class="op">(</SPAN>i<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            graph::node n1 <SPAN class="op">=</SPAN> m_graph<SPAN class="op">.</SPAN>get_node<SPAN class="op">(</SPAN>e<SPAN class="op">.</SPAN>node1<SPAN class="op">,</SPAN> width<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> height<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            graph::node n2 <SPAN class="op">=</SPAN> m_graph<SPAN class="op">.</SPAN>get_node<SPAN class="op">(</SPAN>e<SPAN class="op">.</SPAN>node2<SPAN class="op">,</SPAN> width<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> height<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            curve c<SPAN class="op">(</SPAN>n1<SPAN class="op">.</SPAN>x<SPAN class="op">,</SPAN> n1<SPAN class="op">.</SPAN>y<SPAN class="op">,</SPAN> n2<SPAN class="op">.</SPAN>x<SPAN class="op">,</SPAN> n2<SPAN class="op">.</SPAN>y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            dash_stroke_draft<SPAN class="op">&lt;</SPAN>curve<SPAN class="op">&gt;</SPAN> s<SPAN class="op">(</SPAN>c<SPAN class="op">,</SPAN> <SPAN class="num">6</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> m_width<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">int</SPAN> r <SPAN class="op">=</SPAN> rand<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">&amp;</SPAN> <SPAN class="num">0x7F</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">int</SPAN> g <SPAN class="op">=</SPAN> rand<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">&amp;</SPAN> <SPAN class="num">0x7F</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">int</SPAN> b <SPAN class="op">=</SPAN> rand<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">&amp;</SPAN> <SPAN class="num">0x7F</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">int</SPAN> a <SPAN class="op">=</SPAN> <SPAN class="num">255</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_translucent<SPAN class="op">.</SPAN>status<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> a <SPAN class="op">=</SPAN> <SPAN class="num">80</SPAN><SPAN class="op">;</SPAN>
+            prim<SPAN class="op">.</SPAN>line_color<SPAN class="op">(</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">(</SPAN>r<SPAN class="op">,</SPAN> g<SPAN class="op">,</SPAN> b<SPAN class="op">,</SPAN> a<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            ras<SPAN class="op">.</SPAN>add_path<SPAN class="op">(</SPAN>s<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">void</SPAN> draw_lines_fine<SPAN class="op">(</SPAN>scanline_rasterizer<SPAN class="op">&amp;</SPAN> ras<SPAN class="op">,</SPAN> 
+                         solid_renderer<SPAN class="op">&amp;</SPAN> solid<SPAN class="op">,</SPAN>
+                         draft_renderer<SPAN class="op">&amp;</SPAN> draft<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">int</SPAN> i<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;</SPAN> m_graph<SPAN class="op">.</SPAN>get_num_edges<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> i<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            graph::edge b  <SPAN class="op">=</SPAN> m_graph<SPAN class="op">.</SPAN>get_edge<SPAN class="op">(</SPAN>i<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            graph::node n1 <SPAN class="op">=</SPAN> m_graph<SPAN class="op">.</SPAN>get_node<SPAN class="op">(</SPAN>b<SPAN class="op">.</SPAN>node1<SPAN class="op">,</SPAN> width<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> height<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            graph::node n2 <SPAN class="op">=</SPAN> m_graph<SPAN class="op">.</SPAN>get_node<SPAN class="op">(</SPAN>b<SPAN class="op">.</SPAN>node2<SPAN class="op">,</SPAN> width<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> height<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            line l<SPAN class="op">(</SPAN>n1<SPAN class="op">.</SPAN>x<SPAN class="op">,</SPAN> n1<SPAN class="op">.</SPAN>y<SPAN class="op">,</SPAN> n2<SPAN class="op">.</SPAN>x<SPAN class="op">,</SPAN> n2<SPAN class="op">.</SPAN>y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            stroke_fine<SPAN class="op">&lt;</SPAN>line<SPAN class="op">&gt;</SPAN> s<SPAN class="op">(</SPAN>l<SPAN class="op">,</SPAN> m_width<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            render_edge_fine<SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> solid<SPAN class="op">,</SPAN> draft<SPAN class="op">,</SPAN> s<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">void</SPAN> draw_curves_fine<SPAN class="op">(</SPAN>scanline_rasterizer<SPAN class="op">&amp;</SPAN> ras<SPAN class="op">,</SPAN> 
+                          solid_renderer<SPAN class="op">&amp;</SPAN> solid<SPAN class="op">,</SPAN>
+                          draft_renderer<SPAN class="op">&amp;</SPAN> draft<SPAN class="op">)</SPAN>
+
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">int</SPAN> i<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;</SPAN> m_graph<SPAN class="op">.</SPAN>get_num_edges<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> i<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            graph::edge b  <SPAN class="op">=</SPAN> m_graph<SPAN class="op">.</SPAN>get_edge<SPAN class="op">(</SPAN>i<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            graph::node n1 <SPAN class="op">=</SPAN> m_graph<SPAN class="op">.</SPAN>get_node<SPAN class="op">(</SPAN>b<SPAN class="op">.</SPAN>node1<SPAN class="op">,</SPAN> width<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> height<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            graph::node n2 <SPAN class="op">=</SPAN> m_graph<SPAN class="op">.</SPAN>get_node<SPAN class="op">(</SPAN>b<SPAN class="op">.</SPAN>node2<SPAN class="op">,</SPAN> width<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> height<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            curve c<SPAN class="op">(</SPAN>n1<SPAN class="op">.</SPAN>x<SPAN class="op">,</SPAN> n1<SPAN class="op">.</SPAN>y<SPAN class="op">,</SPAN> n2<SPAN class="op">.</SPAN>x<SPAN class="op">,</SPAN> n2<SPAN class="op">.</SPAN>y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            stroke_fine<SPAN class="op">&lt;</SPAN>curve<SPAN class="op">&gt;</SPAN> s<SPAN class="op">(</SPAN>c<SPAN class="op">,</SPAN> m_width<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            render_edge_fine<SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> solid<SPAN class="op">,</SPAN> draft<SPAN class="op">,</SPAN> s<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">void</SPAN> draw_dashes_fine<SPAN class="op">(</SPAN>scanline_rasterizer<SPAN class="op">&amp;</SPAN> ras<SPAN class="op">,</SPAN> 
+                          solid_renderer<SPAN class="op">&amp;</SPAN> solid<SPAN class="op">,</SPAN>
+                          draft_renderer<SPAN class="op">&amp;</SPAN> draft<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">int</SPAN> i<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;</SPAN> m_graph<SPAN class="op">.</SPAN>get_num_edges<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> i<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            graph::edge b  <SPAN class="op">=</SPAN> m_graph<SPAN class="op">.</SPAN>get_edge<SPAN class="op">(</SPAN>i<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            graph::node n1 <SPAN class="op">=</SPAN> m_graph<SPAN class="op">.</SPAN>get_node<SPAN class="op">(</SPAN>b<SPAN class="op">.</SPAN>node1<SPAN class="op">,</SPAN> width<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> height<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            graph::node n2 <SPAN class="op">=</SPAN> m_graph<SPAN class="op">.</SPAN>get_node<SPAN class="op">(</SPAN>b<SPAN class="op">.</SPAN>node2<SPAN class="op">,</SPAN> width<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> height<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            curve c<SPAN class="op">(</SPAN>n1<SPAN class="op">.</SPAN>x<SPAN class="op">,</SPAN> n1<SPAN class="op">.</SPAN>y<SPAN class="op">,</SPAN> n2<SPAN class="op">.</SPAN>x<SPAN class="op">,</SPAN> n2<SPAN class="op">.</SPAN>y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            dash_stroke_fine<SPAN class="op">&lt;</SPAN>curve<SPAN class="op">&gt;</SPAN> s<SPAN class="op">(</SPAN>c<SPAN class="op">,</SPAN> <SPAN class="num">6</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> m_width<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            render_edge_fine<SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> solid<SPAN class="op">,</SPAN> draft<SPAN class="op">,</SPAN> s<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">void</SPAN> draw_polygons<SPAN class="op">(</SPAN>scanline_rasterizer<SPAN class="op">&amp;</SPAN> ras<SPAN class="op">,</SPAN> 
+                       solid_renderer<SPAN class="op">&amp;</SPAN> solid<SPAN class="op">,</SPAN>
+                       draft_renderer<SPAN class="op">&amp;</SPAN> draft<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">int</SPAN> i<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_type<SPAN class="op">.</SPAN>cur_item<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">==</SPAN> <SPAN class="num">4</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            ras<SPAN class="op">.</SPAN>gamma<SPAN class="op">(</SPAN>agg::<A href="../__code/include/agg_gamma_functions.h.html#gamma_threshold">gamma_threshold</A><SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">5</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;</SPAN> m_graph<SPAN class="op">.</SPAN>get_num_edges<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> i<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            graph::edge b  <SPAN class="op">=</SPAN> m_graph<SPAN class="op">.</SPAN>get_edge<SPAN class="op">(</SPAN>i<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            graph::node n1 <SPAN class="op">=</SPAN> m_graph<SPAN class="op">.</SPAN>get_node<SPAN class="op">(</SPAN>b<SPAN class="op">.</SPAN>node1<SPAN class="op">,</SPAN> width<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> height<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            graph::node n2 <SPAN class="op">=</SPAN> m_graph<SPAN class="op">.</SPAN>get_node<SPAN class="op">(</SPAN>b<SPAN class="op">.</SPAN>node2<SPAN class="op">,</SPAN> width<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> height<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            curve c<SPAN class="op">(</SPAN>n1<SPAN class="op">.</SPAN>x<SPAN class="op">,</SPAN> n1<SPAN class="op">.</SPAN>y<SPAN class="op">,</SPAN> n2<SPAN class="op">.</SPAN>x<SPAN class="op">,</SPAN> n2<SPAN class="op">.</SPAN>y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            render_edge_fine<SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> solid<SPAN class="op">,</SPAN> draft<SPAN class="op">,</SPAN> c<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        ras<SPAN class="op">.</SPAN>gamma<SPAN class="op">(</SPAN>agg::<A href="../__code/include/agg_gamma_functions.h.html#gamma_none">gamma_none</A><SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">void</SPAN> draw_scene<SPAN class="op">(</SPAN>scanline_rasterizer<SPAN class="op">&amp;</SPAN> ras<SPAN class="op">,</SPAN> 
+                    solid_renderer<SPAN class="op">&amp;</SPAN> solid<SPAN class="op">,</SPAN>
+                    draft_renderer<SPAN class="op">&amp;</SPAN> draft<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        ras<SPAN class="op">.</SPAN>gamma<SPAN class="op">(</SPAN>agg::<A href="../__code/include/agg_gamma_functions.h.html#gamma_none">gamma_none</A><SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        srand<SPAN class="op">(</SPAN><SPAN class="num">100</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_draw_nodes<SPAN class="op">.</SPAN>status<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_draft<SPAN class="op">.</SPAN>status<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                draw_nodes_draft<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="kw1">else</SPAN>
+            <SPAN class="op">{</SPAN>
+                draw_nodes_fine<SPAN class="op">(</SPAN>ras<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_draw_edges<SPAN class="op">.</SPAN>status<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_draft<SPAN class="op">.</SPAN>status<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> 
+            <SPAN class="op">{</SPAN>
+                <SPAN class="kw1">switch</SPAN><SPAN class="op">(</SPAN>m_type<SPAN class="op">.</SPAN>cur_item<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                <SPAN class="kw1">case</SPAN> <SPAN class="num">0</SPAN>: draw_lines_draft<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>    <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">case</SPAN> <SPAN class="num">1</SPAN>: draw_curves_draft<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>   <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">case</SPAN> <SPAN class="num">2</SPAN>: draw_dashes_draft<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>   <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="kw1">else</SPAN>
+            <SPAN class="op">{</SPAN>
+                <SPAN class="kw1">switch</SPAN><SPAN class="op">(</SPAN>m_type<SPAN class="op">.</SPAN>cur_item<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                <SPAN class="kw1">case</SPAN> <SPAN class="num">0</SPAN>: draw_lines_fine<SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> solid<SPAN class="op">,</SPAN> draft<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>  <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">case</SPAN> <SPAN class="num">1</SPAN>: draw_curves_fine<SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> solid<SPAN class="op">,</SPAN> draft<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">case</SPAN> <SPAN class="num">2</SPAN>: draw_dashes_fine<SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> solid<SPAN class="op">,</SPAN> draft<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">case</SPAN> <SPAN class="num">3</SPAN>: 
+                <SPAN class="kw1">case</SPAN> <SPAN class="num">4</SPAN>: draw_polygons<SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> solid<SPAN class="op">,</SPAN> draft<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>    <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+
+
+
+
+
+
+
+
+
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">virtual</SPAN> <SPAN class="kw1">void</SPAN> on_draw<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        scanline_rasterizer ras<SPAN class="op">;</SPAN>
+
+        <A href="../doc/basic_renderers/basic_renderers.agdoc.html#pixfmt">pixfmt</A> pixf<SPAN class="op">(</SPAN>rbuf_window<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        base_renderer rb<SPAN class="op">(</SPAN>pixf<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        solid_renderer solid<SPAN class="op">(</SPAN>rb<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        draft_renderer draft<SPAN class="op">(</SPAN>rb<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        rb<SPAN class="op">.</SPAN>clear<SPAN class="op">(</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba">rgba</A><SPAN class="op">(</SPAN><SPAN class="num">1</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        draw_scene<SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> solid<SPAN class="op">,</SPAN> draft<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        ras<SPAN class="op">.</SPAN>filling_rule<SPAN class="op">(</SPAN>agg::fill_non_zero<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        agg::render_ctrl<SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> m_sl<SPAN class="op">,</SPAN> rb<SPAN class="op">,</SPAN> m_type<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        agg::render_ctrl<SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> m_sl<SPAN class="op">,</SPAN> rb<SPAN class="op">,</SPAN> m_width<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        agg::render_ctrl<SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> m_sl<SPAN class="op">,</SPAN> rb<SPAN class="op">,</SPAN> m_benchmark<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        agg::render_ctrl<SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> m_sl<SPAN class="op">,</SPAN> rb<SPAN class="op">,</SPAN> m_draw_nodes<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        agg::render_ctrl<SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> m_sl<SPAN class="op">,</SPAN> rb<SPAN class="op">,</SPAN> m_draw_edges<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        agg::render_ctrl<SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> m_sl<SPAN class="op">,</SPAN> rb<SPAN class="op">,</SPAN> m_draft<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        agg::render_ctrl<SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> m_sl<SPAN class="op">,</SPAN> rb<SPAN class="op">,</SPAN> m_translucent<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+
+
+    <SPAN class="kw1">virtual</SPAN> <SPAN class="kw1">void</SPAN> on_ctrl_change<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_benchmark<SPAN class="op">.</SPAN>status<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">int</SPAN> i<SPAN class="op">;</SPAN>
+            on_draw<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            update_window<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+            scanline_rasterizer ras<SPAN class="op">;</SPAN>
+
+            <A href="../doc/basic_renderers/basic_renderers.agdoc.html#pixfmt">pixfmt</A> pixf<SPAN class="op">(</SPAN>rbuf_window<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            base_renderer rb<SPAN class="op">(</SPAN>pixf<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            solid_renderer solid<SPAN class="op">(</SPAN>rb<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            draft_renderer draft<SPAN class="op">(</SPAN>rb<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">char</SPAN> buf<SPAN class="op">[</SPAN><SPAN class="num">256</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_draft<SPAN class="op">.</SPAN>status<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                start_timer<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;</SPAN> <SPAN class="num">10</SPAN><SPAN class="op">;</SPAN> i<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    draw_scene<SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> solid<SPAN class="op">,</SPAN> draft<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+                sprintf<SPAN class="op">(</SPAN>buf<SPAN class="op">,</SPAN> <SPAN class="str">&quot;%3.3f milliseconds&quot;</SPAN><SPAN class="op">,</SPAN> elapsed_time<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="kw1">else</SPAN>
+            <SPAN class="op">{</SPAN>
+                <SPAN class="kw1">double</SPAN> times<SPAN class="op">[</SPAN><SPAN class="num">5</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>m_draw <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> m_draw <SPAN class="op">&lt;</SPAN> <SPAN class="num">4</SPAN><SPAN class="op">;</SPAN> m_draw<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    start_timer<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;</SPAN> <SPAN class="num">10</SPAN><SPAN class="op">;</SPAN> i<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+                    <SPAN class="op">{</SPAN>
+                        draw_scene<SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> solid<SPAN class="op">,</SPAN> draft<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="op">}</SPAN>
+                    times<SPAN class="op">[</SPAN>m_draw<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> elapsed_time<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+                m_draw <SPAN class="op">=</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">;</SPAN>
+
+                times<SPAN class="op">[</SPAN><SPAN class="num">4</SPAN><SPAN class="op">]</SPAN>  <SPAN class="op">=</SPAN> times<SPAN class="op">[</SPAN><SPAN class="num">3</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                times<SPAN class="op">[</SPAN><SPAN class="num">3</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">-=</SPAN> times<SPAN class="op">[</SPAN><SPAN class="num">2</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                times<SPAN class="op">[</SPAN><SPAN class="num">2</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">-=</SPAN> times<SPAN class="op">[</SPAN><SPAN class="num">1</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                times<SPAN class="op">[</SPAN><SPAN class="num">1</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">-=</SPAN> times<SPAN class="op">[</SPAN><SPAN class="num">0</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+            
+                FILE<SPAN class="op">*</SPAN> fd <SPAN class="op">=</SPAN> fopen<SPAN class="op">(</SPAN>full_file_name<SPAN class="op">(</SPAN><SPAN class="str">&quot;benchmark&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> <SPAN class="str">&quot;a&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                fprintf<SPAN class="op">(</SPAN>fd<SPAN class="op">,</SPAN> <SPAN class="str">&quot;%10.3f %10.3f %10.3f %10.3f %10.3f\n&quot;</SPAN><SPAN class="op">,</SPAN> 
+                            times<SPAN class="op">[</SPAN><SPAN class="num">0</SPAN><SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> times<SPAN class="op">[</SPAN><SPAN class="num">1</SPAN><SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> times<SPAN class="op">[</SPAN><SPAN class="num">2</SPAN><SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> times<SPAN class="op">[</SPAN><SPAN class="num">3</SPAN><SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> times<SPAN class="op">[</SPAN><SPAN class="num">4</SPAN><SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                fclose<SPAN class="op">(</SPAN>fd<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            
+
+                sprintf<SPAN class="op">(</SPAN>buf<SPAN class="op">,</SPAN> <SPAN class="str">&quot;  pipeline  add_path         sort       render       total\n&quot;</SPAN>
+                             <SPAN class="str">&quot;%10.3f %10.3f %10.3f %10.3f %10.3f&quot;</SPAN><SPAN class="op">,</SPAN> 
+                        times<SPAN class="op">[</SPAN><SPAN class="num">0</SPAN><SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> times<SPAN class="op">[</SPAN><SPAN class="num">1</SPAN><SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> times<SPAN class="op">[</SPAN><SPAN class="num">2</SPAN><SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> times<SPAN class="op">[</SPAN><SPAN class="num">3</SPAN><SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> times<SPAN class="op">[</SPAN><SPAN class="num">4</SPAN><SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            message<SPAN class="op">(</SPAN>buf<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+            m_benchmark<SPAN class="op">.</SPAN>status<SPAN class="op">(</SPAN><SPAN class="kw1">false</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            force_redraw<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN>
+<SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+
+<SPAN class="kw1">int</SPAN> agg_main<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> argc<SPAN class="op">,</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN> argv<SPAN class="op">[</SPAN><SPAN class="op">]</SPAN><SPAN class="op">)</SPAN>
+<SPAN class="op">{</SPAN>
+    the_application app<SPAN class="op">(</SPAN>agg::pix_format_bgr24<SPAN class="op">,</SPAN> flip_y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    app<SPAN class="op">.</SPAN>caption<SPAN class="op">(</SPAN><SPAN class="str">&quot;AGG Example. Line Join&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>app<SPAN class="op">.</SPAN>init<SPAN class="op">(</SPAN><SPAN class="num">600</SPAN><SPAN class="op">+</SPAN><SPAN class="num">100</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">500</SPAN><SPAN class="op">+</SPAN><SPAN class="num">30</SPAN><SPAN class="op">,</SPAN> agg::window_resize<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">return</SPAN> app<SPAN class="op">.</SPAN>run<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+    <SPAN class="kw1">return</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+<SPAN class="op">}</SPAN>
+
+
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT><TABLE width="640px" bgcolor="#583927" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0">
+<TR><TD><CENTER><SPAN class="authors">
+Copyright <SPAN class="larger">&#169;</SPAN> 2002-2006
+<A href="../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+<TR><TD><CENTER><SPAN class="authors">
+Web Design and Programming
+<A href="../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+</TABLE>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+</HTML>

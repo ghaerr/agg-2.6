@@ -1,0 +1,659 @@
+<HTML><HEAD><TITLE>Anti-Grain Geometry - Using WinAPI to Render Text</TITLE>
+<META http-equiv="Content-Type" content="text/html"/>
+<LINK rel="stylesheet" type="text/css" href="../../agg.styles.css"/>
+</HEAD>
+<A name="PAGE_WIN_GLYPH"><B></B></A>
+
+
+<TABLE width="640px" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR>
+<TD bgcolor="#583927"></TD>
+</TR>
+</TABLE>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR>
+<TD>
+<TABLE width="170px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR><TD><A href="../../index.html" class="mpmenu">Home/</A></TD></TR>
+<TR><TD><A href="../../tips/index.html" class="mpmenu">Tips &amp; Tricks/</A></TD></TR>
+<TR><TD><A href="" class="mpmenu"></A></TD></TR>
+<TR><TD><A href="" class="mpmenu"></A></TD></TR>
+<TR><TD><A href="" class="mpmenu"></A></TD></TR>
+<TR><TD><A href="" class="mpmenu"></A></TD></TR>
+</TABLE>
+</TD>
+<TD width="1px" bgcolor="#583927"></TD>
+<TD width="450px" valign="top" style="text-align:right">
+<TABLE border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR>
+<TD><IMG src="../../agg_logo.gif" border="0"/></TD>
+</TR>
+<TR>
+<TD>
+<TABLE border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR height="15px">
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../../news/index.html">News</A>&nbsp;&nbsp;</TD>
+<TD width="1px" bgcolor="#8e521d"></TD>
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../../doc/index.html">Docs</A>&nbsp;&nbsp;</TD>
+<TD width="1px" bgcolor="#8e521d"></TD>
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../../download/index.html">Download</A>&nbsp;&nbsp;</TD>
+<TD width="1px" bgcolor="#8e521d"></TD>
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../../maillist/index.html">Mailing List</A>&nbsp;&nbsp;</TD>
+<TD width="1px" bgcolor="#8e521d"></TD>
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../../cvs/index.html">CVS</A>&nbsp;&nbsp;</TD>
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+<TABLE width="640px" height="1px" bgcolor="#583927" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>
+</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD><H1>Using WinAPI to Render Text<SPAN class="subtitle"><BR/>A simple class to extract True Type glyphs using WinAPI GetGlyphOutline()</SPAN></H1></TD></TR></TABLE>
+
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>There are many questions about drawing of high quality text. <B>AGG</B>
+provides a class that produces vector text of a fixed typeface (very 
+primitive, ANSI 7-bit character set). I added this class just to have a 
+simple mechanism to draw text in demo examples. It has a propriatory data 
+format and isn&#039;t worth further developing.</P></TD></TR></TABLE> 
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The good news is that you can use any available library or API
+to extract glyphs and render them with <B>AGG</B>. One can say if the glyph
+format consists of line segments, conic and cubic bezier curves, it&#039;s 
+possible to render it with <B>AGG</B>. All available converters and 
+transformers are applicable, as well as all the renderers. For example,
+you can draw an outlined text with <A href="../../__code/include/agg_conv_stroke.h.html#conv_stroke">conv_stroke</A>, or change the font
+weight (make it bolder or lighter) using <A href="../../__code/include/agg_conv_contour.h.html#conv_contour">conv_contour</A>. You can also 
+render it with gradients or fill the glyphs with images.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>It&#039;s a long story how to integrate <B>AGG</B> with different font engines, 
+like <A href="http://www.freetype.org"><IMG src="../../link.gif" border="0"/>FreeType</A>. This example 
+demonstrates a simplest way to use Windows API to extract the 
+glyphs and to render text with <B>AGG</B>. It calls <CODE>GetGlyphOutline()</CODE>,
+extracts native curved contours, applies <A href="../../__code/include/agg_conv_curve.h.html#conv_curve">conv_curve</A> and renders 
+the text with any available scanline renderers.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>It works relatively slow, not only because each glyph is being 
+rasterized every time (no cache mechanism), but also because
+<CODE>GetGlyphOutline()</CODE> works terribly slow. More than a half of 
+total time is spent in <CODE>GetGlyphOutline()</CODE>. It would be 
+a good solution to cache the glyphs or even pre-rendered bitmaps;
+it could speed up rendering vastly, but it&#039;s out of this topic.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Below is a simple console application that creates <CODE>agg_test.ppm</CODE> 
+file (the simplest possible RGB bitmap file). The file isn&#039;t natively 
+supported by <A href="http://www.microsoft.com"><IMG src="../../link.gif" border="0"/><B>Microsoft</B></A> Windows, but there are many viewers and converters 
+that can work with it, for example, 
+<A href="http://www.irfanview.com"><IMG src="../../link.gif" border="0"/>IrfanView (www.irfanview.com)</A>.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Class <CODE>tt_glyph</CODE> is not included into <B>AGG</B> because it depends on
+the Windows API (<CODE>#include &lt;windows.h&gt;</CODE>), while the main part of 
+<B>AGG</B> is supposed to be fully platform independent.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>To build the example you need to indicate the 
+<B>AGG</B> include directory and to add to the project files
+<A href="../../__code/src/agg_curves.cpp.html">agg_curves.cpp</A> and agg_rasterizer_scanline_aa.cpp.</P></TD></TR></TABLE>
+
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+<SPAN class="kw2">#include</SPAN> <SPAN class="op">&lt;</SPAN>stdio<SPAN class="op">.</SPAN>h<SPAN class="op">&gt;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="op">&lt;</SPAN>string<SPAN class="op">.</SPAN>h<SPAN class="op">&gt;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;agg_pixfmt_rgb24.h&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../../__code/include/agg_renderer_base.h.html">agg_renderer_base.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../../__code/include/agg_renderer_scanline.h.html">agg_renderer_scanline.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../../__code/include/agg_rasterizer_scanline_aa.h.html">agg_rasterizer_scanline_aa.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../../__code/include/agg_scanline_p.h.html">agg_scanline_p.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../../__code/include/agg_conv_curve.h.html">agg_conv_curve.h</A>&quot;</SPAN>
+
+
+
+<SPAN class="kw2">#include</SPAN> <SPAN class="op">&lt;</SPAN>windows<SPAN class="op">.</SPAN>h<SPAN class="op">&gt;</SPAN>
+
+<SPAN class="kw1">namespace</SPAN> agg
+<SPAN class="op">{</SPAN>
+
+    <SPAN class="rem">//=================================================================</SPAN>
+    <SPAN class="kw1">class</SPAN> tt_glyph
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">enum</SPAN> <SPAN class="op">{</SPAN> buf_size <SPAN class="op">=</SPAN> <SPAN class="num">16384</SPAN><SPAN class="op">-</SPAN><SPAN class="num">32</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+        
+    <SPAN class="kw1">public</SPAN>:
+        ~tt_glyph<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        tt_glyph<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="rem">// Set the created font and the &quot;flip_y&quot; flag.</SPAN>
+        <SPAN class="rem">//------------------------</SPAN>
+        <SPAN class="kw1">void</SPAN> font<SPAN class="op">(</SPAN>HDC dc<SPAN class="op">,</SPAN> HFONT f<SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN> m_dc <SPAN class="op">=</SPAN> dc<SPAN class="op">;</SPAN> m_font <SPAN class="op">=</SPAN> f<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">void</SPAN> flip_y<SPAN class="op">(</SPAN><SPAN class="kw1">bool</SPAN> flip<SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN> m_flip_y <SPAN class="op">=</SPAN> flip<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        
+        <SPAN class="kw1">bool</SPAN> glyph<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> chr<SPAN class="op">,</SPAN> <SPAN class="kw1">bool</SPAN> hinted <SPAN class="op">=</SPAN> <SPAN class="kw1">true</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        
+        <SPAN class="rem">// The following functions can be called after glyph()</SPAN>
+        <SPAN class="rem">// and return the respective values of the </SPAN>
+        <SPAN class="rem">// GLYPHMETRICS structure.</SPAN>
+        <SPAN class="rem">//-------------------------</SPAN>
+        <SPAN class="kw1">int</SPAN>      origin_x<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_origin_x<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">int</SPAN>      origin_y<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_origin_y<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> width<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>    <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_width<SPAN class="op">;</SPAN>    <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> height<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>   <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_height<SPAN class="op">;</SPAN>   <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">int</SPAN>      inc_x<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>    <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_inc_x<SPAN class="op">;</SPAN>    <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">int</SPAN>      inc_y<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>    <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_inc_y<SPAN class="op">;</SPAN>    <SPAN class="op">}</SPAN>
+        
+        <SPAN class="rem">// Set the starting point of the Glyph</SPAN>
+        <SPAN class="rem">//-------------------------</SPAN>
+        <SPAN class="kw1">void</SPAN> start_point<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y<SPAN class="op">)</SPAN> 
+        <SPAN class="op">{</SPAN> 
+            m_start_x <SPAN class="op">=</SPAN> x<SPAN class="op">;</SPAN> 
+            m_start_y <SPAN class="op">=</SPAN> y<SPAN class="op">;</SPAN> 
+        <SPAN class="op">}</SPAN>
+        
+        <SPAN class="rem">// Vertex Source Interface</SPAN>
+        <SPAN class="rem">//-------------------------</SPAN>
+        <SPAN class="kw1">void</SPAN> rewind<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN><SPAN class="op">)</SPAN> 
+        <SPAN class="op">{</SPAN> 
+            m_cur_vertex <SPAN class="op">=</SPAN> m_vertices<SPAN class="op">;</SPAN> 
+            m_cur_flag <SPAN class="op">=</SPAN> m_flags<SPAN class="op">;</SPAN> 
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">unsigned</SPAN> vertex<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> y<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="op">*</SPAN>x <SPAN class="op">=</SPAN> m_start_x <SPAN class="op">+</SPAN> <SPAN class="op">*</SPAN>m_cur_vertex<SPAN class="op">++</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">*</SPAN>y <SPAN class="op">=</SPAN> m_start_y <SPAN class="op">+</SPAN> <SPAN class="op">*</SPAN>m_cur_vertex<SPAN class="op">++</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">return</SPAN> <SPAN class="op">*</SPAN>m_cur_flag<SPAN class="op">++</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+    <SPAN class="kw1">private</SPAN>:
+        HDC           m_dc<SPAN class="op">;</SPAN>
+        HFONT         m_font<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN>         m_gbuf<SPAN class="op">;</SPAN>
+        <A href="../../__code/include/agg_basics.h.html#int8u">int8u</A><SPAN class="op">*</SPAN>        m_flags<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN>       m_vertices<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN>      m_max_vertices<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">const</SPAN> <A href="../../__code/include/agg_basics.h.html#int8u">int8u</A><SPAN class="op">*</SPAN>  m_cur_flag<SPAN class="op">;</SPAN> 
+        <SPAN class="kw1">const</SPAN> <SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> m_cur_vertex<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN>        m_start_x<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN>        m_start_y<SPAN class="op">;</SPAN>
+        MAT2          m_mat2<SPAN class="op">;</SPAN>
+        
+        <SPAN class="kw1">int</SPAN>      m_origin_x<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN>      m_origin_y<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> m_width<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> m_height<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN>      m_inc_x<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN>      m_inc_y<SPAN class="op">;</SPAN>
+        
+        <SPAN class="kw1">bool</SPAN>     m_flip_y<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+
+
+    tt_glyph::~tt_glyph<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">delete</SPAN> <SPAN class="op">[</SPAN><SPAN class="op">]</SPAN> m_vertices<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">delete</SPAN> <SPAN class="op">[</SPAN><SPAN class="op">]</SPAN> m_flags<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">delete</SPAN> <SPAN class="op">[</SPAN><SPAN class="op">]</SPAN> m_gbuf<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+    
+    
+    tt_glyph::tt_glyph<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> :
+        m_dc<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_font<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_gbuf<SPAN class="op">(</SPAN><SPAN class="kw1">new</SPAN> <SPAN class="kw1">char</SPAN> <SPAN class="op">[</SPAN>buf_size<SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_flags<SPAN class="op">(</SPAN><SPAN class="kw1">new</SPAN> <A href="../../__code/include/agg_basics.h.html#int8u">int8u</A> <SPAN class="op">[</SPAN><SPAN class="num">256</SPAN><SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_vertices<SPAN class="op">(</SPAN><SPAN class="kw1">new</SPAN> <SPAN class="kw1">double</SPAN><SPAN class="op">[</SPAN><SPAN class="num">512</SPAN><SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_max_vertices<SPAN class="op">(</SPAN><SPAN class="num">256</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_cur_flag<SPAN class="op">(</SPAN>m_flags<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_cur_vertex<SPAN class="op">(</SPAN>m_vertices<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_start_x<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_start_y<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_flip_y<SPAN class="op">(</SPAN><SPAN class="kw1">false</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        m_vertices<SPAN class="op">[</SPAN><SPAN class="num">0</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> m_vertices<SPAN class="op">[</SPAN><SPAN class="num">1</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        m_flags<SPAN class="op">[</SPAN><SPAN class="num">0</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> <A href="../../__code/include/agg_basics.h.html#path_cmd_stop">path_cmd_stop</A><SPAN class="op">;</SPAN>
+        memset<SPAN class="op">(</SPAN><SPAN class="op">&amp;</SPAN>m_mat2<SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="kw1">sizeof</SPAN><SPAN class="op">(</SPAN>m_mat2<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_mat2<SPAN class="op">.</SPAN>eM11<SPAN class="op">.</SPAN>value <SPAN class="op">=</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+        m_mat2<SPAN class="op">.</SPAN>eM22<SPAN class="op">.</SPAN>value <SPAN class="op">=</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+
+    <SPAN class="kw1">static</SPAN> <SPAN class="kw1">inline</SPAN> <SPAN class="kw1">double</SPAN> fx_to_dbl<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> FIXED<SPAN class="op">&amp;</SPAN> p<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">return</SPAN> <SPAN class="kw1">double</SPAN><SPAN class="op">(</SPAN>p<SPAN class="op">.</SPAN>value<SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> <SPAN class="kw1">double</SPAN><SPAN class="op">(</SPAN>p<SPAN class="op">.</SPAN>fract<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN><SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">65536</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+    
+    <SPAN class="kw1">static</SPAN> <SPAN class="kw1">inline</SPAN> FIXED dbl_to_fx<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> d<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">int</SPAN> l<SPAN class="op">;</SPAN>
+        l <SPAN class="op">=</SPAN> <SPAN class="kw1">long</SPAN><SPAN class="op">(</SPAN>d <SPAN class="op">*</SPAN> <SPAN class="num">65536</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">return</SPAN> <SPAN class="op">*</SPAN><SPAN class="op">(</SPAN>FIXED<SPAN class="op">*</SPAN><SPAN class="op">)</SPAN><SPAN class="op">&amp;</SPAN>l<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="kw1">bool</SPAN> tt_glyph::glyph<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> chr<SPAN class="op">,</SPAN> <SPAN class="kw1">bool</SPAN> hinted<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        m_vertices<SPAN class="op">[</SPAN><SPAN class="num">0</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> m_vertices<SPAN class="op">[</SPAN><SPAN class="num">1</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        m_flags<SPAN class="op">[</SPAN><SPAN class="num">0</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> <A href="../../__code/include/agg_basics.h.html#path_cmd_stop">path_cmd_stop</A><SPAN class="op">;</SPAN>
+        rewind<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        
+        <SPAN class="kw1">if</SPAN> <SPAN class="op">(</SPAN>m_font <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">return</SPAN> <SPAN class="kw1">false</SPAN><SPAN class="op">;</SPAN>
+        
+<SPAN class="kw2">#ifndef</SPAN> GGO_UNHINTED         <SPAN class="rem">// For compatibility with old SDKs.</SPAN>
+<SPAN class="kw2">#define</SPAN> GGO_UNHINTED <SPAN class="num">0x0100</SPAN>
+<SPAN class="kw2">#endif</SPAN>
+        
+        <SPAN class="kw1">int</SPAN> unhinted <SPAN class="op">=</SPAN> hinted ? <SPAN class="num">0</SPAN> : GGO_UNHINTED<SPAN class="op">;</SPAN>
+        
+        GLYPHMETRICS gm<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN> total_size <SPAN class="op">=</SPAN> GetGlyphOutline<SPAN class="op">(</SPAN>m_dc<SPAN class="op">,</SPAN>
+                                         chr<SPAN class="op">,</SPAN>
+                                         GGO_NATIVE <SPAN class="op">|</SPAN> unhinted<SPAN class="op">,</SPAN>
+                                         <SPAN class="op">&amp;</SPAN>gm<SPAN class="op">,</SPAN>
+                                         buf_size<SPAN class="op">,</SPAN>
+                                         <SPAN class="op">(</SPAN><SPAN class="kw1">void</SPAN><SPAN class="op">*</SPAN><SPAN class="op">)</SPAN>m_gbuf<SPAN class="op">,</SPAN>
+                                         <SPAN class="op">&amp;</SPAN>m_mat2<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">if</SPAN> <SPAN class="op">(</SPAN>total_size <SPAN class="op">&lt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">return</SPAN> <SPAN class="kw1">false</SPAN><SPAN class="op">;</SPAN>
+        
+        m_origin_x <SPAN class="op">=</SPAN> gm<SPAN class="op">.</SPAN>gmptGlyphOrigin<SPAN class="op">.</SPAN>x<SPAN class="op">;</SPAN>
+        m_origin_y <SPAN class="op">=</SPAN> gm<SPAN class="op">.</SPAN>gmptGlyphOrigin<SPAN class="op">.</SPAN>y<SPAN class="op">;</SPAN>
+        m_width    <SPAN class="op">=</SPAN> gm<SPAN class="op">.</SPAN>gmBlackBoxX<SPAN class="op">;</SPAN>
+        m_height   <SPAN class="op">=</SPAN> gm<SPAN class="op">.</SPAN>gmBlackBoxY<SPAN class="op">;</SPAN>
+        m_inc_x    <SPAN class="op">=</SPAN> gm<SPAN class="op">.</SPAN>gmCellIncX<SPAN class="op">;</SPAN>
+        m_inc_y    <SPAN class="op">=</SPAN> gm<SPAN class="op">.</SPAN>gmCellIncY<SPAN class="op">;</SPAN>
+        
+        <SPAN class="kw1">if</SPAN> <SPAN class="op">(</SPAN>m_max_vertices <SPAN class="op">&lt;=</SPAN> total_size <SPAN class="op">/</SPAN> <SPAN class="kw1">sizeof</SPAN><SPAN class="op">(</SPAN>POINTFX<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">delete</SPAN> <SPAN class="op">[</SPAN><SPAN class="op">]</SPAN> m_vertices<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">delete</SPAN> <SPAN class="op">[</SPAN><SPAN class="op">]</SPAN> m_flags<SPAN class="op">;</SPAN>
+            m_max_vertices <SPAN class="op">=</SPAN> total_size <SPAN class="op">/</SPAN> <SPAN class="kw1">sizeof</SPAN><SPAN class="op">(</SPAN>POINTFX<SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> <SPAN class="num">256</SPAN><SPAN class="op">;</SPAN>
+            m_flags <SPAN class="op">=</SPAN> <SPAN class="kw1">new</SPAN> <A href="../../__code/include/agg_basics.h.html#int8u">int8u</A> <SPAN class="op">[</SPAN>m_max_vertices<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+            m_vertices <SPAN class="op">=</SPAN> <SPAN class="kw1">new</SPAN> <SPAN class="kw1">double</SPAN> <SPAN class="op">[</SPAN>m_max_vertices <SPAN class="op">*</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">const</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN> cur_glyph <SPAN class="op">=</SPAN> m_gbuf<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">const</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN> end_glyph <SPAN class="op">=</SPAN> m_gbuf <SPAN class="op">+</SPAN> total_size<SPAN class="op">;</SPAN>
+        
+        <SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> vertex_ptr <SPAN class="op">=</SPAN> m_vertices<SPAN class="op">;</SPAN>
+        <A href="../../__code/include/agg_basics.h.html#int8u">int8u</A><SPAN class="op">*</SPAN>  flag_ptr   <SPAN class="op">=</SPAN> m_flags<SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN>cur_glyph <SPAN class="op">&lt;</SPAN> end_glyph<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">const</SPAN> TTPOLYGONHEADER<SPAN class="op">*</SPAN> th <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>TTPOLYGONHEADER<SPAN class="op">*</SPAN><SPAN class="op">)</SPAN>cur_glyph<SPAN class="op">;</SPAN>
+            
+            <SPAN class="kw1">const</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN> end_poly <SPAN class="op">=</SPAN> cur_glyph <SPAN class="op">+</SPAN> th<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>cb<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">const</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN> cur_poly <SPAN class="op">=</SPAN> cur_glyph <SPAN class="op">+</SPAN> <SPAN class="kw1">sizeof</SPAN><SPAN class="op">(</SPAN>TTPOLYGONHEADER<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            
+            <SPAN class="op">*</SPAN>vertex_ptr<SPAN class="op">++</SPAN> <SPAN class="op">=</SPAN> fx_to_dbl<SPAN class="op">(</SPAN>th<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>pfxStart<SPAN class="op">.</SPAN>x<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">*</SPAN>vertex_ptr<SPAN class="op">++</SPAN> <SPAN class="op">=</SPAN> m_flip_y ? 
+                                <SPAN class="op">-</SPAN>fx_to_dbl<SPAN class="op">(</SPAN>th<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>pfxStart<SPAN class="op">.</SPAN>y<SPAN class="op">)</SPAN>: 
+                                 fx_to_dbl<SPAN class="op">(</SPAN>th<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>pfxStart<SPAN class="op">.</SPAN>y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">*</SPAN>flag_ptr<SPAN class="op">++</SPAN>   <SPAN class="op">=</SPAN> <A href="../../__code/include/agg_basics.h.html#path_cmd_move_to">path_cmd_move_to</A><SPAN class="op">;</SPAN>
+            
+            <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN>cur_poly <SPAN class="op">&lt;</SPAN> end_poly<SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                <SPAN class="kw1">const</SPAN> TTPOLYCURVE<SPAN class="op">*</SPAN> pc <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> TTPOLYCURVE<SPAN class="op">*</SPAN><SPAN class="op">)</SPAN>cur_poly<SPAN class="op">;</SPAN>
+                
+                <SPAN class="kw1">if</SPAN> <SPAN class="op">(</SPAN>pc<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>wType <SPAN class="op">==</SPAN> TT_PRIM_LINE<SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    <SPAN class="kw1">int</SPAN> i<SPAN class="op">;</SPAN>
+                    <SPAN class="kw1">for</SPAN> <SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;</SPAN> pc<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>cpfx<SPAN class="op">;</SPAN> i<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+                    <SPAN class="op">{</SPAN>
+                        <SPAN class="op">*</SPAN>vertex_ptr<SPAN class="op">++</SPAN> <SPAN class="op">=</SPAN> fx_to_dbl<SPAN class="op">(</SPAN>pc<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>apfx<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">.</SPAN>x<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                        <SPAN class="op">*</SPAN>vertex_ptr<SPAN class="op">++</SPAN> <SPAN class="op">=</SPAN> m_flip_y ? 
+                                            <SPAN class="op">-</SPAN>fx_to_dbl<SPAN class="op">(</SPAN>pc<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>apfx<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">.</SPAN>y<SPAN class="op">)</SPAN>: 
+                                             fx_to_dbl<SPAN class="op">(</SPAN>pc<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>apfx<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">.</SPAN>y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                        <SPAN class="op">*</SPAN>flag_ptr<SPAN class="op">++</SPAN>   <SPAN class="op">=</SPAN> <A href="../../__code/include/agg_basics.h.html#path_cmd_line_to">path_cmd_line_to</A><SPAN class="op">;</SPAN>
+                    <SPAN class="op">}</SPAN>
+                <SPAN class="op">}</SPAN>
+                
+                <SPAN class="kw1">if</SPAN> <SPAN class="op">(</SPAN>pc<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>wType <SPAN class="op">==</SPAN> TT_PRIM_QSPLINE<SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    <SPAN class="kw1">int</SPAN> u<SPAN class="op">;</SPAN>
+                    <SPAN class="kw1">for</SPAN> <SPAN class="op">(</SPAN>u <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> u <SPAN class="op">&lt;</SPAN> pc<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>cpfx <SPAN class="op">-</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN> u<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>  <SPAN class="rem">// Walk through points in spline</SPAN>
+                    <SPAN class="op">{</SPAN>
+                        POINTFX pnt_b <SPAN class="op">=</SPAN> pc<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>apfx<SPAN class="op">[</SPAN>u<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>    <SPAN class="rem">// B is always the current point</SPAN>
+                        POINTFX pnt_c <SPAN class="op">=</SPAN> pc<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>apfx<SPAN class="op">[</SPAN>u<SPAN class="op">+</SPAN><SPAN class="num">1</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                        
+                        <SPAN class="kw1">if</SPAN> <SPAN class="op">(</SPAN>u <SPAN class="op">&lt;</SPAN> pc<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>cpfx <SPAN class="op">-</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">)</SPAN>           <SPAN class="rem">// If not on last spline, compute C</SPAN>
+                        <SPAN class="op">{</SPAN>
+                            <SPAN class="rem">// midpoint (x,y)</SPAN>
+                            <SPAN class="op">*</SPAN><SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN><SPAN class="op">*</SPAN><SPAN class="op">)</SPAN><SPAN class="op">&amp;</SPAN>pnt_c<SPAN class="op">.</SPAN>x <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN><SPAN class="op">*</SPAN><SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN><SPAN class="op">*</SPAN><SPAN class="op">)</SPAN><SPAN class="op">&amp;</SPAN>pnt_b<SPAN class="op">.</SPAN>x <SPAN class="op">+</SPAN> <SPAN class="op">*</SPAN><SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN><SPAN class="op">*</SPAN><SPAN class="op">)</SPAN><SPAN class="op">&amp;</SPAN>pnt_c<SPAN class="op">.</SPAN>x<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+                            <SPAN class="op">*</SPAN><SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN><SPAN class="op">*</SPAN><SPAN class="op">)</SPAN><SPAN class="op">&amp;</SPAN>pnt_c<SPAN class="op">.</SPAN>y <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN><SPAN class="op">*</SPAN><SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN><SPAN class="op">*</SPAN><SPAN class="op">)</SPAN><SPAN class="op">&amp;</SPAN>pnt_b<SPAN class="op">.</SPAN>y <SPAN class="op">+</SPAN> <SPAN class="op">*</SPAN><SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN><SPAN class="op">*</SPAN><SPAN class="op">)</SPAN><SPAN class="op">&amp;</SPAN>pnt_c<SPAN class="op">.</SPAN>y<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+                        <SPAN class="op">}</SPAN>
+                        
+                        <SPAN class="op">*</SPAN>vertex_ptr<SPAN class="op">++</SPAN> <SPAN class="op">=</SPAN> fx_to_dbl<SPAN class="op">(</SPAN>pnt_b<SPAN class="op">.</SPAN>x<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                        <SPAN class="op">*</SPAN>vertex_ptr<SPAN class="op">++</SPAN> <SPAN class="op">=</SPAN> m_flip_y ? 
+                                            <SPAN class="op">-</SPAN>fx_to_dbl<SPAN class="op">(</SPAN>pnt_b<SPAN class="op">.</SPAN>y<SPAN class="op">)</SPAN>: 
+                                             fx_to_dbl<SPAN class="op">(</SPAN>pnt_b<SPAN class="op">.</SPAN>y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                        <SPAN class="op">*</SPAN>flag_ptr<SPAN class="op">++</SPAN>   <SPAN class="op">=</SPAN> <A href="../../__code/include/agg_basics.h.html#path_cmd_curve3">path_cmd_curve3</A><SPAN class="op">;</SPAN>
+                        
+                        <SPAN class="op">*</SPAN>vertex_ptr<SPAN class="op">++</SPAN> <SPAN class="op">=</SPAN> fx_to_dbl<SPAN class="op">(</SPAN>pnt_c<SPAN class="op">.</SPAN>x<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                        <SPAN class="op">*</SPAN>vertex_ptr<SPAN class="op">++</SPAN> <SPAN class="op">=</SPAN> m_flip_y ? 
+                                            <SPAN class="op">-</SPAN>fx_to_dbl<SPAN class="op">(</SPAN>pnt_c<SPAN class="op">.</SPAN>y<SPAN class="op">)</SPAN>: 
+                                             fx_to_dbl<SPAN class="op">(</SPAN>pnt_c<SPAN class="op">.</SPAN>y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                        <SPAN class="op">*</SPAN>flag_ptr<SPAN class="op">++</SPAN>   <SPAN class="op">=</SPAN> <A href="../../__code/include/agg_basics.h.html#path_cmd_curve3">path_cmd_curve3</A><SPAN class="op">;</SPAN>
+                    <SPAN class="op">}</SPAN>
+                <SPAN class="op">}</SPAN>
+                cur_poly <SPAN class="op">+=</SPAN> <SPAN class="kw1">sizeof</SPAN><SPAN class="op">(</SPAN>WORD<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> <SPAN class="num">2</SPAN> <SPAN class="op">+</SPAN> <SPAN class="kw1">sizeof</SPAN><SPAN class="op">(</SPAN>POINTFX<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> pc<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>cpfx<SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            cur_glyph <SPAN class="op">+=</SPAN> th<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>cb<SPAN class="op">;</SPAN>
+            <SPAN class="op">*</SPAN>vertex_ptr<SPAN class="op">++</SPAN> <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">*</SPAN>vertex_ptr<SPAN class="op">++</SPAN> <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">*</SPAN>flag_ptr<SPAN class="op">++</SPAN>   <SPAN class="op">=</SPAN> <A href="../../__code/include/agg_basics.h.html#path_cmd_end_poly">path_cmd_end_poly</A> <SPAN class="op">|</SPAN> <A href="../../__code/include/agg_basics.h.html#path_flags_close">path_flags_close</A> <SPAN class="op">|</SPAN> <A href="../../__code/include/agg_basics.h.html#path_flags_ccw">path_flags_ccw</A><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        
+        <SPAN class="op">*</SPAN>vertex_ptr<SPAN class="op">++</SPAN> <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">*</SPAN>vertex_ptr<SPAN class="op">++</SPAN> <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">*</SPAN>flag_ptr<SPAN class="op">++</SPAN>   <SPAN class="op">=</SPAN> <A href="../../__code/include/agg_basics.h.html#path_cmd_stop">path_cmd_stop</A><SPAN class="op">;</SPAN>
+        
+        <SPAN class="kw1">return</SPAN> <SPAN class="kw1">true</SPAN><SPAN class="op">;</SPAN>
+   <SPAN class="op">}</SPAN>
+   
+<SPAN class="op">}</SPAN>
+
+
+
+
+
+<SPAN class="kw1">enum</SPAN>
+<SPAN class="op">{</SPAN>
+    frame_width <SPAN class="op">=</SPAN> <SPAN class="num">320</SPAN><SPAN class="op">,</SPAN>
+    frame_height <SPAN class="op">=</SPAN> <SPAN class="num">200</SPAN>
+<SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+<SPAN class="rem">// Writing the buffer to a .PPM file, assuming it has </SPAN>
+<SPAN class="rem">// RGB-structure, one byte per color component</SPAN>
+<SPAN class="rem">//--------------------------------------------------</SPAN>
+<SPAN class="kw1">bool</SPAN> write_ppm<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <SPAN class="kw1">unsigned</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN> buf<SPAN class="op">,</SPAN> 
+               <SPAN class="kw1">unsigned</SPAN> width<SPAN class="op">,</SPAN> 
+               <SPAN class="kw1">unsigned</SPAN> height<SPAN class="op">,</SPAN> 
+               <SPAN class="kw1">const</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN> file_name<SPAN class="op">)</SPAN>
+<SPAN class="op">{</SPAN>
+    FILE<SPAN class="op">*</SPAN> fd <SPAN class="op">=</SPAN> fopen<SPAN class="op">(</SPAN>file_name<SPAN class="op">,</SPAN> <SPAN class="str">&quot;wb&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>fd<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        fprintf<SPAN class="op">(</SPAN>fd<SPAN class="op">,</SPAN> <SPAN class="str">&quot;P6 %d %d 255 &quot;</SPAN><SPAN class="op">,</SPAN> width<SPAN class="op">,</SPAN> height<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        fwrite<SPAN class="op">(</SPAN>buf<SPAN class="op">,</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">,</SPAN> width <SPAN class="op">*</SPAN> height <SPAN class="op">*</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">,</SPAN> fd<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        fclose<SPAN class="op">(</SPAN>fd<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">return</SPAN> <SPAN class="kw1">true</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+    <SPAN class="kw1">return</SPAN> <SPAN class="kw1">false</SPAN><SPAN class="op">;</SPAN>
+<SPAN class="op">}</SPAN>
+
+
+
+
+
+<SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Rasterizer<SPAN class="op">,</SPAN> <SPAN class="kw1">class</SPAN> Renderer<SPAN class="op">,</SPAN> <SPAN class="kw1">class</SPAN> Scanline<SPAN class="op">,</SPAN> <SPAN class="kw1">class</SPAN> CharT<SPAN class="op">&gt;</SPAN>
+<SPAN class="kw1">void</SPAN> render_text<SPAN class="op">(</SPAN>Rasterizer<SPAN class="op">&amp;</SPAN> ras<SPAN class="op">,</SPAN> Renderer<SPAN class="op">&amp;</SPAN> ren<SPAN class="op">,</SPAN> Scanline<SPAN class="op">&amp;</SPAN> sl<SPAN class="op">,</SPAN> 
+                 agg::tt_glyph<SPAN class="op">&amp;</SPAN> gl<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">const</SPAN> CharT<SPAN class="op">*</SPAN> str<SPAN class="op">,</SPAN>
+                 <SPAN class="kw1">bool</SPAN> hinted <SPAN class="op">=</SPAN> <SPAN class="kw1">true</SPAN><SPAN class="op">)</SPAN>
+<SPAN class="op">{</SPAN>
+    <SPAN class="rem">// The minimal pipeline is the curve converter. Of course, there</SPAN>
+    <SPAN class="rem">// any other transformations are applicapble, <A href="../../__code/include/agg_conv_stroke.h.html#conv_stroke">conv_stroke</A>&lt;&gt;, for example.</SPAN>
+    <SPAN class="rem">// If there are other thransformations, it probably makes sense to </SPAN>
+    <SPAN class="rem">// turn off the hints (hinted=false), i.e., to use unhinted glyphs.</SPAN>
+    <SPAN class="rem">//--------------------------</SPAN>
+    agg::<A href="../../__code/include/agg_conv_curve.h.html#conv_curve">conv_curve</A><SPAN class="op">&lt;</SPAN>agg::tt_glyph<SPAN class="op">&gt;</SPAN> curve<SPAN class="op">(</SPAN>gl<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN><SPAN class="op">*</SPAN>str<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        gl<SPAN class="op">.</SPAN>start_point<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        gl<SPAN class="op">.</SPAN>glyph<SPAN class="op">(</SPAN><SPAN class="op">*</SPAN>str<SPAN class="op">++</SPAN><SPAN class="op">,</SPAN> hinted<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        ras<SPAN class="op">.</SPAN>add_path<SPAN class="op">(</SPAN>curve<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        agg::<A href="../../__code/include/agg_renderer_scanline.h.html#render_scanlines">render_scanlines</A><SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> sl<SPAN class="op">,</SPAN> ren<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        x <SPAN class="op">+=</SPAN> gl<SPAN class="op">.</SPAN>inc_x<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        y <SPAN class="op">+=</SPAN> gl<SPAN class="op">.</SPAN>inc_y<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+<SPAN class="op">}</SPAN>
+
+
+
+<SPAN class="kw1">int</SPAN> <SPAN class="kw1">main</SPAN><SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+<SPAN class="op">{</SPAN>
+    <SPAN class="rem">// Create the rendering buffer</SPAN>
+    <SPAN class="rem">//------------------------</SPAN>
+    <SPAN class="kw1">unsigned</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN> buffer <SPAN class="op">=</SPAN> <SPAN class="kw1">new</SPAN> <SPAN class="kw1">unsigned</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">[</SPAN>frame_width <SPAN class="op">*</SPAN> frame_height <SPAN class="op">*</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+    agg::<A href="../../doc/basic_renderers/basic_renderers.agdoc.html#rendering_buffer">rendering_buffer</A> rbuf<SPAN class="op">(</SPAN>buffer<SPAN class="op">,</SPAN> 
+                               frame_width<SPAN class="op">,</SPAN> 
+                               frame_height<SPAN class="op">,</SPAN> 
+                               <SPAN class="op">-</SPAN>frame_width <SPAN class="op">*</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="rem">// Create the renderers, the rasterizer, and the scanline container</SPAN>
+    <SPAN class="rem">//------------------------</SPAN>
+    agg::<A href="../../__code/include/agg_pixfmt_rgb.h.html#pixfmt_rgb24">pixfmt_rgb24</A> pixf<SPAN class="op">(</SPAN>rbuf<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    agg::<A href="../../doc/basic_renderers/basic_renderers.agdoc.html#renderer_base">renderer_base</A><SPAN class="op">&lt;</SPAN>agg::<A href="../../__code/include/agg_pixfmt_rgb.h.html#pixfmt_rgb24">pixfmt_rgb24</A><SPAN class="op">&gt;</SPAN> rbase<SPAN class="op">(</SPAN>pixf<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    agg::<A href="../../__code/include/agg_renderer_scanline.h.html#renderer_scanline_aa_solid">renderer_scanline_aa_solid</A><SPAN class="op">&lt;</SPAN>agg::<A href="../../doc/basic_renderers/basic_renderers.agdoc.html#renderer_base">renderer_base</A><SPAN class="op">&lt;</SPAN>agg::<A href="../../__code/include/agg_pixfmt_rgb.h.html#pixfmt_rgb24">pixfmt_rgb24</A><SPAN class="op">&gt;</SPAN> <SPAN class="op">&gt;</SPAN> ren<SPAN class="op">(</SPAN>rbase<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    agg::<A href="../../__code/include/agg_rasterizer_scanline_aa.h.html#rasterizer_scanline_aa">rasterizer_scanline_aa</A><SPAN class="op">&lt;</SPAN><SPAN class="op">&gt;</SPAN> ras<SPAN class="op">;</SPAN>
+    agg::<A href="../../__code/include/agg_scanline_p.h.html#scanline_p8">scanline_p8</A> sl<SPAN class="op">;</SPAN>
+
+    rbase<SPAN class="op">.</SPAN>clear<SPAN class="op">(</SPAN>agg::<A href="../../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">(</SPAN><SPAN class="num">255</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+
+    <SPAN class="rem">// Font parameters</SPAN>
+    <SPAN class="rem">//------------------------</SPAN>
+    <SPAN class="kw1">int</SPAN>  fontHeight      <SPAN class="op">=</SPAN> <SPAN class="num">60</SPAN><SPAN class="op">;</SPAN>  <SPAN class="rem">// in Pixels in this case</SPAN>
+    <SPAN class="kw1">int</SPAN>  fontWidth       <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="kw1">int</SPAN>  iAngle          <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="kw1">bool</SPAN> bold            <SPAN class="op">=</SPAN> <SPAN class="kw1">true</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="kw1">bool</SPAN> italic          <SPAN class="op">=</SPAN> <SPAN class="kw1">true</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="kw1">const</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN> typeFace <SPAN class="op">=</SPAN> <SPAN class="str">&quot;Times New Roman&quot;</SPAN><SPAN class="op">;</SPAN>
+
+
+    <SPAN class="rem">// I&#039;m not sure how to deal with those sneaky WinGDI functions correctly,</SPAN>
+    <SPAN class="rem">// so, please correct me if there&#039;s something wrong. </SPAN>
+    <SPAN class="rem">// I&#039;m not sure if I need to call ReleaseDC() for the screen.</SPAN>
+    <SPAN class="rem">//----------------------------------</SPAN>
+  
+    HFONT font <SPAN class="op">=</SPAN> ::CreateFont<SPAN class="op">(</SPAN>fontHeight<SPAN class="op">,</SPAN>           <SPAN class="rem">// height of font</SPAN>
+                              fontWidth<SPAN class="op">,</SPAN>            <SPAN class="rem">// average character width</SPAN>
+                              iAngle<SPAN class="op">,</SPAN>               <SPAN class="rem">// angle of escapement</SPAN>
+                              iAngle<SPAN class="op">,</SPAN>               <SPAN class="rem">// base-line orientation angle</SPAN>
+                              bold ? <SPAN class="num">700</SPAN> : <SPAN class="num">400</SPAN><SPAN class="op">,</SPAN>     <SPAN class="rem">// font weight</SPAN>
+                              italic<SPAN class="op">,</SPAN>               <SPAN class="rem">// italic attribute option</SPAN>
+                              FALSE<SPAN class="op">,</SPAN>                <SPAN class="rem">// underline attribute option</SPAN>
+                              FALSE<SPAN class="op">,</SPAN>                <SPAN class="rem">// strikeout attribute option</SPAN>
+                              ANSI_CHARSET<SPAN class="op">,</SPAN>         <SPAN class="rem">// character set identifier</SPAN>
+                              OUT_DEFAULT_PRECIS<SPAN class="op">,</SPAN>   <SPAN class="rem">// output precision</SPAN>
+                              CLIP_DEFAULT_PRECIS<SPAN class="op">,</SPAN>  <SPAN class="rem">// clipping precision</SPAN>
+                              ANTIALIASED_QUALITY<SPAN class="op">,</SPAN>  <SPAN class="rem">// output quality</SPAN>
+                              FF_DONTCARE<SPAN class="op">,</SPAN>          <SPAN class="rem">// pitch and family</SPAN>
+                              typeFace<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>            <SPAN class="rem">// typeface name</SPAN>
+    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>font<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        HDC dc <SPAN class="op">=</SPAN> ::GetDC<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>dc<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            HGDIOBJ old_font <SPAN class="op">=</SPAN> ::SelectObject<SPAN class="op">(</SPAN>dc<SPAN class="op">,</SPAN> font<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            agg::tt_glyph gl<SPAN class="op">;</SPAN>
+            gl<SPAN class="op">.</SPAN>font<SPAN class="op">(</SPAN>dc<SPAN class="op">,</SPAN> font<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        
+            ren<SPAN class="op">.</SPAN>color<SPAN class="op">(</SPAN>agg::<A href="../../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN><SPAN class="num">128</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            render_text<SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> ren<SPAN class="op">,</SPAN> sl<SPAN class="op">,</SPAN> gl<SPAN class="op">,</SPAN> <SPAN class="num">10</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">100</SPAN><SPAN class="op">,</SPAN> <SPAN class="str">&quot;Hello, World!&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        
+            write_ppm<SPAN class="op">(</SPAN>buffer<SPAN class="op">,</SPAN> frame_width<SPAN class="op">,</SPAN> frame_height<SPAN class="op">,</SPAN> <SPAN class="str">&quot;agg_test.ppm&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        
+            ::SelectObject<SPAN class="op">(</SPAN>dc<SPAN class="op">,</SPAN> old_font<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            ::ReleaseDC<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> dc<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        ::DeleteObject<SPAN class="op">(</SPAN>font<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="kw1">delete</SPAN> <SPAN class="op">[</SPAN><SPAN class="op">]</SPAN> buffer<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">return</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+<SPAN class="op">}</SPAN>
+
+
+
+
+
+
+
+<SPAN class="kw1">enum</SPAN>
+<SPAN class="op">{</SPAN>
+    frame_width <SPAN class="op">=</SPAN> <SPAN class="num">320</SPAN><SPAN class="op">,</SPAN>
+    frame_height <SPAN class="op">=</SPAN> <SPAN class="num">200</SPAN>
+<SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+<SPAN class="rem">// Writing the buffer to a .PPM file, assuming it has </SPAN>
+<SPAN class="rem">// RGB-structure, one byte per color component</SPAN>
+<SPAN class="rem">//--------------------------------------------------</SPAN>
+<SPAN class="kw1">bool</SPAN> write_ppm<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <SPAN class="kw1">unsigned</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN> buf<SPAN class="op">,</SPAN> 
+               <SPAN class="kw1">unsigned</SPAN> width<SPAN class="op">,</SPAN> 
+               <SPAN class="kw1">unsigned</SPAN> height<SPAN class="op">,</SPAN> 
+               <SPAN class="kw1">const</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN> file_name<SPAN class="op">)</SPAN>
+<SPAN class="op">{</SPAN>
+    FILE<SPAN class="op">*</SPAN> fd <SPAN class="op">=</SPAN> fopen<SPAN class="op">(</SPAN>file_name<SPAN class="op">,</SPAN> <SPAN class="str">&quot;wb&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>fd<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        fprintf<SPAN class="op">(</SPAN>fd<SPAN class="op">,</SPAN> <SPAN class="str">&quot;P6 %d %d 255 &quot;</SPAN><SPAN class="op">,</SPAN> width<SPAN class="op">,</SPAN> height<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        fwrite<SPAN class="op">(</SPAN>buf<SPAN class="op">,</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">,</SPAN> width <SPAN class="op">*</SPAN> height <SPAN class="op">*</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">,</SPAN> fd<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        fclose<SPAN class="op">(</SPAN>fd<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">return</SPAN> <SPAN class="kw1">true</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+    <SPAN class="kw1">return</SPAN> <SPAN class="kw1">false</SPAN><SPAN class="op">;</SPAN>
+<SPAN class="op">}</SPAN>
+
+
+
+
+
+<SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Rasterizer<SPAN class="op">,</SPAN> <SPAN class="kw1">class</SPAN> Renderer<SPAN class="op">,</SPAN> <SPAN class="kw1">class</SPAN> Scanline<SPAN class="op">,</SPAN> <SPAN class="kw1">class</SPAN> CharT<SPAN class="op">&gt;</SPAN>
+<SPAN class="kw1">void</SPAN> render_text<SPAN class="op">(</SPAN>Rasterizer<SPAN class="op">&amp;</SPAN> ras<SPAN class="op">,</SPAN> Renderer<SPAN class="op">&amp;</SPAN> ren<SPAN class="op">,</SPAN> Scanline<SPAN class="op">&amp;</SPAN> sl<SPAN class="op">,</SPAN> 
+                 agg::tt_glyph<SPAN class="op">&amp;</SPAN> gl<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">const</SPAN> CharT<SPAN class="op">*</SPAN> str<SPAN class="op">,</SPAN>
+                 <SPAN class="kw1">bool</SPAN> hinted <SPAN class="op">=</SPAN> <SPAN class="kw1">true</SPAN><SPAN class="op">)</SPAN>
+<SPAN class="op">{</SPAN>
+    <SPAN class="rem">// The minimal pipeline is the curve converter. Of course, there</SPAN>
+    <SPAN class="rem">// any other transformations are applicapble, <A href="../../__code/include/agg_conv_stroke.h.html#conv_stroke">conv_stroke</A>&lt;&gt;, for example.</SPAN>
+    <SPAN class="rem">// If there are other thransformations, it probably makes sense to </SPAN>
+    <SPAN class="rem">// turn off the hints (hinted=false), i.e., to use unhinted glyphs.</SPAN>
+    <SPAN class="rem">//--------------------------</SPAN>
+    agg::<A href="../../__code/include/agg_conv_curve.h.html#conv_curve">conv_curve</A><SPAN class="op">&lt;</SPAN>agg::tt_glyph<SPAN class="op">&gt;</SPAN> curve<SPAN class="op">(</SPAN>gl<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN><SPAN class="op">*</SPAN>str<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        gl<SPAN class="op">.</SPAN>start_point<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        gl<SPAN class="op">.</SPAN>glyph<SPAN class="op">(</SPAN><SPAN class="op">*</SPAN>str<SPAN class="op">++</SPAN><SPAN class="op">,</SPAN> hinted<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        ras<SPAN class="op">.</SPAN>add_path<SPAN class="op">(</SPAN>curve<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        agg::<A href="../../__code/include/agg_renderer_scanline.h.html#render_scanlines">render_scanlines</A><SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> sl<SPAN class="op">,</SPAN> ren<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        x <SPAN class="op">+=</SPAN> gl<SPAN class="op">.</SPAN>inc_x<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        y <SPAN class="op">+=</SPAN> gl<SPAN class="op">.</SPAN>inc_y<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+<SPAN class="op">}</SPAN>
+
+
+
+<SPAN class="kw1">int</SPAN> <SPAN class="kw1">main</SPAN><SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+<SPAN class="op">{</SPAN>
+    <SPAN class="rem">// Create the rendering buffer</SPAN>
+    <SPAN class="rem">//------------------------</SPAN>
+    <SPAN class="kw1">unsigned</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN> buffer <SPAN class="op">=</SPAN> <SPAN class="kw1">new</SPAN> <SPAN class="kw1">unsigned</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">[</SPAN>frame_width <SPAN class="op">*</SPAN> frame_height <SPAN class="op">*</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+    agg::<A href="../../doc/basic_renderers/basic_renderers.agdoc.html#rendering_buffer">rendering_buffer</A> rbuf<SPAN class="op">(</SPAN>buffer<SPAN class="op">,</SPAN> 
+                               frame_width<SPAN class="op">,</SPAN> 
+                               frame_height<SPAN class="op">,</SPAN> 
+                               <SPAN class="op">-</SPAN>frame_width <SPAN class="op">*</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="rem">// Create the renderers, the rasterizer, and the scanline container</SPAN>
+    <SPAN class="rem">//------------------------</SPAN>
+    agg::<A href="../../__code/include/agg_pixfmt_rgb.h.html#pixfmt_rgb24">pixfmt_rgb24</A> pixf<SPAN class="op">(</SPAN>rbuf<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    agg::<A href="../../doc/basic_renderers/basic_renderers.agdoc.html#renderer_base">renderer_base</A><SPAN class="op">&lt;</SPAN>agg::<A href="../../__code/include/agg_pixfmt_rgb.h.html#pixfmt_rgb24">pixfmt_rgb24</A><SPAN class="op">&gt;</SPAN> rbase<SPAN class="op">(</SPAN>pixf<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    agg::<A href="../../__code/include/agg_renderer_scanline.h.html#renderer_scanline_aa_solid">renderer_scanline_aa_solid</A><SPAN class="op">&lt;</SPAN>agg::<A href="../../doc/basic_renderers/basic_renderers.agdoc.html#renderer_base">renderer_base</A><SPAN class="op">&lt;</SPAN>agg::<A href="../../__code/include/agg_pixfmt_rgb.h.html#pixfmt_rgb24">pixfmt_rgb24</A><SPAN class="op">&gt;</SPAN> <SPAN class="op">&gt;</SPAN> ren<SPAN class="op">(</SPAN>rbase<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    agg::<A href="../../__code/include/agg_rasterizer_scanline_aa.h.html#rasterizer_scanline_aa">rasterizer_scanline_aa</A><SPAN class="op">&lt;</SPAN><SPAN class="op">&gt;</SPAN> ras<SPAN class="op">;</SPAN>
+    agg::<A href="../../__code/include/agg_scanline_p.h.html#scanline_p8">scanline_p8</A> sl<SPAN class="op">;</SPAN>
+
+    rbase<SPAN class="op">.</SPAN>clear<SPAN class="op">(</SPAN>agg::<A href="../../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">(</SPAN><SPAN class="num">255</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+
+    <SPAN class="rem">// Font parameters</SPAN>
+    <SPAN class="rem">//------------------------</SPAN>
+    <SPAN class="kw1">int</SPAN>  fontHeight      <SPAN class="op">=</SPAN> <SPAN class="num">60</SPAN><SPAN class="op">;</SPAN>  <SPAN class="rem">// in Pixels in this case</SPAN>
+    <SPAN class="kw1">int</SPAN>  fontWidth       <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="kw1">int</SPAN>  iAngle          <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="kw1">bool</SPAN> bold            <SPAN class="op">=</SPAN> <SPAN class="kw1">true</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="kw1">bool</SPAN> italic          <SPAN class="op">=</SPAN> <SPAN class="kw1">true</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="kw1">const</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN> typeFace <SPAN class="op">=</SPAN> <SPAN class="str">&quot;Times New Roman&quot;</SPAN><SPAN class="op">;</SPAN>
+
+
+    <SPAN class="rem">// I&#039;m not sure how to deal with those sneaky WinGDI functions correctly,</SPAN>
+    <SPAN class="rem">// so, please correct me if there&#039;s something wrong. </SPAN>
+    <SPAN class="rem">// I&#039;m not sure if I need to call ReleaseDC() for the screen.</SPAN>
+    <SPAN class="rem">//----------------------------------</SPAN>
+  
+    HFONT font <SPAN class="op">=</SPAN> ::CreateFont<SPAN class="op">(</SPAN>fontHeight<SPAN class="op">,</SPAN>           <SPAN class="rem">// height of font</SPAN>
+                              fontWidth<SPAN class="op">,</SPAN>            <SPAN class="rem">// average character width</SPAN>
+                              iAngle<SPAN class="op">,</SPAN>               <SPAN class="rem">// angle of escapement</SPAN>
+                              iAngle<SPAN class="op">,</SPAN>               <SPAN class="rem">// base-line orientation angle</SPAN>
+                              bold ? <SPAN class="num">700</SPAN> : <SPAN class="num">400</SPAN><SPAN class="op">,</SPAN>     <SPAN class="rem">// font weight</SPAN>
+                              italic<SPAN class="op">,</SPAN>               <SPAN class="rem">// italic attribute option</SPAN>
+                              FALSE<SPAN class="op">,</SPAN>                <SPAN class="rem">// underline attribute option</SPAN>
+                              FALSE<SPAN class="op">,</SPAN>                <SPAN class="rem">// strikeout attribute option</SPAN>
+                              ANSI_CHARSET<SPAN class="op">,</SPAN>         <SPAN class="rem">// character set identifier</SPAN>
+                              OUT_DEFAULT_PRECIS<SPAN class="op">,</SPAN>   <SPAN class="rem">// output precision</SPAN>
+                              CLIP_DEFAULT_PRECIS<SPAN class="op">,</SPAN>  <SPAN class="rem">// clipping precision</SPAN>
+                              ANTIALIASED_QUALITY<SPAN class="op">,</SPAN>  <SPAN class="rem">// output quality</SPAN>
+                              FF_DONTCARE<SPAN class="op">,</SPAN>          <SPAN class="rem">// pitch and family</SPAN>
+                              typeFace<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>            <SPAN class="rem">// typeface name</SPAN>
+    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>font<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        HDC dc <SPAN class="op">=</SPAN> ::GetDC<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>dc<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            HGDIOBJ old_font <SPAN class="op">=</SPAN> ::SelectObject<SPAN class="op">(</SPAN>dc<SPAN class="op">,</SPAN> font<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            agg::tt_glyph gl<SPAN class="op">;</SPAN>
+            gl<SPAN class="op">.</SPAN>font<SPAN class="op">(</SPAN>dc<SPAN class="op">,</SPAN> font<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        
+            ren<SPAN class="op">.</SPAN>color<SPAN class="op">(</SPAN>agg::<A href="../../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN><SPAN class="num">128</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            render_text<SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> ren<SPAN class="op">,</SPAN> sl<SPAN class="op">,</SPAN> gl<SPAN class="op">,</SPAN> <SPAN class="num">10</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">100</SPAN><SPAN class="op">,</SPAN> <SPAN class="str">&quot;Hello, World!&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        
+            write_ppm<SPAN class="op">(</SPAN>buffer<SPAN class="op">,</SPAN> frame_width<SPAN class="op">,</SPAN> frame_height<SPAN class="op">,</SPAN> <SPAN class="str">&quot;agg_test.ppm&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        
+            ::SelectObject<SPAN class="op">(</SPAN>dc<SPAN class="op">,</SPAN> old_font<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            ::ReleaseDC<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> dc<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        ::DeleteObject<SPAN class="op">(</SPAN>font<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="kw1">delete</SPAN> <SPAN class="op">[</SPAN><SPAN class="op">]</SPAN> buffer<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">return</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+<SPAN class="op">}</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>And the result:</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD><CENTER><IMG src="win_glyph.gif" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Beautiful, isn&#039;t it? In fact, it looks much better than the native 
+text rendered in Windows. To compare the quality, run WordPad, 
+type &#147;Hello, World!&#148; and change font to &#147;Times New Roman&#148;, set Bold, 
+Italic and size of 39 points.</P></TD></TR></TABLE> 
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Here&#039;s an enlarged fragment of a glyph to compare the quality.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD><CENTER><IMG src="quality.gif" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+
+
+<TABLE width="640px" bgcolor="#583927" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0">
+<TR><TD><CENTER><SPAN class="authors">
+Copyright <SPAN class="larger">&#169;</SPAN> 2002-2006
+<A href="../../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+<TR><TD><CENTER><SPAN class="authors">
+Web Design and Programming
+<A href="../../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+</TABLE>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+</HTML>

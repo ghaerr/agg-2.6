@@ -1,0 +1,401 @@
+<HTML><HEAD><TITLE>Anti-Grain Geometry - </TITLE>
+<META http-equiv="Content-Type" content="text/html"/>
+<LINK rel="stylesheet" type="text/css" href="../agg.styles.css"/>
+</HEAD>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE><SPAN class="kw2">#include</SPAN> <SPAN class="op">&lt;</SPAN>stdio<SPAN class="op">.</SPAN>h<SPAN class="op">&gt;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="op">&lt;</SPAN>stdlib<SPAN class="op">.</SPAN>h<SPAN class="op">&gt;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="op">&lt;</SPAN>math<SPAN class="op">.</SPAN>h<SPAN class="op">&gt;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_rendering_buffer.h.html">agg_rendering_buffer.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_rasterizer_scanline_aa.h.html">agg_rasterizer_scanline_aa.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_path_storage.h.html">agg_path_storage.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_trans_affine.h.html">agg_trans_affine.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_conv_transform.h.html">agg_conv_transform.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_conv_smooth_poly1.h.html">agg_conv_smooth_poly1.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_scanline_p.h.html">agg_scanline_p.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_renderer_scanline.h.html">agg_renderer_scanline.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_span_allocator.h.html">agg_span_allocator.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_span_pattern_gray.h.html">agg_span_pattern_gray.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_span_pattern_rgb.h.html">agg_span_pattern_rgb.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_span_pattern_rgba.h.html">agg_span_pattern_rgba.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_image_accessors.h.html">agg_image_accessors.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;ctrl/agg_slider_ctrl.h&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;ctrl/agg_rbox_ctrl.h&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;ctrl/agg_cbox_ctrl.h&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;platform/agg_platform_support.h&quot;</SPAN>
+
+<SPAN class="kw1">enum</SPAN> flip_y_e <SPAN class="op">{</SPAN> flip_y <SPAN class="op">=</SPAN> <SPAN class="kw1">true</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+<SPAN class="rem">//#define AGG_GRAY8 </SPAN>
+<SPAN class="rem">//#define AGG_BGR24 </SPAN>
+<SPAN class="rem">//#define AGG_RGB24</SPAN>
+<SPAN class="kw2">#define</SPAN> AGG_BGRA32 
+<SPAN class="rem">//#define AGG_RGBA32 </SPAN>
+<SPAN class="rem">//#define AGG_ARGB32 </SPAN>
+<SPAN class="rem">//#define AGG_ABGR32</SPAN>
+<SPAN class="rem">//#define AGG_RGB565</SPAN>
+<SPAN class="rem">//#define AGG_RGB555</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;pixel_formats.h&quot;</SPAN>
+
+
+
+
+<SPAN class="kw1">class</SPAN> the_application : <SPAN class="kw1">public</SPAN> agg::platform_support
+<SPAN class="op">{</SPAN>
+    agg::slider_ctrl<SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba">rgba</A><SPAN class="op">&gt;</SPAN> m_polygon_angle<SPAN class="op">;</SPAN>
+    agg::slider_ctrl<SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba">rgba</A><SPAN class="op">&gt;</SPAN> m_polygon_scale<SPAN class="op">;</SPAN>
+
+    agg::slider_ctrl<SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba">rgba</A><SPAN class="op">&gt;</SPAN> m_pattern_angle<SPAN class="op">;</SPAN>
+    agg::slider_ctrl<SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba">rgba</A><SPAN class="op">&gt;</SPAN> m_pattern_size<SPAN class="op">;</SPAN>
+
+    agg::slider_ctrl<SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba">rgba</A><SPAN class="op">&gt;</SPAN> m_pattern_alpha<SPAN class="op">;</SPAN>
+
+    agg::cbox_ctrl<SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba">rgba</A><SPAN class="op">&gt;</SPAN> m_rotate_polygon<SPAN class="op">;</SPAN>
+    agg::cbox_ctrl<SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba">rgba</A><SPAN class="op">&gt;</SPAN> m_rotate_pattern<SPAN class="op">;</SPAN>
+    agg::cbox_ctrl<SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba">rgba</A><SPAN class="op">&gt;</SPAN> m_tie_pattern<SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">double</SPAN> m_polygon_cx<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN> m_polygon_cy<SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">double</SPAN> m_dx<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN> m_dy<SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">int</SPAN> m_flag<SPAN class="op">;</SPAN>
+
+    agg::<A href="../__code/include/agg_basics.h.html#int8u">int8u</A><SPAN class="op">*</SPAN>           m_pattern<SPAN class="op">;</SPAN>
+    agg::<A href="../doc/basic_renderers/basic_renderers.agdoc.html#rendering_buffer">rendering_buffer</A> m_pattern_rbuf<SPAN class="op">;</SPAN>
+
+    agg::<A href="../__code/include/agg_rasterizer_scanline_aa.h.html#rasterizer_scanline_aa">rasterizer_scanline_aa</A><SPAN class="op">&lt;</SPAN><SPAN class="op">&gt;</SPAN> m_ras<SPAN class="op">;</SPAN>
+    agg::<A href="../__code/include/agg_scanline_p.h.html#scanline_p8">scanline_p8</A> m_sl<SPAN class="op">;</SPAN>
+    agg::<A href="../__code/include/agg_path_storage.h.html#path_storage">path_storage</A> m_ps<SPAN class="op">;</SPAN>
+
+
+<SPAN class="kw1">public</SPAN>:
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    the_application<SPAN class="op">(</SPAN>agg::pix_format_e format<SPAN class="op">,</SPAN> <SPAN class="kw1">bool</SPAN> flip_y<SPAN class="op">)</SPAN> :
+        agg::platform_support<SPAN class="op">(</SPAN>format<SPAN class="op">,</SPAN> flip_y<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_polygon_angle<SPAN class="op">(</SPAN><SPAN class="num">5</SPAN><SPAN class="op">,</SPAN>    <SPAN class="num">5</SPAN><SPAN class="op">,</SPAN>         <SPAN class="num">145</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">12</SPAN><SPAN class="op">,</SPAN>    <SPAN class="op">!</SPAN>flip_y<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_polygon_scale<SPAN class="op">(</SPAN><SPAN class="num">5</SPAN><SPAN class="op">,</SPAN>    <SPAN class="num">5</SPAN><SPAN class="op">+</SPAN><SPAN class="num">14</SPAN><SPAN class="op">,</SPAN>      <SPAN class="num">145</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">12</SPAN><SPAN class="op">+</SPAN><SPAN class="num">14</SPAN><SPAN class="op">,</SPAN> <SPAN class="op">!</SPAN>flip_y<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_pattern_angle<SPAN class="op">(</SPAN><SPAN class="num">155</SPAN><SPAN class="op">,</SPAN>  <SPAN class="num">5</SPAN><SPAN class="op">,</SPAN>         <SPAN class="num">300</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">12</SPAN><SPAN class="op">,</SPAN>    <SPAN class="op">!</SPAN>flip_y<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_pattern_size <SPAN class="op">(</SPAN><SPAN class="num">155</SPAN><SPAN class="op">,</SPAN>  <SPAN class="num">5</SPAN><SPAN class="op">+</SPAN><SPAN class="num">14</SPAN><SPAN class="op">,</SPAN>      <SPAN class="num">300</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">12</SPAN><SPAN class="op">+</SPAN><SPAN class="num">14</SPAN><SPAN class="op">,</SPAN> <SPAN class="op">!</SPAN>flip_y<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_pattern_alpha<SPAN class="op">(</SPAN><SPAN class="num">310</SPAN><SPAN class="op">,</SPAN>  <SPAN class="num">5</SPAN><SPAN class="op">,</SPAN>         <SPAN class="num">460</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">12</SPAN><SPAN class="op">,</SPAN>    <SPAN class="op">!</SPAN>flip_y<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_rotate_polygon<SPAN class="op">(</SPAN><SPAN class="num">5</SPAN><SPAN class="op">,</SPAN>   <SPAN class="num">5</SPAN><SPAN class="op">+</SPAN><SPAN class="num">14</SPAN><SPAN class="op">+</SPAN><SPAN class="num">14</SPAN><SPAN class="op">,</SPAN>    <SPAN class="str">&quot;Rotate Polygon&quot;</SPAN><SPAN class="op">,</SPAN> <SPAN class="op">!</SPAN>flip_y<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_rotate_pattern<SPAN class="op">(</SPAN><SPAN class="num">5</SPAN><SPAN class="op">,</SPAN>   <SPAN class="num">5</SPAN><SPAN class="op">+</SPAN><SPAN class="num">14</SPAN><SPAN class="op">+</SPAN><SPAN class="num">14</SPAN><SPAN class="op">+</SPAN><SPAN class="num">14</SPAN><SPAN class="op">,</SPAN> <SPAN class="str">&quot;Rotate Pattern&quot;</SPAN><SPAN class="op">,</SPAN> <SPAN class="op">!</SPAN>flip_y<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_tie_pattern   <SPAN class="op">(</SPAN><SPAN class="num">155</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">5</SPAN><SPAN class="op">+</SPAN><SPAN class="num">14</SPAN><SPAN class="op">+</SPAN><SPAN class="num">14</SPAN><SPAN class="op">,</SPAN>    <SPAN class="str">&quot;Tie pattern to polygon&quot;</SPAN><SPAN class="op">,</SPAN> <SPAN class="op">!</SPAN>flip_y<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_flag<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_pattern<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        add_ctrl<SPAN class="op">(</SPAN>m_polygon_angle<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        add_ctrl<SPAN class="op">(</SPAN>m_polygon_scale<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        add_ctrl<SPAN class="op">(</SPAN>m_pattern_angle<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        add_ctrl<SPAN class="op">(</SPAN>m_pattern_size<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        add_ctrl<SPAN class="op">(</SPAN>m_pattern_alpha<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        add_ctrl<SPAN class="op">(</SPAN>m_rotate_polygon<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        add_ctrl<SPAN class="op">(</SPAN>m_rotate_pattern<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        add_ctrl<SPAN class="op">(</SPAN>m_tie_pattern<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        m_polygon_angle<SPAN class="op">.</SPAN>label<SPAN class="op">(</SPAN><SPAN class="str">&quot;Polygon Angle=%3.2f&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_polygon_angle<SPAN class="op">.</SPAN>range<SPAN class="op">(</SPAN><SPAN class="op">-</SPAN><SPAN class="num">180</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">180</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        m_polygon_scale<SPAN class="op">.</SPAN>label<SPAN class="op">(</SPAN><SPAN class="str">&quot;Polygon Scale=%3.2f&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_polygon_scale<SPAN class="op">.</SPAN>range<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">1</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">5</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_polygon_scale<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        m_pattern_angle<SPAN class="op">.</SPAN>label<SPAN class="op">(</SPAN><SPAN class="str">&quot;Pattern Angle=%3.2f&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_pattern_angle<SPAN class="op">.</SPAN>range<SPAN class="op">(</SPAN><SPAN class="op">-</SPAN><SPAN class="num">180</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">180</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        m_pattern_size<SPAN class="op">.</SPAN>label<SPAN class="op">(</SPAN><SPAN class="str">&quot;Pattern Size=%3.2f&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_pattern_size<SPAN class="op">.</SPAN>range<SPAN class="op">(</SPAN><SPAN class="num">10</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">40</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_pattern_size<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="num">30</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        m_pattern_alpha<SPAN class="op">.</SPAN>label<SPAN class="op">(</SPAN><SPAN class="str">&quot;Background Alpha=%.2f&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_pattern_alpha<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">virtual</SPAN> ~the_application<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">delete</SPAN> <SPAN class="op">[</SPAN><SPAN class="op">]</SPAN> m_pattern<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">void</SPAN> create_star<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> xc<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> yc<SPAN class="op">,</SPAN>
+                     <SPAN class="kw1">double</SPAN> r1<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> r2<SPAN class="op">,</SPAN> 
+                     <SPAN class="kw1">unsigned</SPAN> n<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> start_angle <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        m_ps<SPAN class="op">.</SPAN>remove_all<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> i<SPAN class="op">;</SPAN>
+        start_angle <SPAN class="op">*=</SPAN> agg::<A href="../__code/include/agg_basics.h.html#pi">pi</A> <SPAN class="op">/</SPAN> <SPAN class="num">180</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;</SPAN> n<SPAN class="op">;</SPAN> i<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">double</SPAN> a <SPAN class="op">=</SPAN> agg::<A href="../__code/include/agg_basics.h.html#pi">pi</A> <SPAN class="op">*</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">*</SPAN> i <SPAN class="op">/</SPAN> n <SPAN class="op">-</SPAN> agg::<A href="../__code/include/agg_basics.h.html#pi">pi</A> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">double</SPAN> dx <SPAN class="op">=</SPAN> cos<SPAN class="op">(</SPAN>a <SPAN class="op">+</SPAN> start_angle<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">double</SPAN> dy <SPAN class="op">=</SPAN> sin<SPAN class="op">(</SPAN>a <SPAN class="op">+</SPAN> start_angle<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">&amp;</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                m_ps<SPAN class="op">.</SPAN>line_to<SPAN class="op">(</SPAN>xc <SPAN class="op">+</SPAN> dx <SPAN class="op">*</SPAN> r1<SPAN class="op">,</SPAN> yc <SPAN class="op">+</SPAN> dy <SPAN class="op">*</SPAN> r1<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="kw1">else</SPAN>
+            <SPAN class="op">{</SPAN>
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>i<SPAN class="op">)</SPAN> m_ps<SPAN class="op">.</SPAN>line_to<SPAN class="op">(</SPAN>xc <SPAN class="op">+</SPAN> dx <SPAN class="op">*</SPAN> r2<SPAN class="op">,</SPAN> yc <SPAN class="op">+</SPAN> dy <SPAN class="op">*</SPAN> r2<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">else</SPAN>  m_ps<SPAN class="op">.</SPAN>move_to<SPAN class="op">(</SPAN>xc <SPAN class="op">+</SPAN> dx <SPAN class="op">*</SPAN> r2<SPAN class="op">,</SPAN> yc <SPAN class="op">+</SPAN> dy <SPAN class="op">*</SPAN> r2<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+        m_ps<SPAN class="op">.</SPAN>close_polygon<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">void</SPAN> generate_pattern<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> size <SPAN class="op">=</SPAN> <SPAN class="kw1">unsigned</SPAN><SPAN class="op">(</SPAN>m_pattern_size<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        create_star<SPAN class="op">(</SPAN>m_pattern_size<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> 
+                    m_pattern_size<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> 
+                    m_pattern_size<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">.</SPAN><SPAN class="num">5</SPAN><SPAN class="op">,</SPAN> 
+                    m_pattern_size<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">6</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> 
+                    <SPAN class="num">6</SPAN><SPAN class="op">,</SPAN>
+                    m_pattern_angle<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        agg::<A href="../__code/include/agg_conv_smooth_poly1.h.html#conv_smooth_poly1_curve">conv_smooth_poly1_curve</A><SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_path_storage.h.html#path_storage">path_storage</A><SPAN class="op">&gt;</SPAN> smooth<SPAN class="op">(</SPAN>m_ps<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        agg::<A href="../__code/include/agg_conv_stroke.h.html#conv_stroke">conv_stroke</A><SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_conv_smooth_poly1.h.html#conv_smooth_poly1_curve">conv_smooth_poly1_curve</A><SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_path_storage.h.html#path_storage">path_storage</A><SPAN class="op">&gt;</SPAN> <SPAN class="op">&gt;</SPAN> stroke<SPAN class="op">(</SPAN>smooth<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        smooth<SPAN class="op">.</SPAN>smooth_value<SPAN class="op">(</SPAN><SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        smooth<SPAN class="op">.</SPAN>approximation_scale<SPAN class="op">(</SPAN><SPAN class="num">4</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        stroke<SPAN class="op">.</SPAN>width<SPAN class="op">(</SPAN>m_pattern_size<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">15</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">delete</SPAN> <SPAN class="op">[</SPAN><SPAN class="op">]</SPAN> m_pattern<SPAN class="op">;</SPAN>
+        m_pattern <SPAN class="op">=</SPAN> <SPAN class="kw1">new</SPAN> agg::<A href="../__code/include/agg_basics.h.html#int8u">int8u</A><SPAN class="op">[</SPAN>size <SPAN class="op">*</SPAN> size <SPAN class="op">*</SPAN> <SPAN class="num">4</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+        m_pattern_rbuf<SPAN class="op">.</SPAN>attach<SPAN class="op">(</SPAN>m_pattern<SPAN class="op">,</SPAN> size<SPAN class="op">,</SPAN> size<SPAN class="op">,</SPAN> size<SPAN class="op">*</SPAN><SPAN class="num">4</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <A href="../doc/basic_renderers/basic_renderers.agdoc.html#pixfmt">pixfmt</A> pixf<SPAN class="op">(</SPAN>m_pattern_rbuf<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        agg::<A href="../doc/basic_renderers/basic_renderers.agdoc.html#renderer_base">renderer_base</A><SPAN class="op">&lt;</SPAN><A href="../doc/basic_renderers/basic_renderers.agdoc.html#pixfmt">pixfmt</A><SPAN class="op">&gt;</SPAN> rb<SPAN class="op">(</SPAN>pixf<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        agg::<A href="../__code/include/agg_renderer_scanline.h.html#renderer_scanline_aa_solid">renderer_scanline_aa_solid</A><SPAN class="op">&lt;</SPAN>agg::<A href="../doc/basic_renderers/basic_renderers.agdoc.html#renderer_base">renderer_base</A><SPAN class="op">&lt;</SPAN><A href="../doc/basic_renderers/basic_renderers.agdoc.html#pixfmt">pixfmt</A><SPAN class="op">&gt;</SPAN> <SPAN class="op">&gt;</SPAN> rs<SPAN class="op">(</SPAN>rb<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        rb<SPAN class="op">.</SPAN>clear<SPAN class="op">(</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba_pre">rgba_pre</A><SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">4</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">1</SPAN><SPAN class="op">,</SPAN> m_pattern_alpha<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> <SPAN class="rem">// Pattern background color</SPAN>
+
+        m_ras<SPAN class="op">.</SPAN>add_path<SPAN class="op">(</SPAN>smooth<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        rs<SPAN class="op">.</SPAN>color<SPAN class="op">(</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">(</SPAN><SPAN class="num">110</SPAN><SPAN class="op">,</SPAN><SPAN class="num">130</SPAN><SPAN class="op">,</SPAN><SPAN class="num">50</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        agg::<A href="../__code/include/agg_renderer_scanline.h.html#render_scanlines">render_scanlines</A><SPAN class="op">(</SPAN>m_ras<SPAN class="op">,</SPAN> m_sl<SPAN class="op">,</SPAN> rs<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        m_ras<SPAN class="op">.</SPAN>add_path<SPAN class="op">(</SPAN>stroke<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        rs<SPAN class="op">.</SPAN>color<SPAN class="op">(</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN><SPAN class="num">50</SPAN><SPAN class="op">,</SPAN><SPAN class="num">80</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        agg::<A href="../__code/include/agg_renderer_scanline.h.html#render_scanlines">render_scanlines</A><SPAN class="op">(</SPAN>m_ras<SPAN class="op">,</SPAN> m_sl<SPAN class="op">,</SPAN> rs<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">virtual</SPAN> <SPAN class="kw1">void</SPAN> on_init<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        m_polygon_cx <SPAN class="op">=</SPAN> initial_width<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        m_polygon_cy <SPAN class="op">=</SPAN> initial_height<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        generate_pattern<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">virtual</SPAN> <SPAN class="kw1">void</SPAN> on_draw<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">double</SPAN> width <SPAN class="op">=</SPAN> rbuf_window<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">.</SPAN>width<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> height <SPAN class="op">=</SPAN> rbuf_window<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">.</SPAN>height<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    
+        <SPAN class="kw1">typedef</SPAN> agg::<A href="../doc/basic_renderers/basic_renderers.agdoc.html#renderer_base">renderer_base</A><SPAN class="op">&lt;</SPAN><A href="../doc/basic_renderers/basic_renderers.agdoc.html#pixfmt">pixfmt</A><SPAN class="op">&gt;</SPAN>     <A href="../doc/basic_renderers/basic_renderers.agdoc.html#renderer_base">renderer_base</A><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">typedef</SPAN> agg::<A href="../doc/basic_renderers/basic_renderers.agdoc.html#renderer_base">renderer_base</A><SPAN class="op">&lt;</SPAN>pixfmt_pre<SPAN class="op">&gt;</SPAN> renderer_base_pre<SPAN class="op">;</SPAN>
+       
+        <A href="../doc/basic_renderers/basic_renderers.agdoc.html#pixfmt">pixfmt</A>     pixf<SPAN class="op">(</SPAN>rbuf_window<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        pixfmt_pre pixf_pre<SPAN class="op">(</SPAN>rbuf_window<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <A href="../doc/basic_renderers/basic_renderers.agdoc.html#renderer_base">renderer_base</A>     rb<SPAN class="op">(</SPAN>pixf<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        renderer_base_pre rb_pre<SPAN class="op">(</SPAN>pixf_pre<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        rb<SPAN class="op">.</SPAN>clear<SPAN class="op">(</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba">rgba</A><SPAN class="op">(</SPAN><SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine">trans_affine</A> polygon_mtx<SPAN class="op">;</SPAN>
+
+        polygon_mtx <SPAN class="op">*=</SPAN> agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine_translation">trans_affine_translation</A><SPAN class="op">(</SPAN><SPAN class="op">-</SPAN>m_polygon_cx<SPAN class="op">,</SPAN> <SPAN class="op">-</SPAN>m_polygon_cy<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        polygon_mtx <SPAN class="op">*=</SPAN> agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine_rotation">trans_affine_rotation</A><SPAN class="op">(</SPAN>m_polygon_angle<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> agg::<A href="../__code/include/agg_basics.h.html#pi">pi</A> <SPAN class="op">/</SPAN> <SPAN class="num">180</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        polygon_mtx <SPAN class="op">*=</SPAN> agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine_scaling">trans_affine_scaling</A><SPAN class="op">(</SPAN>m_polygon_scale<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        polygon_mtx <SPAN class="op">*=</SPAN> agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine_translation">trans_affine_translation</A><SPAN class="op">(</SPAN>m_polygon_cx<SPAN class="op">,</SPAN> m_polygon_cy<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">double</SPAN> r <SPAN class="op">=</SPAN> initial_width<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">-</SPAN> <SPAN class="num">8</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        create_star<SPAN class="op">(</SPAN>m_polygon_cx<SPAN class="op">,</SPAN> m_polygon_cy<SPAN class="op">,</SPAN> r<SPAN class="op">,</SPAN> r <SPAN class="op">/</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">45</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">14</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        agg::<A href="../__code/include/agg_conv_transform.h.html#conv_transform">conv_transform</A><SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_path_storage.h.html#path_storage">path_storage</A><SPAN class="op">&gt;</SPAN> tr<SPAN class="op">(</SPAN>m_ps<SPAN class="op">,</SPAN> polygon_mtx<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">typedef</SPAN> agg::<A href="../__code/include/agg_image_accessors.h.html#wrap_mode_reflect_auto_pow2">wrap_mode_reflect_auto_pow2</A> wrap_x_type<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">typedef</SPAN> agg::<A href="../__code/include/agg_image_accessors.h.html#wrap_mode_reflect_auto_pow2">wrap_mode_reflect_auto_pow2</A> wrap_y_type<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">typedef</SPAN> agg::<A href="../__code/include/agg_image_accessors.h.html#image_accessor_wrap">image_accessor_wrap</A><SPAN class="op">&lt;</SPAN><A href="../doc/basic_renderers/basic_renderers.agdoc.html#pixfmt">pixfmt</A><SPAN class="op">,</SPAN> 
+                                         wrap_x_type<SPAN class="op">,</SPAN>
+                                         wrap_y_type<SPAN class="op">&gt;</SPAN> img_source_type<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">typedef</SPAN> agg::<A href="../__code/include/agg_span_pattern_rgba.h.html#span_pattern_rgba">span_pattern_rgba</A><SPAN class="op">&lt;</SPAN>img_source_type<SPAN class="op">&gt;</SPAN> span_gen_type<SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">unsigned</SPAN> offset_x <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> offset_y <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_tie_pattern<SPAN class="op">.</SPAN>status<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            offset_x <SPAN class="op">=</SPAN> <SPAN class="kw1">unsigned</SPAN><SPAN class="op">(</SPAN>width<SPAN class="op">-</SPAN>m_polygon_cx<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            offset_y <SPAN class="op">=</SPAN> <SPAN class="kw1">unsigned</SPAN><SPAN class="op">(</SPAN>height<SPAN class="op">-</SPAN>m_polygon_cy<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        agg::<A href="../__code/include/agg_span_allocator.h.html#span_allocator">span_allocator</A><SPAN class="op">&lt;</SPAN>color_type<SPAN class="op">&gt;</SPAN> sa<SPAN class="op">;</SPAN>
+        <A href="../doc/basic_renderers/basic_renderers.agdoc.html#pixfmt">pixfmt</A>          img_pixf<SPAN class="op">(</SPAN>m_pattern_rbuf<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        img_source_type img_src<SPAN class="op">(</SPAN>img_pixf<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        span_gen_type sg<SPAN class="op">(</SPAN>img_src<SPAN class="op">,</SPAN> offset_x<SPAN class="op">,</SPAN> offset_y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="rem">// Alpha is meaningful for RGB only because RGBA has its own</SPAN>
+        sg<SPAN class="op">.</SPAN>alpha<SPAN class="op">(</SPAN>span_gen_type::value_type<SPAN class="op">(</SPAN>m_pattern_alpha<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> <SPAN class="num">255</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> 
+
+        m_ras<SPAN class="op">.</SPAN>add_path<SPAN class="op">(</SPAN>tr<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        agg::<A href="../__code/include/agg_renderer_scanline.h.html#render_scanlines_aa">render_scanlines_aa</A><SPAN class="op">(</SPAN>m_ras<SPAN class="op">,</SPAN> m_sl<SPAN class="op">,</SPAN> rb_pre<SPAN class="op">,</SPAN> sa<SPAN class="op">,</SPAN> sg<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        agg::render_ctrl<SPAN class="op">(</SPAN>m_ras<SPAN class="op">,</SPAN> m_sl<SPAN class="op">,</SPAN> rb<SPAN class="op">,</SPAN> m_polygon_angle<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        agg::render_ctrl<SPAN class="op">(</SPAN>m_ras<SPAN class="op">,</SPAN> m_sl<SPAN class="op">,</SPAN> rb<SPAN class="op">,</SPAN> m_polygon_scale<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        agg::render_ctrl<SPAN class="op">(</SPAN>m_ras<SPAN class="op">,</SPAN> m_sl<SPAN class="op">,</SPAN> rb<SPAN class="op">,</SPAN> m_pattern_angle<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        agg::render_ctrl<SPAN class="op">(</SPAN>m_ras<SPAN class="op">,</SPAN> m_sl<SPAN class="op">,</SPAN> rb<SPAN class="op">,</SPAN> m_pattern_size<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        agg::render_ctrl<SPAN class="op">(</SPAN>m_ras<SPAN class="op">,</SPAN> m_sl<SPAN class="op">,</SPAN> rb<SPAN class="op">,</SPAN> m_pattern_alpha<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        agg::render_ctrl<SPAN class="op">(</SPAN>m_ras<SPAN class="op">,</SPAN> m_sl<SPAN class="op">,</SPAN> rb<SPAN class="op">,</SPAN> m_rotate_polygon<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        agg::render_ctrl<SPAN class="op">(</SPAN>m_ras<SPAN class="op">,</SPAN> m_sl<SPAN class="op">,</SPAN> rb<SPAN class="op">,</SPAN> m_rotate_pattern<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        agg::render_ctrl<SPAN class="op">(</SPAN>m_ras<SPAN class="op">,</SPAN> m_sl<SPAN class="op">,</SPAN> rb<SPAN class="op">,</SPAN> m_tie_pattern<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">virtual</SPAN> <SPAN class="kw1">void</SPAN> on_mouse_button_down<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> flags<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>flags <SPAN class="op">&amp;</SPAN> agg::mouse_left<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine">trans_affine</A> polygon_mtx<SPAN class="op">;</SPAN>
+
+            polygon_mtx <SPAN class="op">*=</SPAN> agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine_translation">trans_affine_translation</A><SPAN class="op">(</SPAN><SPAN class="op">-</SPAN>m_polygon_cx<SPAN class="op">,</SPAN> <SPAN class="op">-</SPAN>m_polygon_cy<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            polygon_mtx <SPAN class="op">*=</SPAN> agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine_rotation">trans_affine_rotation</A><SPAN class="op">(</SPAN>m_polygon_angle<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> agg::<A href="../__code/include/agg_basics.h.html#pi">pi</A> <SPAN class="op">/</SPAN> <SPAN class="num">180</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            polygon_mtx <SPAN class="op">*=</SPAN> agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine_scaling">trans_affine_scaling</A><SPAN class="op">(</SPAN>m_polygon_scale<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> m_polygon_scale<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            polygon_mtx <SPAN class="op">*=</SPAN> agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine_translation">trans_affine_translation</A><SPAN class="op">(</SPAN>m_polygon_cx<SPAN class="op">,</SPAN> m_polygon_cy<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">double</SPAN> r <SPAN class="op">=</SPAN> initial_width<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">-</SPAN> <SPAN class="num">8</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+            create_star<SPAN class="op">(</SPAN>m_polygon_cx<SPAN class="op">,</SPAN> m_polygon_cy<SPAN class="op">,</SPAN> r<SPAN class="op">,</SPAN> r <SPAN class="op">/</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">45</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">14</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+            agg::<A href="../__code/include/agg_conv_transform.h.html#conv_transform">conv_transform</A><SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_path_storage.h.html#path_storage">path_storage</A><SPAN class="op">&gt;</SPAN> tr<SPAN class="op">(</SPAN>m_ps<SPAN class="op">,</SPAN> polygon_mtx<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            m_ras<SPAN class="op">.</SPAN>add_path<SPAN class="op">(</SPAN>tr<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_ras<SPAN class="op">.</SPAN>hit_test<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                m_dx <SPAN class="op">=</SPAN> x <SPAN class="op">-</SPAN> m_polygon_cx<SPAN class="op">;</SPAN>
+                m_dy <SPAN class="op">=</SPAN> y <SPAN class="op">-</SPAN> m_polygon_cy<SPAN class="op">;</SPAN>
+                m_flag <SPAN class="op">=</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">virtual</SPAN> <SPAN class="kw1">void</SPAN> on_mouse_move<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> flags<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>flags <SPAN class="op">&amp;</SPAN> agg::mouse_left<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_flag<SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                m_polygon_cx <SPAN class="op">=</SPAN> x <SPAN class="op">-</SPAN> m_dx<SPAN class="op">;</SPAN>
+                m_polygon_cy <SPAN class="op">=</SPAN> y <SPAN class="op">-</SPAN> m_dy<SPAN class="op">;</SPAN>
+                force_redraw<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">else</SPAN>
+        <SPAN class="op">{</SPAN>
+            on_mouse_button_up<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> y<SPAN class="op">,</SPAN> flags<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">virtual</SPAN> <SPAN class="kw1">void</SPAN> on_mouse_button_up<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> flags<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        m_flag <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">virtual</SPAN> <SPAN class="kw1">void</SPAN> on_ctrl_change<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> 
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_rotate_polygon<SPAN class="op">.</SPAN>status<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">||</SPAN> m_rotate_pattern<SPAN class="op">.</SPAN>status<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            wait_mode<SPAN class="op">(</SPAN><SPAN class="kw1">false</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">else</SPAN>
+        <SPAN class="op">{</SPAN>
+            wait_mode<SPAN class="op">(</SPAN><SPAN class="kw1">true</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        generate_pattern<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        force_redraw<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">virtual</SPAN> <SPAN class="kw1">void</SPAN> on_idle<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> 
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">bool</SPAN> redraw <SPAN class="op">=</SPAN> <SPAN class="kw1">false</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_rotate_polygon<SPAN class="op">.</SPAN>status<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            m_polygon_angle<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN>m_polygon_angle<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">5</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_polygon_angle<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">&gt;=</SPAN> <SPAN class="num">180</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> 
+            <SPAN class="op">{</SPAN>
+                m_polygon_angle<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN>m_polygon_angle<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">-</SPAN> <SPAN class="num">360</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            redraw <SPAN class="op">=</SPAN> <SPAN class="kw1">true</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_rotate_pattern<SPAN class="op">.</SPAN>status<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            m_pattern_angle<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN>m_pattern_angle<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">-</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">5</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_pattern_angle<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">&lt;=</SPAN> <SPAN class="op">-</SPAN><SPAN class="num">180</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> 
+            <SPAN class="op">{</SPAN>
+                m_pattern_angle<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN>m_pattern_angle<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> <SPAN class="num">360</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            generate_pattern<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            redraw <SPAN class="op">=</SPAN> <SPAN class="kw1">true</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>redraw<SPAN class="op">)</SPAN> force_redraw<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="op">}</SPAN>
+
+
+<SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+
+
+
+<SPAN class="kw1">int</SPAN> agg_main<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> argc<SPAN class="op">,</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN> argv<SPAN class="op">[</SPAN><SPAN class="op">]</SPAN><SPAN class="op">)</SPAN>
+<SPAN class="op">{</SPAN>
+    the_application app<SPAN class="op">(</SPAN>pix_format<SPAN class="op">,</SPAN> flip_y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    app<SPAN class="op">.</SPAN>caption<SPAN class="op">(</SPAN><SPAN class="str">&quot;AGG Example: Pattern Filling&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>app<SPAN class="op">.</SPAN>init<SPAN class="op">(</SPAN><SPAN class="num">640</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">480</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">return</SPAN> app<SPAN class="op">.</SPAN>run<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+    <SPAN class="kw1">return</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+<SPAN class="op">}</SPAN>
+
+
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT><TABLE width="640px" bgcolor="#583927" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0">
+<TR><TD><CENTER><SPAN class="authors">
+Copyright <SPAN class="larger">&#169;</SPAN> 2002-2006
+<A href="../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+<TR><TD><CENTER><SPAN class="authors">
+Web Design and Programming
+<A href="../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+</TABLE>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+</HTML>

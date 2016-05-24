@@ -1,0 +1,906 @@
+<HTML><HEAD><TITLE>Anti-Grain Geometry - </TITLE>
+<META http-equiv="Content-Type" content="text/html"/>
+<LINK rel="stylesheet" type="text/css" href="../../agg.styles.css"/>
+</HEAD>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE><SPAN class="rem">//----------------------------------------------------------------------------</SPAN>
+<SPAN class="rem">// Anti-Grain Geometry - Version 2.3</SPAN>
+<SPAN class="rem">// Copyright (C) 2002-2005 Maxim Shemanarev (http://www.antigrain.com)</SPAN>
+<SPAN class="rem">//</SPAN>
+<SPAN class="rem">// Permission to copy, use, modify, sell and distribute this software </SPAN>
+<SPAN class="rem">// is granted provided this copyright notice appears in all copies. </SPAN>
+<SPAN class="rem">// This software is provided &quot;as is&quot; without express or implied</SPAN>
+<SPAN class="rem">// warranty, and with no claim as to its suitability for any purpose.</SPAN>
+<SPAN class="rem">//</SPAN>
+<SPAN class="rem">//----------------------------------------------------------------------------</SPAN>
+<SPAN class="rem">// Contact: mcseem@antigrain.com</SPAN>
+<SPAN class="rem">//          mcseemagg@yahoo.com</SPAN>
+<SPAN class="rem">//          http://www.antigrain.com</SPAN>
+<SPAN class="rem">//----------------------------------------------------------------------------</SPAN>
+<SPAN class="rem">//</SPAN>
+<SPAN class="rem">// SVG parser.</SPAN>
+<SPAN class="rem">//</SPAN>
+<SPAN class="rem">//----------------------------------------------------------------------------</SPAN>
+
+<SPAN class="kw2">#include</SPAN> <SPAN class="op">&lt;</SPAN>stdio<SPAN class="op">.</SPAN>h<SPAN class="op">&gt;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="op">&lt;</SPAN>string<SPAN class="op">.</SPAN>h<SPAN class="op">&gt;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="op">&lt;</SPAN>ctype<SPAN class="op">.</SPAN>h<SPAN class="op">&gt;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;agg_svg_parser.h&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;expat.h&quot;</SPAN>
+
+<SPAN class="kw1">namespace</SPAN> agg
+<SPAN class="op">{</SPAN>
+<SPAN class="kw1">namespace</SPAN> svg
+<SPAN class="op">{</SPAN>
+    <SPAN class="kw1">struct</SPAN> named_color
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">char</SPAN>  name<SPAN class="op">[</SPAN><SPAN class="num">22</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+        <A href="../../__code/include/agg_basics.h.html#int8u">int8u</A> r<SPAN class="op">,</SPAN> g<SPAN class="op">,</SPAN> b<SPAN class="op">,</SPAN> a<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+    named_color colors<SPAN class="op">[</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> 
+    <SPAN class="op">{</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;aliceblue&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">240</SPAN><SPAN class="op">,</SPAN><SPAN class="num">248</SPAN><SPAN class="op">,</SPAN><SPAN class="num">255</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;antiquewhite&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">250</SPAN><SPAN class="op">,</SPAN><SPAN class="num">235</SPAN><SPAN class="op">,</SPAN><SPAN class="num">215</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;aqua&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN><SPAN class="num">255</SPAN><SPAN class="op">,</SPAN><SPAN class="num">255</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;aquamarine&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">127</SPAN><SPAN class="op">,</SPAN><SPAN class="num">255</SPAN><SPAN class="op">,</SPAN><SPAN class="num">212</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;azure&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">240</SPAN><SPAN class="op">,</SPAN><SPAN class="num">255</SPAN><SPAN class="op">,</SPAN><SPAN class="num">255</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;beige&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">245</SPAN><SPAN class="op">,</SPAN><SPAN class="num">245</SPAN><SPAN class="op">,</SPAN><SPAN class="num">220</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;bisque&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">255</SPAN><SPAN class="op">,</SPAN><SPAN class="num">228</SPAN><SPAN class="op">,</SPAN><SPAN class="num">196</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;black&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;blanchedalmond&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">255</SPAN><SPAN class="op">,</SPAN><SPAN class="num">235</SPAN><SPAN class="op">,</SPAN><SPAN class="num">205</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;blue&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN><SPAN class="num">255</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;blueviolet&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">138</SPAN><SPAN class="op">,</SPAN><SPAN class="num">43</SPAN><SPAN class="op">,</SPAN><SPAN class="num">226</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;brown&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">165</SPAN><SPAN class="op">,</SPAN><SPAN class="num">42</SPAN><SPAN class="op">,</SPAN><SPAN class="num">42</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;burlywood&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">222</SPAN><SPAN class="op">,</SPAN><SPAN class="num">184</SPAN><SPAN class="op">,</SPAN><SPAN class="num">135</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;cadetblue&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">95</SPAN><SPAN class="op">,</SPAN><SPAN class="num">158</SPAN><SPAN class="op">,</SPAN><SPAN class="num">160</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;chartreuse&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">127</SPAN><SPAN class="op">,</SPAN><SPAN class="num">255</SPAN><SPAN class="op">,</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;chocolate&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">210</SPAN><SPAN class="op">,</SPAN><SPAN class="num">105</SPAN><SPAN class="op">,</SPAN><SPAN class="num">30</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;coral&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">255</SPAN><SPAN class="op">,</SPAN><SPAN class="num">127</SPAN><SPAN class="op">,</SPAN><SPAN class="num">80</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;cornflowerblue&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">100</SPAN><SPAN class="op">,</SPAN><SPAN class="num">149</SPAN><SPAN class="op">,</SPAN><SPAN class="num">237</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;cornsilk&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">255</SPAN><SPAN class="op">,</SPAN><SPAN class="num">248</SPAN><SPAN class="op">,</SPAN><SPAN class="num">220</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;crimson&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">220</SPAN><SPAN class="op">,</SPAN><SPAN class="num">20</SPAN><SPAN class="op">,</SPAN><SPAN class="num">60</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;cyan&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN><SPAN class="num">255</SPAN><SPAN class="op">,</SPAN><SPAN class="num">255</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;darkblue&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN><SPAN class="num">139</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;darkcyan&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN><SPAN class="num">139</SPAN><SPAN class="op">,</SPAN><SPAN class="num">139</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;darkgoldenrod&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">184</SPAN><SPAN class="op">,</SPAN><SPAN class="num">134</SPAN><SPAN class="op">,</SPAN><SPAN class="num">11</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;darkgray&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">169</SPAN><SPAN class="op">,</SPAN><SPAN class="num">169</SPAN><SPAN class="op">,</SPAN><SPAN class="num">169</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;darkgreen&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN><SPAN class="num">100</SPAN><SPAN class="op">,</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;darkgrey&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">169</SPAN><SPAN class="op">,</SPAN><SPAN class="num">169</SPAN><SPAN class="op">,</SPAN><SPAN class="num">169</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;darkkhaki&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">189</SPAN><SPAN class="op">,</SPAN><SPAN class="num">183</SPAN><SPAN class="op">,</SPAN><SPAN class="num">107</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;darkmagenta&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">139</SPAN><SPAN class="op">,</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN><SPAN class="num">139</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;darkolivegreen&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">85</SPAN><SPAN class="op">,</SPAN><SPAN class="num">107</SPAN><SPAN class="op">,</SPAN><SPAN class="num">47</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;darkorange&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">255</SPAN><SPAN class="op">,</SPAN><SPAN class="num">140</SPAN><SPAN class="op">,</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;darkorchid&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">153</SPAN><SPAN class="op">,</SPAN><SPAN class="num">50</SPAN><SPAN class="op">,</SPAN><SPAN class="num">204</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;darkred&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">139</SPAN><SPAN class="op">,</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;darksalmon&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">233</SPAN><SPAN class="op">,</SPAN><SPAN class="num">150</SPAN><SPAN class="op">,</SPAN><SPAN class="num">122</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;darkseagreen&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">143</SPAN><SPAN class="op">,</SPAN><SPAN class="num">188</SPAN><SPAN class="op">,</SPAN><SPAN class="num">143</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;darkslateblue&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">72</SPAN><SPAN class="op">,</SPAN><SPAN class="num">61</SPAN><SPAN class="op">,</SPAN><SPAN class="num">139</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;darkslategray&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">47</SPAN><SPAN class="op">,</SPAN><SPAN class="num">79</SPAN><SPAN class="op">,</SPAN><SPAN class="num">79</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;darkslategrey&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">47</SPAN><SPAN class="op">,</SPAN><SPAN class="num">79</SPAN><SPAN class="op">,</SPAN><SPAN class="num">79</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;darkturquoise&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN><SPAN class="num">206</SPAN><SPAN class="op">,</SPAN><SPAN class="num">209</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;darkviolet&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">148</SPAN><SPAN class="op">,</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN><SPAN class="num">211</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;deeppink&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">255</SPAN><SPAN class="op">,</SPAN><SPAN class="num">20</SPAN><SPAN class="op">,</SPAN><SPAN class="num">147</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;deepskyblue&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN><SPAN class="num">191</SPAN><SPAN class="op">,</SPAN><SPAN class="num">255</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;dimgray&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">105</SPAN><SPAN class="op">,</SPAN><SPAN class="num">105</SPAN><SPAN class="op">,</SPAN><SPAN class="num">105</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;dimgrey&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">105</SPAN><SPAN class="op">,</SPAN><SPAN class="num">105</SPAN><SPAN class="op">,</SPAN><SPAN class="num">105</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;dodgerblue&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">30</SPAN><SPAN class="op">,</SPAN><SPAN class="num">144</SPAN><SPAN class="op">,</SPAN><SPAN class="num">255</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;firebrick&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">178</SPAN><SPAN class="op">,</SPAN><SPAN class="num">34</SPAN><SPAN class="op">,</SPAN><SPAN class="num">34</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;floralwhite&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">255</SPAN><SPAN class="op">,</SPAN><SPAN class="num">250</SPAN><SPAN class="op">,</SPAN><SPAN class="num">240</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;forestgreen&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">34</SPAN><SPAN class="op">,</SPAN><SPAN class="num">139</SPAN><SPAN class="op">,</SPAN><SPAN class="num">34</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;fuchsia&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">255</SPAN><SPAN class="op">,</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN><SPAN class="num">255</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;gainsboro&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">220</SPAN><SPAN class="op">,</SPAN><SPAN class="num">220</SPAN><SPAN class="op">,</SPAN><SPAN class="num">220</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;ghostwhite&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">248</SPAN><SPAN class="op">,</SPAN><SPAN class="num">248</SPAN><SPAN class="op">,</SPAN><SPAN class="num">255</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;gold&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">255</SPAN><SPAN class="op">,</SPAN><SPAN class="num">215</SPAN><SPAN class="op">,</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;goldenrod&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">218</SPAN><SPAN class="op">,</SPAN><SPAN class="num">165</SPAN><SPAN class="op">,</SPAN><SPAN class="num">32</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;gray&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">128</SPAN><SPAN class="op">,</SPAN><SPAN class="num">128</SPAN><SPAN class="op">,</SPAN><SPAN class="num">128</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;green&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN><SPAN class="num">128</SPAN><SPAN class="op">,</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;greenyellow&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">173</SPAN><SPAN class="op">,</SPAN><SPAN class="num">255</SPAN><SPAN class="op">,</SPAN><SPAN class="num">47</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;grey&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">128</SPAN><SPAN class="op">,</SPAN><SPAN class="num">128</SPAN><SPAN class="op">,</SPAN><SPAN class="num">128</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;honeydew&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">240</SPAN><SPAN class="op">,</SPAN><SPAN class="num">255</SPAN><SPAN class="op">,</SPAN><SPAN class="num">240</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;hotpink&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">255</SPAN><SPAN class="op">,</SPAN><SPAN class="num">105</SPAN><SPAN class="op">,</SPAN><SPAN class="num">180</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;indianred&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">205</SPAN><SPAN class="op">,</SPAN><SPAN class="num">92</SPAN><SPAN class="op">,</SPAN><SPAN class="num">92</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;indigo&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">75</SPAN><SPAN class="op">,</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN><SPAN class="num">130</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;ivory&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">255</SPAN><SPAN class="op">,</SPAN><SPAN class="num">255</SPAN><SPAN class="op">,</SPAN><SPAN class="num">240</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;khaki&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">240</SPAN><SPAN class="op">,</SPAN><SPAN class="num">230</SPAN><SPAN class="op">,</SPAN><SPAN class="num">140</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;lavender&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">230</SPAN><SPAN class="op">,</SPAN><SPAN class="num">230</SPAN><SPAN class="op">,</SPAN><SPAN class="num">250</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;lavenderblush&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">255</SPAN><SPAN class="op">,</SPAN><SPAN class="num">240</SPAN><SPAN class="op">,</SPAN><SPAN class="num">245</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;lawngreen&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">124</SPAN><SPAN class="op">,</SPAN><SPAN class="num">252</SPAN><SPAN class="op">,</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;lemonchiffon&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">255</SPAN><SPAN class="op">,</SPAN><SPAN class="num">250</SPAN><SPAN class="op">,</SPAN><SPAN class="num">205</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;lightblue&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">173</SPAN><SPAN class="op">,</SPAN><SPAN class="num">216</SPAN><SPAN class="op">,</SPAN><SPAN class="num">230</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;lightcoral&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">240</SPAN><SPAN class="op">,</SPAN><SPAN class="num">128</SPAN><SPAN class="op">,</SPAN><SPAN class="num">128</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;lightcyan&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">224</SPAN><SPAN class="op">,</SPAN><SPAN class="num">255</SPAN><SPAN class="op">,</SPAN><SPAN class="num">255</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;lightgoldenrodyellow&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">250</SPAN><SPAN class="op">,</SPAN><SPAN class="num">250</SPAN><SPAN class="op">,</SPAN><SPAN class="num">210</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;lightgray&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">211</SPAN><SPAN class="op">,</SPAN><SPAN class="num">211</SPAN><SPAN class="op">,</SPAN><SPAN class="num">211</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;lightgreen&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">144</SPAN><SPAN class="op">,</SPAN><SPAN class="num">238</SPAN><SPAN class="op">,</SPAN><SPAN class="num">144</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;lightgrey&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">211</SPAN><SPAN class="op">,</SPAN><SPAN class="num">211</SPAN><SPAN class="op">,</SPAN><SPAN class="num">211</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;lightpink&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">255</SPAN><SPAN class="op">,</SPAN><SPAN class="num">182</SPAN><SPAN class="op">,</SPAN><SPAN class="num">193</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;lightsalmon&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">255</SPAN><SPAN class="op">,</SPAN><SPAN class="num">160</SPAN><SPAN class="op">,</SPAN><SPAN class="num">122</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;lightseagreen&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">32</SPAN><SPAN class="op">,</SPAN><SPAN class="num">178</SPAN><SPAN class="op">,</SPAN><SPAN class="num">170</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;lightskyblue&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">135</SPAN><SPAN class="op">,</SPAN><SPAN class="num">206</SPAN><SPAN class="op">,</SPAN><SPAN class="num">250</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;lightslategray&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">119</SPAN><SPAN class="op">,</SPAN><SPAN class="num">136</SPAN><SPAN class="op">,</SPAN><SPAN class="num">153</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;lightslategrey&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">119</SPAN><SPAN class="op">,</SPAN><SPAN class="num">136</SPAN><SPAN class="op">,</SPAN><SPAN class="num">153</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;lightsteelblue&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">176</SPAN><SPAN class="op">,</SPAN><SPAN class="num">196</SPAN><SPAN class="op">,</SPAN><SPAN class="num">222</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;lightyellow&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">255</SPAN><SPAN class="op">,</SPAN><SPAN class="num">255</SPAN><SPAN class="op">,</SPAN><SPAN class="num">224</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;lime&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN><SPAN class="num">255</SPAN><SPAN class="op">,</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;limegreen&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">50</SPAN><SPAN class="op">,</SPAN><SPAN class="num">205</SPAN><SPAN class="op">,</SPAN><SPAN class="num">50</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;linen&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">250</SPAN><SPAN class="op">,</SPAN><SPAN class="num">240</SPAN><SPAN class="op">,</SPAN><SPAN class="num">230</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;magenta&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">255</SPAN><SPAN class="op">,</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN><SPAN class="num">255</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;maroon&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">128</SPAN><SPAN class="op">,</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;mediumaquamarine&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">102</SPAN><SPAN class="op">,</SPAN><SPAN class="num">205</SPAN><SPAN class="op">,</SPAN><SPAN class="num">170</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;mediumblue&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN><SPAN class="num">205</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;mediumorchid&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">186</SPAN><SPAN class="op">,</SPAN><SPAN class="num">85</SPAN><SPAN class="op">,</SPAN><SPAN class="num">211</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;mediumpurple&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">147</SPAN><SPAN class="op">,</SPAN><SPAN class="num">112</SPAN><SPAN class="op">,</SPAN><SPAN class="num">219</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;mediumseagreen&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">60</SPAN><SPAN class="op">,</SPAN><SPAN class="num">179</SPAN><SPAN class="op">,</SPAN><SPAN class="num">113</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;mediumslateblue&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">123</SPAN><SPAN class="op">,</SPAN><SPAN class="num">104</SPAN><SPAN class="op">,</SPAN><SPAN class="num">238</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;mediumspringgreen&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN><SPAN class="num">250</SPAN><SPAN class="op">,</SPAN><SPAN class="num">154</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;mediumturquoise&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">72</SPAN><SPAN class="op">,</SPAN><SPAN class="num">209</SPAN><SPAN class="op">,</SPAN><SPAN class="num">204</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;mediumvioletred&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">199</SPAN><SPAN class="op">,</SPAN><SPAN class="num">21</SPAN><SPAN class="op">,</SPAN><SPAN class="num">133</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;midnightblue&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">25</SPAN><SPAN class="op">,</SPAN><SPAN class="num">25</SPAN><SPAN class="op">,</SPAN><SPAN class="num">112</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;mintcream&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">245</SPAN><SPAN class="op">,</SPAN><SPAN class="num">255</SPAN><SPAN class="op">,</SPAN><SPAN class="num">250</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;mistyrose&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">255</SPAN><SPAN class="op">,</SPAN><SPAN class="num">228</SPAN><SPAN class="op">,</SPAN><SPAN class="num">225</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;moccasin&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">255</SPAN><SPAN class="op">,</SPAN><SPAN class="num">228</SPAN><SPAN class="op">,</SPAN><SPAN class="num">181</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;navajowhite&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">255</SPAN><SPAN class="op">,</SPAN><SPAN class="num">222</SPAN><SPAN class="op">,</SPAN><SPAN class="num">173</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;navy&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN><SPAN class="num">128</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;oldlace&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">253</SPAN><SPAN class="op">,</SPAN><SPAN class="num">245</SPAN><SPAN class="op">,</SPAN><SPAN class="num">230</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;olive&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">128</SPAN><SPAN class="op">,</SPAN><SPAN class="num">128</SPAN><SPAN class="op">,</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;olivedrab&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">107</SPAN><SPAN class="op">,</SPAN><SPAN class="num">142</SPAN><SPAN class="op">,</SPAN><SPAN class="num">35</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;orange&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">255</SPAN><SPAN class="op">,</SPAN><SPAN class="num">165</SPAN><SPAN class="op">,</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;orangered&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">255</SPAN><SPAN class="op">,</SPAN><SPAN class="num">69</SPAN><SPAN class="op">,</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;orchid&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">218</SPAN><SPAN class="op">,</SPAN><SPAN class="num">112</SPAN><SPAN class="op">,</SPAN><SPAN class="num">214</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;palegoldenrod&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">238</SPAN><SPAN class="op">,</SPAN><SPAN class="num">232</SPAN><SPAN class="op">,</SPAN><SPAN class="num">170</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;palegreen&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">152</SPAN><SPAN class="op">,</SPAN><SPAN class="num">251</SPAN><SPAN class="op">,</SPAN><SPAN class="num">152</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;paleturquoise&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">175</SPAN><SPAN class="op">,</SPAN><SPAN class="num">238</SPAN><SPAN class="op">,</SPAN><SPAN class="num">238</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;palevioletred&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">219</SPAN><SPAN class="op">,</SPAN><SPAN class="num">112</SPAN><SPAN class="op">,</SPAN><SPAN class="num">147</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;papayawhip&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">255</SPAN><SPAN class="op">,</SPAN><SPAN class="num">239</SPAN><SPAN class="op">,</SPAN><SPAN class="num">213</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;peachpuff&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">255</SPAN><SPAN class="op">,</SPAN><SPAN class="num">218</SPAN><SPAN class="op">,</SPAN><SPAN class="num">185</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;peru&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">205</SPAN><SPAN class="op">,</SPAN><SPAN class="num">133</SPAN><SPAN class="op">,</SPAN><SPAN class="num">63</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;pink&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">255</SPAN><SPAN class="op">,</SPAN><SPAN class="num">192</SPAN><SPAN class="op">,</SPAN><SPAN class="num">203</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;plum&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">221</SPAN><SPAN class="op">,</SPAN><SPAN class="num">160</SPAN><SPAN class="op">,</SPAN><SPAN class="num">221</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;powderblue&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">176</SPAN><SPAN class="op">,</SPAN><SPAN class="num">224</SPAN><SPAN class="op">,</SPAN><SPAN class="num">230</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;purple&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">128</SPAN><SPAN class="op">,</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN><SPAN class="num">128</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;red&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">255</SPAN><SPAN class="op">,</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;rosybrown&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">188</SPAN><SPAN class="op">,</SPAN><SPAN class="num">143</SPAN><SPAN class="op">,</SPAN><SPAN class="num">143</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;royalblue&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">65</SPAN><SPAN class="op">,</SPAN><SPAN class="num">105</SPAN><SPAN class="op">,</SPAN><SPAN class="num">225</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;saddlebrown&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">139</SPAN><SPAN class="op">,</SPAN><SPAN class="num">69</SPAN><SPAN class="op">,</SPAN><SPAN class="num">19</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;salmon&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">250</SPAN><SPAN class="op">,</SPAN><SPAN class="num">128</SPAN><SPAN class="op">,</SPAN><SPAN class="num">114</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;sandybrown&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">244</SPAN><SPAN class="op">,</SPAN><SPAN class="num">164</SPAN><SPAN class="op">,</SPAN><SPAN class="num">96</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;seagreen&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">46</SPAN><SPAN class="op">,</SPAN><SPAN class="num">139</SPAN><SPAN class="op">,</SPAN><SPAN class="num">87</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;seashell&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">255</SPAN><SPAN class="op">,</SPAN><SPAN class="num">245</SPAN><SPAN class="op">,</SPAN><SPAN class="num">238</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;sienna&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">160</SPAN><SPAN class="op">,</SPAN><SPAN class="num">82</SPAN><SPAN class="op">,</SPAN><SPAN class="num">45</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;silver&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">192</SPAN><SPAN class="op">,</SPAN><SPAN class="num">192</SPAN><SPAN class="op">,</SPAN><SPAN class="num">192</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;skyblue&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">135</SPAN><SPAN class="op">,</SPAN><SPAN class="num">206</SPAN><SPAN class="op">,</SPAN><SPAN class="num">235</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;slateblue&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">106</SPAN><SPAN class="op">,</SPAN><SPAN class="num">90</SPAN><SPAN class="op">,</SPAN><SPAN class="num">205</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;slategray&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">112</SPAN><SPAN class="op">,</SPAN><SPAN class="num">128</SPAN><SPAN class="op">,</SPAN><SPAN class="num">144</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;slategrey&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">112</SPAN><SPAN class="op">,</SPAN><SPAN class="num">128</SPAN><SPAN class="op">,</SPAN><SPAN class="num">144</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;snow&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">255</SPAN><SPAN class="op">,</SPAN><SPAN class="num">250</SPAN><SPAN class="op">,</SPAN><SPAN class="num">250</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;springgreen&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN><SPAN class="num">255</SPAN><SPAN class="op">,</SPAN><SPAN class="num">127</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;steelblue&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">70</SPAN><SPAN class="op">,</SPAN><SPAN class="num">130</SPAN><SPAN class="op">,</SPAN><SPAN class="num">180</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;tan&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">210</SPAN><SPAN class="op">,</SPAN><SPAN class="num">180</SPAN><SPAN class="op">,</SPAN><SPAN class="num">140</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;teal&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN><SPAN class="num">128</SPAN><SPAN class="op">,</SPAN><SPAN class="num">128</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;thistle&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">216</SPAN><SPAN class="op">,</SPAN><SPAN class="num">191</SPAN><SPAN class="op">,</SPAN><SPAN class="num">216</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;tomato&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">255</SPAN><SPAN class="op">,</SPAN><SPAN class="num">99</SPAN><SPAN class="op">,</SPAN><SPAN class="num">71</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;turquoise&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">64</SPAN><SPAN class="op">,</SPAN><SPAN class="num">224</SPAN><SPAN class="op">,</SPAN><SPAN class="num">208</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;violet&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">238</SPAN><SPAN class="op">,</SPAN><SPAN class="num">130</SPAN><SPAN class="op">,</SPAN><SPAN class="num">238</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;wheat&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">245</SPAN><SPAN class="op">,</SPAN><SPAN class="num">222</SPAN><SPAN class="op">,</SPAN><SPAN class="num">179</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;white&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">255</SPAN><SPAN class="op">,</SPAN><SPAN class="num">255</SPAN><SPAN class="op">,</SPAN><SPAN class="num">255</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;whitesmoke&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">245</SPAN><SPAN class="op">,</SPAN><SPAN class="num">245</SPAN><SPAN class="op">,</SPAN><SPAN class="num">245</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;yellow&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">255</SPAN><SPAN class="op">,</SPAN><SPAN class="num">255</SPAN><SPAN class="op">,</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;yellowgreen&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">154</SPAN><SPAN class="op">,</SPAN><SPAN class="num">205</SPAN><SPAN class="op">,</SPAN><SPAN class="num">50</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">,</SPAN>
+        <SPAN class="op">{</SPAN> <SPAN class="str">&quot;zzzzzzzzzzz&quot;</SPAN><SPAN class="op">,</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN> <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN> 
+
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    parser::~parser<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">delete</SPAN> <SPAN class="op">[</SPAN><SPAN class="op">]</SPAN> m_attr_value<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">delete</SPAN> <SPAN class="op">[</SPAN><SPAN class="op">]</SPAN> m_attr_name<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">delete</SPAN> <SPAN class="op">[</SPAN><SPAN class="op">]</SPAN> m_buf<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">delete</SPAN> <SPAN class="op">[</SPAN><SPAN class="op">]</SPAN> m_title<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    parser::parser<SPAN class="op">(</SPAN>path_renderer<SPAN class="op">&amp;</SPAN> path<SPAN class="op">)</SPAN> :
+        m_path<SPAN class="op">(</SPAN>path<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_tokenizer<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_buf<SPAN class="op">(</SPAN><SPAN class="kw1">new</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">[</SPAN>buf_size<SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_title<SPAN class="op">(</SPAN><SPAN class="kw1">new</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">[</SPAN><SPAN class="num">256</SPAN><SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_title_len<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_title_flag<SPAN class="op">(</SPAN><SPAN class="kw1">false</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_path_flag<SPAN class="op">(</SPAN><SPAN class="kw1">false</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_attr_name<SPAN class="op">(</SPAN><SPAN class="kw1">new</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">[</SPAN><SPAN class="num">128</SPAN><SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_attr_value<SPAN class="op">(</SPAN><SPAN class="kw1">new</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">[</SPAN><SPAN class="num">1024</SPAN><SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_attr_name_len<SPAN class="op">(</SPAN><SPAN class="num">127</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_attr_value_len<SPAN class="op">(</SPAN><SPAN class="num">1023</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        m_title<SPAN class="op">[</SPAN><SPAN class="num">0</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">void</SPAN> parser::parse<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN> fname<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">char</SPAN> msg<SPAN class="op">[</SPAN><SPAN class="num">1024</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+	    XML_Parser p <SPAN class="op">=</SPAN> XML_ParserCreate<SPAN class="op">(</SPAN>NULL<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+	    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>p <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> 
+	    <SPAN class="op">{</SPAN>
+		    <SPAN class="kw1">throw</SPAN> exception<SPAN class="op">(</SPAN><SPAN class="str">&quot;Couldn&#039;t allocate memory for parser&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+	    <SPAN class="op">}</SPAN>
+
+        XML_SetUserData<SPAN class="op">(</SPAN>p<SPAN class="op">,</SPAN> <SPAN class="kw1">this</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+	    XML_SetElementHandler<SPAN class="op">(</SPAN>p<SPAN class="op">,</SPAN> start_element<SPAN class="op">,</SPAN> end_element<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+	    XML_SetCharacterDataHandler<SPAN class="op">(</SPAN>p<SPAN class="op">,</SPAN> content<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        FILE<SPAN class="op">*</SPAN> fd <SPAN class="op">=</SPAN> fopen<SPAN class="op">(</SPAN>fname<SPAN class="op">,</SPAN> <SPAN class="str">&quot;r&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>fd <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            sprintf<SPAN class="op">(</SPAN>msg<SPAN class="op">,</SPAN> <SPAN class="str">&quot;Couldn&#039;t open file %s&quot;</SPAN><SPAN class="op">,</SPAN> fname<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+		    <SPAN class="kw1">throw</SPAN> exception<SPAN class="op">(</SPAN>msg<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">bool</SPAN> done <SPAN class="op">=</SPAN> <SPAN class="kw1">false</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">do</SPAN>
+        <SPAN class="op">{</SPAN>
+            size_t len <SPAN class="op">=</SPAN> fread<SPAN class="op">(</SPAN>m_buf<SPAN class="op">,</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">,</SPAN> buf_size<SPAN class="op">,</SPAN> fd<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            done <SPAN class="op">=</SPAN> len <SPAN class="op">&lt;</SPAN> buf_size<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN><SPAN class="op">!</SPAN>XML_Parse<SPAN class="op">(</SPAN>p<SPAN class="op">,</SPAN> m_buf<SPAN class="op">,</SPAN> len<SPAN class="op">,</SPAN> done<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                sprintf<SPAN class="op">(</SPAN>msg<SPAN class="op">,</SPAN>
+                    <SPAN class="str">&quot;%s at line %d\n&quot;</SPAN><SPAN class="op">,</SPAN>
+                    XML_ErrorString<SPAN class="op">(</SPAN>XML_GetErrorCode<SPAN class="op">(</SPAN>p<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+                    XML_GetCurrentLineNumber<SPAN class="op">(</SPAN>p<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">throw</SPAN> exception<SPAN class="op">(</SPAN>msg<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN><SPAN class="op">!</SPAN>done<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        fclose<SPAN class="op">(</SPAN>fd<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        XML_ParserFree<SPAN class="op">(</SPAN>p<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN> ts <SPAN class="op">=</SPAN> m_title<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN><SPAN class="op">*</SPAN>ts<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN><SPAN class="op">*</SPAN>ts <SPAN class="op">&lt;</SPAN> <SPAN class="str">&#039; &#039;</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN>ts <SPAN class="op">=</SPAN> <SPAN class="str">&#039; &#039;</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">++</SPAN>ts<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">void</SPAN> parser::start_element<SPAN class="op">(</SPAN><SPAN class="kw1">void</SPAN><SPAN class="op">*</SPAN> data<SPAN class="op">,</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN> el<SPAN class="op">,</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN><SPAN class="op">*</SPAN> attr<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        parser<SPAN class="op">&amp;</SPAN> self <SPAN class="op">=</SPAN> <SPAN class="op">*</SPAN><SPAN class="op">(</SPAN>parser<SPAN class="op">*</SPAN><SPAN class="op">)</SPAN>data<SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>strcmp<SPAN class="op">(</SPAN>el<SPAN class="op">,</SPAN> <SPAN class="str">&quot;title&quot;</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            self<SPAN class="op">.</SPAN>m_title_flag <SPAN class="op">=</SPAN> <SPAN class="kw1">true</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">else</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>strcmp<SPAN class="op">(</SPAN>el<SPAN class="op">,</SPAN> <SPAN class="str">&quot;g&quot;</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            self<SPAN class="op">.</SPAN>m_path<SPAN class="op">.</SPAN>push_attr<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            self<SPAN class="op">.</SPAN>parse_attr<SPAN class="op">(</SPAN>attr<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">else</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>strcmp<SPAN class="op">(</SPAN>el<SPAN class="op">,</SPAN> <SPAN class="str">&quot;path&quot;</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>self<SPAN class="op">.</SPAN>m_path_flag<SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                <SPAN class="kw1">throw</SPAN> exception<SPAN class="op">(</SPAN><SPAN class="str">&quot;start_element: Nested path&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            self<SPAN class="op">.</SPAN>m_path<SPAN class="op">.</SPAN>begin_path<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            self<SPAN class="op">.</SPAN>parse_path<SPAN class="op">(</SPAN>attr<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            self<SPAN class="op">.</SPAN>m_path<SPAN class="op">.</SPAN>end_path<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            self<SPAN class="op">.</SPAN>m_path_flag <SPAN class="op">=</SPAN> <SPAN class="kw1">true</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">else</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>strcmp<SPAN class="op">(</SPAN>el<SPAN class="op">,</SPAN> <SPAN class="str">&quot;rect&quot;</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> 
+        <SPAN class="op">{</SPAN>
+            self<SPAN class="op">.</SPAN>parse_rect<SPAN class="op">(</SPAN>attr<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">else</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>strcmp<SPAN class="op">(</SPAN>el<SPAN class="op">,</SPAN> <SPAN class="str">&quot;line&quot;</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> 
+        <SPAN class="op">{</SPAN>
+            self<SPAN class="op">.</SPAN>parse_line<SPAN class="op">(</SPAN>attr<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">else</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>strcmp<SPAN class="op">(</SPAN>el<SPAN class="op">,</SPAN> <SPAN class="str">&quot;polyline&quot;</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> 
+        <SPAN class="op">{</SPAN>
+            self<SPAN class="op">.</SPAN>parse_poly<SPAN class="op">(</SPAN>attr<SPAN class="op">,</SPAN> <SPAN class="kw1">false</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">else</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>strcmp<SPAN class="op">(</SPAN>el<SPAN class="op">,</SPAN> <SPAN class="str">&quot;polygon&quot;</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> 
+        <SPAN class="op">{</SPAN>
+            self<SPAN class="op">.</SPAN>parse_poly<SPAN class="op">(</SPAN>attr<SPAN class="op">,</SPAN> <SPAN class="kw1">true</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="rem">//else</SPAN>
+        <SPAN class="rem">//if(strcmp(el, &quot;&lt;OTHER_ELEMENTS&gt;&quot;) == 0) </SPAN>
+        <SPAN class="rem">//{</SPAN>
+        <SPAN class="rem">//}</SPAN>
+        <SPAN class="rem">// . . .</SPAN>
+    <SPAN class="op">}</SPAN> 
+
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">void</SPAN> parser::end_element<SPAN class="op">(</SPAN><SPAN class="kw1">void</SPAN><SPAN class="op">*</SPAN> data<SPAN class="op">,</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN> el<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        parser<SPAN class="op">&amp;</SPAN> self <SPAN class="op">=</SPAN> <SPAN class="op">*</SPAN><SPAN class="op">(</SPAN>parser<SPAN class="op">*</SPAN><SPAN class="op">)</SPAN>data<SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>strcmp<SPAN class="op">(</SPAN>el<SPAN class="op">,</SPAN> <SPAN class="str">&quot;title&quot;</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            self<SPAN class="op">.</SPAN>m_title_flag <SPAN class="op">=</SPAN> <SPAN class="kw1">false</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">else</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>strcmp<SPAN class="op">(</SPAN>el<SPAN class="op">,</SPAN> <SPAN class="str">&quot;g&quot;</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            self<SPAN class="op">.</SPAN>m_path<SPAN class="op">.</SPAN>pop_attr<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">else</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>strcmp<SPAN class="op">(</SPAN>el<SPAN class="op">,</SPAN> <SPAN class="str">&quot;path&quot;</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            self<SPAN class="op">.</SPAN>m_path_flag <SPAN class="op">=</SPAN> <SPAN class="kw1">false</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="rem">//else</SPAN>
+        <SPAN class="rem">//if(strcmp(el, &quot;&lt;OTHER_ELEMENTS&gt;&quot;) == 0) </SPAN>
+        <SPAN class="rem">//{</SPAN>
+        <SPAN class="rem">//}</SPAN>
+        <SPAN class="rem">// . . .</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">void</SPAN> parser::content<SPAN class="op">(</SPAN><SPAN class="kw1">void</SPAN><SPAN class="op">*</SPAN> data<SPAN class="op">,</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN> s<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> len<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        parser<SPAN class="op">&amp;</SPAN> self <SPAN class="op">=</SPAN> <SPAN class="op">*</SPAN><SPAN class="op">(</SPAN>parser<SPAN class="op">*</SPAN><SPAN class="op">)</SPAN>data<SPAN class="op">;</SPAN>
+
+        <SPAN class="rem">// m_title_flag signals that the &lt;title&gt; tag is being parsed now.</SPAN>
+        <SPAN class="rem">// The following code concatenates the pieces of content of the &lt;title&gt; tag.</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>self<SPAN class="op">.</SPAN>m_title_flag<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>len <SPAN class="op">+</SPAN> self<SPAN class="op">.</SPAN>m_title_len <SPAN class="op">&gt;</SPAN> <SPAN class="num">255</SPAN><SPAN class="op">)</SPAN> len <SPAN class="op">=</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">-</SPAN> self<SPAN class="op">.</SPAN>m_title_len<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>len <SPAN class="op">&gt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> 
+            <SPAN class="op">{</SPAN>
+                memcpy<SPAN class="op">(</SPAN>self<SPAN class="op">.</SPAN>m_title <SPAN class="op">+</SPAN> self<SPAN class="op">.</SPAN>m_title_len<SPAN class="op">,</SPAN> s<SPAN class="op">,</SPAN> len<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                self<SPAN class="op">.</SPAN>m_title_len <SPAN class="op">+=</SPAN> len<SPAN class="op">;</SPAN>
+                self<SPAN class="op">.</SPAN>m_title<SPAN class="op">[</SPAN>self<SPAN class="op">.</SPAN>m_title_len<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">void</SPAN> parser::parse_attr<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN><SPAN class="op">*</SPAN> attr<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">int</SPAN> i<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> attr<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">+=</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>strcmp<SPAN class="op">(</SPAN>attr<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> <SPAN class="str">&quot;style&quot;</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                parse_style<SPAN class="op">(</SPAN>attr<SPAN class="op">[</SPAN>i <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="kw1">else</SPAN>
+            <SPAN class="op">{</SPAN>
+                parse_attr<SPAN class="op">(</SPAN>attr<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> attr<SPAN class="op">[</SPAN>i <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//-------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">void</SPAN> parser::parse_path<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN><SPAN class="op">*</SPAN> attr<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">int</SPAN> i<SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> attr<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">+=</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="rem">// The &lt;path&gt; tag can consist of the path itself (&quot;d=&quot;) </SPAN>
+            <SPAN class="rem">// as well as of other parameters like &quot;style=&quot;, &quot;transform=&quot;, etc.</SPAN>
+            <SPAN class="rem">// In the last case we simply rely on the function of parsing </SPAN>
+            <SPAN class="rem">// attributes (see &#039;else&#039; branch).</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>strcmp<SPAN class="op">(</SPAN>attr<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> <SPAN class="str">&quot;d&quot;</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                m_tokenizer<SPAN class="op">.</SPAN>set_path_str<SPAN class="op">(</SPAN>attr<SPAN class="op">[</SPAN>i <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                m_path<SPAN class="op">.</SPAN>parse_path<SPAN class="op">(</SPAN>m_tokenizer<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="kw1">else</SPAN>
+            <SPAN class="op">{</SPAN>
+                <SPAN class="rem">// Create a temporary single pair &quot;name-value&quot; in order</SPAN>
+                <SPAN class="rem">// to avoid multiple calls for the same attribute.</SPAN>
+                <SPAN class="kw1">const</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN> tmp<SPAN class="op">[</SPAN><SPAN class="num">4</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                tmp<SPAN class="op">[</SPAN><SPAN class="num">0</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> attr<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                tmp<SPAN class="op">[</SPAN><SPAN class="num">1</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> attr<SPAN class="op">[</SPAN>i <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                tmp<SPAN class="op">[</SPAN><SPAN class="num">2</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+                tmp<SPAN class="op">[</SPAN><SPAN class="num">3</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+                parse_attr<SPAN class="op">(</SPAN>tmp<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="rem">//-------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">int</SPAN> cmp_color<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <SPAN class="kw1">void</SPAN><SPAN class="op">*</SPAN> p1<SPAN class="op">,</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="kw1">void</SPAN><SPAN class="op">*</SPAN> p2<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">return</SPAN> strcmp<SPAN class="op">(</SPAN><SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>named_color<SPAN class="op">*</SPAN><SPAN class="op">)</SPAN>p1<SPAN class="op">)</SPAN><SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>name<SPAN class="op">,</SPAN> <SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>named_color<SPAN class="op">*</SPAN><SPAN class="op">)</SPAN>p2<SPAN class="op">)</SPAN><SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>name<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//-------------------------------------------------------------</SPAN>
+    <A href="../../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A> parse_color<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN> str<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN><SPAN class="op">*</SPAN>str <SPAN class="op">==</SPAN> <SPAN class="str">&#039; &#039;</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">++</SPAN>str<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> c <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN><SPAN class="op">*</SPAN>str <SPAN class="op">==</SPAN> <SPAN class="str">&#039;#&#039;</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            sscanf<SPAN class="op">(</SPAN>str <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">,</SPAN> <SPAN class="str">&quot;%x&quot;</SPAN><SPAN class="op">,</SPAN> <SPAN class="op">&amp;</SPAN>c<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">return</SPAN> <A href="../../__code/include/agg_color_rgba.h.html#rgb8_packed">rgb8_packed</A><SPAN class="op">(</SPAN>c<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">else</SPAN>
+        <SPAN class="op">{</SPAN>
+            named_color c<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">unsigned</SPAN> len <SPAN class="op">=</SPAN> strlen<SPAN class="op">(</SPAN>str<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>len <SPAN class="op">&gt;</SPAN> <SPAN class="kw1">sizeof</SPAN><SPAN class="op">(</SPAN>c<SPAN class="op">.</SPAN>name<SPAN class="op">)</SPAN> <SPAN class="op">-</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                <SPAN class="kw1">throw</SPAN> exception<SPAN class="op">(</SPAN><SPAN class="str">&quot;parse_color: Invalid color name &#039;%s&#039;&quot;</SPAN><SPAN class="op">,</SPAN> str<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            strcpy<SPAN class="op">(</SPAN>c<SPAN class="op">.</SPAN>name<SPAN class="op">,</SPAN> str<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">const</SPAN> <SPAN class="kw1">void</SPAN><SPAN class="op">*</SPAN> p <SPAN class="op">=</SPAN> bsearch<SPAN class="op">(</SPAN><SPAN class="op">&amp;</SPAN>c<SPAN class="op">,</SPAN> 
+                                    colors<SPAN class="op">,</SPAN> 
+                                    <SPAN class="kw1">sizeof</SPAN><SPAN class="op">(</SPAN>colors<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="kw1">sizeof</SPAN><SPAN class="op">(</SPAN>colors<SPAN class="op">[</SPAN><SPAN class="num">0</SPAN><SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> 
+                                    <SPAN class="kw1">sizeof</SPAN><SPAN class="op">(</SPAN>colors<SPAN class="op">[</SPAN><SPAN class="num">0</SPAN><SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> 
+                                    cmp_color<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>p <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                <SPAN class="kw1">throw</SPAN> exception<SPAN class="op">(</SPAN><SPAN class="str">&quot;parse_color: Invalid color name &#039;%s&#039;&quot;</SPAN><SPAN class="op">,</SPAN> str<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="kw1">const</SPAN> named_color<SPAN class="op">*</SPAN> pc <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> named_color<SPAN class="op">*</SPAN><SPAN class="op">)</SPAN>p<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">return</SPAN> <A href="../../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">(</SPAN>pc<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>r<SPAN class="op">,</SPAN> pc<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>g<SPAN class="op">,</SPAN> pc<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>b<SPAN class="op">,</SPAN> pc<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>a<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="kw1">double</SPAN> parse_double<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN> str<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN><SPAN class="op">*</SPAN>str <SPAN class="op">==</SPAN> <SPAN class="str">&#039; &#039;</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">++</SPAN>str<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">return</SPAN> atof<SPAN class="op">(</SPAN>str<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+
+    <SPAN class="rem">//-------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">bool</SPAN> parser::parse_attr<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN> name<SPAN class="op">,</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN> value<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>strcmp<SPAN class="op">(</SPAN>name<SPAN class="op">,</SPAN> <SPAN class="str">&quot;style&quot;</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            parse_style<SPAN class="op">(</SPAN>value<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">else</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>strcmp<SPAN class="op">(</SPAN>name<SPAN class="op">,</SPAN> <SPAN class="str">&quot;fill&quot;</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>strcmp<SPAN class="op">(</SPAN>value<SPAN class="op">,</SPAN> <SPAN class="str">&quot;none&quot;</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                m_path<SPAN class="op">.</SPAN>fill_none<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="kw1">else</SPAN>
+            <SPAN class="op">{</SPAN>
+                m_path<SPAN class="op">.</SPAN>fill<SPAN class="op">(</SPAN>parse_color<SPAN class="op">(</SPAN>value<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">else</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>strcmp<SPAN class="op">(</SPAN>name<SPAN class="op">,</SPAN> <SPAN class="str">&quot;fill-opacity&quot;</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            m_path<SPAN class="op">.</SPAN>fill_opacity<SPAN class="op">(</SPAN>parse_double<SPAN class="op">(</SPAN>value<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">else</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>strcmp<SPAN class="op">(</SPAN>name<SPAN class="op">,</SPAN> <SPAN class="str">&quot;stroke&quot;</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>strcmp<SPAN class="op">(</SPAN>value<SPAN class="op">,</SPAN> <SPAN class="str">&quot;none&quot;</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                m_path<SPAN class="op">.</SPAN>stroke_none<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="kw1">else</SPAN>
+            <SPAN class="op">{</SPAN>
+                m_path<SPAN class="op">.</SPAN>stroke<SPAN class="op">(</SPAN>parse_color<SPAN class="op">(</SPAN>value<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">else</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>strcmp<SPAN class="op">(</SPAN>name<SPAN class="op">,</SPAN> <SPAN class="str">&quot;stroke-width&quot;</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            m_path<SPAN class="op">.</SPAN>stroke_width<SPAN class="op">(</SPAN>parse_double<SPAN class="op">(</SPAN>value<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">else</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>strcmp<SPAN class="op">(</SPAN>name<SPAN class="op">,</SPAN> <SPAN class="str">&quot;stroke-linecap&quot;</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>strcmp<SPAN class="op">(</SPAN>value<SPAN class="op">,</SPAN> <SPAN class="str">&quot;butt&quot;</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>        m_path<SPAN class="op">.</SPAN>line_cap<SPAN class="op">(</SPAN>butt_cap<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">else</SPAN> <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>strcmp<SPAN class="op">(</SPAN>value<SPAN class="op">,</SPAN> <SPAN class="str">&quot;round&quot;</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>  m_path<SPAN class="op">.</SPAN>line_cap<SPAN class="op">(</SPAN>round_cap<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">else</SPAN> <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>strcmp<SPAN class="op">(</SPAN>value<SPAN class="op">,</SPAN> <SPAN class="str">&quot;square&quot;</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> m_path<SPAN class="op">.</SPAN>line_cap<SPAN class="op">(</SPAN>square_cap<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">else</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>strcmp<SPAN class="op">(</SPAN>name<SPAN class="op">,</SPAN> <SPAN class="str">&quot;stroke-linejoin&quot;</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>strcmp<SPAN class="op">(</SPAN>value<SPAN class="op">,</SPAN> <SPAN class="str">&quot;miter&quot;</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>      m_path<SPAN class="op">.</SPAN>line_join<SPAN class="op">(</SPAN>miter_join<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">else</SPAN> <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>strcmp<SPAN class="op">(</SPAN>value<SPAN class="op">,</SPAN> <SPAN class="str">&quot;round&quot;</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> m_path<SPAN class="op">.</SPAN>line_join<SPAN class="op">(</SPAN>round_join<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">else</SPAN> <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>strcmp<SPAN class="op">(</SPAN>value<SPAN class="op">,</SPAN> <SPAN class="str">&quot;bevel&quot;</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> m_path<SPAN class="op">.</SPAN>line_join<SPAN class="op">(</SPAN>bevel_join<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">else</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>strcmp<SPAN class="op">(</SPAN>name<SPAN class="op">,</SPAN> <SPAN class="str">&quot;stroke-miterlimit&quot;</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            m_path<SPAN class="op">.</SPAN>miter_limit<SPAN class="op">(</SPAN>parse_double<SPAN class="op">(</SPAN>value<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">else</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>strcmp<SPAN class="op">(</SPAN>name<SPAN class="op">,</SPAN> <SPAN class="str">&quot;stroke-opacity&quot;</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            m_path<SPAN class="op">.</SPAN>stroke_opacity<SPAN class="op">(</SPAN>parse_double<SPAN class="op">(</SPAN>value<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">else</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>strcmp<SPAN class="op">(</SPAN>name<SPAN class="op">,</SPAN> <SPAN class="str">&quot;transform&quot;</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            parse_transform<SPAN class="op">(</SPAN>value<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="rem">//else</SPAN>
+        <SPAN class="rem">//if(strcmp(el, &quot;&lt;OTHER_ATTRIBUTES&gt;&quot;) == 0) </SPAN>
+        <SPAN class="rem">//{</SPAN>
+        <SPAN class="rem">//}</SPAN>
+        <SPAN class="rem">// . . .</SPAN>
+        <SPAN class="kw1">else</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">return</SPAN> <SPAN class="kw1">false</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">return</SPAN> <SPAN class="kw1">true</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+
+    <SPAN class="rem">//-------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">void</SPAN> parser::copy_name<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN> start<SPAN class="op">,</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN> end<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> len <SPAN class="op">=</SPAN> <SPAN class="kw1">unsigned</SPAN><SPAN class="op">(</SPAN>end <SPAN class="op">-</SPAN> start<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_attr_name_len <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN> <SPAN class="op">||</SPAN> len <SPAN class="op">&gt;</SPAN> m_attr_name_len<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">delete</SPAN> <SPAN class="op">[</SPAN><SPAN class="op">]</SPAN> m_attr_name<SPAN class="op">;</SPAN>
+            m_attr_name <SPAN class="op">=</SPAN> <SPAN class="kw1">new</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">[</SPAN>len <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+            m_attr_name_len <SPAN class="op">=</SPAN> len<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>len<SPAN class="op">)</SPAN> memcpy<SPAN class="op">(</SPAN>m_attr_name<SPAN class="op">,</SPAN> start<SPAN class="op">,</SPAN> len<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_attr_name<SPAN class="op">[</SPAN>len<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+
+    <SPAN class="rem">//-------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">void</SPAN> parser::copy_value<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN> start<SPAN class="op">,</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN> end<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> len <SPAN class="op">=</SPAN> <SPAN class="kw1">unsigned</SPAN><SPAN class="op">(</SPAN>end <SPAN class="op">-</SPAN> start<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_attr_value_len <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN> <SPAN class="op">||</SPAN> len <SPAN class="op">&gt;</SPAN> m_attr_value_len<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">delete</SPAN> <SPAN class="op">[</SPAN><SPAN class="op">]</SPAN> m_attr_value<SPAN class="op">;</SPAN>
+            m_attr_value <SPAN class="op">=</SPAN> <SPAN class="kw1">new</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">[</SPAN>len <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+            m_attr_value_len <SPAN class="op">=</SPAN> len<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>len<SPAN class="op">)</SPAN> memcpy<SPAN class="op">(</SPAN>m_attr_value<SPAN class="op">,</SPAN> start<SPAN class="op">,</SPAN> len<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_attr_value<SPAN class="op">[</SPAN>len<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="rem">//-------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">bool</SPAN> parser::parse_name_value<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN> nv_start<SPAN class="op">,</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN> nv_end<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">const</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN> str <SPAN class="op">=</SPAN> nv_start<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN>str <SPAN class="op">&lt;</SPAN> nv_end <SPAN class="op">&amp;&amp;</SPAN> <SPAN class="op">*</SPAN>str <SPAN class="op">!=</SPAN> <SPAN class="str">&#039;:&#039;</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">++</SPAN>str<SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">const</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN> val <SPAN class="op">=</SPAN> str<SPAN class="op">;</SPAN>
+
+        <SPAN class="rem">// Right Trim</SPAN>
+        <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN>str <SPAN class="op">&gt;</SPAN> nv_start <SPAN class="op">&amp;&amp;</SPAN> 
+            <SPAN class="op">(</SPAN><SPAN class="op">*</SPAN>str <SPAN class="op">==</SPAN> <SPAN class="str">&#039;:&#039;</SPAN> <SPAN class="op">||</SPAN> isspace<SPAN class="op">(</SPAN><SPAN class="op">*</SPAN>str<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">--</SPAN>str<SPAN class="op">;</SPAN>
+        <SPAN class="op">++</SPAN>str<SPAN class="op">;</SPAN>
+
+        copy_name<SPAN class="op">(</SPAN>nv_start<SPAN class="op">,</SPAN> str<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN>val <SPAN class="op">&lt;</SPAN> nv_end <SPAN class="op">&amp;&amp;</SPAN> <SPAN class="op">(</SPAN><SPAN class="op">*</SPAN>val <SPAN class="op">==</SPAN> <SPAN class="str">&#039;:&#039;</SPAN> <SPAN class="op">||</SPAN> isspace<SPAN class="op">(</SPAN><SPAN class="op">*</SPAN>val<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">++</SPAN>val<SPAN class="op">;</SPAN>
+        
+        copy_value<SPAN class="op">(</SPAN>val<SPAN class="op">,</SPAN> nv_end<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">return</SPAN> parse_attr<SPAN class="op">(</SPAN>m_attr_name<SPAN class="op">,</SPAN> m_attr_value<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+
+    <SPAN class="rem">//-------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">void</SPAN> parser::parse_style<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN> str<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN><SPAN class="op">*</SPAN>str<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="rem">// Left Trim</SPAN>
+            <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN><SPAN class="op">*</SPAN>str <SPAN class="op">&amp;&amp;</SPAN> isspace<SPAN class="op">(</SPAN><SPAN class="op">*</SPAN>str<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">++</SPAN>str<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">const</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN> nv_start <SPAN class="op">=</SPAN> str<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN><SPAN class="op">*</SPAN>str <SPAN class="op">&amp;&amp;</SPAN> <SPAN class="op">*</SPAN>str <SPAN class="op">!=</SPAN> <SPAN class="str">&#039;;&#039;</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">++</SPAN>str<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">const</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN> nv_end <SPAN class="op">=</SPAN> str<SPAN class="op">;</SPAN>
+
+            <SPAN class="rem">// Right Trim</SPAN>
+            <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN>nv_end <SPAN class="op">&gt;</SPAN> nv_start <SPAN class="op">&amp;&amp;</SPAN> 
+                <SPAN class="op">(</SPAN><SPAN class="op">*</SPAN>nv_end <SPAN class="op">==</SPAN> <SPAN class="str">&#039;;&#039;</SPAN> <SPAN class="op">||</SPAN> isspace<SPAN class="op">(</SPAN><SPAN class="op">*</SPAN>nv_end<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">--</SPAN>nv_end<SPAN class="op">;</SPAN>
+            <SPAN class="op">++</SPAN>nv_end<SPAN class="op">;</SPAN>
+
+            parse_name_value<SPAN class="op">(</SPAN>nv_start<SPAN class="op">,</SPAN> nv_end<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN><SPAN class="op">*</SPAN>str<SPAN class="op">)</SPAN> <SPAN class="op">++</SPAN>str<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="rem">//-------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">void</SPAN> parser::parse_rect<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN><SPAN class="op">*</SPAN> attr<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">int</SPAN> i<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> x <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> y <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> w <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> h <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+
+        m_path<SPAN class="op">.</SPAN>begin_path<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> attr<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">+=</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN><SPAN class="op">!</SPAN>parse_attr<SPAN class="op">(</SPAN>attr<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> attr<SPAN class="op">[</SPAN>i <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>strcmp<SPAN class="op">(</SPAN>attr<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> <SPAN class="str">&quot;x&quot;</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>      x <SPAN class="op">=</SPAN> parse_double<SPAN class="op">(</SPAN>attr<SPAN class="op">[</SPAN>i <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>strcmp<SPAN class="op">(</SPAN>attr<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> <SPAN class="str">&quot;y&quot;</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>      y <SPAN class="op">=</SPAN> parse_double<SPAN class="op">(</SPAN>attr<SPAN class="op">[</SPAN>i <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>strcmp<SPAN class="op">(</SPAN>attr<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> <SPAN class="str">&quot;width&quot;</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>  w <SPAN class="op">=</SPAN> parse_double<SPAN class="op">(</SPAN>attr<SPAN class="op">[</SPAN>i <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>strcmp<SPAN class="op">(</SPAN>attr<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> <SPAN class="str">&quot;height&quot;</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> h <SPAN class="op">=</SPAN> parse_double<SPAN class="op">(</SPAN>attr<SPAN class="op">[</SPAN>i <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="rem">// rx - to be implemented </SPAN>
+                <SPAN class="rem">// ry - to be implemented</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+
+
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>w <SPAN class="op">!=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">&amp;&amp;</SPAN> h <SPAN class="op">!=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>w <SPAN class="op">&lt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">throw</SPAN> exception<SPAN class="op">(</SPAN><SPAN class="str">&quot;parse_rect: Invalid width: %f&quot;</SPAN><SPAN class="op">,</SPAN> w<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>h <SPAN class="op">&lt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">throw</SPAN> exception<SPAN class="op">(</SPAN><SPAN class="str">&quot;parse_rect: Invalid height: %f&quot;</SPAN><SPAN class="op">,</SPAN> h<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+            m_path<SPAN class="op">.</SPAN>move_to<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN>     y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            m_path<SPAN class="op">.</SPAN>line_to<SPAN class="op">(</SPAN>x <SPAN class="op">+</SPAN> w<SPAN class="op">,</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            m_path<SPAN class="op">.</SPAN>line_to<SPAN class="op">(</SPAN>x <SPAN class="op">+</SPAN> w<SPAN class="op">,</SPAN> y <SPAN class="op">+</SPAN> h<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            m_path<SPAN class="op">.</SPAN>line_to<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN>     y <SPAN class="op">+</SPAN> h<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            m_path<SPAN class="op">.</SPAN>close_subpath<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        m_path<SPAN class="op">.</SPAN>end_path<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="rem">//-------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">void</SPAN> parser::parse_line<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN><SPAN class="op">*</SPAN> attr<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">int</SPAN> i<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> x1 <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> y1 <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> x2 <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> y2 <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+
+        m_path<SPAN class="op">.</SPAN>begin_path<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> attr<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">+=</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN><SPAN class="op">!</SPAN>parse_attr<SPAN class="op">(</SPAN>attr<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> attr<SPAN class="op">[</SPAN>i <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>strcmp<SPAN class="op">(</SPAN>attr<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> <SPAN class="str">&quot;x1&quot;</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> x1 <SPAN class="op">=</SPAN> parse_double<SPAN class="op">(</SPAN>attr<SPAN class="op">[</SPAN>i <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>strcmp<SPAN class="op">(</SPAN>attr<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> <SPAN class="str">&quot;y1&quot;</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> y1 <SPAN class="op">=</SPAN> parse_double<SPAN class="op">(</SPAN>attr<SPAN class="op">[</SPAN>i <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>strcmp<SPAN class="op">(</SPAN>attr<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> <SPAN class="str">&quot;x2&quot;</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> x2 <SPAN class="op">=</SPAN> parse_double<SPAN class="op">(</SPAN>attr<SPAN class="op">[</SPAN>i <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>strcmp<SPAN class="op">(</SPAN>attr<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> <SPAN class="str">&quot;y2&quot;</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> y2 <SPAN class="op">=</SPAN> parse_double<SPAN class="op">(</SPAN>attr<SPAN class="op">[</SPAN>i <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        m_path<SPAN class="op">.</SPAN>move_to<SPAN class="op">(</SPAN>x1<SPAN class="op">,</SPAN> y1<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_path<SPAN class="op">.</SPAN>line_to<SPAN class="op">(</SPAN>x2<SPAN class="op">,</SPAN> y2<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_path<SPAN class="op">.</SPAN>end_path<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="rem">//-------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">void</SPAN> parser::parse_poly<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN><SPAN class="op">*</SPAN> attr<SPAN class="op">,</SPAN> <SPAN class="kw1">bool</SPAN> close_flag<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">int</SPAN> i<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> x <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> y <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+
+        m_path<SPAN class="op">.</SPAN>begin_path<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> attr<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">+=</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN><SPAN class="op">!</SPAN>parse_attr<SPAN class="op">(</SPAN>attr<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> attr<SPAN class="op">[</SPAN>i <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>strcmp<SPAN class="op">(</SPAN>attr<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> <SPAN class="str">&quot;points&quot;</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> 
+                <SPAN class="op">{</SPAN>
+                    m_tokenizer<SPAN class="op">.</SPAN>set_path_str<SPAN class="op">(</SPAN>attr<SPAN class="op">[</SPAN>i <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN><SPAN class="op">!</SPAN>m_tokenizer<SPAN class="op">.</SPAN>next<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+                    <SPAN class="op">{</SPAN>
+                        <SPAN class="kw1">throw</SPAN> exception<SPAN class="op">(</SPAN><SPAN class="str">&quot;parse_poly: Too few coordinates&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="op">}</SPAN>
+                    x <SPAN class="op">=</SPAN> m_tokenizer<SPAN class="op">.</SPAN>last_number<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN><SPAN class="op">!</SPAN>m_tokenizer<SPAN class="op">.</SPAN>next<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+                    <SPAN class="op">{</SPAN>
+                        <SPAN class="kw1">throw</SPAN> exception<SPAN class="op">(</SPAN><SPAN class="str">&quot;parse_poly: Too few coordinates&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="op">}</SPAN>
+                    y <SPAN class="op">=</SPAN> m_tokenizer<SPAN class="op">.</SPAN>last_number<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    m_path<SPAN class="op">.</SPAN>move_to<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN>m_tokenizer<SPAN class="op">.</SPAN>next<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+                    <SPAN class="op">{</SPAN>
+                        x <SPAN class="op">=</SPAN> m_tokenizer<SPAN class="op">.</SPAN>last_number<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN><SPAN class="op">!</SPAN>m_tokenizer<SPAN class="op">.</SPAN>next<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+                        <SPAN class="op">{</SPAN>
+                            <SPAN class="kw1">throw</SPAN> exception<SPAN class="op">(</SPAN><SPAN class="str">&quot;parse_poly: Odd number of coordinates&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                        <SPAN class="op">}</SPAN>
+                        y <SPAN class="op">=</SPAN> m_tokenizer<SPAN class="op">.</SPAN>last_number<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                        m_path<SPAN class="op">.</SPAN>line_to<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="op">}</SPAN>
+                <SPAN class="op">}</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>close_flag<SPAN class="op">)</SPAN> 
+        <SPAN class="op">{</SPAN>
+            m_path<SPAN class="op">.</SPAN>close_subpath<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        m_path<SPAN class="op">.</SPAN>end_path<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//-------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">void</SPAN> parser::parse_transform<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN> str<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN><SPAN class="op">*</SPAN>str<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>islower<SPAN class="op">(</SPAN><SPAN class="op">*</SPAN>str<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>strncmp<SPAN class="op">(</SPAN>str<SPAN class="op">,</SPAN> <SPAN class="str">&quot;matrix&quot;</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">6</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>    str <SPAN class="op">+=</SPAN> parse_matrix<SPAN class="op">(</SPAN>str<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>    <SPAN class="kw1">else</SPAN> 
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>strncmp<SPAN class="op">(</SPAN>str<SPAN class="op">,</SPAN> <SPAN class="str">&quot;translate&quot;</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">9</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> str <SPAN class="op">+=</SPAN> parse_translate<SPAN class="op">(</SPAN>str<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> <SPAN class="kw1">else</SPAN> 
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>strncmp<SPAN class="op">(</SPAN>str<SPAN class="op">,</SPAN> <SPAN class="str">&quot;rotate&quot;</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">6</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>    str <SPAN class="op">+=</SPAN> parse_rotate<SPAN class="op">(</SPAN>str<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>    <SPAN class="kw1">else</SPAN> 
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>strncmp<SPAN class="op">(</SPAN>str<SPAN class="op">,</SPAN> <SPAN class="str">&quot;scale&quot;</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">5</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>     str <SPAN class="op">+=</SPAN> parse_scale<SPAN class="op">(</SPAN>str<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>     <SPAN class="kw1">else</SPAN> 
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>strncmp<SPAN class="op">(</SPAN>str<SPAN class="op">,</SPAN> <SPAN class="str">&quot;skewX&quot;</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">5</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>     str <SPAN class="op">+=</SPAN> parse_skew_x<SPAN class="op">(</SPAN>str<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>    <SPAN class="kw1">else</SPAN> 
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>strncmp<SPAN class="op">(</SPAN>str<SPAN class="op">,</SPAN> <SPAN class="str">&quot;skewY&quot;</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">5</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>     str <SPAN class="op">+=</SPAN> parse_skew_y<SPAN class="op">(</SPAN>str<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>    <SPAN class="kw1">else</SPAN>
+                <SPAN class="op">{</SPAN>
+                    <SPAN class="op">++</SPAN>str<SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="kw1">else</SPAN>
+            <SPAN class="op">{</SPAN>
+                <SPAN class="op">++</SPAN>str<SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="rem">//-------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">static</SPAN> <SPAN class="kw1">bool</SPAN> is_numeric<SPAN class="op">(</SPAN><SPAN class="kw1">char</SPAN> c<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">return</SPAN> strchr<SPAN class="op">(</SPAN><SPAN class="str">&quot;0123456789+-.eE&quot;</SPAN><SPAN class="op">,</SPAN> c<SPAN class="op">)</SPAN> <SPAN class="op">!=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//-------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">static</SPAN> <SPAN class="kw1">unsigned</SPAN> parse_transform_args<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN> str<SPAN class="op">,</SPAN> 
+                                         <SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> args<SPAN class="op">,</SPAN> 
+                                         <SPAN class="kw1">unsigned</SPAN> max_na<SPAN class="op">,</SPAN> 
+                                         <SPAN class="kw1">unsigned</SPAN><SPAN class="op">*</SPAN> na<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="op">*</SPAN>na <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">const</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN> ptr <SPAN class="op">=</SPAN> str<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN><SPAN class="op">*</SPAN>ptr <SPAN class="op">&amp;&amp;</SPAN> <SPAN class="op">*</SPAN>ptr <SPAN class="op">!=</SPAN> <SPAN class="str">&#039;(&#039;</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">++</SPAN>ptr<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN><SPAN class="op">*</SPAN>ptr <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">throw</SPAN> exception<SPAN class="op">(</SPAN><SPAN class="str">&quot;parse_transform_args: Invalid syntax&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">const</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN> end <SPAN class="op">=</SPAN> ptr<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN><SPAN class="op">*</SPAN>end <SPAN class="op">&amp;&amp;</SPAN> <SPAN class="op">*</SPAN>end <SPAN class="op">!=</SPAN> <SPAN class="str">&#039;)&#039;</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">++</SPAN>end<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN><SPAN class="op">*</SPAN>end <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">throw</SPAN> exception<SPAN class="op">(</SPAN><SPAN class="str">&quot;parse_transform_args: Invalid syntax&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN>ptr <SPAN class="op">&lt;</SPAN> end<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>is_numeric<SPAN class="op">(</SPAN><SPAN class="op">*</SPAN>ptr<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN><SPAN class="op">*</SPAN>na <SPAN class="op">&gt;=</SPAN> max_na<SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    <SPAN class="kw1">throw</SPAN> exception<SPAN class="op">(</SPAN><SPAN class="str">&quot;parse_transform_args: Too many arguments&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+                args<SPAN class="op">[</SPAN><SPAN class="op">(</SPAN><SPAN class="op">*</SPAN>na<SPAN class="op">)</SPAN><SPAN class="op">++</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> atof<SPAN class="op">(</SPAN>ptr<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN>ptr <SPAN class="op">&lt;</SPAN> end <SPAN class="op">&amp;&amp;</SPAN> is_numeric<SPAN class="op">(</SPAN><SPAN class="op">*</SPAN>ptr<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">++</SPAN>ptr<SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="kw1">else</SPAN>
+            <SPAN class="op">{</SPAN>
+                <SPAN class="op">++</SPAN>ptr<SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">return</SPAN> <SPAN class="kw1">unsigned</SPAN><SPAN class="op">(</SPAN>end <SPAN class="op">-</SPAN> str<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//-------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">unsigned</SPAN> parser::parse_matrix<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN> str<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">double</SPAN> args<SPAN class="op">[</SPAN><SPAN class="num">6</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> na <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> len <SPAN class="op">=</SPAN> parse_transform_args<SPAN class="op">(</SPAN>str<SPAN class="op">,</SPAN> args<SPAN class="op">,</SPAN> <SPAN class="num">6</SPAN><SPAN class="op">,</SPAN> <SPAN class="op">&amp;</SPAN>na<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>na <SPAN class="op">!=</SPAN> <SPAN class="num">6</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">throw</SPAN> exception<SPAN class="op">(</SPAN><SPAN class="str">&quot;parse_matrix: Invalid number of arguments&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        m_path<SPAN class="op">.</SPAN>transform<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">.</SPAN>premultiply<SPAN class="op">(</SPAN><A href="../../__code/include/agg_trans_affine.h.html#trans_affine">trans_affine</A><SPAN class="op">(</SPAN>args<SPAN class="op">[</SPAN><SPAN class="num">0</SPAN><SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> args<SPAN class="op">[</SPAN><SPAN class="num">1</SPAN><SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> args<SPAN class="op">[</SPAN><SPAN class="num">2</SPAN><SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> args<SPAN class="op">[</SPAN><SPAN class="num">3</SPAN><SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> args<SPAN class="op">[</SPAN><SPAN class="num">4</SPAN><SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> args<SPAN class="op">[</SPAN><SPAN class="num">5</SPAN><SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">return</SPAN> len<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//-------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">unsigned</SPAN> parser::parse_translate<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN> str<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">double</SPAN> args<SPAN class="op">[</SPAN><SPAN class="num">2</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> na <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> len <SPAN class="op">=</SPAN> parse_transform_args<SPAN class="op">(</SPAN>str<SPAN class="op">,</SPAN> args<SPAN class="op">,</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">,</SPAN> <SPAN class="op">&amp;</SPAN>na<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>na <SPAN class="op">==</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN> args<SPAN class="op">[</SPAN><SPAN class="num">1</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        m_path<SPAN class="op">.</SPAN>transform<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">.</SPAN>premultiply<SPAN class="op">(</SPAN><A href="../../__code/include/agg_trans_affine.h.html#trans_affine_translation">trans_affine_translation</A><SPAN class="op">(</SPAN>args<SPAN class="op">[</SPAN><SPAN class="num">0</SPAN><SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> args<SPAN class="op">[</SPAN><SPAN class="num">1</SPAN><SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">return</SPAN> len<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//-------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">unsigned</SPAN> parser::parse_rotate<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN> str<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">double</SPAN> args<SPAN class="op">[</SPAN><SPAN class="num">3</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> na <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> len <SPAN class="op">=</SPAN> parse_transform_args<SPAN class="op">(</SPAN>str<SPAN class="op">,</SPAN> args<SPAN class="op">,</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">,</SPAN> <SPAN class="op">&amp;</SPAN>na<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>na <SPAN class="op">==</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN> 
+        <SPAN class="op">{</SPAN>
+            m_path<SPAN class="op">.</SPAN>transform<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">.</SPAN>premultiply<SPAN class="op">(</SPAN><A href="../../__code/include/agg_trans_affine.h.html#trans_affine_rotation">trans_affine_rotation</A><SPAN class="op">(</SPAN><A href="../../__code/include/agg_basics.h.html#deg2rad">deg2rad</A><SPAN class="op">(</SPAN>args<SPAN class="op">[</SPAN><SPAN class="num">0</SPAN><SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">else</SPAN> <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>na <SPAN class="op">==</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <A href="../../__code/include/agg_trans_affine.h.html#trans_affine">trans_affine</A> t <SPAN class="op">=</SPAN> <A href="../../__code/include/agg_trans_affine.h.html#trans_affine_translation">trans_affine_translation</A><SPAN class="op">(</SPAN><SPAN class="op">-</SPAN>args<SPAN class="op">[</SPAN><SPAN class="num">1</SPAN><SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> <SPAN class="op">-</SPAN>args<SPAN class="op">[</SPAN><SPAN class="num">2</SPAN><SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            t <SPAN class="op">*=</SPAN> <A href="../../__code/include/agg_trans_affine.h.html#trans_affine_rotation">trans_affine_rotation</A><SPAN class="op">(</SPAN><A href="../../__code/include/agg_basics.h.html#deg2rad">deg2rad</A><SPAN class="op">(</SPAN>args<SPAN class="op">[</SPAN><SPAN class="num">0</SPAN><SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            t <SPAN class="op">*=</SPAN> <A href="../../__code/include/agg_trans_affine.h.html#trans_affine_translation">trans_affine_translation</A><SPAN class="op">(</SPAN>args<SPAN class="op">[</SPAN><SPAN class="num">1</SPAN><SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> args<SPAN class="op">[</SPAN><SPAN class="num">2</SPAN><SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            m_path<SPAN class="op">.</SPAN>transform<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">.</SPAN>premultiply<SPAN class="op">(</SPAN>t<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">else</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">throw</SPAN> exception<SPAN class="op">(</SPAN><SPAN class="str">&quot;parse_rotate: Invalid number of arguments&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">return</SPAN> len<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//-------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">unsigned</SPAN> parser::parse_scale<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN> str<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">double</SPAN> args<SPAN class="op">[</SPAN><SPAN class="num">2</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> na <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> len <SPAN class="op">=</SPAN> parse_transform_args<SPAN class="op">(</SPAN>str<SPAN class="op">,</SPAN> args<SPAN class="op">,</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">,</SPAN> <SPAN class="op">&amp;</SPAN>na<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>na <SPAN class="op">==</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN> args<SPAN class="op">[</SPAN><SPAN class="num">1</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> args<SPAN class="op">[</SPAN><SPAN class="num">0</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+        m_path<SPAN class="op">.</SPAN>transform<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">.</SPAN>premultiply<SPAN class="op">(</SPAN><A href="../../__code/include/agg_trans_affine.h.html#trans_affine_scaling">trans_affine_scaling</A><SPAN class="op">(</SPAN>args<SPAN class="op">[</SPAN><SPAN class="num">0</SPAN><SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> args<SPAN class="op">[</SPAN><SPAN class="num">1</SPAN><SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">return</SPAN> len<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//-------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">unsigned</SPAN> parser::parse_skew_x<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN> str<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">double</SPAN> arg<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> na <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> len <SPAN class="op">=</SPAN> parse_transform_args<SPAN class="op">(</SPAN>str<SPAN class="op">,</SPAN> <SPAN class="op">&amp;</SPAN>arg<SPAN class="op">,</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">,</SPAN> <SPAN class="op">&amp;</SPAN>na<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_path<SPAN class="op">.</SPAN>transform<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">.</SPAN>premultiply<SPAN class="op">(</SPAN><A href="../../__code/include/agg_trans_affine.h.html#trans_affine_skewing">trans_affine_skewing</A><SPAN class="op">(</SPAN><A href="../../__code/include/agg_basics.h.html#deg2rad">deg2rad</A><SPAN class="op">(</SPAN>arg<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">return</SPAN> len<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//-------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">unsigned</SPAN> parser::parse_skew_y<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN> str<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">double</SPAN> arg<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> na <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> len <SPAN class="op">=</SPAN> parse_transform_args<SPAN class="op">(</SPAN>str<SPAN class="op">,</SPAN> <SPAN class="op">&amp;</SPAN>arg<SPAN class="op">,</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">,</SPAN> <SPAN class="op">&amp;</SPAN>na<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_path<SPAN class="op">.</SPAN>transform<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">.</SPAN>premultiply<SPAN class="op">(</SPAN><A href="../../__code/include/agg_trans_affine.h.html#trans_affine_skewing">trans_affine_skewing</A><SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <A href="../../__code/include/agg_basics.h.html#deg2rad">deg2rad</A><SPAN class="op">(</SPAN>arg<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">return</SPAN> len<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+<SPAN class="op">}</SPAN>
+<SPAN class="op">}</SPAN>
+
+
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT><TABLE width="640px" bgcolor="#583927" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0">
+<TR><TD><CENTER><SPAN class="authors">
+Copyright <SPAN class="larger">&#169;</SPAN> 2002-2006
+<A href="../../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+<TR><TD><CENTER><SPAN class="authors">
+Web Design and Programming
+<A href="../../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+</TABLE>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+</HTML>

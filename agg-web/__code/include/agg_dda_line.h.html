@@ -1,0 +1,315 @@
+<HTML><HEAD><TITLE>Anti-Grain Geometry - </TITLE>
+<META http-equiv="Content-Type" content="text/html"/>
+<LINK rel="stylesheet" type="text/css" href="../../agg.styles.css"/>
+</HEAD>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE><SPAN class="rem">//----------------------------------------------------------------------------</SPAN>
+<SPAN class="rem">// Anti-Grain Geometry (AGG) - Version 2.5</SPAN>
+<SPAN class="rem">// A high quality rendering engine for C++</SPAN>
+<SPAN class="rem">// Copyright (C) 2002-2006 Maxim Shemanarev</SPAN>
+<SPAN class="rem">// Contact: mcseem@antigrain.com</SPAN>
+<SPAN class="rem">//          mcseemagg@yahoo.com</SPAN>
+<SPAN class="rem">//          http://antigrain.com</SPAN>
+<SPAN class="rem">// </SPAN>
+<SPAN class="rem">// AGG is free software; you can redistribute it and/or</SPAN>
+<SPAN class="rem">// modify it under the terms of the GNU General Public License</SPAN>
+<SPAN class="rem">// as published by the Free Software Foundation; either version 2</SPAN>
+<SPAN class="rem">// of the License, or (at your option) any later version.</SPAN>
+<SPAN class="rem">// </SPAN>
+<SPAN class="rem">// AGG is distributed in the hope that it will be useful,</SPAN>
+<SPAN class="rem">// but WITHOUT ANY WARRANTY; without even the implied warranty of</SPAN>
+<SPAN class="rem">// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</SPAN>
+<SPAN class="rem">// GNU General Public License for more details.</SPAN>
+<SPAN class="rem">// </SPAN>
+<SPAN class="rem">// You should have received a copy of the GNU General Public License</SPAN>
+<SPAN class="rem">// along with AGG; if not, write to the Free Software</SPAN>
+<SPAN class="rem">// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, </SPAN>
+<SPAN class="rem">// MA 02110-1301, USA.</SPAN>
+<SPAN class="rem">//----------------------------------------------------------------------------</SPAN>
+
+<SPAN class="kw2">#ifndef</SPAN> AGG_DDA_LINE_INCLUDED
+<SPAN class="kw2">#define</SPAN> AGG_DDA_LINE_INCLUDED
+
+<SPAN class="kw2">#include</SPAN> <SPAN class="op">&lt;</SPAN>stdlib<SPAN class="op">.</SPAN>h<SPAN class="op">&gt;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="agg_basics.h.html">agg_basics.h</A>&quot;</SPAN>
+
+<SPAN class="kw1">namespace</SPAN> agg
+<SPAN class="op">{</SPAN>
+
+    <SPAN class="rem">//===================================================<A name="dda_line_interpolator"><B></B></A><A href="agg_dda_line.h.html#dda_line_interpolator">dda_line_interpolator</A></SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">int</SPAN> FractionShift<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> YShift<SPAN class="op">=</SPAN><SPAN class="num">0</SPAN><SPAN class="op">&gt;</SPAN> <SPAN class="kw1">class</SPAN> <A href="agg_dda_line.h.html#dda_line_interpolator">dda_line_interpolator</A>
+    <SPAN class="op">{</SPAN>
+    <SPAN class="kw1">public</SPAN>:
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <A href="agg_dda_line.h.html#dda_line_interpolator">dda_line_interpolator</A><SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN><SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <A href="agg_dda_line.h.html#dda_line_interpolator">dda_line_interpolator</A><SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> y1<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y2<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> count<SPAN class="op">)</SPAN> :
+            m_y<SPAN class="op">(</SPAN>y1<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_inc<SPAN class="op">(</SPAN><SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>y2 <SPAN class="op">-</SPAN> y1<SPAN class="op">)</SPAN> <SPAN class="op">&lt;&lt;</SPAN> FractionShift<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="kw1">int</SPAN><SPAN class="op">(</SPAN>count<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_dy<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">void</SPAN> <SPAN class="kw1">operator</SPAN> <SPAN class="op">++</SPAN> <SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            m_dy <SPAN class="op">+=</SPAN> m_inc<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">void</SPAN> <SPAN class="kw1">operator</SPAN> <SPAN class="op">--</SPAN> <SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            m_dy <SPAN class="op">-=</SPAN> m_inc<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">void</SPAN> <SPAN class="kw1">operator</SPAN> <SPAN class="op">+=</SPAN> <SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> n<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            m_dy <SPAN class="op">+=</SPAN> m_inc <SPAN class="op">*</SPAN> n<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">void</SPAN> <SPAN class="kw1">operator</SPAN> <SPAN class="op">-=</SPAN> <SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> n<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            m_dy <SPAN class="op">-=</SPAN> m_inc <SPAN class="op">*</SPAN> n<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">int</SPAN> y<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>  <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_y <SPAN class="op">+</SPAN> <SPAN class="op">(</SPAN>m_dy <SPAN class="op">&gt;&gt;</SPAN> <SPAN class="op">(</SPAN>FractionShift<SPAN class="op">-</SPAN>YShift<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">int</SPAN> dy<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_dy<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="kw1">private</SPAN>:
+        <SPAN class="kw1">int</SPAN> m_y<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN> m_inc<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN> m_dy<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+
+
+
+    <SPAN class="rem">//=================================================<A name="dda2_line_interpolator"><B></B></A><A href="agg_dda_line.h.html#dda2_line_interpolator">dda2_line_interpolator</A></SPAN>
+    <SPAN class="kw1">class</SPAN> <A href="agg_dda_line.h.html#dda2_line_interpolator">dda2_line_interpolator</A>
+    <SPAN class="op">{</SPAN>
+    <SPAN class="kw1">public</SPAN>:
+        <SPAN class="kw1">typedef</SPAN> <SPAN class="kw1">int</SPAN> save_data_type<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">enum</SPAN> save_size_e <SPAN class="op">{</SPAN> save_size <SPAN class="op">=</SPAN> <SPAN class="num">2</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <A href="agg_dda_line.h.html#dda2_line_interpolator">dda2_line_interpolator</A><SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN><SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//-------------------------------------------- Forward-adjusted line</SPAN>
+        <A href="agg_dda_line.h.html#dda2_line_interpolator">dda2_line_interpolator</A><SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> y1<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y2<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> count<SPAN class="op">)</SPAN> :
+            m_cnt<SPAN class="op">(</SPAN>count <SPAN class="op">&lt;=</SPAN> <SPAN class="num">0</SPAN> ? <SPAN class="num">1</SPAN> : count<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_lft<SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>y2 <SPAN class="op">-</SPAN> y1<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> m_cnt<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_rem<SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>y2 <SPAN class="op">-</SPAN> y1<SPAN class="op">)</SPAN> <SPAN class="op">%</SPAN> m_cnt<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_mod<SPAN class="op">(</SPAN>m_rem<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_y<SPAN class="op">(</SPAN>y1<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_mod <SPAN class="op">&lt;=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                m_mod <SPAN class="op">+=</SPAN> count<SPAN class="op">;</SPAN>
+                m_rem <SPAN class="op">+=</SPAN> count<SPAN class="op">;</SPAN>
+                m_lft<SPAN class="op">--</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            m_mod <SPAN class="op">-=</SPAN> count<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//-------------------------------------------- Backward-adjusted line</SPAN>
+        <A href="agg_dda_line.h.html#dda2_line_interpolator">dda2_line_interpolator</A><SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> y1<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y2<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> count<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN><SPAN class="op">)</SPAN> :
+            m_cnt<SPAN class="op">(</SPAN>count <SPAN class="op">&lt;=</SPAN> <SPAN class="num">0</SPAN> ? <SPAN class="num">1</SPAN> : count<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_lft<SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>y2 <SPAN class="op">-</SPAN> y1<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> m_cnt<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_rem<SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>y2 <SPAN class="op">-</SPAN> y1<SPAN class="op">)</SPAN> <SPAN class="op">%</SPAN> m_cnt<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_mod<SPAN class="op">(</SPAN>m_rem<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_y<SPAN class="op">(</SPAN>y1<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_mod <SPAN class="op">&lt;=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                m_mod <SPAN class="op">+=</SPAN> count<SPAN class="op">;</SPAN>
+                m_rem <SPAN class="op">+=</SPAN> count<SPAN class="op">;</SPAN>
+                m_lft<SPAN class="op">--</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//-------------------------------------------- Backward-adjusted line</SPAN>
+        <A href="agg_dda_line.h.html#dda2_line_interpolator">dda2_line_interpolator</A><SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> count<SPAN class="op">)</SPAN> :
+            m_cnt<SPAN class="op">(</SPAN>count <SPAN class="op">&lt;=</SPAN> <SPAN class="num">0</SPAN> ? <SPAN class="num">1</SPAN> : count<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_lft<SPAN class="op">(</SPAN>y <SPAN class="op">/</SPAN> m_cnt<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_rem<SPAN class="op">(</SPAN>y <SPAN class="op">%</SPAN> m_cnt<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_mod<SPAN class="op">(</SPAN>m_rem<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_y<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_mod <SPAN class="op">&lt;=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                m_mod <SPAN class="op">+=</SPAN> count<SPAN class="op">;</SPAN>
+                m_rem <SPAN class="op">+=</SPAN> count<SPAN class="op">;</SPAN>
+                m_lft<SPAN class="op">--</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">void</SPAN> save<SPAN class="op">(</SPAN>save_data_type<SPAN class="op">*</SPAN> data<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN>
+        <SPAN class="op">{</SPAN>
+            data<SPAN class="op">[</SPAN><SPAN class="num">0</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> m_mod<SPAN class="op">;</SPAN>
+            data<SPAN class="op">[</SPAN><SPAN class="num">1</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> m_y<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">void</SPAN> load<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> save_data_type<SPAN class="op">*</SPAN> data<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            m_mod <SPAN class="op">=</SPAN> data<SPAN class="op">[</SPAN><SPAN class="num">0</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+            m_y   <SPAN class="op">=</SPAN> data<SPAN class="op">[</SPAN><SPAN class="num">1</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">void</SPAN> <SPAN class="kw1">operator</SPAN><SPAN class="op">++</SPAN><SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            m_mod <SPAN class="op">+=</SPAN> m_rem<SPAN class="op">;</SPAN>
+            m_y <SPAN class="op">+=</SPAN> m_lft<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_mod <SPAN class="op">&gt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                m_mod <SPAN class="op">-=</SPAN> m_cnt<SPAN class="op">;</SPAN>
+                m_y<SPAN class="op">++</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">void</SPAN> <SPAN class="kw1">operator</SPAN><SPAN class="op">--</SPAN><SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_mod <SPAN class="op">&lt;=</SPAN> m_rem<SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                m_mod <SPAN class="op">+=</SPAN> m_cnt<SPAN class="op">;</SPAN>
+                m_y<SPAN class="op">--</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            m_mod <SPAN class="op">-=</SPAN> m_rem<SPAN class="op">;</SPAN>
+            m_y <SPAN class="op">-=</SPAN> m_lft<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">void</SPAN> adjust_forward<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            m_mod <SPAN class="op">-=</SPAN> m_cnt<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">void</SPAN> adjust_backward<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            m_mod <SPAN class="op">+=</SPAN> m_cnt<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">int</SPAN> mod<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_mod<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">int</SPAN> rem<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_rem<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">int</SPAN> lft<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_lft<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">int</SPAN> y<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_y<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+
+    <SPAN class="kw1">private</SPAN>:
+        <SPAN class="kw1">int</SPAN> m_cnt<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN> m_lft<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN> m_rem<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN> m_mod<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN> m_y<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+
+
+
+
+
+    <SPAN class="rem">//---------------------------------------------<A name="line_bresenham_interpolator"><B></B></A><A href="agg_dda_line.h.html#line_bresenham_interpolator">line_bresenham_interpolator</A></SPAN>
+    <SPAN class="kw1">class</SPAN> <A href="agg_dda_line.h.html#line_bresenham_interpolator">line_bresenham_interpolator</A>
+    <SPAN class="op">{</SPAN>
+    <SPAN class="kw1">public</SPAN>:
+        <SPAN class="kw1">enum</SPAN> subpixel_scale_e
+        <SPAN class="op">{</SPAN>
+            subpixel_shift <SPAN class="op">=</SPAN> <SPAN class="num">8</SPAN><SPAN class="op">,</SPAN>
+            subpixel_scale <SPAN class="op">=</SPAN> <SPAN class="num">1</SPAN> <SPAN class="op">&lt;&lt;</SPAN> subpixel_shift<SPAN class="op">,</SPAN>
+            subpixel_mask  <SPAN class="op">=</SPAN> subpixel_scale <SPAN class="op">-</SPAN> <SPAN class="num">1</SPAN>
+        <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">static</SPAN> <SPAN class="kw1">int</SPAN> line_lr<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> v<SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> v <SPAN class="op">&gt;&gt;</SPAN> subpixel_shift<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <A href="agg_dda_line.h.html#line_bresenham_interpolator">line_bresenham_interpolator</A><SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x1<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y1<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> x2<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y2<SPAN class="op">)</SPAN> :
+            m_x1_lr<SPAN class="op">(</SPAN>line_lr<SPAN class="op">(</SPAN>x1<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_y1_lr<SPAN class="op">(</SPAN>line_lr<SPAN class="op">(</SPAN>y1<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_x2_lr<SPAN class="op">(</SPAN>line_lr<SPAN class="op">(</SPAN>x2<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_y2_lr<SPAN class="op">(</SPAN>line_lr<SPAN class="op">(</SPAN>y2<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_ver<SPAN class="op">(</SPAN>abs<SPAN class="op">(</SPAN>m_x2_lr <SPAN class="op">-</SPAN> m_x1_lr<SPAN class="op">)</SPAN> <SPAN class="op">&lt;</SPAN> abs<SPAN class="op">(</SPAN>m_y2_lr <SPAN class="op">-</SPAN> m_y1_lr<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_len<SPAN class="op">(</SPAN>m_ver ? abs<SPAN class="op">(</SPAN>m_y2_lr <SPAN class="op">-</SPAN> m_y1_lr<SPAN class="op">)</SPAN> : 
+                          abs<SPAN class="op">(</SPAN>m_x2_lr <SPAN class="op">-</SPAN> m_x1_lr<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_inc<SPAN class="op">(</SPAN>m_ver ? <SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>y2 <SPAN class="op">&gt;</SPAN> y1<SPAN class="op">)</SPAN> ? <SPAN class="num">1</SPAN> : <SPAN class="op">-</SPAN><SPAN class="num">1</SPAN><SPAN class="op">)</SPAN> : <SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>x2 <SPAN class="op">&gt;</SPAN> x1<SPAN class="op">)</SPAN> ? <SPAN class="num">1</SPAN> : <SPAN class="op">-</SPAN><SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_interpolator<SPAN class="op">(</SPAN>m_ver ? x1 : y1<SPAN class="op">,</SPAN> 
+                           m_ver ? x2 : y2<SPAN class="op">,</SPAN> 
+                           m_len<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+        <SPAN class="op">}</SPAN>
+    
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">bool</SPAN>     is_ver<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_ver<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> len<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>    <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_len<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">int</SPAN>      inc<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>    <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_inc<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">void</SPAN> hstep<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="op">++</SPAN>m_interpolator<SPAN class="op">;</SPAN>
+            m_x1_lr <SPAN class="op">+=</SPAN> m_inc<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">void</SPAN> vstep<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="op">++</SPAN>m_interpolator<SPAN class="op">;</SPAN>
+            m_y1_lr <SPAN class="op">+=</SPAN> m_inc<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">int</SPAN> x1<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_x1_lr<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">int</SPAN> y1<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_y1_lr<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">int</SPAN> x2<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> line_lr<SPAN class="op">(</SPAN>m_interpolator<SPAN class="op">.</SPAN>y<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">int</SPAN> y2<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> line_lr<SPAN class="op">(</SPAN>m_interpolator<SPAN class="op">.</SPAN>y<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">int</SPAN> x2_hr<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_interpolator<SPAN class="op">.</SPAN>y<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">int</SPAN> y2_hr<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_interpolator<SPAN class="op">.</SPAN>y<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+
+    <SPAN class="kw1">private</SPAN>:
+        <SPAN class="kw1">int</SPAN>                    m_x1_lr<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN>                    m_y1_lr<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN>                    m_x2_lr<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN>                    m_y2_lr<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">bool</SPAN>                   m_ver<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN>               m_len<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN>                    m_inc<SPAN class="op">;</SPAN>
+        <A href="agg_dda_line.h.html#dda2_line_interpolator">dda2_line_interpolator</A> m_interpolator<SPAN class="op">;</SPAN>
+
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+<SPAN class="op">}</SPAN>
+
+
+
+<SPAN class="kw2">#endif</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT><TABLE width="640px" bgcolor="#583927" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0">
+<TR><TD><CENTER><SPAN class="authors">
+Copyright <SPAN class="larger">&#169;</SPAN> 2002-2006
+<A href="../../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+<TR><TD><CENTER><SPAN class="authors">
+Web Design and Programming
+<A href="../../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+</TABLE>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+</HTML>

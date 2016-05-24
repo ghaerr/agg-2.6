@@ -1,0 +1,718 @@
+<HTML><HEAD><TITLE>Anti-Grain Geometry - </TITLE>
+<META http-equiv="Content-Type" content="text/html"/>
+<LINK rel="stylesheet" type="text/css" href="../../agg.styles.css"/>
+</HEAD>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE><SPAN class="rem">//----------------------------------------------------------------------------</SPAN>
+<SPAN class="rem">// Anti-Grain Geometry - Version 2.3</SPAN>
+<SPAN class="rem">// Copyright (C) 2002-2005 Maxim Shemanarev (http://www.antigrain.com)</SPAN>
+<SPAN class="rem">//</SPAN>
+<SPAN class="rem">// Permission to copy, use, modify, sell and distribute this software </SPAN>
+<SPAN class="rem">// is granted provided this copyright notice appears in all copies. </SPAN>
+<SPAN class="rem">// This software is provided &quot;as is&quot; without express or implied</SPAN>
+<SPAN class="rem">// warranty, and with no claim as to its suitability for any purpose.</SPAN>
+<SPAN class="rem">//</SPAN>
+<SPAN class="rem">//----------------------------------------------------------------------------</SPAN>
+<SPAN class="rem">//</SPAN>
+<SPAN class="rem">// The author gratefully acknowleges the support of David Turner, </SPAN>
+<SPAN class="rem">// Robert Wilhelm, and Werner Lemberg - the authors of the FreeType </SPAN>
+<SPAN class="rem">// libray - in producing this work. See http://www.freetype.org for details.</SPAN>
+<SPAN class="rem">//</SPAN>
+<SPAN class="rem">//----------------------------------------------------------------------------</SPAN>
+<SPAN class="rem">// Contact: mcseem@antigrain.com</SPAN>
+<SPAN class="rem">//          mcseemagg@yahoo.com</SPAN>
+<SPAN class="rem">//          http://www.antigrain.com</SPAN>
+<SPAN class="rem">//----------------------------------------------------------------------------</SPAN>
+<SPAN class="rem">//</SPAN>
+<SPAN class="rem">// Adaptation for 32-bit screen coordinates has been sponsored by </SPAN>
+<SPAN class="rem">// Liberty Technology Systems, Inc., visit http://lib-sys.com</SPAN>
+<SPAN class="rem">//</SPAN>
+<SPAN class="rem">// Liberty Technology Systems, Inc. is the provider of</SPAN>
+<SPAN class="rem">// PostScript and PDF technology for software developers.</SPAN>
+<SPAN class="rem">// </SPAN>
+<SPAN class="rem">//----------------------------------------------------------------------------</SPAN>
+<SPAN class="kw2">#ifndef</SPAN> AGG_RASTERIZER_COMPOUND_AA_INCLUDED
+<SPAN class="kw2">#define</SPAN> AGG_RASTERIZER_COMPOUND_AA_INCLUDED
+
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="agg_rasterizer_cells_aa.h.html">agg_rasterizer_cells_aa.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="agg_rasterizer_sl_clip.h.html">agg_rasterizer_sl_clip.h</A>&quot;</SPAN>
+
+<SPAN class="kw1">namespace</SPAN> agg
+<SPAN class="op">{</SPAN>
+
+    <SPAN class="rem">//-----------------------------------------------------------<A name="cell_style_aa"><B></B></A><A href="agg_rasterizer_compound_aa.h.html#cell_style_aa">cell_style_aa</A></SPAN>
+    <SPAN class="rem">// A pixel cell. There&#039;re no constructors defined and it was done </SPAN>
+    <SPAN class="rem">// intentionally in order to avoid extra overhead when allocating an </SPAN>
+    <SPAN class="rem">// array of cells.</SPAN>
+    <SPAN class="kw1">struct</SPAN> <A href="agg_rasterizer_compound_aa.h.html#cell_style_aa">cell_style_aa</A>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">int</SPAN>   x<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN>   y<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN>   cover<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN>   area<SPAN class="op">;</SPAN>
+        <A href="agg_basics.h.html#int16">int16</A> left<SPAN class="op">,</SPAN> right<SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">void</SPAN> initial<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            x     <SPAN class="op">=</SPAN> <SPAN class="num">0x7FFFFFFF</SPAN><SPAN class="op">;</SPAN>
+            y     <SPAN class="op">=</SPAN> <SPAN class="num">0x7FFFFFFF</SPAN><SPAN class="op">;</SPAN>
+            cover <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+            area  <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+            left  <SPAN class="op">=</SPAN> <SPAN class="op">-</SPAN><SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+            right <SPAN class="op">=</SPAN> <SPAN class="op">-</SPAN><SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">void</SPAN> style<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <A href="agg_rasterizer_compound_aa.h.html#cell_style_aa">cell_style_aa</A><SPAN class="op">&amp;</SPAN> c<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            left  <SPAN class="op">=</SPAN> c<SPAN class="op">.</SPAN>left<SPAN class="op">;</SPAN>
+            right <SPAN class="op">=</SPAN> c<SPAN class="op">.</SPAN>right<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">int</SPAN> not_equal<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> ex<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> ey<SPAN class="op">,</SPAN> <SPAN class="kw1">const</SPAN> <A href="agg_rasterizer_compound_aa.h.html#cell_style_aa">cell_style_aa</A><SPAN class="op">&amp;</SPAN> c<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">return</SPAN> <SPAN class="op">(</SPAN>ex <SPAN class="op">-</SPAN> x<SPAN class="op">)</SPAN> <SPAN class="op">|</SPAN> <SPAN class="op">(</SPAN>ey <SPAN class="op">-</SPAN> y<SPAN class="op">)</SPAN> <SPAN class="op">|</SPAN> <SPAN class="op">(</SPAN>left <SPAN class="op">-</SPAN> c<SPAN class="op">.</SPAN>left<SPAN class="op">)</SPAN> <SPAN class="op">|</SPAN> <SPAN class="op">(</SPAN>right <SPAN class="op">-</SPAN> c<SPAN class="op">.</SPAN>right<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+    <SPAN class="rem">//===========================================================<A name="layer_order_e"><B></B></A><A href="agg_rasterizer_compound_aa.h.html#layer_order_e">layer_order_e</A></SPAN>
+    <SPAN class="kw1">enum</SPAN> <A href="agg_rasterizer_compound_aa.h.html#layer_order_e">layer_order_e</A>
+    <SPAN class="op">{</SPAN>
+        <A href="agg_rasterizer_compound_aa.h.html#layer_unsorted">layer_unsorted</A><SPAN class="op">,</SPAN> <SPAN class="rem">//------<A name="layer_unsorted"><B></B></A><A href="agg_rasterizer_compound_aa.h.html#layer_unsorted">layer_unsorted</A></SPAN>
+        <A href="agg_rasterizer_compound_aa.h.html#layer_direct">layer_direct</A><SPAN class="op">,</SPAN>   <SPAN class="rem">//------<A name="layer_direct"><B></B></A><A href="agg_rasterizer_compound_aa.h.html#layer_direct">layer_direct</A></SPAN>
+        <A href="agg_rasterizer_compound_aa.h.html#layer_inverse">layer_inverse</A>   <SPAN class="rem">//------<A name="layer_inverse"><B></B></A><A href="agg_rasterizer_compound_aa.h.html#layer_inverse">layer_inverse</A></SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+    <SPAN class="rem">//==================================================<A name="rasterizer_compound_aa"><B></B></A><A href="agg_rasterizer_compound_aa.h.html#rasterizer_compound_aa">rasterizer_compound_aa</A></SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Clip<SPAN class="op">=</SPAN><A href="agg_rasterizer_sl_clip.h.html#rasterizer_sl_clip_int">rasterizer_sl_clip_int</A><SPAN class="op">&gt;</SPAN> <SPAN class="kw1">class</SPAN> <A href="agg_rasterizer_compound_aa.h.html#rasterizer_compound_aa">rasterizer_compound_aa</A>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">struct</SPAN> style_info 
+        <SPAN class="op">{</SPAN> 
+            <SPAN class="kw1">unsigned</SPAN> start_cell<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">unsigned</SPAN> num_cells<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">int</SPAN>      last_x<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">struct</SPAN> cell_info
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> area<SPAN class="op">,</SPAN> cover<SPAN class="op">;</SPAN> 
+        <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">public</SPAN>:
+        <SPAN class="kw1">typedef</SPAN> Clip                      clip_type<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">typedef</SPAN> <SPAN class="kw1">typename</SPAN> Clip::conv_type  conv_type<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">typedef</SPAN> <SPAN class="kw1">typename</SPAN> Clip::coord_type coord_type<SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">enum</SPAN> aa_scale_e
+        <SPAN class="op">{</SPAN>
+            aa_shift  <SPAN class="op">=</SPAN> <SPAN class="num">8</SPAN><SPAN class="op">,</SPAN>
+            aa_scale  <SPAN class="op">=</SPAN> <SPAN class="num">1</SPAN> <SPAN class="op">&lt;&lt;</SPAN> aa_shift<SPAN class="op">,</SPAN>
+            aa_mask   <SPAN class="op">=</SPAN> aa_scale <SPAN class="op">-</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">,</SPAN>
+            aa_scale2 <SPAN class="op">=</SPAN> aa_scale <SPAN class="op">*</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">,</SPAN>
+            aa_mask2  <SPAN class="op">=</SPAN> aa_scale2 <SPAN class="op">-</SPAN> <SPAN class="num">1</SPAN>
+        <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <A href="agg_rasterizer_compound_aa.h.html#rasterizer_compound_aa">rasterizer_compound_aa</A><SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> : 
+            m_outline<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_clipper<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_filling_rule<SPAN class="op">(</SPAN>fill_non_zero<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_layer_order<SPAN class="op">(</SPAN><A href="agg_rasterizer_compound_aa.h.html#layer_direct">layer_direct</A><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_styles<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>  <SPAN class="rem">// Active Styles</SPAN>
+            m_ast<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>     <SPAN class="rem">// Active Style Table (unique values)</SPAN>
+            m_asm<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>     <SPAN class="rem">// Active Style Mask </SPAN>
+            m_cells<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_cover_buf<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_master_alpha<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_min_style<SPAN class="op">(</SPAN><SPAN class="num">0x7FFFFFFF</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_max_style<SPAN class="op">(</SPAN><SPAN class="op">-</SPAN><SPAN class="num">0x7FFFFFFF</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_start_x<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_start_y<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_scan_y<SPAN class="op">(</SPAN><SPAN class="num">0x7FFFFFFF</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_sl_start<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_sl_len<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN><SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">void</SPAN> reset<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> 
+        <SPAN class="kw1">void</SPAN> reset_clipping<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">void</SPAN> clip_box<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x1<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y1<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> x2<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y2<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">void</SPAN> filling_rule<SPAN class="op">(</SPAN><A href="agg_basics.h.html#filling_rule_e">filling_rule_e</A> filling_rule<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">void</SPAN> layer_order<SPAN class="op">(</SPAN><A href="agg_rasterizer_compound_aa.h.html#layer_order_e">layer_order_e</A> order<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">void</SPAN> master_alpha<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> style<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> alpha<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">void</SPAN> styles<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> left<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> right<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">void</SPAN> move_to<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">void</SPAN> line_to<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">void</SPAN> move_to_d<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">void</SPAN> line_to_d<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">void</SPAN> add_vertex<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> cmd<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">void</SPAN> edge<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x1<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y1<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> x2<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y2<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">void</SPAN> edge_d<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x1<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y1<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> x2<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y2<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="rem">//-------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> VertexSource<SPAN class="op">&gt;</SPAN>
+        <SPAN class="kw1">void</SPAN> add_path<SPAN class="op">(</SPAN>VertexSource<SPAN class="op">&amp;</SPAN> vs<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> path_id<SPAN class="op">=</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">double</SPAN> x<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">double</SPAN> y<SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">unsigned</SPAN> cmd<SPAN class="op">;</SPAN>
+            vs<SPAN class="op">.</SPAN>rewind<SPAN class="op">(</SPAN>path_id<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_outline<SPAN class="op">.</SPAN>sorted<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> reset<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN><SPAN class="op">!</SPAN><A href="agg_basics.h.html#is_stop">is_stop</A><SPAN class="op">(</SPAN>cmd <SPAN class="op">=</SPAN> vs<SPAN class="op">.</SPAN>vertex<SPAN class="op">(</SPAN><SPAN class="op">&amp;</SPAN>x<SPAN class="op">,</SPAN> <SPAN class="op">&amp;</SPAN>y<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                add_vertex<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> y<SPAN class="op">,</SPAN> cmd<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">int</SPAN> min_x<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>     <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_outline<SPAN class="op">.</SPAN>min_x<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">int</SPAN> min_y<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>     <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_outline<SPAN class="op">.</SPAN>min_y<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">int</SPAN> max_x<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>     <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_outline<SPAN class="op">.</SPAN>max_x<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">int</SPAN> max_y<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>     <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_outline<SPAN class="op">.</SPAN>max_y<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">int</SPAN> min_style<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_min_style<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">int</SPAN> max_style<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_max_style<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">void</SPAN> sort<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">bool</SPAN> rewind_scanlines<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> sweep_styles<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN>      scanline_start<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>  <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_sl_start<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> scanline_length<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_sl_len<SPAN class="op">;</SPAN>   <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> style<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> style_idx<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN><SPAN class="op">;</SPAN>
+
+        <A href="agg_basics.h.html#cover_type">cover_type</A><SPAN class="op">*</SPAN> allocate_cover_buffer<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> len<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">bool</SPAN> navigate_scanline<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> 
+        <SPAN class="kw1">bool</SPAN> hit_test<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> tx<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> ty<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        AGG_INLINE <SPAN class="kw1">unsigned</SPAN> calculate_alpha<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> area<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> master_alpha<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">int</SPAN> cover <SPAN class="op">=</SPAN> area <SPAN class="op">&gt;&gt;</SPAN> <SPAN class="op">(</SPAN><A href="agg_basics.h.html#poly_subpixel_shift">poly_subpixel_shift</A><SPAN class="op">*</SPAN><SPAN class="num">2</SPAN> <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN> <SPAN class="op">-</SPAN> aa_shift<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>cover <SPAN class="op">&lt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> cover <SPAN class="op">=</SPAN> <SPAN class="op">-</SPAN>cover<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_filling_rule <SPAN class="op">==</SPAN> fill_even_odd<SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                cover <SPAN class="op">&amp;=</SPAN> aa_mask2<SPAN class="op">;</SPAN>
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>cover <SPAN class="op">&gt;</SPAN> aa_scale<SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    cover <SPAN class="op">=</SPAN> aa_scale2 <SPAN class="op">-</SPAN> cover<SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>cover <SPAN class="op">&gt;</SPAN> aa_mask<SPAN class="op">)</SPAN> cover <SPAN class="op">=</SPAN> aa_mask<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">return</SPAN> <SPAN class="op">(</SPAN>cover <SPAN class="op">*</SPAN> master_alpha <SPAN class="op">+</SPAN> aa_mask<SPAN class="op">)</SPAN> <SPAN class="op">&gt;&gt;</SPAN> aa_shift<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="rem">// Sweeps one scanline with one style index. The style ID can be </SPAN>
+        <SPAN class="rem">// determined by calling style(). </SPAN>
+        <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Scanline<SPAN class="op">&gt;</SPAN> <SPAN class="kw1">bool</SPAN> sweep_scanline<SPAN class="op">(</SPAN>Scanline<SPAN class="op">&amp;</SPAN> sl<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> style_idx<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">int</SPAN> scan_y <SPAN class="op">=</SPAN> m_scan_y <SPAN class="op">-</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>scan_y <SPAN class="op">&gt;</SPAN> m_outline<SPAN class="op">.</SPAN>max_y<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">return</SPAN> <SPAN class="kw1">false</SPAN><SPAN class="op">;</SPAN>
+
+            sl<SPAN class="op">.</SPAN>reset_spans<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">unsigned</SPAN> master_alpha <SPAN class="op">=</SPAN> aa_mask<SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>style_idx <SPAN class="op">&lt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> 
+            <SPAN class="op">{</SPAN>
+                style_idx <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="kw1">else</SPAN> 
+            <SPAN class="op">{</SPAN>
+                style_idx<SPAN class="op">++</SPAN><SPAN class="op">;</SPAN>
+                master_alpha <SPAN class="op">=</SPAN> m_master_alpha<SPAN class="op">[</SPAN>m_ast<SPAN class="op">[</SPAN>style_idx<SPAN class="op">]</SPAN> <SPAN class="op">+</SPAN> m_min_style <SPAN class="op">-</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+
+            <SPAN class="kw1">const</SPAN> style_info<SPAN class="op">&amp;</SPAN> st <SPAN class="op">=</SPAN> m_styles<SPAN class="op">[</SPAN>m_ast<SPAN class="op">[</SPAN>style_idx<SPAN class="op">]</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">unsigned</SPAN> num_cells <SPAN class="op">=</SPAN> st<SPAN class="op">.</SPAN>num_cells<SPAN class="op">;</SPAN>
+            cell_info<SPAN class="op">*</SPAN> cell <SPAN class="op">=</SPAN> <SPAN class="op">&amp;</SPAN>m_cells<SPAN class="op">[</SPAN>st<SPAN class="op">.</SPAN>start_cell<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">int</SPAN> cover <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN>num_cells<SPAN class="op">--</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                <SPAN class="kw1">unsigned</SPAN> alpha<SPAN class="op">;</SPAN>
+                <SPAN class="kw1">int</SPAN> x <SPAN class="op">=</SPAN> cell<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>x<SPAN class="op">;</SPAN>
+                <SPAN class="kw1">int</SPAN> area <SPAN class="op">=</SPAN> cell<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>area<SPAN class="op">;</SPAN>
+
+                cover <SPAN class="op">+=</SPAN> cell<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>cover<SPAN class="op">;</SPAN>
+
+                <SPAN class="op">++</SPAN>cell<SPAN class="op">;</SPAN>
+
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>area<SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    alpha <SPAN class="op">=</SPAN> calculate_alpha<SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>cover <SPAN class="op">&lt;&lt;</SPAN> <SPAN class="op">(</SPAN><A href="agg_basics.h.html#poly_subpixel_shift">poly_subpixel_shift</A> <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">-</SPAN> area<SPAN class="op">,</SPAN>
+                                            master_alpha<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    sl<SPAN class="op">.</SPAN>add_cell<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> alpha<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    x<SPAN class="op">++</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>num_cells <SPAN class="op">&amp;&amp;</SPAN> cell<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>x <SPAN class="op">&gt;</SPAN> x<SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    alpha <SPAN class="op">=</SPAN> calculate_alpha<SPAN class="op">(</SPAN>cover <SPAN class="op">&lt;&lt;</SPAN> <SPAN class="op">(</SPAN><A href="agg_basics.h.html#poly_subpixel_shift">poly_subpixel_shift</A> <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+                                            master_alpha<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>alpha<SPAN class="op">)</SPAN>
+                    <SPAN class="op">{</SPAN>
+                        sl<SPAN class="op">.</SPAN>add_span<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> cell<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>x <SPAN class="op">-</SPAN> x<SPAN class="op">,</SPAN> alpha<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="op">}</SPAN>
+                <SPAN class="op">}</SPAN>
+            <SPAN class="op">}</SPAN>
+
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>sl<SPAN class="op">.</SPAN>num_spans<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">return</SPAN> <SPAN class="kw1">false</SPAN><SPAN class="op">;</SPAN>
+            sl<SPAN class="op">.</SPAN>finalize<SPAN class="op">(</SPAN>scan_y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">return</SPAN> <SPAN class="kw1">true</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+    <SPAN class="kw1">private</SPAN>:
+        <SPAN class="kw1">void</SPAN> add_style<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> style_id<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">void</SPAN> allocate_master_alpha<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="rem">// Disable copying</SPAN>
+        <A href="agg_rasterizer_compound_aa.h.html#rasterizer_compound_aa">rasterizer_compound_aa</A><SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <A href="agg_rasterizer_compound_aa.h.html#rasterizer_compound_aa">rasterizer_compound_aa</A><SPAN class="op">&lt;</SPAN>Clip<SPAN class="op">&gt;</SPAN><SPAN class="op">&amp;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">const</SPAN> <A href="agg_rasterizer_compound_aa.h.html#rasterizer_compound_aa">rasterizer_compound_aa</A><SPAN class="op">&lt;</SPAN>Clip<SPAN class="op">&gt;</SPAN><SPAN class="op">&amp;</SPAN> 
+        <SPAN class="kw1">operator</SPAN> <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <A href="agg_rasterizer_compound_aa.h.html#rasterizer_compound_aa">rasterizer_compound_aa</A><SPAN class="op">&lt;</SPAN>Clip<SPAN class="op">&gt;</SPAN><SPAN class="op">&amp;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">private</SPAN>:
+        <A href="agg_rasterizer_cells_aa.h.html#rasterizer_cells_aa">rasterizer_cells_aa</A><SPAN class="op">&lt;</SPAN><A href="agg_rasterizer_compound_aa.h.html#cell_style_aa">cell_style_aa</A><SPAN class="op">&gt;</SPAN> m_outline<SPAN class="op">;</SPAN>
+        clip_type              m_clipper<SPAN class="op">;</SPAN>
+        <A href="agg_basics.h.html#filling_rule_e">filling_rule_e</A>         m_filling_rule<SPAN class="op">;</SPAN>
+        <A href="agg_rasterizer_compound_aa.h.html#layer_order_e">layer_order_e</A>          m_layer_order<SPAN class="op">;</SPAN>
+        <A href="agg_array.h.html#pod_vector">pod_vector</A><SPAN class="op">&lt;</SPAN>style_info<SPAN class="op">&gt;</SPAN> m_styles<SPAN class="op">;</SPAN>  <SPAN class="rem">// Active Styles</SPAN>
+        <A href="agg_array.h.html#pod_vector">pod_vector</A><SPAN class="op">&lt;</SPAN><SPAN class="kw1">unsigned</SPAN><SPAN class="op">&gt;</SPAN>   m_ast<SPAN class="op">;</SPAN>     <SPAN class="rem">// Active Style Table (unique values)</SPAN>
+        <A href="agg_array.h.html#pod_vector">pod_vector</A><SPAN class="op">&lt;</SPAN><A href="agg_basics.h.html#int8u">int8u</A><SPAN class="op">&gt;</SPAN>      m_asm<SPAN class="op">;</SPAN>     <SPAN class="rem">// Active Style Mask </SPAN>
+        <A href="agg_array.h.html#pod_vector">pod_vector</A><SPAN class="op">&lt;</SPAN>cell_info<SPAN class="op">&gt;</SPAN>  m_cells<SPAN class="op">;</SPAN>
+        <A href="agg_array.h.html#pod_vector">pod_vector</A><SPAN class="op">&lt;</SPAN><A href="agg_basics.h.html#cover_type">cover_type</A><SPAN class="op">&gt;</SPAN> m_cover_buf<SPAN class="op">;</SPAN>
+        <A href="agg_array.h.html#pod_bvector">pod_bvector</A><SPAN class="op">&lt;</SPAN><SPAN class="kw1">unsigned</SPAN><SPAN class="op">&gt;</SPAN>  m_master_alpha<SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">int</SPAN>        m_min_style<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN>        m_max_style<SPAN class="op">;</SPAN>
+        coord_type m_start_x<SPAN class="op">;</SPAN>
+        coord_type m_start_y<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN>        m_scan_y<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN>        m_sl_start<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN>   m_sl_len<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+
+
+
+
+
+
+
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Clip<SPAN class="op">&gt;</SPAN> 
+    <SPAN class="kw1">void</SPAN> <A href="agg_rasterizer_compound_aa.h.html#rasterizer_compound_aa">rasterizer_compound_aa</A><SPAN class="op">&lt;</SPAN>Clip<SPAN class="op">&gt;</SPAN>::reset<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> 
+    <SPAN class="op">{</SPAN> 
+        m_outline<SPAN class="op">.</SPAN>reset<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> 
+        m_min_style <SPAN class="op">=</SPAN>  <SPAN class="num">0x7FFFFFFF</SPAN><SPAN class="op">;</SPAN>
+        m_max_style <SPAN class="op">=</SPAN> <SPAN class="op">-</SPAN><SPAN class="num">0x7FFFFFFF</SPAN><SPAN class="op">;</SPAN>
+        m_scan_y    <SPAN class="op">=</SPAN>  <SPAN class="num">0x7FFFFFFF</SPAN><SPAN class="op">;</SPAN>
+        m_sl_start  <SPAN class="op">=</SPAN>  <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        m_sl_len    <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Clip<SPAN class="op">&gt;</SPAN> 
+    <SPAN class="kw1">void</SPAN> <A href="agg_rasterizer_compound_aa.h.html#rasterizer_compound_aa">rasterizer_compound_aa</A><SPAN class="op">&lt;</SPAN>Clip<SPAN class="op">&gt;</SPAN>::filling_rule<SPAN class="op">(</SPAN><A href="agg_basics.h.html#filling_rule_e">filling_rule_e</A> filling_rule<SPAN class="op">)</SPAN> 
+    <SPAN class="op">{</SPAN> 
+        m_filling_rule <SPAN class="op">=</SPAN> filling_rule<SPAN class="op">;</SPAN> 
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Clip<SPAN class="op">&gt;</SPAN> 
+    <SPAN class="kw1">void</SPAN> <A href="agg_rasterizer_compound_aa.h.html#rasterizer_compound_aa">rasterizer_compound_aa</A><SPAN class="op">&lt;</SPAN>Clip<SPAN class="op">&gt;</SPAN>::layer_order<SPAN class="op">(</SPAN><A href="agg_rasterizer_compound_aa.h.html#layer_order_e">layer_order_e</A> order<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        m_layer_order <SPAN class="op">=</SPAN> order<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Clip<SPAN class="op">&gt;</SPAN> 
+    <SPAN class="kw1">void</SPAN> <A href="agg_rasterizer_compound_aa.h.html#rasterizer_compound_aa">rasterizer_compound_aa</A><SPAN class="op">&lt;</SPAN>Clip<SPAN class="op">&gt;</SPAN>::clip_box<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x1<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y1<SPAN class="op">,</SPAN> 
+                                                <SPAN class="kw1">double</SPAN> x2<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y2<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        reset<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_clipper<SPAN class="op">.</SPAN>clip_box<SPAN class="op">(</SPAN>conv_type::upscale<SPAN class="op">(</SPAN>x1<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> conv_type::upscale<SPAN class="op">(</SPAN>y1<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> 
+                           conv_type::upscale<SPAN class="op">(</SPAN>x2<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> conv_type::upscale<SPAN class="op">(</SPAN>y2<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Clip<SPAN class="op">&gt;</SPAN> 
+    <SPAN class="kw1">void</SPAN> <A href="agg_rasterizer_compound_aa.h.html#rasterizer_compound_aa">rasterizer_compound_aa</A><SPAN class="op">&lt;</SPAN>Clip<SPAN class="op">&gt;</SPAN>::reset_clipping<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        reset<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_clipper<SPAN class="op">.</SPAN>reset_clipping<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Clip<SPAN class="op">&gt;</SPAN> 
+    <SPAN class="kw1">void</SPAN> <A href="agg_rasterizer_compound_aa.h.html#rasterizer_compound_aa">rasterizer_compound_aa</A><SPAN class="op">&lt;</SPAN>Clip<SPAN class="op">&gt;</SPAN>::styles<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> left<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> right<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <A href="agg_rasterizer_compound_aa.h.html#cell_style_aa">cell_style_aa</A> cell<SPAN class="op">;</SPAN>
+        cell<SPAN class="op">.</SPAN>initial<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        cell<SPAN class="op">.</SPAN>left <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN><A href="agg_basics.h.html#int16">int16</A><SPAN class="op">)</SPAN>left<SPAN class="op">;</SPAN>
+        cell<SPAN class="op">.</SPAN>right <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN><A href="agg_basics.h.html#int16">int16</A><SPAN class="op">)</SPAN>right<SPAN class="op">;</SPAN>
+        m_outline<SPAN class="op">.</SPAN>style<SPAN class="op">(</SPAN>cell<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>left  <SPAN class="op">&gt;=</SPAN> <SPAN class="num">0</SPAN> <SPAN class="op">&amp;&amp;</SPAN> left  <SPAN class="op">&lt;</SPAN> m_min_style<SPAN class="op">)</SPAN> m_min_style <SPAN class="op">=</SPAN> left<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>left  <SPAN class="op">&gt;=</SPAN> <SPAN class="num">0</SPAN> <SPAN class="op">&amp;&amp;</SPAN> left  <SPAN class="op">&gt;</SPAN> m_max_style<SPAN class="op">)</SPAN> m_max_style <SPAN class="op">=</SPAN> left<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>right <SPAN class="op">&gt;=</SPAN> <SPAN class="num">0</SPAN> <SPAN class="op">&amp;&amp;</SPAN> right <SPAN class="op">&lt;</SPAN> m_min_style<SPAN class="op">)</SPAN> m_min_style <SPAN class="op">=</SPAN> right<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>right <SPAN class="op">&gt;=</SPAN> <SPAN class="num">0</SPAN> <SPAN class="op">&amp;&amp;</SPAN> right <SPAN class="op">&gt;</SPAN> m_max_style<SPAN class="op">)</SPAN> m_max_style <SPAN class="op">=</SPAN> right<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Clip<SPAN class="op">&gt;</SPAN> 
+    <SPAN class="kw1">void</SPAN> <A href="agg_rasterizer_compound_aa.h.html#rasterizer_compound_aa">rasterizer_compound_aa</A><SPAN class="op">&lt;</SPAN>Clip<SPAN class="op">&gt;</SPAN>::move_to<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_outline<SPAN class="op">.</SPAN>sorted<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> reset<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_clipper<SPAN class="op">.</SPAN>move_to<SPAN class="op">(</SPAN>m_start_x <SPAN class="op">=</SPAN> conv_type::downscale<SPAN class="op">(</SPAN>x<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> 
+                          m_start_y <SPAN class="op">=</SPAN> conv_type::downscale<SPAN class="op">(</SPAN>y<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Clip<SPAN class="op">&gt;</SPAN> 
+    <SPAN class="kw1">void</SPAN> <A href="agg_rasterizer_compound_aa.h.html#rasterizer_compound_aa">rasterizer_compound_aa</A><SPAN class="op">&lt;</SPAN>Clip<SPAN class="op">&gt;</SPAN>::line_to<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        m_clipper<SPAN class="op">.</SPAN>line_to<SPAN class="op">(</SPAN>m_outline<SPAN class="op">,</SPAN> 
+                          conv_type::downscale<SPAN class="op">(</SPAN>x<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> 
+                          conv_type::downscale<SPAN class="op">(</SPAN>y<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Clip<SPAN class="op">&gt;</SPAN> 
+    <SPAN class="kw1">void</SPAN> <A href="agg_rasterizer_compound_aa.h.html#rasterizer_compound_aa">rasterizer_compound_aa</A><SPAN class="op">&lt;</SPAN>Clip<SPAN class="op">&gt;</SPAN>::move_to_d<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y<SPAN class="op">)</SPAN> 
+    <SPAN class="op">{</SPAN> 
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_outline<SPAN class="op">.</SPAN>sorted<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> reset<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_clipper<SPAN class="op">.</SPAN>move_to<SPAN class="op">(</SPAN>m_start_x <SPAN class="op">=</SPAN> conv_type::upscale<SPAN class="op">(</SPAN>x<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> 
+                          m_start_y <SPAN class="op">=</SPAN> conv_type::upscale<SPAN class="op">(</SPAN>y<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> 
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Clip<SPAN class="op">&gt;</SPAN> 
+    <SPAN class="kw1">void</SPAN> <A href="agg_rasterizer_compound_aa.h.html#rasterizer_compound_aa">rasterizer_compound_aa</A><SPAN class="op">&lt;</SPAN>Clip<SPAN class="op">&gt;</SPAN>::line_to_d<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y<SPAN class="op">)</SPAN> 
+    <SPAN class="op">{</SPAN> 
+        m_clipper<SPAN class="op">.</SPAN>line_to<SPAN class="op">(</SPAN>m_outline<SPAN class="op">,</SPAN> 
+                          conv_type::upscale<SPAN class="op">(</SPAN>x<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> 
+                          conv_type::upscale<SPAN class="op">(</SPAN>y<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> 
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Clip<SPAN class="op">&gt;</SPAN> 
+    <SPAN class="kw1">void</SPAN> <A href="agg_rasterizer_compound_aa.h.html#rasterizer_compound_aa">rasterizer_compound_aa</A><SPAN class="op">&lt;</SPAN>Clip<SPAN class="op">&gt;</SPAN>::add_vertex<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> cmd<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN><A href="agg_basics.h.html#is_move_to">is_move_to</A><SPAN class="op">(</SPAN>cmd<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> 
+        <SPAN class="op">{</SPAN>
+            move_to_d<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">else</SPAN> 
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN><A href="agg_basics.h.html#is_vertex">is_vertex</A><SPAN class="op">(</SPAN>cmd<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            line_to_d<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">else</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN><A href="agg_basics.h.html#is_close">is_close</A><SPAN class="op">(</SPAN>cmd<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            m_clipper<SPAN class="op">.</SPAN>line_to<SPAN class="op">(</SPAN>m_outline<SPAN class="op">,</SPAN> m_start_x<SPAN class="op">,</SPAN> m_start_y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Clip<SPAN class="op">&gt;</SPAN> 
+    <SPAN class="kw1">void</SPAN> <A href="agg_rasterizer_compound_aa.h.html#rasterizer_compound_aa">rasterizer_compound_aa</A><SPAN class="op">&lt;</SPAN>Clip<SPAN class="op">&gt;</SPAN>::edge<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x1<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y1<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> x2<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y2<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_outline<SPAN class="op">.</SPAN>sorted<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> reset<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_clipper<SPAN class="op">.</SPAN>move_to<SPAN class="op">(</SPAN>conv_type::downscale<SPAN class="op">(</SPAN>x1<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> conv_type::downscale<SPAN class="op">(</SPAN>y1<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_clipper<SPAN class="op">.</SPAN>line_to<SPAN class="op">(</SPAN>m_outline<SPAN class="op">,</SPAN> 
+                          conv_type::downscale<SPAN class="op">(</SPAN>x2<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> 
+                          conv_type::downscale<SPAN class="op">(</SPAN>y2<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+    
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Clip<SPAN class="op">&gt;</SPAN> 
+    <SPAN class="kw1">void</SPAN> <A href="agg_rasterizer_compound_aa.h.html#rasterizer_compound_aa">rasterizer_compound_aa</A><SPAN class="op">&lt;</SPAN>Clip<SPAN class="op">&gt;</SPAN>::edge_d<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x1<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y1<SPAN class="op">,</SPAN> 
+                                              <SPAN class="kw1">double</SPAN> x2<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y2<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_outline<SPAN class="op">.</SPAN>sorted<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> reset<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_clipper<SPAN class="op">.</SPAN>move_to<SPAN class="op">(</SPAN>conv_type::upscale<SPAN class="op">(</SPAN>x1<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> conv_type::upscale<SPAN class="op">(</SPAN>y1<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> 
+        m_clipper<SPAN class="op">.</SPAN>line_to<SPAN class="op">(</SPAN>m_outline<SPAN class="op">,</SPAN> 
+                          conv_type::upscale<SPAN class="op">(</SPAN>x2<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> 
+                          conv_type::upscale<SPAN class="op">(</SPAN>y2<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> 
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Clip<SPAN class="op">&gt;</SPAN> 
+    AGG_INLINE <SPAN class="kw1">void</SPAN> <A href="agg_rasterizer_compound_aa.h.html#rasterizer_compound_aa">rasterizer_compound_aa</A><SPAN class="op">&lt;</SPAN>Clip<SPAN class="op">&gt;</SPAN>::sort<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        m_outline<SPAN class="op">.</SPAN>sort_cells<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Clip<SPAN class="op">&gt;</SPAN> 
+    AGG_INLINE <SPAN class="kw1">bool</SPAN> <A href="agg_rasterizer_compound_aa.h.html#rasterizer_compound_aa">rasterizer_compound_aa</A><SPAN class="op">&lt;</SPAN>Clip<SPAN class="op">&gt;</SPAN>::rewind_scanlines<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        m_outline<SPAN class="op">.</SPAN>sort_cells<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_outline<SPAN class="op">.</SPAN>total_cells<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> 
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">return</SPAN> <SPAN class="kw1">false</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_max_style <SPAN class="op">&lt;</SPAN> m_min_style<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">return</SPAN> <SPAN class="kw1">false</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        m_scan_y <SPAN class="op">=</SPAN> m_outline<SPAN class="op">.</SPAN>min_y<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_styles<SPAN class="op">.</SPAN><SPAN class="kw1">allocate</SPAN><SPAN class="op">(</SPAN>m_max_style <SPAN class="op">-</SPAN> m_min_style <SPAN class="op">+</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">128</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        allocate_master_alpha<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">return</SPAN> <SPAN class="kw1">true</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Clip<SPAN class="op">&gt;</SPAN> 
+    AGG_INLINE <SPAN class="kw1">void</SPAN> <A href="agg_rasterizer_compound_aa.h.html#rasterizer_compound_aa">rasterizer_compound_aa</A><SPAN class="op">&lt;</SPAN>Clip<SPAN class="op">&gt;</SPAN>::add_style<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> style_id<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>style_id <SPAN class="op">&lt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> style_id  <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">else</SPAN>             style_id <SPAN class="op">-=</SPAN> m_min_style <SPAN class="op">-</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">unsigned</SPAN> nbyte <SPAN class="op">=</SPAN> style_id <SPAN class="op">&gt;&gt;</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> mask <SPAN class="op">=</SPAN> <SPAN class="num">1</SPAN> <SPAN class="op">&lt;&lt;</SPAN> <SPAN class="op">(</SPAN>style_id <SPAN class="op">&amp;</SPAN> <SPAN class="num">7</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        style_info<SPAN class="op">*</SPAN> style <SPAN class="op">=</SPAN> <SPAN class="op">&amp;</SPAN>m_styles<SPAN class="op">[</SPAN>style_id<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>m_asm<SPAN class="op">[</SPAN>nbyte<SPAN class="op">]</SPAN> <SPAN class="op">&amp;</SPAN> mask<SPAN class="op">)</SPAN> <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            m_ast<SPAN class="op">.</SPAN>add<SPAN class="op">(</SPAN>style_id<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            m_asm<SPAN class="op">[</SPAN>nbyte<SPAN class="op">]</SPAN> <SPAN class="op">|=</SPAN> mask<SPAN class="op">;</SPAN>
+            style<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>start_cell <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+            style<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>num_cells <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+            style<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>last_x <SPAN class="op">=</SPAN> <SPAN class="op">-</SPAN><SPAN class="num">0x7FFFFFFF</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="op">++</SPAN>style<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>start_cell<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="rem">// Returns the number of styles</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Clip<SPAN class="op">&gt;</SPAN> 
+    <SPAN class="kw1">unsigned</SPAN> <A href="agg_rasterizer_compound_aa.h.html#rasterizer_compound_aa">rasterizer_compound_aa</A><SPAN class="op">&lt;</SPAN>Clip<SPAN class="op">&gt;</SPAN>::sweep_styles<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN><SPAN class="op">;</SPAN><SPAN class="op">;</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_scan_y <SPAN class="op">&gt;</SPAN> m_outline<SPAN class="op">.</SPAN>max_y<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">return</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">unsigned</SPAN> num_cells <SPAN class="op">=</SPAN> m_outline<SPAN class="op">.</SPAN>scanline_num_cells<SPAN class="op">(</SPAN>m_scan_y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">const</SPAN> <A href="agg_rasterizer_compound_aa.h.html#cell_style_aa">cell_style_aa</A><SPAN class="op">*</SPAN> <SPAN class="kw1">const</SPAN><SPAN class="op">*</SPAN> cells <SPAN class="op">=</SPAN> m_outline<SPAN class="op">.</SPAN>scanline_cells<SPAN class="op">(</SPAN>m_scan_y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">unsigned</SPAN> num_styles <SPAN class="op">=</SPAN> m_max_style <SPAN class="op">-</SPAN> m_min_style <SPAN class="op">+</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">const</SPAN> <A href="agg_rasterizer_compound_aa.h.html#cell_style_aa">cell_style_aa</A><SPAN class="op">*</SPAN> curr_cell<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">unsigned</SPAN> style_id<SPAN class="op">;</SPAN>
+            style_info<SPAN class="op">*</SPAN> style<SPAN class="op">;</SPAN>
+            cell_info<SPAN class="op">*</SPAN> cell<SPAN class="op">;</SPAN>
+
+            m_cells<SPAN class="op">.</SPAN><SPAN class="kw1">allocate</SPAN><SPAN class="op">(</SPAN>num_cells <SPAN class="op">*</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">256</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> <SPAN class="rem">// Each cell can have two styles</SPAN>
+            m_ast<SPAN class="op">.</SPAN>capacity<SPAN class="op">(</SPAN>num_styles<SPAN class="op">,</SPAN> <SPAN class="num">64</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            m_asm<SPAN class="op">.</SPAN><SPAN class="kw1">allocate</SPAN><SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>num_styles <SPAN class="op">+</SPAN> <SPAN class="num">7</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">&gt;&gt;</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">8</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            m_asm<SPAN class="op">.</SPAN>zero<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>num_cells<SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                <SPAN class="rem">// Pre-add zero (for no-fill style, that is, -1).</SPAN>
+                <SPAN class="rem">// We need that to ensure that the &quot;-1 style&quot; would go first.</SPAN>
+                m_asm<SPAN class="op">[</SPAN><SPAN class="num">0</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">|=</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN> 
+                m_ast<SPAN class="op">.</SPAN>add<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                style <SPAN class="op">=</SPAN> <SPAN class="op">&amp;</SPAN>m_styles<SPAN class="op">[</SPAN><SPAN class="num">0</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                style<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>start_cell <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+                style<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>num_cells <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+                style<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>last_x <SPAN class="op">=</SPAN> <SPAN class="op">-</SPAN><SPAN class="num">0x7FFFFFFF</SPAN><SPAN class="op">;</SPAN>
+
+                m_sl_start <SPAN class="op">=</SPAN> cells<SPAN class="op">[</SPAN><SPAN class="num">0</SPAN><SPAN class="op">]</SPAN><SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>x<SPAN class="op">;</SPAN>
+                m_sl_len   <SPAN class="op">=</SPAN> cells<SPAN class="op">[</SPAN>num_cells<SPAN class="op">-</SPAN><SPAN class="num">1</SPAN><SPAN class="op">]</SPAN><SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>x <SPAN class="op">-</SPAN> m_sl_start <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN>num_cells<SPAN class="op">--</SPAN><SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    curr_cell <SPAN class="op">=</SPAN> <SPAN class="op">*</SPAN>cells<SPAN class="op">++</SPAN><SPAN class="op">;</SPAN>
+                    add_style<SPAN class="op">(</SPAN>curr_cell<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>left<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    add_style<SPAN class="op">(</SPAN>curr_cell<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>right<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+
+                <SPAN class="rem">// Convert the Y-histogram into the array of starting indexes</SPAN>
+                <SPAN class="kw1">unsigned</SPAN> i<SPAN class="op">;</SPAN>
+                <SPAN class="kw1">unsigned</SPAN> start_cell <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;</SPAN> m_ast<SPAN class="op">.</SPAN>size<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> i<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    style_info<SPAN class="op">&amp;</SPAN> st <SPAN class="op">=</SPAN> m_styles<SPAN class="op">[</SPAN>m_ast<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="kw1">unsigned</SPAN> v <SPAN class="op">=</SPAN> st<SPAN class="op">.</SPAN>start_cell<SPAN class="op">;</SPAN>
+                    st<SPAN class="op">.</SPAN>start_cell <SPAN class="op">=</SPAN> start_cell<SPAN class="op">;</SPAN>
+                    start_cell <SPAN class="op">+=</SPAN> v<SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+
+                cells <SPAN class="op">=</SPAN> m_outline<SPAN class="op">.</SPAN>scanline_cells<SPAN class="op">(</SPAN>m_scan_y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                num_cells <SPAN class="op">=</SPAN> m_outline<SPAN class="op">.</SPAN>scanline_num_cells<SPAN class="op">(</SPAN>m_scan_y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN>num_cells<SPAN class="op">--</SPAN><SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    curr_cell <SPAN class="op">=</SPAN> <SPAN class="op">*</SPAN>cells<SPAN class="op">++</SPAN><SPAN class="op">;</SPAN>
+                    style_id <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>curr_cell<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>left <SPAN class="op">&lt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> ? <SPAN class="num">0</SPAN> : 
+                                curr_cell<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>left <SPAN class="op">-</SPAN> m_min_style <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+
+                    style <SPAN class="op">=</SPAN> <SPAN class="op">&amp;</SPAN>m_styles<SPAN class="op">[</SPAN>style_id<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>curr_cell<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>x <SPAN class="op">==</SPAN> style<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>last_x<SPAN class="op">)</SPAN>
+                    <SPAN class="op">{</SPAN>
+                        cell <SPAN class="op">=</SPAN> <SPAN class="op">&amp;</SPAN>m_cells<SPAN class="op">[</SPAN>style<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>start_cell <SPAN class="op">+</SPAN> style<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>num_cells <SPAN class="op">-</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                        cell<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>area  <SPAN class="op">+=</SPAN> curr_cell<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>area<SPAN class="op">;</SPAN>
+                        cell<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>cover <SPAN class="op">+=</SPAN> curr_cell<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>cover<SPAN class="op">;</SPAN>
+                    <SPAN class="op">}</SPAN>
+                    <SPAN class="kw1">else</SPAN>
+                    <SPAN class="op">{</SPAN>
+                        cell <SPAN class="op">=</SPAN> <SPAN class="op">&amp;</SPAN>m_cells<SPAN class="op">[</SPAN>style<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>start_cell <SPAN class="op">+</SPAN> style<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>num_cells<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                        cell<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>x       <SPAN class="op">=</SPAN> curr_cell<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>x<SPAN class="op">;</SPAN>
+                        cell<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>area    <SPAN class="op">=</SPAN> curr_cell<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>area<SPAN class="op">;</SPAN>
+                        cell<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>cover   <SPAN class="op">=</SPAN> curr_cell<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>cover<SPAN class="op">;</SPAN>
+                        style<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>last_x <SPAN class="op">=</SPAN> curr_cell<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>x<SPAN class="op">;</SPAN>
+                        style<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>num_cells<SPAN class="op">++</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="op">}</SPAN>
+
+                    style_id <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>curr_cell<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>right <SPAN class="op">&lt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> ? <SPAN class="num">0</SPAN> : 
+                                curr_cell<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>right <SPAN class="op">-</SPAN> m_min_style <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+
+                    style <SPAN class="op">=</SPAN> <SPAN class="op">&amp;</SPAN>m_styles<SPAN class="op">[</SPAN>style_id<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>curr_cell<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>x <SPAN class="op">==</SPAN> style<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>last_x<SPAN class="op">)</SPAN>
+                    <SPAN class="op">{</SPAN>
+                        cell <SPAN class="op">=</SPAN> <SPAN class="op">&amp;</SPAN>m_cells<SPAN class="op">[</SPAN>style<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>start_cell <SPAN class="op">+</SPAN> style<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>num_cells <SPAN class="op">-</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                        cell<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>area  <SPAN class="op">-=</SPAN> curr_cell<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>area<SPAN class="op">;</SPAN>
+                        cell<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>cover <SPAN class="op">-=</SPAN> curr_cell<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>cover<SPAN class="op">;</SPAN>
+                    <SPAN class="op">}</SPAN>
+                    <SPAN class="kw1">else</SPAN>
+                    <SPAN class="op">{</SPAN>
+                        cell <SPAN class="op">=</SPAN> <SPAN class="op">&amp;</SPAN>m_cells<SPAN class="op">[</SPAN>style<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>start_cell <SPAN class="op">+</SPAN> style<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>num_cells<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                        cell<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>x       <SPAN class="op">=</SPAN>  curr_cell<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>x<SPAN class="op">;</SPAN>
+                        cell<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>area    <SPAN class="op">=</SPAN> <SPAN class="op">-</SPAN>curr_cell<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>area<SPAN class="op">;</SPAN>
+                        cell<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>cover   <SPAN class="op">=</SPAN> <SPAN class="op">-</SPAN>curr_cell<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>cover<SPAN class="op">;</SPAN>
+                        style<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>last_x <SPAN class="op">=</SPAN>  curr_cell<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>x<SPAN class="op">;</SPAN>
+                        style<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>num_cells<SPAN class="op">++</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="op">}</SPAN>
+                <SPAN class="op">}</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_ast<SPAN class="op">.</SPAN>size<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">&gt;</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">++</SPAN>m_scan_y<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="op">++</SPAN>m_scan_y<SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_layer_order <SPAN class="op">!=</SPAN> <A href="agg_rasterizer_compound_aa.h.html#layer_unsorted">layer_unsorted</A><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <A href="agg_array.h.html#range_adaptor">range_adaptor</A><SPAN class="op">&lt;</SPAN><A href="agg_array.h.html#pod_vector">pod_vector</A><SPAN class="op">&lt;</SPAN><SPAN class="kw1">unsigned</SPAN><SPAN class="op">&gt;</SPAN> <SPAN class="op">&gt;</SPAN> ra<SPAN class="op">(</SPAN>m_ast<SPAN class="op">,</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">,</SPAN> m_ast<SPAN class="op">.</SPAN>size<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">-</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_layer_order <SPAN class="op">==</SPAN> <A href="agg_rasterizer_compound_aa.h.html#layer_direct">layer_direct</A><SPAN class="op">)</SPAN> <A href="agg_array.h.html#quick_sort">quick_sort</A><SPAN class="op">(</SPAN>ra<SPAN class="op">,</SPAN> <A href="agg_array.h.html#unsigned_greater">unsigned_greater</A><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">else</SPAN>                              <A href="agg_array.h.html#quick_sort">quick_sort</A><SPAN class="op">(</SPAN>ra<SPAN class="op">,</SPAN> <A href="agg_array.h.html#unsigned_less">unsigned_less</A><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">return</SPAN> m_ast<SPAN class="op">.</SPAN>size<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">-</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="rem">// Returns style ID depending of the existing style index</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Clip<SPAN class="op">&gt;</SPAN> 
+    AGG_INLINE 
+    <SPAN class="kw1">unsigned</SPAN> <A href="agg_rasterizer_compound_aa.h.html#rasterizer_compound_aa">rasterizer_compound_aa</A><SPAN class="op">&lt;</SPAN>Clip<SPAN class="op">&gt;</SPAN>::style<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> style_idx<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">return</SPAN> m_ast<SPAN class="op">[</SPAN>style_idx <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">+</SPAN> m_min_style <SPAN class="op">-</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------ </SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Clip<SPAN class="op">&gt;</SPAN> 
+    AGG_INLINE <SPAN class="kw1">bool</SPAN> <A href="agg_rasterizer_compound_aa.h.html#rasterizer_compound_aa">rasterizer_compound_aa</A><SPAN class="op">&lt;</SPAN>Clip<SPAN class="op">&gt;</SPAN>::navigate_scanline<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> y<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        m_outline<SPAN class="op">.</SPAN>sort_cells<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_outline<SPAN class="op">.</SPAN>total_cells<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> 
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">return</SPAN> <SPAN class="kw1">false</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_max_style <SPAN class="op">&lt;</SPAN> m_min_style<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">return</SPAN> <SPAN class="kw1">false</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>y <SPAN class="op">&lt;</SPAN> m_outline<SPAN class="op">.</SPAN>min_y<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">||</SPAN> y <SPAN class="op">&gt;</SPAN> m_outline<SPAN class="op">.</SPAN>max_y<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> 
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">return</SPAN> <SPAN class="kw1">false</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        m_scan_y <SPAN class="op">=</SPAN> y<SPAN class="op">;</SPAN>
+        m_styles<SPAN class="op">.</SPAN><SPAN class="kw1">allocate</SPAN><SPAN class="op">(</SPAN>m_max_style <SPAN class="op">-</SPAN> m_min_style <SPAN class="op">+</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">128</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        allocate_master_alpha<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">return</SPAN> <SPAN class="kw1">true</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+    
+    <SPAN class="rem">//------------------------------------------------------------------------ </SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Clip<SPAN class="op">&gt;</SPAN> 
+    <SPAN class="kw1">bool</SPAN> <A href="agg_rasterizer_compound_aa.h.html#rasterizer_compound_aa">rasterizer_compound_aa</A><SPAN class="op">&lt;</SPAN>Clip<SPAN class="op">&gt;</SPAN>::hit_test<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> tx<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> ty<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN><SPAN class="op">!</SPAN>navigate_scanline<SPAN class="op">(</SPAN>ty<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> 
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">return</SPAN> <SPAN class="kw1">false</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">unsigned</SPAN> num_styles <SPAN class="op">=</SPAN> sweep_styles<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> 
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>num_styles <SPAN class="op">&lt;=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">return</SPAN> <SPAN class="kw1">false</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <A href="agg_rasterizer_cells_aa.h.html#scanline_hit_test">scanline_hit_test</A> sl<SPAN class="op">(</SPAN>tx<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        sweep_scanline<SPAN class="op">(</SPAN>sl<SPAN class="op">,</SPAN> <SPAN class="op">-</SPAN><SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">return</SPAN> sl<SPAN class="op">.</SPAN>hit<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------ </SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Clip<SPAN class="op">&gt;</SPAN> 
+    <A href="agg_basics.h.html#cover_type">cover_type</A><SPAN class="op">*</SPAN> <A href="agg_rasterizer_compound_aa.h.html#rasterizer_compound_aa">rasterizer_compound_aa</A><SPAN class="op">&lt;</SPAN>Clip<SPAN class="op">&gt;</SPAN>::allocate_cover_buffer<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> len<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        m_cover_buf<SPAN class="op">.</SPAN><SPAN class="kw1">allocate</SPAN><SPAN class="op">(</SPAN>len<SPAN class="op">,</SPAN> <SPAN class="num">256</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">return</SPAN> <SPAN class="op">&amp;</SPAN>m_cover_buf<SPAN class="op">[</SPAN><SPAN class="num">0</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------ </SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Clip<SPAN class="op">&gt;</SPAN> 
+    <SPAN class="kw1">void</SPAN> <A href="agg_rasterizer_compound_aa.h.html#rasterizer_compound_aa">rasterizer_compound_aa</A><SPAN class="op">&lt;</SPAN>Clip<SPAN class="op">&gt;</SPAN>::allocate_master_alpha<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN><SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN><SPAN class="op">)</SPAN>m_master_alpha<SPAN class="op">.</SPAN>size<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">&lt;=</SPAN> m_max_style<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            m_master_alpha<SPAN class="op">.</SPAN>add<SPAN class="op">(</SPAN>aa_mask<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------ </SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Clip<SPAN class="op">&gt;</SPAN> 
+    <SPAN class="kw1">void</SPAN> <A href="agg_rasterizer_compound_aa.h.html#rasterizer_compound_aa">rasterizer_compound_aa</A><SPAN class="op">&lt;</SPAN>Clip<SPAN class="op">&gt;</SPAN>::master_alpha<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> style<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> alpha<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>style <SPAN class="op">&gt;=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN><SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN><SPAN class="op">)</SPAN>m_master_alpha<SPAN class="op">.</SPAN>size<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">&lt;=</SPAN> style<SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                m_master_alpha<SPAN class="op">.</SPAN>add<SPAN class="op">(</SPAN>aa_mask<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            m_master_alpha<SPAN class="op">[</SPAN>style<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> <A href="agg_basics.h.html#uround">uround</A><SPAN class="op">(</SPAN>alpha <SPAN class="op">*</SPAN> aa_mask<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN>
+
+<SPAN class="op">}</SPAN>
+
+
+
+<SPAN class="kw2">#endif</SPAN>
+
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT><TABLE width="640px" bgcolor="#583927" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0">
+<TR><TD><CENTER><SPAN class="authors">
+Copyright <SPAN class="larger">&#169;</SPAN> 2002-2006
+<A href="../../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+<TR><TD><CENTER><SPAN class="authors">
+Web Design and Programming
+<A href="../../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+</TABLE>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+</HTML>

@@ -1,0 +1,930 @@
+<HTML><HEAD><TITLE>Anti-Grain Geometry - Texts Rasterization Exposures</TITLE>
+<META http-equiv="Content-Type" content="text/html"/>
+<LINK rel="stylesheet" type="text/css" href="../../agg.styles.css"/>
+</HEAD>
+<A name="FONT_RASTERIZATION"><B></B></A>
+
+
+<TABLE width="640px" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR>
+<TD bgcolor="#583927"></TD>
+</TR>
+</TABLE>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR>
+<TD>
+<TABLE width="170px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR><TD><A href="../../index.html" class="mpmenu">Home/</A></TD></TR>
+<TR><TD><A href="../index.html" class="mpmenu">Research/</A></TD></TR>
+<TR><TD><A href="" class="mpmenu"></A></TD></TR>
+<TR><TD><A href="" class="mpmenu"></A></TD></TR>
+<TR><TD><A href="" class="mpmenu"></A></TD></TR>
+<TR><TD><A href="" class="mpmenu"></A></TD></TR>
+</TABLE>
+</TD>
+<TD width="1px" bgcolor="#583927"></TD>
+<TD width="450px" valign="top" style="text-align:right">
+<TABLE border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR>
+<TD><IMG src="../../agg_logo.gif" border="0"/></TD>
+</TR>
+<TR>
+<TD>
+<TABLE border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR height="15px">
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../../news/index.html">News</A>&nbsp;&nbsp;</TD>
+<TD width="1px" bgcolor="#8e521d"></TD>
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../../doc/index.html">Docs</A>&nbsp;&nbsp;</TD>
+<TD width="1px" bgcolor="#8e521d"></TD>
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../../download/index.html">Download</A>&nbsp;&nbsp;</TD>
+<TD width="1px" bgcolor="#8e521d"></TD>
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../../maillist/index.html">Mailing List</A>&nbsp;&nbsp;</TD>
+<TD width="1px" bgcolor="#8e521d"></TD>
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../../cvs/index.html">CVS</A>&nbsp;&nbsp;</TD>
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+<TABLE width="640px" height="1px" bgcolor="#583927" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>
+</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD><H1>Texts Rasterization Exposures<SPAN class="subtitle"><BR/>An attempt to improve text rasterization algorithms using only publicly available information</SPAN></H1></TD></TR></TABLE>
+
+
+<TABLE width="640px"><TR><TD style="text-align:center"><P><B><I>First published in July, 2007</I></B></P></TD></TR></TABLE>
+
+<TABLE class="toc" width="640px"><TR><TD>
+    <DIV style="margin-left:2em; padding:3px; font-size:14px;"><A href="#toc0001"><B>Introduction</B></A></DIV>
+    <DIV style="margin-left:2em; padding:3px; font-size:14px;"><A href="#toc0002"><B>Microsoft, Apple, Adobe, and FontFocus</B></A>
+        <DIV style="margin-left:2em; font-size:12px;"><A href="#toc0003">Microsoft and Adobe: Sub-pixel Positioning and Kerning</A></DIV>
+        <DIV style="margin-left:2em; font-size:12px;"><A href="#toc0004">ClearType Sub-pixel Positioning: Is that Possible?</A></DIV>
+        <DIV style="margin-left:2em; font-size:12px;"><A href="#toc0005">The FontFocus Way of Grid-fitting</A></DIV></DIV>
+    <DIV style="margin-left:2em; padding:3px; font-size:14px;"><A href="#toc0006"><B>Linux</B></A>
+        <DIV style="margin-left:2em; font-size:12px;"><A href="#toc0007">Inheriting the Worst</A></DIV>
+        <DIV style="margin-left:2em; font-size:12px;"><A href="#toc0008">Gamma Correction</A></DIV>
+        <DIV style="margin-left:2em; font-size:12px;"><A href="#toc0009">Gamma does not Work!</A></DIV>
+        <DIV style="margin-left:2em; font-size:12px;"><A href="#toc0010">FreeType Auto-Hinter</A></DIV></DIV>
+    <DIV style="margin-left:2em; padding:3px; font-size:14px;"><A href="#toc0011"><B>What can we do?</B></A>
+        <DIV style="margin-left:2em; font-size:12px;"><A href="#toc0012">The RGB Sub-Pixel Rendering</A></DIV>
+        <DIV style="margin-left:2em; font-size:12px;"><A href="#toc0013">Other Details</A></DIV>
+        <DIV style="margin-left:2em; font-size:12px;"><A href="#toc0014">The Demo Application</A></DIV>
+        <DIV style="margin-left:2em; font-size:12px;"><A href="#toc0015">It Can Work Fast</A></DIV></DIV>
+    <DIV style="margin-left:2em; padding:3px; font-size:14px;"><A href="#toc0016"><B>References</B></A></DIV>
+
+</TD></TR></TABLE>
+
+<H2>Introduction<A name="toc0001"></A></H2>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Joel Spolsky in his article 
+<A href="http://www.joelonsoftware.com/items/2007/06/12.html"><IMG src="../../link.gif" border="0"/>&#147;Font smoothing, anti-aliasing, and sub-pixel rendering&#148;</A> [1] 
+compares Microsoft and Apple ways of text rendering and explains why windows people 
+don&#039;t like Safari. Text in Safari looks too blurry and <I>that must be why.</I>
+I want to go further and sum up my experience and observations about it. 
+I&#039;m not an expert in digital typography, but I &#147;have something to say&#148;. 
+At least, some ideas may be useful for the <B>GNU/Linux</B> community.</P></TD></TR></TABLE> 
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Jeff Atwood in his blog post 
+<A href="http://www.codinghorror.com/blog/archives/000885.html"><IMG src="../../link.gif" border="0"/>&#147;Font Rendering: Respecting the Pixel Grid&#148;</A> [5] says:
+<TABLE class="quote" width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD>
+I don&#039;t understand why Apple is asking us to sacrifice the present at 
+the altar of the future. <B>Can&#039;t we have hinting at low resolutions, and 
+accuracy at high resolutions, too?</B> Snapping fonts to a pixel grid may very 
+well be irrelevant when everyone is luxuriating in the glow of their 200 DPI 
+monitors. Until that glorious day arrives, respecting the pixel grid 
+certainly makes text a lot more readable for those of us stuck in the here 
+and now.</TD></TR></TABLE></P></TD></TR></TABLE>  
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>My short answer is <B>while Microsoft uses their aggressive hinting there will 
+be no higher than 100 DPI resolutions, period.</B> With the Microsoft approach there 
+is simply no way to break this <I>vicious circle</I>.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Jeff doesn&#039;t like Apple way of text rendering. I don&#039;t like it either. 
+But may be Apples&#039; mission is namely to aspire to those &#147;glorious days&#148; of 200 DPI? 
+Well, my bar it higher, it&#039;s 300 DPI. I think 200 is not enough to completely 
+discard text hinting. However, in this article I&#039;ll make an attempt to 
+&#147;unmask&#148; the Apple way too. The article may look long and boring for you, 
+but I feel I need to carefully analyze the situation in circumstantial details.</P></TD></TR></TABLE> 
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>To make it more intriguing I&#039;ll leap ahead and show you a few examples. 
+</P></TD></TR></TABLE><TABLE width="640px"><TR><TD><CENTER><IMG src="sample_arial_01.png" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Looks blurry? But consider the text size. And consider the fact it remain 
+perfectly readable, smooth and clean at the same time. And at the same time, 
+the letter-forms are fairly preserved (typeface &#147;Arial&#148;).</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>OK, how about this one?
+</P></TD></TR></TABLE><TABLE width="640px"><TR><TD><CENTER><IMG src="sample_arial_02.png" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Looks heavy? No problemo, we can make it lighter.</P></TD></TR></TABLE>
+ 
+<TABLE width="640px"><TR><TD><CENTER><IMG src="sample_arial_03.png" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>And two more samples:
+</P></TD></TR></TABLE><TABLE width="640px"><TR><TD><CENTER><IMG src="sample_georgia_01.png" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+<TABLE width="640px"><TR><TD><CENTER><IMG src="sample_georgia_02.png" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>It&#039;s the Georgia font. Note that the letter-form appearance is perfectly preserved 
+in both cases; just the last one was intentionally made slightly heavier.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>But it was only a &#147;body show&#148;; the main message of this article is. 
+<B>No more horizontal pixel grid! Really! From now on the horizontal grid 
+is 1/256 of a pixel!</B> You can shift the text horizontally by any 
+fractional value, while the visual appearance does not change a whit! 
+This &#147;little detail&#148; means a lot. How about this:</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><UL type="disc">
+<LI>You can kern symbols with sub-pixel precision, not worrying about 
+   introducing extra blurriness. </LI>
+<LI>You can freely scale the text as you want, with 100% guarantee 
+   of preserving a stable text layout that always fits other graphic elements. </LI>
+<LI>You can always be sure that the calculated text width exactly corresponds 
+   with what you will see on screen and paper.</LI>
+<LI>You can apply fancy vector effects such as &quot;faux bold&quot; and &quot;faux italic&quot; 
+   being sure the text will not look any blurrier.</LI></UL></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Sounds impossible? OK, one more sample.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><TABLE align="left"><TR><TD><CENTER><IMG src="sample_arial_1tenth_shift.png" title="" border="0"/></CENTER></TD></TR><TR><TD><I><CENTER></CENTER></I></TD></TR></TABLE></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Look at it carefully, do you see something strange? Each line has a 1/10<SUP>th</SUP> 
+pixel shift, so that, in the run of 30 lines it gradually <B>(gradually!)</B> accumulates 
+3 extra pixels. I&#039;m sure you know how it would look snapped to the horizontal pixel 
+grid, don&#039;t you?</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>OK, just in case: <A href="sample_arial_1tenth_int.png"><IMG src="../../link.gif" border="0"/>sample_arial_1tenth_int.png</A>.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The amazing thing is there is no rocket science! Nothing to patent! 
+All information is publicly available and/or deducible from what we see. 
+You only need to use a bit of your engineering intuition plus common sense. 
+So, it goes. You can download an application with full sources in the end of 
+the article and play with it, but not now, please. Now be patient to read rather 
+a long story.</P></TD></TR></TABLE>
+
+
+<BR/><H2>Microsoft, Apple, Adobe, and FontFocus<A name="toc0002"></A></H2>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>I&#039;ll start with a tough statement. Microsoft played a dirty trick on the world.
+Windows XP way of text rendering has zero taste and zero engineering 
+culture. Their text looks sharp and eye catching but wrong.</P></TD></TR></TABLE> 
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Just a simple test. Suppose you have a single line of text printed with 
+&#147;Times New Roman&#148; at a high resolution (say, exactly 1000 DPI). This line occupies 
+exactly 87% of some given distance (say, 5 inches) on paper. Then, we want to see a 
+strictly proportional picture at a low-resolution, say, exactly 100 DPI, so 
+that, our 5 inches would map to exactly 500 pixels. Is there a simple way in Windows 
+to display this text so that, it would occupy exactly 87% of our 500-pixel distance? &#151; 
+No way! It&#039;s clearly seen in the following snapshots. They are from Windows XP <SPAN class="larger">&#8594;</SPAN> 
+Display Properties <SPAN class="larger">&#8594;</SPAN> Settings <SPAN class="larger">&#8594;</SPAN> Advanced <SPAN class="larger">&#8594;</SPAN> General <SPAN class="larger">&#8594;</SPAN> DPI Setting <SPAN class="larger">&#8594;</SPAN> Custom Setting.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD><CENTER><IMG src="win_dpi_120percent.png" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE> 
+<TABLE width="640px"><TR><TD><CENTER><IMG src="win_dpi_121percent.png" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>They sacrificed the &#147;engineering honor&#148; in favor of money, which resulted in zero 
+technical progress during many years. <B>They use too aggressive font hinting. 
+Microsoft hinting not only distorts the letter-forms, but accumulates a huge 
+error along the text line.</B> As the result the fonts are not freely scalable; 
+they only seem to be scalable but they are not. This fact affects the computer monitor 
+industry. Can you imagine Microsoft Windows XP on a 600 DPI display? 
+Say, 8000x6000 pixels? I can&#039;t and not only because of invisible pixel icons, 
+but mostly because of poor text scaling. When you change DPI in the display 
+settings, some dialogs in some software will inevitably be displayed incorrectly. 
+So, where is the motivation?</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>You can argue that the software designers have to consider different font 
+sizes. I would agree with it, except for one little detail. 
+Designing 100% correct dialogs is extremely 
+tedious. Free scaling is much better in Windows Vista, but the situation 
+already <B>exists now</B> and it will be a long way to go to fix it. In other 
+words, we can&#039;t freely resize the dialog forms.</P></TD></TR></TABLE> 
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>A while ago I worked for 
+Johnson&amp;Johnson (Hello <A href="http://www.dimitris-agrafiotis.com"><IMG src="../../link.gif" border="0"/>Dimitris Agrafiotis</A> 
+and the others!) and I had to design some complex dialogs using the .Net WinForms. 
+By default any static or edit-box text was set something like &#147;Tahoma, 10pt&#148;.  
+But I all the time had to worry about some &quot;extra space&quot; in the end of the text 
+line, because when changing the resolution it sometimes didn&#039;t fit the given 
+width and used text wrapping. In these cases the forms became totally unusable. 
+So, if you take care of the proportional scaling, you have to design your forms 
+in a very ugly way, keeping a lot of empty space just in case. The other way 
+is to take a hammer, and nail the text size to pixels. Namely, set something 
+like &#147;Tahoma 14<B>px</B>&#148;. It means a lot. It means that your software cannot be 
+used at high resolutions. No matter how well Windows Vista supports text 
+scaling: the bad thing already happened. There is a lot of software that relies 
+on a fixed resolution, which prevents the manufacturers from developing higher 
+resolution displays. There is simply no motivation! Do not blame me, do not blame 
+many other software developers and designers. Blame Microsoft for their brutal 
+text hinting, which results in unpredictable overlapping between text and other 
+graphic elements.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Yes, in Windows Vista, with WPF everything becomes freely scalable. 
+That&#039;s the good news. The bad news is it&#039;s still impossible to use 
+high resolutions. The problems are clearly described by Long Zheng and Jim Mathies:<BR/>
+<A href="http://www.istartedsomething.com/20061211/vista-dpi-scaling"><IMG src="../../link.gif" border="0"/>Long Zheng, Windows Vista DPI scaling: my Vista is bigger than your Vista.</A><BR/>
+<A href=""><IMG src="../../link.gif" border="0"/>Jim Mathies, XP Style DPI Scaling.</A></P></TD></TR></TABLE>
+
+<H3>Microsoft and Adobe: Sub-pixel Positioning and Kerning<A name="toc0003"></A></H3>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>In Microsoft Word, as a WISIWIG system, it is mandatory to preserve the 
+accurate layout at any resolution. It means the layout must be freely scalable, 
+and it is scalable. But let me undertake a simple investigation. Below there is a 
+text as it looks in Microsoft Word Office 2003. There&#039;s no necessity to read it, 
+just take a general impression.</P></TD></TR></TABLE> 
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><TABLE class="quote" width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><IMG src="msword_text_rendering.png" title="" border="0"/><!----></TD></TR></TABLE></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>And compare it with how it looks in the Adobe Acrobat Reader:</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><TABLE class="quote" width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><IMG src="adobe_text_rendering.png" title="" border="0"/><!----></TD></TR></TABLE></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>You can see the difference better if you download these pictures and 
+switch between them with some slideshow program. I use nice and free 
+<A href="http://www.irfanview.com"><IMG src="../../link.gif" border="0"/>Irfanview.</A> Text in Adobe Acrobat looks 
+much more consistent and very close to what you have on a printer. Text 
+in MS Word looks sharper, but ugly in general. Why? &#151; Because of lousy kerning; 
+it looks like they simply discard kerning at low resolutions (96 DPI is very low). 
+Snapping the glyphs to pixels eventually results in some 
+&#147;randomly distributed white spaces&#148; that look ugly. There&#039;s only one way to 
+make it look better &#151; use horizontal sub-pixel positioning. 
+It&#039;s the law of nature, closely connected to the Nyquist-Shannon theorem 
+(in the Russian science community it&#039;s called <B>Kotelnikov-Shannon</B> theorem), 
+which says:</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><TABLE class="quote" width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD>Exact reconstruction of a continuous-time base-band signal from its samples 
+is possible if the signal is band limited and the sampling frequency is greater 
+than twice the signal bandwidth.</TD></TR></TABLE></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>In our case the &#147;signal bandwidth&#148; is about the &#147;sampling frequency&#148;. 
+Practically it means that you cannot properly display a bunch of vertical lines, 
+sharp and with the equal intervals at the same time, unless the intervals are 
+multiples of a pixel. Whether the distance between the lines will vary, or some lines will 
+look blurry. There is no other choice, period.</P></TD></TR></TABLE> 
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Pierre Arnaud demonstrated it more clearly: <BR/>
+<A href="http://article.gmane.org/gmane.comp.graphics.agg/3597"><IMG src="../../link.gif" border="0"/>http://article.gmane.org/gmane.comp.graphics.agg/3597</A>
+</P></TD></TR></TABLE><TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+Assume that you output a glyph for the letter &quot;i&quot; which is exactly 2.4 pixel wide. 
+If you grid-fit it using the hinter, you&#039;d probably get a 2 pixel wide shape. 
+Assume that a space measure 4 pixels.
+
+Now, imagine you display &quot;iiiiiiiiii&quot; (ten times the &quot;i&quot; glyph). This would produce 
+a word which occupies 20 pixels on screen, yet the typographic position should move 
+by 24 pixels. You end up adding 4 pixels to the following space, which doubles its 
+size. This will look strange on the screen. Worse, if the &quot;i&quot; glyph measures 2.6 
+pixels, and the hinter decides to grid-fit it to occupy 3 pixels, you&#039;ll occupy 30 
+pixels on screen whereas the typographic position only advanced by 26 pixels. This 
+time, you get a -4 pixel error which completely eats away the space.
+
+Another approach would be to position the &quot;i&quot; glyphs by rounding their typographic 
+position, which would lead us to use the following x coordinates in the 2.4 pixel 
+wide case:
+
+x = 0 ----&gt; 0   error =  0      width=2
+x = 2.4 --&gt; 2   error = -0.4    width=3
+x = 4.8 --&gt; 5   error = +0.2    width=2
+x = 7.2 --&gt; 7   error = -0.2    width=3
+x = 9.6 --&gt; 10  error = +0.4    width=2
+
+The result is ugly :
+
+.*.*..*.*..*
+............
+.*.*..*.*..*
+.*.*..*.*..*
+.*.*..*.*..*
+.*.*..*.*..*
+
+You get the idea... The &quot;i&quot; glyphs appear at irregular intervals.
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Yes, they do. They do appear at irregular intervals in MS Word. 
+</P></TD></TR></TABLE><TABLE width="640px"><TR><TD><CENTER><IMG src="msword_iiiiiiii.png" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>So, Microsoft does not allow for sub-pixel positioning, while Adobe does. 
+It means that the same glyphs at different positions may produce different pixel 
+result. It is clearly seen with the word &quot;institutions&quot;, marked with the red 
+rectangles in the snapshots above.</P></TD></TR></TABLE> 
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><IMG src="compare_text.png" title="" border="0"/><!----> <IMG src="compare_text_zoomed.png" title="" border="0"/><!----></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Take a look at Adobe&#039;s glyphs &#147;i&#148;, &#147;n&#148;, &#147;s&#148;, &#147;t&#148;. There are at least two 
+versions of them in different positions. And this is why text in Adobe looks more 
+consistent, but more blurry.</P></TD></TR></TABLE> 
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Now, if you type the very same word &#147;institutions&#148; in WordPad, the result will 
+be different and it does look much better. So, why in MS Word it looks worse? &#151;
+Only because of the visible inaccuracy in positioning. Function <B>TextOut()</B>, that 
+is probably used in WordPad does not care about it, but MS Word has to. 
+I&#039;m not sure, but probably the MS Word developers calculate the glyph advance 
+at a high resolution for &#147;unhinted&#148; glyphs. With the public Win32 API the only 
+way to do that is to call <B>GetGlyphOutline()</B> with a heavily zoomed affine matrix, 
+so that, the resulting glyph would fit 1024x1024 box or something like that. 
+Otherwise the advance value will be inaccurate since it is measured in integral 
+pixels. The direct use of it produces exactly the same result as in <B>TextOut()</B>. 
+It looks good, but accumulates a significant error along the text line (more 
+than the whole symbol position within only one word!).</P></TD></TR></TABLE> 
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>In the dialog boxes they think it is fair to ignore preserving the text width. 
+Why? &#151; <B>Because otherwise the captions, menus, dialogs, and so on, wouldn&#039;t 
+looks so pretty!</B> They would have the very same problem with &#147;randomly distributed 
+kerning&#148;, which would be <I>bad for business</I>.  So, nice looking and sharp 
+text in the dialogs is <I>good for business</I>, but it accumulates huge inaccuracy 
+in the text width, which makes it impossible to change the dialog size, 
+which makes software vendors rely on 96 DPI. So, it goes, we have a 
+<B><I>circulus vitiosus</I></B>. Eventually it turned into a big profanation.</P></TD></TR></TABLE> 
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>From the fair engineering point of view there must be some reasonable trade-off 
+between the sharpness and functionality. The problem is Microsoft concentrated 
+on the glamorous look but completely sacrificed the functionality. 
+The paradox is at 300 DPI or more you don&#039;t need any hinting at all and any 
+text becomes freely scalable (after 600 DPI you can do without anti-aliasing). 
+But you can&#039;t use your software at 300 DPI because it&#039;s designed for at most 100 DPI! 
+This is the price the world pays for this glamorous look. 
+The price is too high, just incredibly high.</P></TD></TR></TABLE> 
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>However, even 5 (five!) years ago it was technically possible to have 
+freely scalable forms and dialogs. All we needed is allow for a certain degree 
+of blurriness, very subtle, not like in Mac OS X. Like in Adobe&#039;s products.
+Windows people do not like Safari for too 
+blurry output. I partially agree with them, except for blind refusing any 
+other ways of rendering but Windows. This &#147;fanboyism&#148; is reckless. It is 
+equivalent to saying <I>&#147;I don&#039;t care about the resolution, I just want to have 
+my 96 DPI for ever, with the Windows-style text, and so, I vote for stopping 
+the progress.&#148;</I> Is that clever?</P></TD></TR></TABLE> 
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>I&#039;m not advocating Apple because I do not like Apple rendering either. 
+To me it really looks too blurry. It looks like they use some kind of a strange 
+auto-hinting that blurs horizontal strokes, but does not offer any advantages. 
+In fact, their hinting looks lousy. It especially looks bad with the sans-serif 
+group of fonts, as if they intentionally shifted sharp text by 0.2&#133;0.5 pixel. 
+This is really why windows people do not like Safari. But at the same time many 
+of them happily use the Adobe Acrobat Reader and do not buzz. It&#039;s because the 
+text looks appropriate there (I&#039;m not saying it&#039;s perfect, I&#039;m saying it&#039;s 
+appropriate to windows fans). 
+And it remains freely scalable! &#151; just load any document and gradually zoom it 
+in/out. The text layout remains fully consistent and has proper kerning at the 
+same time. So, yes, I would vote for the Adobe way of rendering, because their 
+trade-off seems to be very close to the optimum.</P></TD></TR></TABLE> 
+
+<H3>ClearType Sub-pixel Positioning: Is that Possible?<A name="toc0004"></A></H3>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Jeff Atwood <A href="http://www.codinghorror.com/blog/archives/000885.html"><IMG src="../../link.gif" border="0"/>definitely votes</A> 
+[5] for strict snapping to the pixel grid. My opinion is different. <B>I do respect 
+the pixel grid, but only in the Y-direction. In the X direction the sub-pixel 
+positioning must be allowed. In this case we can reasonably sacrifice some sharpness 
+(very gently!), but obtain freedom.</B></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The irony is that Microsoft already uses sub-pixel positioning in glyph hinting! 
+There is even more irony because it is clearly seen on Jeff&#039;s pages with the font he 
+uses.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><IMG src="jeff_text_normal.png" title="" border="0"/><!----></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Look at it carefully &#151; word &#147;common&#148; marked with red above, letter &#147;m&#148;.</P></TD></TR></TABLE>
+ 
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><TABLE align="left"><TR><TD><CENTER><IMG src="jeff_text_zoomed.png" title="" border="0"/></CENTER></TD></TR><TR><TD><I><CENTER></CENTER></I></TD></TR></TABLE>
+You see, the three vertical stems of the &#147;m&#148; are different! Although, 
+they look rather sharp and pretty in the original text. What does it mean? 
+It means a lot. It means that with <B>ClearType</B> it is possible to have a 1/3<SUP>rd</SUP> 
+pixel positioning! So, why do they nail the glyphs to pixels?!
+I do not understand it. 1/3<SUP>rd</SUP> is good enough for accurate kerning and 
+sharp text at the same time! OK, if it&#039;s still not convincing I can 
+demonstrate it in more details. I took a snapshot of a text line from 
+Microsoft Word that looks like this:</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><IMG src="msword_1line.png" title="" border="0"/><!----></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Then, with simple programmatic manipulations, I converted the colors into a 
+3-x grayscale bitmap:<BR/>
+<IMG src="msword_gray_mask.png" title="" border="0"/><!----></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>And then, I <B>&#147;alpha-blended&#148;</B> it in RGB, interpreting the channels as 
+individual gray pixels. I did that 12 times with 1 gray-pixel offset, which 
+eventually gives us the 1/3<SUP>rd</SUP> pixel offset in RGB. See what happened:<BR/>
+<IMG src="msword_1third_offset.png" title="" border="0"/><!----></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>It namely means sub-pixel positioning. You can easily make sure it does &#151;
+in the run of 12 lines it accumulates 4 extra pixels, keeping perfectly even 
+and smooth &#147;boundary&#148;. Well, the lines are slightly different, but 
+you have to closely stare into the picture to notice it (I have 100% clear vision without glasses.) 
+Trust me <B>it&#039;s a very low price for the freedom of accurate sub-pixel positioning!</B> So, it goes. 
+It&#039;s quite possible. Why didn&#039;t you use sub-pixel positioning, dear Microsoft? 
+Give us an answer. &#151; No answer.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><TABLE align="right"><TR><TD><CENTER><IMG src="xp_vista_default_font.png" title="" border="0"/></CENTER></TD></TR><TR><TD><I><CENTER></CENTER></I></TD></TR></TABLE> 
+By the way, is there sub-pixel positioning in Windows Vista? It looks like there is not.
+At least I couldn&#039;t find any case, when the same glyph would have different pixel
+set in different positions. You see, they slightly increased the default text size 
+for 96 DPI, but most of all, they increased the intervals between letters, so that, 
+the positioning inaccuracy became less visible. It&#039;s good, but what about more 
+accurate letter-forms? Yes, I can state, the situation with digital typography didn&#039;t 
+dramatically change after the Vista release. And we can&#039;t expect it to change for a 
+long time.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Another big question is about the definition &#147;Microsoft ClearType Font Collection&#148;.
+Why do they call it &#147;<B>ClearType</B> Font Collection&#148;? So, the &#147;ClearType-ness&#148; is
+heavily bound to the typefaces? Again, it sounds like a heavily customized ad-hoc 
+solution, so, not every font can be successfully used with ClearType. Below I&#039;m 
+going to show you that with the <A href="http://freetype.org"><IMG src="../../link.gif" border="0"/>FreeType</A> auto-hinter 
+it&#039;s very possible to find a fair, general, and &#147;font-independent&#148; solution. 
+All you need is the vector glyph outlines. Nothing else.</P></TD></TR></TABLE>
+
+<H3>The FontFocus Way of Grid-fitting<A name="toc0005"></A></H3>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Jeff also mentions the <A href="http://artofcode.com/fontfocus/"><IMG src="../../link.gif" border="0"/>FontFocus white paper</A> [4]. 
+Respectively, I have to disagree with it.</P></TD></TR></TABLE> 
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><IMG src="font_focus01.png" title="" border="0"/><!----></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>They align the stems to pixels and ignore vertical hinting. You see, symbols &#147;T&#148;, &#147;W&#148;, 
+&#147;C&#148; and &#147;g&#148; are significantly &#147;out of focus&#148;. Besides, &#147;W&#148; looks heavier.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>To me it looks sloppy. It&#039;s supposed to be &#147;Times New Roman&#148;. Does it look so? &#151; 
+No, it looks like a simple bitmap font. So, what&#039;s the point? &#151; Isn&#039;t it better just 
+to accurately encode it as a number of real B&amp;W pixel-maps? What&#039;s the point of anti-aliasing 
+if we afford to discard the letter-forms? Besides, it looks like the text has &#147;blots&#148;, 
+as if you wrote it with ink on a soft napkin: most of the time the strokes are good, 
+but sometimes they smear. Anyways, the problem remains the same: whether you discard 
+the accurate text layout, or have inconsistent kerning.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>I want to mention Safari again. I can&#039;t state it for sure, but it looks like 
+Mac OS people do not use sub-pixel kerning either, which practically means the very 
+same problem I&#039;m blaming Microsoft for. With the Safari way it would 
+be <B>very</B> possible to have more accurate positioning while preserving accurate layouts. 
+But it looks like they also rigidly snap symbols to pixels, no matter how blurry they 
+look. So, what is their mission? To render blurry text only in order to make people 
+buy higher resolution displays?! It&#039;s an unfair game!</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Below you will see how to achieve a pretty looking and accurate result with 
+relatively simple manipulations. I did that with the <A href="http://freetype.org"><IMG src="../../link.gif" border="0"/>FreeType library</A> 
+[10] and Win32 API <B>GetGlyphOutline()</B>. In other words, this rendering can be used in 
+both, Linux and Windows, and of course, Mac OS, where FreeType perfectly compiles. 
+I also figured out that the FreeType &quot;auto-hinter&quot; works pretty well in my way of 
+using it (I do not like its result under the &#147;normal conditions&#148;). But first I want 
+to talk about the situation in the Linux world.</P></TD></TR></TABLE>
+
+<BR/><H2>Linux<A name="toc0006"></A></H2>
+
+<H3>Inheriting the Worst<A name="toc0007"></A></H3>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The Windows way of text rendering is bad, the Linux way is much worse. 
+In all Linux systems I&#039;ve seen they use <A href="http://freetype.org"><IMG src="../../link.gif" border="0"/>FreeType</A> [10] 
+by David Turner, Robert Wilhelm, and Werner Lemberg. It is a <B>great library</B>, really, 
+but the way of using it is not so good. A typical screenshot of Linux looks like this:</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD><CENTER><IMG src="linux_screenshot01_fragment.png" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The full screenshot is here: <A href="linux_screenshot01.png"><IMG src="../../link.gif" border="0"/>linux_screenshot01.png</A></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The apparent problem is very visible &#147;dirty blots&#148; in the round corners introduced 
+by anti-aliasing. In general, we can say that the oblique strokes look heavier than 
+the stems, which gives you an impression of dirt. You can argue that the FreeType and 
+Linux can use a similar to ClearType RGB sub-pixel rendering, but to me it doesn&#039;t 
+look any better.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD><CENTER><IMG src="linux_screenshot02_fragment.png" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Look at &#147;W&#148;, &#147;v&#148; and &#147;y&#148; &#151; the problem is essentially the same; these symbols 
+look dirty.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>It&#039;s possible to improve the corners with gamma correction when rendering, but still, 
+it&#039;s impossible to achieve perfect consistency.</P></TD></TR></TABLE> 
+
+<H3>Gamma Correction<A name="toc0008"></A></H3>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Gamma correction works like this:</P></TD></TR></TABLE>
+ 
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><IMG src="gamma_1020.png" title="" border="0"/><!----></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>As you can see, the round anti-aliased corners look much better with gamma=2.0. 
+Gamma correction is a separate and non-trivial topic and if you wish you can find 
+comprehensive information in the <A href="http://www.poynton.com/GammaFAQ.html"><IMG src="../../link.gif" border="0"/>Charles Poynton&#039;s &#147;Gamma GAQ&#148;</A> [6].</P></TD></TR></TABLE> 
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>In our case it&#039;s not about those signal-response curves in the electronic circuits, 
+but mostly about the specific of the human vision. The visual response is 
+approximately proportional to the square root of the physical luminosity. 
+In other words, if there are two white pixels on black, and one of them emits 
+exactly two times more photons per second, it won&#039;t look two times brighter. 
+It will be about 1.4 times brighter. You can easily check it:</P></TD></TR></TABLE>
+ 
+<TABLE width="640px"><TR><TD><CENTER><IMG src="white_pixels.png" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>On the right there are two pixels and we can credibly say that they emit two times 
+more photons pre second than the pixel on the left. However they do not look two 
+times brighter. Four pixels will look about two times brighter, not two.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Skipping all other explanations, we can say that there are two major RGB color spaces: 
+<B>perceptually uniform</B>, which is called <B>sRGB</B>, and <B>physically uniform</B>. 
+In the latest, the <B>physical luminosity</B> is proportional to the value, 
+unlike sRGB, where the <B>perceptual response</B> is proportional to the value. 
+Often the physically uniform space is called just &#147;linear RGB&#148;. When using 
+anti-aliasing, the color compositing must be done in the linear space, but before 
+displaying you have to convert the resulting image to sRGB. However, very often 
+it&#039;s ignored and anti-aliasing is calculated directly in sRGB. In many cases 
+it produces quite appropriate result, but it becomes critical for text rendering. 
+It also can be clearly demonstrated in Microsoft Word. The thing is they use some 
+trick for the text selection, something like trivial color inversion, instead of 
+re-drawing the whole text. And so, if the normal text is rendered with the correct 
+gamma, the selected one has the inverse gamma. With regular, grayscale anti-aliasing, 
+the selected text looks dirty; with ClearType it also becomes very &#147;color fringy&#148;:</P></TD></TR></TABLE>
+ 
+<TABLE width="640px"><TR><TD><CENTER><IMG src="gamma_effect.png" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>So, in Windows there is proper gamma correction (but not for the selected text!), 
+in Linux they often (always?) ignore it. With FreeType it is easy to apply gamma 
+to the grayscale anti-aliasing mask that the rasterizer produces. But it will work 
+in the very same way like in Windows: inverting the colors will invert the gamma.
+It&#039;s practically useless because gamma must be applied to each color component 
+separately when blending (which, in turn, is equivalent to working in the linear 
+RGB space). Gamma correction for the grayscale mask works well only if you draw 
+black text on white background. In this case you can use value about 2. 
+But when drawing white text on black, you have to inverse the gamma, that is, 
+use value about 0.5. The problem is you do not know in advance the background 
+and text colors; the text can be drawn with a gradient over an image. 
+So, the &#147;grayscale&#148; gamma correction doesn&#039;t work, but the &#147;full-color&#148; 
+gamma may be expensive and tricky. The problem is linear RGB requires more 
+than 8 bit per channel, otherwise you will inevitably have color loses. 
+For the text it&#039;s tolerable, but you don&#039;t have the right to require it for 
+the entire desktop! And working in the loss-less linear RGB requires 16 bits 
+per channel, which is still unaffordable luxury.</P></TD></TR></TABLE> 
+
+<H3>Gamma does not Work!<A name="toc0009"></A></H3>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The situation is even worse. You can apply gamma=2 to the Linux screenshot in 
+Irfanview (Image/Enhance colors&#133;) and look at the text. Please try to ignore the 
+fact that the pictograms look too &quot;whitish&quot;, concentrate only on the text.</P></TD></TR></TABLE> 
+ 
+<TABLE width="640px"><TR><TD><CENTER><IMG src="linux_screenshot01_fragment_g2.png" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Do you like it? I still don&#039;t. When I was working on text rendering in AGG, 
+I though that proper gamma correction should solve all the problems. Nothing of 
+the kind! No matter how well it works, some elements look thicker, some others 
+thinner than the vertical and horizontal ones. It&#039;s especially visible with the 
+sans-serif group of fonts, and especially, when the strokes are strongly aligned
+to pixels. The problem is TrueType hinting for small glyphs was designed 
+<B>specifically for a regular, aliased B&amp;W rasterizer!</B> The use of anti-aliasing of 
+any kind is inappropriate, while most Linux people do namely that. 
+The picture below is the result of anti-aliased rasterization with both, 
+FreeType and Win32 GetGlyphOutline().</P></TD></TR></TABLE> 
+ 
+<TABLE width="640px"><TR><TD><CENTER><IMG src="text_tt_hinting_g1.png" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The text looks lousy and it is very similar to what we have in Linux in most cases. 
+It&#039;s impossible to fix the situation with any kind of gamma correction. 
+For example, the best I could achieve is use gamma=1.5. It still looks bad:</P></TD></TR></TABLE>
+ 
+<TABLE width="640px"><TR><TD><CENTER><IMG src="text_tt_hinting_g15.png" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>By the way, you must have noticed that after certain size the text abruptly 
+becomes heavy.  This is namely what happens in Windows. If you turn off the 
+ClearType feature for a while, it will be clearly seen (the text size is not 
+exactly preserved).</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD><CENTER><IMG src="text_tt_hinting_wordpad.png" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+ 
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>So, you got the idea. To make it more convincing, we can zoom in the vector 
+data returned by WinAPI GetGlyphOutline() and see what happens.</P></TD></TR></TABLE> 
+ 
+<TABLE width="640px"><TR><TD><CENTER><IMG src="text_tt_hinting_13pix.png" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>This is how the patented aggressive hinting works for the nominal size of 13 
+pixels. This is why the strokes in &#147;k&#148; look so fragile, almost invisible. 
+In Times New Roman Italic it&#039;s even worse; the &#147;slash&#148; in &#147;z&#148; completely 
+disappears. This distortion does not affect the regular &#147;aliased&#148; rasterizer, 
+but the one FreeType uses is sensitive to these things. It directly computes 
+pixel coverage values, so, it fairly produces zero coverage at the &#147;slash&#148; 
+of &#147;z&#148; when processing this zero-area degeneracy. So, it turns out it does 
+not make sense to interpret the TrueType hinting byte code (not to mention you 
+have to buy a license for that). Anti-aliasing is good, but it must not be a 
+&#147;thing-in-itself&#148;. Anyway, I would prefer to see regular, aliased text, rather 
+than anti-aliased, with inadequately used hints.</P></TD></TR></TABLE>
+
+<H3>FreeType Auto-Hinter<A name="toc0010"></A></H3>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>In FreeType-2 David Turner introduced the auto-hinting mechanism. It works 
+fairly well, but still, the direct use of it produces a far from the perfection 
+result. Look at the result of rendering Verdana font with gamma=1.5:</P></TD></TR></TABLE>
+ 
+<TABLE width="640px"><TR><TD><CENTER><IMG src="text_ft_autohint_g15.png" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Compare with the unhinted version:</P></TD></TR></TABLE>
+  
+<TABLE width="640px"><TR><TD><CENTER><IMG src="text_ft_unhinted_g15.png" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The unhinted version definitely looks more consistent, but too blurry. 
+There are three major differences.</P></TD></TR></TABLE> 
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><OL>
+<LI>Auto-hinting still introduces inconsistency in the round elements on 
+    small sizes (the same different visual thickness between vertical and 
+    oblique strokes).</LI>
+<LI>Sometimes it results in incorrect kerning, like &quot;og&quot; in word &quot;Dog&quot; 
+    (the font kerning table in this example has been used). </LI>
+<LI>It results in the very same accumulating error along the line, 
+    producing the &#147;jagged edge&#148; at the right.</LI></OL></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The auto-hinter works better with fancier typefaces, like Times New Roman, 
+but still has the very same positioning problems.</P></TD></TR></TABLE>
+
+
+
+<BR/><H2>What can we do?<A name="toc0011"></A></H2>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Leaping ahead I&#039;ll show you one more sample.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><IMG src="text_ft_antigrain.png" title="" border="0"/><!----></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>It really IS possible to find a reasonable solution. But first of all, you 
+have to agree that there is no way to use any kind of hinting for 
+<B>absolutely exact</B> text layout representation with any zoom factor, period. 
+Only unhinted text, with its natural blurriness. However, we can improve it 
+and we have something to sacrifice. Namely, we can afford some inaccuracy 
+in the vertical positioning and the text height. After all, the TrueType 
+hinting works in the very same way: the lines of text with, say, 
+12, and 13 pixels nominal heights have exactly the same pixel heights, but 
+still look differently.</P></TD></TR></TABLE>
+  
+<TABLE width="640px"><TR><TD><CENTER><IMG src="ms_text_same_height.png" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>So, in short words, for the nice looking text with accurate horizontal 
+positioning we need the following.</P></TD></TR></TABLE> 
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><OL>
+<LI>Use horizontal RGB sub-pixel anti-aliasing for LCD flat panels.</LI>
+<LI>Use vertical hinting only and completely discard the horizontal one.</LI>
+<LI>Use accurate glyph advance values, calculated at a high resolution for unhinted glyphs.</LI>
+<LI>Use accurate, high resolution values from the kerning table.</LI></OL></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Slight gamma correction may improve the result, but it&#039;s not mandatory. 
+The text looks good enough even in direct sRGB, which means there are no 
+potential problems when using inverse color schemes.</P></TD></TR></TABLE> 
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>You can easily achieve a nice result with <B>FreeType</B> and its auto-hinter. 
+It means that you don&#039;t have to worry about licensing the native TrueType hinting. 
+With Win32 <B>GetGlyphOutline()</B> it is more tricky, but still possible.</P></TD></TR></TABLE> 
+
+
+<H3>The RGB Sub-Pixel Rendering<A name="toc0012"></A></H3>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>You can find the comprehensive guide how to use the RGB sub-pixel 
+rendering on Steve Gibson&#039;s pages, <A href="http://www.grc.com/cleartype.htm"><IMG src="../../link.gif" border="0"/>Sub-Pixel Font Rendering Technology</A> [2]. I also tried to use it with the 
+64-level anti-aliased bitmaps that WinAPI GetGlyphOutline() can produce: 
+Maxim Shemanarev, <A href=""><IMG src="../../link.gif" border="0"/>Inside ClearType in Windows Longhorn</A> [3]. You can download a simple application 
+for Windows with sources here: <A href="http://antigrain.com/stuff/lcd_font.zip"><IMG src="../../link.gif" border="0"/>http://antigrain.com/stuff/lcd_font.zip</A>.</P></TD></TR></TABLE> 
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>I also wrote a simple, &quot;quick and dirty&quot; pixel renderer for AGG that can 
+be found in the demo examples below. The code is unsafe and rather slow. 
+It&#039;s OK for the demo application, but don&#039;t use it in a real project, 
+in particular because it uses a temporary buffer for at most 2048 pixels 
+in the stack.</P></TD></TR></TABLE> 
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Basically, all we need is the per-channel alpha. In this file, 
+<B>agg_pixfmt_rgb24_lcd.h</B>. I also perform additional blurring Steve 
+Gibson describes. It&#039;s performed on demand, but obviously can be pre-computed 
+and used with a cache mechanism. In this case it will work much faster, 
+at least, not slower than the regular alpha-blend.</P></TD></TR></TABLE> 
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>To debug the per-channel blending I used a modified 
+<A href="http://www.csc.calpoly.edu/~bfriesen/software/zoomin.shtml"><IMG src="../../link.gif" border="0"/>ZoomIn program</A> [9] by Brian Friesen. I added &#147;decoding&#148; of the color 
+triplets at all multiple-of-three zoom ratios. You can download the 
+executable: <A href="http://antigrain.com/stuff/ZoomInLcd.zip"><IMG src="../../link.gif" border="0"/>http://antigrain.com/stuff/ZoomInLcd.zip</A>, but since year 2005 
+I lost the modified sources. It&#039;s easy to do, anyway. You can compare the 
+zoomed results of regular, grayscale and RGB-sub-pixel renderings:</P></TD></TR></TABLE>
+ 
+<TABLE width="640px"><TR><TD style="text-align:center"><P><TABLE align="left"><TR><TD><CENTER><IMG src="zoom_lcd_gray.png" title="Grayscale" border="0"/></CENTER></TD></TR><TR><TD><I><CENTER>Grayscale</CENTER></I></TD></TR></TABLE> <TABLE align="left"><TR><TD><CENTER><IMG src="zoom_lcd_lcd.png" title="RGB-sub-pixel" border="0"/></CENTER></TD></TR><TR><TD><I><CENTER>RGB-sub-pixel</CENTER></I></TD></TR></TABLE> </P></TD></TR></TABLE>
+
+<H3>Other Details<A name="toc0013"></A></H3>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>To keep vertical hinting but discard horizontal we simply cheat the hinter. 
+We stretch the symbols horizontally so that, the hinter would have to work 
+with high accuracy in the X direction. The only problem is the AGG font engine 
+for FreeType uses the inaccurate advance value, considering hinting. Technically, 
+the hinter should calculate accurate advances for heavily stretched glyphs, but for some 
+reason it does not. So, to use with exact, &#147;unhinted&#148; advances I had to modify it. 
+The modified version is in the demo example. After the glyph outline is acquired 
+we use an affine transformer to shrink it back. Basically, that&#039;s all we need. 
+The kerning table has accurate enough values.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>So, I want to ask David Turner, maybe it makes sense to add an option to his 
+auto-hinter that would modify the Y-direction only, completely discarding 
+the X coordinates. It even can be a special, 1-D hinter that is supposed to be much 
+simpler than the existing one. As you will see, the text with the RGB-sub-pixel 
+blending looks pretty much like in the Adobe Acrobat Reader, at least to me it does 
+look much better than in a typical modern Linux system. <B>I do believe it will 
+promote Linux systems and advantage their popularity.</B></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>In Windows, the use of their API is significantly trickier. Function 
+<B>GetGlyphOutline()</B> returns the advance value in integral pixels, 
+which is too inaccurate. Stretching doesn&#039;t help. There are also functions 
+like <B>GetCharABCWidthsFloat()</B>, but they are useless because they calculate 
+the values for the hinted glyphs and despite the fact they formally contain 
+floating point values, they actually remain integers. So, I couldn&#039;t find a 
+simple way of getting accurate advances. I ended up with using two fonts 
+simultaneously, one for nominal height of 1024 pixels, and the other for the 
+given size, with hinting and a &#147;stretched&#148; affine matrix. I admit, I could miss 
+something, but I have no idea how to do that more correctly. In the Microsoft 
+Word they may use some undocumented functions, which would be totally unfair 
+from the competition point of view. I&#039;m not sure of course, but the situation 
+makes me think Microsoft intentionally does not provide a good enough API for 
+WISIWIG page making tools. It&#039;s a typical monopoly approach that results in 
+progress stagnation.</P></TD></TR></TABLE> 
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>It&#039;s even worse than that. The patented hinter does not work with a &#147;stretched&#148; 
+matrix! At least, I couldn&#039;t find any scaling coefficient that would correctly 
+process the glyphs. Only scaling 1:1 works correctly, but it results in the 
+very same problem that dictates the use of a B&amp;W aliased rasterizer:</P></TD></TR></TABLE>
+ 
+<TABLE width="640px"><TR><TD><CENTER><IMG src="text_tt_hinting_times_1x.png" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Looks like crap, doesn&#039;t it? Any other scaling ratio results in heavily distorted 
+glyphs, like this one (Times New Roman Italic, 16-x horizontal stretching):</P></TD></TR></TABLE>
+ 
+<TABLE width="640px"><TR><TD><CENTER><IMG src="text_tt_hinting_times_16x.png" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Or, even like this (Arial, 100-x horizontal stretching &#151; nice leaking, huh? 
+But unreadable.)</P></TD></TR></TABLE>
+ 
+<TABLE width="640px"><TR><TD><CENTER><IMG src="text_tt_hinting_arial_100x.png" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Needless to say that the FreeType auto-hinter works just fine with any 
+stretch ratio.</P></TD></TR></TABLE> 
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>It looks like Microsoft API is a huge set of ill-considered random ad-hoc 
+solutions, with no engineering culture and no any common idea behind. 
+Typically you can use Microsoft software only in one rigidly straightforward way. 
+Step to the left or step to the right &#151; and you fail. I admit it might be good 
+for business, but it&#039;s unfair. It prevents others from fair competition and stops 
+the progress. The anti-monopoly committee should take into account namely this 
+situation instead of ridiculous requirements to remove the Media Player or 
+Internet Explorer from Windows.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>So, eventually I found out that value 16 is the least evil; it works in most cases, 
+but still fails on &#147;Times New Roman Italic&#148;.</P></TD></TR></TABLE>
+
+
+<H3>The Demo Application<A name="toc0014"></A></H3>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>So, here it is, the Windows application with sources that uses FreeType:</P></TD></TR></TABLE> 
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><A href="truetype_test_02_ft.zip"><IMG src="../../download.gif" border="0"/>&#160;(truetype_test_02_ft.zip)</A></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The one uses Win32 API:</P></TD></TR></TABLE> 
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><A href="truetype_test_02_win.zip"><IMG src="../../download.gif" border="0"/>&#160;(truetype_test_02_win.zip)</A></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The FreeType version requires the following font files to be found in the 
+current directory: <B>arial.ttf</B>, <B>ariali.ttf</B>, <B>georgia.ttf</B>, 
+<B>georgiai.ttf</B>, <B>tahoma.ttf</B>, <B>times.ttf</B>, <B>timesi.ttf</B>, <B>verdana.ttf</B>, 
+<B>verdanai.ttf</B>. You can find them in the <B>Windows/Fonts</B> directory.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>If you want to compile it you download AGG v2.4 or v2.5, and unzip the files somewhere 
+like <B>agg-2.4/research/win32/trutype_lcd/*.*</B>. For the FreeType version you also need 
+to build the FreeType itself and probably adjust the settings in the project.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>It also can be built for <B>Linux/X11</B> or another system if you write a <B>Makefile</B>, 
+similar to the ones used in the AGG examples.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The text with the FreeType and WinAPI versions look differently because of 
+different hinting algorithms.</P></TD></TR></TABLE> 
+
+<TABLE width="640px"><TR><TD><CENTER><IMG src="truetype_ft_lcd.png" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>You see a lot of controls here. First, you can switch between the fonts and 
+control <B>&#147;Kerning&#148;</B>, <B>&#147;Hinting&#148;</B>, <B>&#147;Grayscale/Sub-pixel&#148;</B> rendering and see the 
+inverse image (white on black).</P></TD></TR></TABLE> 
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The <B>&#147;Font Scale&#148;</B> slider just uses this ratio to gradually change the size. 
+You see, with hinting, the lines are snapped to pixels, but the text width still 
+changes absolutely gradually. You can see it better changing <B>&#147;Interval&#148;</B>. 
+Without hinting the appearance of the layout is exactly preserved at any scale, 
+but the text looks blurry. Snapping the lines vertically is the most reasonable 
+trade-off between the sharpness and general appearance of the layout. It&#039;s just 
+surprising how much the vertical hinting improves the quality at the same time 
+preserving the letter-form appearance.</P></TD></TR></TABLE> 
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The <B>&#147;Interval&#148;</B>, <B>&#147;Width&#148;</B>, and <B>&#147;Faux Italic&#148;</B> sliders are obvious 
+and do not require explanations. It&#039;s apparent to people skilled in the art that 
+they are just trivial affine transformations. I only want to mention that 
+<B>&#147;Faux Italic&#148;</B> works slightly differently in the &#147;Grayscale&#148; and 
+&#147;RGB-Sub-pixel&#148; modes, simply because I&#039;m too lazy to calculate it 
+properly with arctangents. It&#039;s trivial and immaterial, anyway.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The feature I&#039;m especially proud of is <B>&#147;Faux Bold&#148;</B> that works like this:</P></TD></TR></TABLE>
+ 
+<TABLE width="640px"><TR><TD><CENTER><IMG src="truetype_ft_lcd_bold.png" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>There is also a simple trick. AGG has <B><A href="../../__code/include/agg_conv_contour.h.html#conv_contour">conv_contour</A></B> tool that allows you to 
+calculate an equidistant polygon to the given one. But the direct use of it 
+produces a very blurry result that also considerably changes the letter-form 
+appearance (it might me good for glow and shadow effects, though):</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD><CENTER><IMG src="truetype_ft_lcd_bold1.png" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+ 
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>It&#039;s easy to avoid the blurriness, if we stretch the glyphs vertically, 
+say 100 or 1000 times, calculate the equidistant polygon and shrink them again. 
+So, eventually the Y coordinates change very little; and it&#039;s practically invisible. 
+The text remains sharp. In the demo there&#039;s a pipeline class <B>&#147;faux_weight&#148;</B>. 
+Once again, it&#039;s amazing how many extra capabilities free horizontal scaling gives 
+you. And it&#039;s amazing how vertical snapping improves the result.</P></TD></TR></TABLE> 
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>One more example: (I love this freedom)</P></TD></TR></TABLE>
+ 
+<TABLE width="640px"><TR><TD><CENTER><IMG src="sample_georgia_03_distorted.png" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>It&#039;s the very same &#147;Georgia&#148; font, just programmatically transformed. Perfectly 
+readable, sharp and smooth at the same time (well, I agree that it requires custom kerning).</P></TD></TR></TABLE> 
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Or, the very same with &quot;Tahoma&quot;:</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD><CENTER><IMG src="sample_tahoma_01_distorted.png" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Slider <B>&#147;Gamma&#148;</B> controls per-component gamma correction. Theoretically, 
+you have to apply the &quot;Direct Gamma&quot; to the source colors, and then, after the 
+scene is drawn, apply the &quot;Inverse Gamma&quot;. But since the text in these examples
+is always black or white, the first operation does not make any difference.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Slider <B>&#147;Primary Weight&#148;</B> controls the energy distribution exactly as on 
+Steve Gibson&#039;s page: <A href="http://www.grc.com/freeandclear.htm"><IMG src="../../link.gif" border="0"/>http://www.grc.com/freeandclear.htm</A>. It&#039;s good enough to 
+control only the primary weight and calculate the other ones accordingly. 
+Increasing the primary weight you can make the text sharper, but more 
+&#147;color fringy&#148;. Values up to 0.5 are reasonable; above 0.5 the color halos 
+become too visible. To me, Windows ClearType with the default settings looks 
+too &#147;color fringy&#148; as well.</P></TD></TR></TABLE> 
+
+
+<H3>It Can Work Fast<A name="toc0015"></A></H3>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The demo applications are slow. Partially because of a lot of vector operations 
+performed on-the-fly, but especially because WinAPI GetGlyphOutline() is 
+ridiculously slow. However, it can be as fast as any kind of hardware 
+accelerated text output. But first, you have to agree that it&#039;s extremely difficult, 
+almost impossible to accelerate arbitrarily transformed text keeping hinting, 
+accurate layout and perfect RGB-sub-pixel quality at the same time. &#147;Arbitrary&#148; 
+namely means arbitrary, including perspective and any non-linear transformations.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Most of the times we have to deal with regular horizontal text, even using East Asian 
+languages. And most of the times the glyphs have equal nominal size. It means that 
+some caching mechanism is a must here. The RGB-sub-pixel gray mask takes 3 times 
+more space, but at the same time it allows for 1/3<SUP>rd</SUP> pixel positioning. It works 
+fairly well in most practical cases. Only for hypothetical &#147;luxury&#148; rendering you 
+can use two grayscale masks per glyph, which gives you the 1/6<SUP>th</SUP> pixel accuracy. 
+Even pure software alpha-blending works fast enough; about 2-4 microseconds per glyph 
+on modern Intel or PPC processors. With video hardware acceleration it may work much 
+faster if you upload the textures. The only problem is the hardware must allow for 
+using per-channel alpha blending, which, as I heard, is possible. At least, 
+David Brown mentions about it in his  
+<A href="http://download.microsoft.com/download/1/8/f/18f8cee2-0b64-41f2-893d-a6f2295b40c8/TW04007_WINHEC2004.ppt"><IMG src="../../link.gif" border="0"/>presentation</A> [8]. But I couldn&#039;t find more information about it (how to return a 
+6-channel output from the pixel shader) and I&#039;d highly appreciate if you give 
+me some references.</P></TD></TR></TABLE>
+
+
+<BR/><H2>References<A name="toc0016"></A></H2>
+
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><OL>
+<LI>Joel Spolsky, Font smoothing, anti-aliasing, and sub-pixel rendering. <BR/>
+    <A href="http://www.joelonsoftware.com/items/2007/06/12.html"><IMG src="../../link.gif" border="0"/>http://www.joelonsoftware.com/items/2007/06/12.html</A>.</LI>
+<LI>Steve Gibson, Sub-Pixel Font Rendering Technology. <BR/>
+    <A href="http://www.grc.com/cleartype.htm"><IMG src="../../link.gif" border="0"/>http://www.grc.com/cleartype.htm</A>.</LI>
+<LI>Maxim Shemanarev, Inside ClearType in Windows Longhorn. <BR/>
+    <A href="http://www.byte.com/documents/s=9553/byt1113241694002/0411_shemanarev.html"><IMG src="../../link.gif" border="0"/>http://www.byte.com/documents/s=9553/byt1113241694002/0411_shemanarev.html</A> <BR/>
+    (requires online registration.)</LI>
+<LI>FontFocus white paper, <A href="http://artofcode.com/fontfocus"><IMG src="../../link.gif" border="0"/>http://artofcode.com/fontfocus</A>/ </LI>
+<LI>Jeff Atwood, Font Rendering: Respecting the Pixel Grid. <BR/>
+    <A href="http://www.codinghorror.com/blog/archives/000885.html"><IMG src="../../link.gif" border="0"/>http://www.codinghorror.com/blog/archives/000885.html</A></LI>
+<LI>Charles Poynton, Frequently-Asked Questions about Gamma. <BR/>
+    <A href="http://www.poynton.com/GammaFAQ.html"><IMG src="../../link.gif" border="0"/>http://www.poynton.com/GammaFAQ.html</A></LI>
+<LI>Dave Shea, A Subpixel Safari. <BR/>
+    <A href="http://mezzoblue.com/archives/2007/06/12/a_subpixel_s"><IMG src="../../link.gif" border="0"/>http://mezzoblue.com/archives/2007/06/12/a_subpixel_s</A></LI>
+<LI>David Brown, 
+    <A href="http://download.microsoft.com/download/1/8/f/18f8cee2-0b64-41f2-893d-a6f2295b40c8/TW04007_WINHEC2004.ppt"><IMG src="../../link.gif" border="0"/>Avalon Text. A PowerPoint presentation.</A></LI>
+<LI>Brian Friesen, ZoomIn Program. <BR/>
+    <A href="http://www.csc.calpoly.edu/~bfriesen/software/zoomin.shtml"><IMG src="../../link.gif" border="0"/>http://www.csc.calpoly.edu/~bfriesen/software/zoomin.shtml</A></LI>
+<LI>David Turner and the others, FreeType font Library. <BR/>
+    <A href="http://freetype.org"><IMG src="../../link.gif" border="0"/>http://freetype.org</A> </LI>
+<LI>Jim Mathies, XP Style DPI Scaling. <BR/>
+    <A href="http://www.mathies.com/weblog/?p=908"><IMG src="../../link.gif" border="0"/>http://www.mathies.com/weblog/?p=908</A></LI>
+<LI>Long Zheng, Windows Vista DPI scaling: my Vista is bigger than your Vista <BR/>
+    <A href="http://www.istartedsomething.com/20061211/vista-dpi-scaling"><IMG src="../../link.gif" border="0"/>http://www.istartedsomething.com/20061211/vista-dpi-scaling</A></LI></OL></P></TD></TR></TABLE>
+
+<BR/><TABLE width="640px" bgcolor="#583927" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0">
+<TR><TD><CENTER><SPAN class="authors">
+Copyright <SPAN class="larger">&#169;</SPAN> 2002-2006
+<A href="../../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+<TR><TD><CENTER><SPAN class="authors">
+Web Design and Programming
+<A href="../../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+</TABLE>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+</HTML>

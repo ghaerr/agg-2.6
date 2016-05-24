@@ -1,0 +1,528 @@
+<HTML><HEAD><TITLE>Anti-Grain Geometry - </TITLE>
+<META http-equiv="Content-Type" content="text/html"/>
+<LINK rel="stylesheet" type="text/css" href="../../agg.styles.css"/>
+</HEAD>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE><SPAN class="rem">//----------------------------------------------------------------------------</SPAN>
+<SPAN class="rem">// Anti-Grain Geometry (AGG) - Version 2.5</SPAN>
+<SPAN class="rem">// A high quality rendering engine for C++</SPAN>
+<SPAN class="rem">// Copyright (C) 2002-2006 Maxim Shemanarev</SPAN>
+<SPAN class="rem">// Contact: mcseem@antigrain.com</SPAN>
+<SPAN class="rem">//          mcseemagg@yahoo.com</SPAN>
+<SPAN class="rem">//          http://antigrain.com</SPAN>
+<SPAN class="rem">// </SPAN>
+<SPAN class="rem">// AGG is free software; you can redistribute it and/or</SPAN>
+<SPAN class="rem">// modify it under the terms of the GNU General Public License</SPAN>
+<SPAN class="rem">// as published by the Free Software Foundation; either version 2</SPAN>
+<SPAN class="rem">// of the License, or (at your option) any later version.</SPAN>
+<SPAN class="rem">// </SPAN>
+<SPAN class="rem">// AGG is distributed in the hope that it will be useful,</SPAN>
+<SPAN class="rem">// but WITHOUT ANY WARRANTY; without even the implied warranty of</SPAN>
+<SPAN class="rem">// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</SPAN>
+<SPAN class="rem">// GNU General Public License for more details.</SPAN>
+<SPAN class="rem">// </SPAN>
+<SPAN class="rem">// You should have received a copy of the GNU General Public License</SPAN>
+<SPAN class="rem">// along with AGG; if not, write to the Free Software</SPAN>
+<SPAN class="rem">// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, </SPAN>
+<SPAN class="rem">// MA 02110-1301, USA.</SPAN>
+<SPAN class="rem">//----------------------------------------------------------------------------</SPAN>
+<SPAN class="rem">//</SPAN>
+<SPAN class="rem">// Adaptation for 32-bit screen coordinates (scanline32_u) has been sponsored by </SPAN>
+<SPAN class="rem">// Liberty Technology Systems, Inc., visit http://lib-sys.com</SPAN>
+<SPAN class="rem">//</SPAN>
+<SPAN class="rem">// Liberty Technology Systems, Inc. is the provider of</SPAN>
+<SPAN class="rem">// PostScript and PDF technology for software developers.</SPAN>
+<SPAN class="rem">// </SPAN>
+<SPAN class="rem">//----------------------------------------------------------------------------</SPAN>
+
+<SPAN class="kw2">#ifndef</SPAN> AGG_SCANLINE_U_INCLUDED
+<SPAN class="kw2">#define</SPAN> AGG_SCANLINE_U_INCLUDED
+
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="agg_array.h.html">agg_array.h</A>&quot;</SPAN>
+
+<SPAN class="kw1">namespace</SPAN> agg
+<SPAN class="op">{</SPAN>
+    <SPAN class="rem">//=============================================================<A name="scanline_u8"><B></B></A><A href="agg_scanline_u.h.html#scanline_u8">scanline_u8</A></SPAN>
+    <SPAN class="rem">//</SPAN>
+    <SPAN class="rem">// Unpacked scanline container class</SPAN>
+    <SPAN class="rem">//</SPAN>
+    <SPAN class="rem">// This class is used to transfer data from a scanline rasterizer </SPAN>
+    <SPAN class="rem">// to the rendering buffer. It&#039;s organized very simple. The class stores </SPAN>
+    <SPAN class="rem">// information of horizontal spans to render it into a pixel-map buffer. </SPAN>
+    <SPAN class="rem">// Each span has staring X, length, and an array of bytes that determine the </SPAN>
+    <SPAN class="rem">// cover-values for each pixel. </SPAN>
+    <SPAN class="rem">// Before using this class you should know the minimal and maximal pixel </SPAN>
+    <SPAN class="rem">// coordinates of your scanline. The protocol of using is:</SPAN>
+    <SPAN class="rem">// 1. reset(min_x, max_x)</SPAN>
+    <SPAN class="rem">// 2. add_cell() / add_span() - accumulate scanline. </SPAN>
+    <SPAN class="rem">//    When forming one scanline the next X coordinate must be always greater</SPAN>
+    <SPAN class="rem">//    than the last stored one, i.e. it works only with ordered coordinates.</SPAN>
+    <SPAN class="rem">// 3. Call finalize(y) and render the scanline.</SPAN>
+    <SPAN class="rem">// 3. Call reset_spans() to prepare for the new scanline.</SPAN>
+    <SPAN class="rem">//    </SPAN>
+    <SPAN class="rem">// 4. Rendering:</SPAN>
+    <SPAN class="rem">// </SPAN>
+    <SPAN class="rem">// Scanline provides an iterator class that allows you to extract</SPAN>
+    <SPAN class="rem">// the spans and the cover values for each pixel. Be aware that clipping</SPAN>
+    <SPAN class="rem">// has not been done yet, so you should perform it yourself.</SPAN>
+    <SPAN class="rem">// Use scanline_u8::iterator to render spans:</SPAN>
+    <SPAN class="rem">//-------------------------------------------------------------------------</SPAN>
+    <SPAN class="rem">//</SPAN>
+    <SPAN class="rem">// int y = sl.y();                    // Y-coordinate of the scanline</SPAN>
+    <SPAN class="rem">//</SPAN>
+    <SPAN class="rem">// ************************************</SPAN>
+    <SPAN class="rem">// ...Perform vertical clipping here...</SPAN>
+    <SPAN class="rem">// ************************************</SPAN>
+    <SPAN class="rem">//</SPAN>
+    <SPAN class="rem">// scanline_u8::const_iterator span = sl.begin();</SPAN>
+    <SPAN class="rem">// </SPAN>
+    <SPAN class="rem">// unsigned char* row = m_rbuf-&gt;row(y); // The the address of the beginning </SPAN>
+    <SPAN class="rem">//                                      // of the current row</SPAN>
+    <SPAN class="rem">// </SPAN>
+    <SPAN class="rem">// unsigned num_spans = sl.num_spans(); // Number of spans. It&#039;s guaranteed that</SPAN>
+    <SPAN class="rem">//                                      // num_spans is always greater than 0.</SPAN>
+    <SPAN class="rem">//</SPAN>
+    <SPAN class="rem">// do</SPAN>
+    <SPAN class="rem">// {</SPAN>
+    <SPAN class="rem">//     const scanline_u8::<A href="agg_basics.h.html#cover_type">cover_type</A>* covers =</SPAN>
+    <SPAN class="rem">//         span-&gt;covers;                     // The array of the cover values</SPAN>
+    <SPAN class="rem">//</SPAN>
+    <SPAN class="rem">//     int num_pix = span-&gt;len;              // Number of pixels of the span.</SPAN>
+    <SPAN class="rem">//                                           // Always greater than 0, still it&#039;s</SPAN>
+    <SPAN class="rem">//                                           // better to use &quot;int&quot; instead of </SPAN>
+    <SPAN class="rem">//                                           // &quot;unsigned&quot; because it&#039;s more</SPAN>
+    <SPAN class="rem">//                                           // convenient for clipping</SPAN>
+    <SPAN class="rem">//     int x = span-&gt;x;</SPAN>
+    <SPAN class="rem">//</SPAN>
+    <SPAN class="rem">//     **************************************</SPAN>
+    <SPAN class="rem">//     ...Perform horizontal clipping here...</SPAN>
+    <SPAN class="rem">//     ...you have x, covers, and pix_count..</SPAN>
+    <SPAN class="rem">//     **************************************</SPAN>
+    <SPAN class="rem">//</SPAN>
+    <SPAN class="rem">//     unsigned char* dst = row + x;  // Calculate the start address of the row.</SPAN>
+    <SPAN class="rem">//                                    // In this case we assume a simple </SPAN>
+    <SPAN class="rem">//                                    // grayscale image 1-byte per pixel.</SPAN>
+    <SPAN class="rem">//     do</SPAN>
+    <SPAN class="rem">//     {</SPAN>
+    <SPAN class="rem">//         *dst++ = *covers++;        // Hypotetical rendering. </SPAN>
+    <SPAN class="rem">//     }</SPAN>
+    <SPAN class="rem">//     while(--num_pix);</SPAN>
+    <SPAN class="rem">//</SPAN>
+    <SPAN class="rem">//     ++span;</SPAN>
+    <SPAN class="rem">// } </SPAN>
+    <SPAN class="rem">// while(--num_spans);  // num_spans cannot be 0, so this loop is quite safe</SPAN>
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="rem">//</SPAN>
+    <SPAN class="rem">// The question is: why should we accumulate the whole scanline when we</SPAN>
+    <SPAN class="rem">// could render just separate spans when they&#039;re ready?</SPAN>
+    <SPAN class="rem">// That&#039;s because using the scanline is generally faster. When is consists </SPAN>
+    <SPAN class="rem">// of more than one span the conditions for the processor cash system</SPAN>
+    <SPAN class="rem">// are better, because switching between two different areas of memory </SPAN>
+    <SPAN class="rem">// (that can be very large) occurs less frequently.</SPAN>
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">class</SPAN> <A href="agg_scanline_u.h.html#scanline_u8">scanline_u8</A>
+    <SPAN class="op">{</SPAN>
+    <SPAN class="kw1">public</SPAN>:
+        <SPAN class="kw1">typedef</SPAN> <A href="agg_scanline_u.h.html#scanline_u8">scanline_u8</A> self_type<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">typedef</SPAN> <A href="agg_basics.h.html#int8u">int8u</A>       <A href="agg_basics.h.html#cover_type">cover_type</A><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">typedef</SPAN> <A href="agg_basics.h.html#int16">int16</A>       coord_type<SPAN class="op">;</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">struct</SPAN> span
+        <SPAN class="op">{</SPAN>
+            coord_type  x<SPAN class="op">;</SPAN>
+            coord_type  len<SPAN class="op">;</SPAN>
+            <A href="agg_basics.h.html#cover_type">cover_type</A><SPAN class="op">*</SPAN> covers<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">typedef</SPAN> span<SPAN class="op">*</SPAN> iterator<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">typedef</SPAN> <SPAN class="kw1">const</SPAN> span<SPAN class="op">*</SPAN> const_iterator<SPAN class="op">;</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <A href="agg_scanline_u.h.html#scanline_u8">scanline_u8</A><SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> :
+            m_min_x<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_last_x<SPAN class="op">(</SPAN><SPAN class="num">0x7FFFFFF0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_cur_span<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN><SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">void</SPAN> reset<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> min_x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> max_x<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">unsigned</SPAN> max_len <SPAN class="op">=</SPAN> max_x <SPAN class="op">-</SPAN> min_x <SPAN class="op">+</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>max_len <SPAN class="op">&gt;</SPAN> m_spans<SPAN class="op">.</SPAN>size<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                m_spans<SPAN class="op">.</SPAN>resize<SPAN class="op">(</SPAN>max_len<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                m_covers<SPAN class="op">.</SPAN>resize<SPAN class="op">(</SPAN>max_len<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            m_last_x   <SPAN class="op">=</SPAN> <SPAN class="num">0x7FFFFFF0</SPAN><SPAN class="op">;</SPAN>
+            m_min_x    <SPAN class="op">=</SPAN> min_x<SPAN class="op">;</SPAN>
+            m_cur_span <SPAN class="op">=</SPAN> <SPAN class="op">&amp;</SPAN>m_spans<SPAN class="op">[</SPAN><SPAN class="num">0</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">void</SPAN> add_cell<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> cover<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            x <SPAN class="op">-=</SPAN> m_min_x<SPAN class="op">;</SPAN>
+            m_covers<SPAN class="op">[</SPAN>x<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN><A href="agg_basics.h.html#cover_type">cover_type</A><SPAN class="op">)</SPAN>cover<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>x <SPAN class="op">==</SPAN> m_last_x<SPAN class="op">+</SPAN><SPAN class="num">1</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                m_cur_span<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>len<SPAN class="op">++</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="kw1">else</SPAN>
+            <SPAN class="op">{</SPAN>
+                m_cur_span<SPAN class="op">++</SPAN><SPAN class="op">;</SPAN>
+                m_cur_span<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>x      <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>coord_type<SPAN class="op">)</SPAN><SPAN class="op">(</SPAN>x <SPAN class="op">+</SPAN> m_min_x<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                m_cur_span<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>len    <SPAN class="op">=</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+                m_cur_span<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>covers <SPAN class="op">=</SPAN> <SPAN class="op">&amp;</SPAN>m_covers<SPAN class="op">[</SPAN>x<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            m_last_x <SPAN class="op">=</SPAN> x<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">void</SPAN> add_cells<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> len<SPAN class="op">,</SPAN> <SPAN class="kw1">const</SPAN> <A href="agg_basics.h.html#cover_type">cover_type</A><SPAN class="op">*</SPAN> covers<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            x <SPAN class="op">-=</SPAN> m_min_x<SPAN class="op">;</SPAN>
+            memcpy<SPAN class="op">(</SPAN><SPAN class="op">&amp;</SPAN>m_covers<SPAN class="op">[</SPAN>x<SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> covers<SPAN class="op">,</SPAN> len <SPAN class="op">*</SPAN> <SPAN class="kw1">sizeof</SPAN><SPAN class="op">(</SPAN><A href="agg_basics.h.html#cover_type">cover_type</A><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>x <SPAN class="op">==</SPAN> m_last_x<SPAN class="op">+</SPAN><SPAN class="num">1</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                m_cur_span<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>len <SPAN class="op">+=</SPAN> <SPAN class="op">(</SPAN>coord_type<SPAN class="op">)</SPAN>len<SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="kw1">else</SPAN>
+            <SPAN class="op">{</SPAN>
+                m_cur_span<SPAN class="op">++</SPAN><SPAN class="op">;</SPAN>
+                m_cur_span<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>x      <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>coord_type<SPAN class="op">)</SPAN><SPAN class="op">(</SPAN>x <SPAN class="op">+</SPAN> m_min_x<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                m_cur_span<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>len    <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>coord_type<SPAN class="op">)</SPAN>len<SPAN class="op">;</SPAN>
+                m_cur_span<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>covers <SPAN class="op">=</SPAN> <SPAN class="op">&amp;</SPAN>m_covers<SPAN class="op">[</SPAN>x<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            m_last_x <SPAN class="op">=</SPAN> x <SPAN class="op">+</SPAN> len <SPAN class="op">-</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">void</SPAN> add_span<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> len<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> cover<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            x <SPAN class="op">-=</SPAN> m_min_x<SPAN class="op">;</SPAN>
+            memset<SPAN class="op">(</SPAN><SPAN class="op">&amp;</SPAN>m_covers<SPAN class="op">[</SPAN>x<SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> cover<SPAN class="op">,</SPAN> len<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>x <SPAN class="op">==</SPAN> m_last_x<SPAN class="op">+</SPAN><SPAN class="num">1</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                m_cur_span<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>len <SPAN class="op">+=</SPAN> <SPAN class="op">(</SPAN>coord_type<SPAN class="op">)</SPAN>len<SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="kw1">else</SPAN>
+            <SPAN class="op">{</SPAN>
+                m_cur_span<SPAN class="op">++</SPAN><SPAN class="op">;</SPAN>
+                m_cur_span<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>x      <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>coord_type<SPAN class="op">)</SPAN><SPAN class="op">(</SPAN>x <SPAN class="op">+</SPAN> m_min_x<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                m_cur_span<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>len    <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>coord_type<SPAN class="op">)</SPAN>len<SPAN class="op">;</SPAN>
+                m_cur_span<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>covers <SPAN class="op">=</SPAN> <SPAN class="op">&amp;</SPAN>m_covers<SPAN class="op">[</SPAN>x<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            m_last_x <SPAN class="op">=</SPAN> x <SPAN class="op">+</SPAN> len <SPAN class="op">-</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">void</SPAN> finalize<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> y<SPAN class="op">)</SPAN> 
+        <SPAN class="op">{</SPAN> 
+            m_y <SPAN class="op">=</SPAN> y<SPAN class="op">;</SPAN> 
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">void</SPAN> reset_spans<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            m_last_x    <SPAN class="op">=</SPAN> <SPAN class="num">0x7FFFFFF0</SPAN><SPAN class="op">;</SPAN>
+            m_cur_span  <SPAN class="op">=</SPAN> <SPAN class="op">&amp;</SPAN>m_spans<SPAN class="op">[</SPAN><SPAN class="num">0</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">int</SPAN>      y<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>           <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_y<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> num_spans<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>   <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> <SPAN class="kw1">unsigned</SPAN><SPAN class="op">(</SPAN>m_cur_span <SPAN class="op">-</SPAN> <SPAN class="op">&amp;</SPAN>m_spans<SPAN class="op">[</SPAN><SPAN class="num">0</SPAN><SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        const_iterator begin<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> <SPAN class="op">&amp;</SPAN>m_spans<SPAN class="op">[</SPAN><SPAN class="num">1</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        iterator       begin<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>       <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> <SPAN class="op">&amp;</SPAN>m_spans<SPAN class="op">[</SPAN><SPAN class="num">1</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+
+    <SPAN class="kw1">private</SPAN>:
+        <A href="agg_scanline_u.h.html#scanline_u8">scanline_u8</A><SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> self_type<SPAN class="op">&amp;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">const</SPAN> self_type<SPAN class="op">&amp;</SPAN> <SPAN class="kw1">operator</SPAN> <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> self_type<SPAN class="op">&amp;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">private</SPAN>:
+        <SPAN class="kw1">int</SPAN>                   m_min_x<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN>                   m_last_x<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN>                   m_y<SPAN class="op">;</SPAN>
+        <A href="agg_array.h.html#pod_array">pod_array</A><SPAN class="op">&lt;</SPAN><A href="agg_basics.h.html#cover_type">cover_type</A><SPAN class="op">&gt;</SPAN> m_covers<SPAN class="op">;</SPAN>
+        <A href="agg_array.h.html#pod_array">pod_array</A><SPAN class="op">&lt;</SPAN>span<SPAN class="op">&gt;</SPAN>       m_spans<SPAN class="op">;</SPAN>
+        span<SPAN class="op">*</SPAN>                 m_cur_span<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+
+
+    <SPAN class="rem">//==========================================================<A name="scanline_u8_am"><B></B></A><A href="agg_scanline_u.h.html#scanline_u8_am">scanline_u8_am</A></SPAN>
+    <SPAN class="rem">// </SPAN>
+    <SPAN class="rem">// The scanline container with alpha-masking</SPAN>
+    <SPAN class="rem">// </SPAN>
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> AlphaMask<SPAN class="op">&gt;</SPAN> 
+    <SPAN class="kw1">class</SPAN> <A href="agg_scanline_u.h.html#scanline_u8_am">scanline_u8_am</A> : <SPAN class="kw1">public</SPAN> <A href="agg_scanline_u.h.html#scanline_u8">scanline_u8</A>
+    <SPAN class="op">{</SPAN>
+    <SPAN class="kw1">public</SPAN>:
+        <SPAN class="kw1">typedef</SPAN> <A href="agg_scanline_u.h.html#scanline_u8">scanline_u8</A>           base_type<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">typedef</SPAN> AlphaMask             alpha_mask_type<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">typedef</SPAN> base_type::<A href="agg_basics.h.html#cover_type">cover_type</A> <A href="agg_basics.h.html#cover_type">cover_type</A><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">typedef</SPAN> base_type::coord_type coord_type<SPAN class="op">;</SPAN>
+
+        <A href="agg_scanline_u.h.html#scanline_u8_am">scanline_u8_am</A><SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> : base_type<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> m_alpha_mask<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN><SPAN class="op">}</SPAN>
+        <A href="agg_scanline_u.h.html#scanline_u8_am">scanline_u8_am</A><SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> AlphaMask<SPAN class="op">&amp;</SPAN> am<SPAN class="op">)</SPAN> : base_type<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> m_alpha_mask<SPAN class="op">(</SPAN><SPAN class="op">&amp;</SPAN>am<SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN><SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">void</SPAN> finalize<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> span_y<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            base_type::finalize<SPAN class="op">(</SPAN>span_y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_alpha_mask<SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                <SPAN class="kw1">typename</SPAN> base_type::iterator span <SPAN class="op">=</SPAN> base_type::begin<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">unsigned</SPAN> count <SPAN class="op">=</SPAN> base_type::num_spans<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">do</SPAN>
+                <SPAN class="op">{</SPAN>
+                    m_alpha_mask<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>combine_hspan<SPAN class="op">(</SPAN>span<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>x<SPAN class="op">,</SPAN> 
+                                                base_type::y<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> 
+                                                span<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>covers<SPAN class="op">,</SPAN> 
+                                                span<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>len<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="op">++</SPAN>span<SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+                <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN><SPAN class="op">--</SPAN>count<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+
+    <SPAN class="kw1">private</SPAN>:
+        <SPAN class="kw1">const</SPAN> AlphaMask<SPAN class="op">*</SPAN> m_alpha_mask<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+
+
+    <SPAN class="rem">//===========================================================<A name="scanline32_u8"><B></B></A><A href="agg_scanline_u.h.html#scanline32_u8">scanline32_u8</A></SPAN>
+    <SPAN class="kw1">class</SPAN> <A href="agg_scanline_u.h.html#scanline32_u8">scanline32_u8</A>
+    <SPAN class="op">{</SPAN>
+    <SPAN class="kw1">public</SPAN>:
+        <SPAN class="kw1">typedef</SPAN> <A href="agg_scanline_u.h.html#scanline32_u8">scanline32_u8</A> self_type<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">typedef</SPAN> <A href="agg_basics.h.html#int8u">int8u</A>         <A href="agg_basics.h.html#cover_type">cover_type</A><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">typedef</SPAN> <A href="agg_basics.h.html#int32">int32</A>         coord_type<SPAN class="op">;</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">struct</SPAN> span
+        <SPAN class="op">{</SPAN>
+            span<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN><SPAN class="op">}</SPAN>
+            span<SPAN class="op">(</SPAN>coord_type x_<SPAN class="op">,</SPAN> coord_type len_<SPAN class="op">,</SPAN> <A href="agg_basics.h.html#cover_type">cover_type</A><SPAN class="op">*</SPAN> covers_<SPAN class="op">)</SPAN> :
+                x<SPAN class="op">(</SPAN>x_<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> len<SPAN class="op">(</SPAN>len_<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> covers<SPAN class="op">(</SPAN>covers_<SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN><SPAN class="op">}</SPAN>
+
+            coord_type  x<SPAN class="op">;</SPAN>
+            coord_type  len<SPAN class="op">;</SPAN>
+            <A href="agg_basics.h.html#cover_type">cover_type</A><SPAN class="op">*</SPAN> covers<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">typedef</SPAN> <A href="agg_array.h.html#pod_bvector">pod_bvector</A><SPAN class="op">&lt;</SPAN>span<SPAN class="op">,</SPAN> <SPAN class="num">4</SPAN><SPAN class="op">&gt;</SPAN> span_array_type<SPAN class="op">;</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">class</SPAN> const_iterator
+        <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">public</SPAN>:
+            const_iterator<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> span_array_type<SPAN class="op">&amp;</SPAN> spans<SPAN class="op">)</SPAN> :
+                m_spans<SPAN class="op">(</SPAN>spans<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+                m_span_idx<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN><SPAN class="op">}</SPAN>
+
+            <SPAN class="kw1">const</SPAN> span<SPAN class="op">&amp;</SPAN> <SPAN class="kw1">operator</SPAN><SPAN class="op">*</SPAN><SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>  <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_spans<SPAN class="op">[</SPAN>m_span_idx<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>  <SPAN class="op">}</SPAN>
+            <SPAN class="kw1">const</SPAN> span<SPAN class="op">*</SPAN> <SPAN class="kw1">operator</SPAN><SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN><SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> <SPAN class="op">&amp;</SPAN>m_spans<SPAN class="op">[</SPAN>m_span_idx<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+
+            <SPAN class="kw1">void</SPAN> <SPAN class="kw1">operator</SPAN> <SPAN class="op">++</SPAN> <SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN> <SPAN class="op">++</SPAN>m_span_idx<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">private</SPAN>:
+            <SPAN class="kw1">const</SPAN> span_array_type<SPAN class="op">&amp;</SPAN> m_spans<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">unsigned</SPAN>               m_span_idx<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">class</SPAN> iterator
+        <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">public</SPAN>:
+            iterator<SPAN class="op">(</SPAN>span_array_type<SPAN class="op">&amp;</SPAN> spans<SPAN class="op">)</SPAN> :
+                m_spans<SPAN class="op">(</SPAN>spans<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+                m_span_idx<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN><SPAN class="op">}</SPAN>
+
+            span<SPAN class="op">&amp;</SPAN> <SPAN class="kw1">operator</SPAN><SPAN class="op">*</SPAN><SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>  <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_spans<SPAN class="op">[</SPAN>m_span_idx<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>  <SPAN class="op">}</SPAN>
+            span<SPAN class="op">*</SPAN> <SPAN class="kw1">operator</SPAN><SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN><SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> <SPAN class="op">&amp;</SPAN>m_spans<SPAN class="op">[</SPAN>m_span_idx<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+
+            <SPAN class="kw1">void</SPAN> <SPAN class="kw1">operator</SPAN> <SPAN class="op">++</SPAN> <SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN> <SPAN class="op">++</SPAN>m_span_idx<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">private</SPAN>:
+            span_array_type<SPAN class="op">&amp;</SPAN> m_spans<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">unsigned</SPAN>         m_span_idx<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <A href="agg_scanline_u.h.html#scanline32_u8">scanline32_u8</A><SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> :
+            m_min_x<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_last_x<SPAN class="op">(</SPAN><SPAN class="num">0x7FFFFFF0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_covers<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN><SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">void</SPAN> reset<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> min_x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> max_x<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">unsigned</SPAN> max_len <SPAN class="op">=</SPAN> max_x <SPAN class="op">-</SPAN> min_x <SPAN class="op">+</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>max_len <SPAN class="op">&gt;</SPAN> m_covers<SPAN class="op">.</SPAN>size<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                m_covers<SPAN class="op">.</SPAN>resize<SPAN class="op">(</SPAN>max_len<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            m_last_x <SPAN class="op">=</SPAN> <SPAN class="num">0x7FFFFFF0</SPAN><SPAN class="op">;</SPAN>
+            m_min_x  <SPAN class="op">=</SPAN> min_x<SPAN class="op">;</SPAN>
+            m_spans<SPAN class="op">.</SPAN>remove_all<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">void</SPAN> add_cell<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> cover<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            x <SPAN class="op">-=</SPAN> m_min_x<SPAN class="op">;</SPAN>
+            m_covers<SPAN class="op">[</SPAN>x<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> <A href="agg_basics.h.html#cover_type">cover_type</A><SPAN class="op">(</SPAN>cover<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>x <SPAN class="op">==</SPAN> m_last_x<SPAN class="op">+</SPAN><SPAN class="num">1</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                m_spans<SPAN class="op">.</SPAN>last<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">.</SPAN>len<SPAN class="op">++</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="kw1">else</SPAN>
+            <SPAN class="op">{</SPAN>
+                m_spans<SPAN class="op">.</SPAN>add<SPAN class="op">(</SPAN>span<SPAN class="op">(</SPAN>coord_type<SPAN class="op">(</SPAN>x <SPAN class="op">+</SPAN> m_min_x<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">,</SPAN> <SPAN class="op">&amp;</SPAN>m_covers<SPAN class="op">[</SPAN>x<SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            m_last_x <SPAN class="op">=</SPAN> x<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">void</SPAN> add_cells<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> len<SPAN class="op">,</SPAN> <SPAN class="kw1">const</SPAN> <A href="agg_basics.h.html#cover_type">cover_type</A><SPAN class="op">*</SPAN> covers<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            x <SPAN class="op">-=</SPAN> m_min_x<SPAN class="op">;</SPAN>
+            memcpy<SPAN class="op">(</SPAN><SPAN class="op">&amp;</SPAN>m_covers<SPAN class="op">[</SPAN>x<SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> covers<SPAN class="op">,</SPAN> len <SPAN class="op">*</SPAN> <SPAN class="kw1">sizeof</SPAN><SPAN class="op">(</SPAN><A href="agg_basics.h.html#cover_type">cover_type</A><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>x <SPAN class="op">==</SPAN> m_last_x<SPAN class="op">+</SPAN><SPAN class="num">1</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                m_spans<SPAN class="op">.</SPAN>last<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">.</SPAN>len <SPAN class="op">+=</SPAN> coord_type<SPAN class="op">(</SPAN>len<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="kw1">else</SPAN>
+            <SPAN class="op">{</SPAN>
+                m_spans<SPAN class="op">.</SPAN>add<SPAN class="op">(</SPAN>span<SPAN class="op">(</SPAN>coord_type<SPAN class="op">(</SPAN>x <SPAN class="op">+</SPAN> m_min_x<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> 
+                                 coord_type<SPAN class="op">(</SPAN>len<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> 
+                                 <SPAN class="op">&amp;</SPAN>m_covers<SPAN class="op">[</SPAN>x<SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            m_last_x <SPAN class="op">=</SPAN> x <SPAN class="op">+</SPAN> len <SPAN class="op">-</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">void</SPAN> add_span<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> len<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> cover<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            x <SPAN class="op">-=</SPAN> m_min_x<SPAN class="op">;</SPAN>
+            memset<SPAN class="op">(</SPAN><SPAN class="op">&amp;</SPAN>m_covers<SPAN class="op">[</SPAN>x<SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> cover<SPAN class="op">,</SPAN> len<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>x <SPAN class="op">==</SPAN> m_last_x<SPAN class="op">+</SPAN><SPAN class="num">1</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                m_spans<SPAN class="op">.</SPAN>last<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">.</SPAN>len <SPAN class="op">+=</SPAN> coord_type<SPAN class="op">(</SPAN>len<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="kw1">else</SPAN>
+            <SPAN class="op">{</SPAN>
+                m_spans<SPAN class="op">.</SPAN>add<SPAN class="op">(</SPAN>span<SPAN class="op">(</SPAN>coord_type<SPAN class="op">(</SPAN>x <SPAN class="op">+</SPAN> m_min_x<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> 
+                                 coord_type<SPAN class="op">(</SPAN>len<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> 
+                                 <SPAN class="op">&amp;</SPAN>m_covers<SPAN class="op">[</SPAN>x<SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            m_last_x <SPAN class="op">=</SPAN> x <SPAN class="op">+</SPAN> len <SPAN class="op">-</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">void</SPAN> finalize<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> y<SPAN class="op">)</SPAN> 
+        <SPAN class="op">{</SPAN> 
+            m_y <SPAN class="op">=</SPAN> y<SPAN class="op">;</SPAN> 
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">void</SPAN> reset_spans<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            m_last_x <SPAN class="op">=</SPAN> <SPAN class="num">0x7FFFFFF0</SPAN><SPAN class="op">;</SPAN>
+            m_spans<SPAN class="op">.</SPAN>remove_all<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">int</SPAN>      y<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>           <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_y<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> num_spans<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>   <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_spans<SPAN class="op">.</SPAN>size<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        const_iterator begin<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> const_iterator<SPAN class="op">(</SPAN>m_spans<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        iterator       begin<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>       <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> iterator<SPAN class="op">(</SPAN>m_spans<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+
+    <SPAN class="kw1">private</SPAN>:
+        <A href="agg_scanline_u.h.html#scanline32_u8">scanline32_u8</A><SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> self_type<SPAN class="op">&amp;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">const</SPAN> self_type<SPAN class="op">&amp;</SPAN> <SPAN class="kw1">operator</SPAN> <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> self_type<SPAN class="op">&amp;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">private</SPAN>:
+        <SPAN class="kw1">int</SPAN>                   m_min_x<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN>                   m_last_x<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN>                   m_y<SPAN class="op">;</SPAN>
+        <A href="agg_array.h.html#pod_array">pod_array</A><SPAN class="op">&lt;</SPAN><A href="agg_basics.h.html#cover_type">cover_type</A><SPAN class="op">&gt;</SPAN> m_covers<SPAN class="op">;</SPAN>
+        span_array_type       m_spans<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+
+
+    <SPAN class="rem">//========================================================<A name="scanline32_u8_am"><B></B></A><A href="agg_scanline_u.h.html#scanline32_u8_am">scanline32_u8_am</A></SPAN>
+    <SPAN class="rem">// </SPAN>
+    <SPAN class="rem">// The scanline container with alpha-masking</SPAN>
+    <SPAN class="rem">// </SPAN>
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> AlphaMask<SPAN class="op">&gt;</SPAN> 
+    <SPAN class="kw1">class</SPAN> <A href="agg_scanline_u.h.html#scanline32_u8_am">scanline32_u8_am</A> : <SPAN class="kw1">public</SPAN> <A href="agg_scanline_u.h.html#scanline32_u8">scanline32_u8</A>
+    <SPAN class="op">{</SPAN>
+    <SPAN class="kw1">public</SPAN>:
+        <SPAN class="kw1">typedef</SPAN> <A href="agg_scanline_u.h.html#scanline32_u8">scanline32_u8</A>         base_type<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">typedef</SPAN> AlphaMask             alpha_mask_type<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">typedef</SPAN> base_type::<A href="agg_basics.h.html#cover_type">cover_type</A> <A href="agg_basics.h.html#cover_type">cover_type</A><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">typedef</SPAN> base_type::coord_type coord_type<SPAN class="op">;</SPAN>
+
+
+        <A href="agg_scanline_u.h.html#scanline32_u8_am">scanline32_u8_am</A><SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> : base_type<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> m_alpha_mask<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN><SPAN class="op">}</SPAN>
+        <A href="agg_scanline_u.h.html#scanline32_u8_am">scanline32_u8_am</A><SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> AlphaMask<SPAN class="op">&amp;</SPAN> am<SPAN class="op">)</SPAN> : base_type<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> m_alpha_mask<SPAN class="op">(</SPAN><SPAN class="op">&amp;</SPAN>am<SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN><SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">void</SPAN> finalize<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> span_y<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            base_type::finalize<SPAN class="op">(</SPAN>span_y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_alpha_mask<SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                <SPAN class="kw1">typename</SPAN> base_type::iterator span <SPAN class="op">=</SPAN> base_type::begin<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">unsigned</SPAN> count <SPAN class="op">=</SPAN> base_type::num_spans<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">do</SPAN>
+                <SPAN class="op">{</SPAN>
+                    m_alpha_mask<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>combine_hspan<SPAN class="op">(</SPAN>span<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>x<SPAN class="op">,</SPAN> 
+                                                base_type::y<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> 
+                                                span<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>covers<SPAN class="op">,</SPAN> 
+                                                span<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>len<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="op">++</SPAN>span<SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+                <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN><SPAN class="op">--</SPAN>count<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+
+    <SPAN class="kw1">private</SPAN>:
+        <SPAN class="kw1">const</SPAN> AlphaMask<SPAN class="op">*</SPAN> m_alpha_mask<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+
+<SPAN class="op">}</SPAN>
+
+<SPAN class="kw2">#endif</SPAN>
+
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT><TABLE width="640px" bgcolor="#583927" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0">
+<TR><TD><CENTER><SPAN class="authors">
+Copyright <SPAN class="larger">&#169;</SPAN> 2002-2006
+<A href="../../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+<TR><TD><CENTER><SPAN class="authors">
+Web Design and Programming
+<A href="../../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+</TABLE>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+</HTML>

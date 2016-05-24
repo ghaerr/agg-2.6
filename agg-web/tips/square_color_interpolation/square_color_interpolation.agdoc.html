@@ -1,0 +1,210 @@
+<HTML><HEAD><TITLE>Anti-Grain Geometry - Color Interpolation</TITLE>
+<META http-equiv="Content-Type" content="text/html"/>
+<LINK rel="stylesheet" type="text/css" href="../../agg.styles.css"/>
+</HEAD>
+<A name="PAGE_SQUARE_COLOR_INTERPOLATION"><B></B></A>
+
+
+<TABLE width="640px" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR>
+<TD bgcolor="#583927"></TD>
+</TR>
+</TABLE>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR>
+<TD>
+<TABLE width="170px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR><TD><A href="../../index.html" class="mpmenu">Home/</A></TD></TR>
+<TR><TD><A href="../../tips/index.html" class="mpmenu">Tips &amp; Tricks/</A></TD></TR>
+<TR><TD><A href="" class="mpmenu"></A></TD></TR>
+<TR><TD><A href="" class="mpmenu"></A></TD></TR>
+<TR><TD><A href="" class="mpmenu"></A></TD></TR>
+<TR><TD><A href="" class="mpmenu"></A></TD></TR>
+</TABLE>
+</TD>
+<TD width="1px" bgcolor="#583927"></TD>
+<TD width="450px" valign="top" style="text-align:right">
+<TABLE border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR>
+<TD><IMG src="../../agg_logo.gif" border="0"/></TD>
+</TR>
+<TR>
+<TD>
+<TABLE border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR height="15px">
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../../news/index.html">News</A>&nbsp;&nbsp;</TD>
+<TD width="1px" bgcolor="#8e521d"></TD>
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../../doc/index.html">Docs</A>&nbsp;&nbsp;</TD>
+<TD width="1px" bgcolor="#8e521d"></TD>
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../../download/index.html">Download</A>&nbsp;&nbsp;</TD>
+<TD width="1px" bgcolor="#8e521d"></TD>
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../../maillist/index.html">Mailing List</A>&nbsp;&nbsp;</TD>
+<TD width="1px" bgcolor="#8e521d"></TD>
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../../cvs/index.html">CVS</A>&nbsp;&nbsp;</TD>
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+<TABLE width="640px" height="1px" bgcolor="#583927" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>
+</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD><H1>Color Interpolation<SPAN class="subtitle"><BR/>Simple Color Interpolation in a Square</SPAN></H1></TD></TR></TABLE>
+
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><B><NOBR>Anti-Grain</NOBR> Geometry</B> has classes for linear, Bresenham-like interpolation with subpixel accuracy. 
+They are <A href="../../__code/include/agg_dda_line.h.html#dda_line_interpolator">dda_line_interpolator</A>, <A href="../../__code/include/agg_dda_line.h.html#dda2_line_interpolator">dda2_line_interpolator</A>, and <A href="../../__code/include/agg_dda_line.h.html#line_bresenham_interpolator">line_bresenham_interpolator</A>.
+And they can be also used to interpolate colors in color selection controls like the 
+one in <A href="http://www.xara.com"><IMG src="../../link.gif" border="0"/><B><NOBR>Xara X</NOBR></B></A>:</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD><CENTER><IMG src="xarax_color_control.png" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Below is the class that interpolates colors of the <A href="../../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A> type, and the function 
+to draw a square with interpolation. It can be easily modified to draw a rectangle,
+but it&#039;s not really necessary to render the color editing control.</P></TD></TR></TABLE>
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+<SPAN class="kw2">#include</SPAN> <SPAN class="op">&lt;</SPAN>stdio<SPAN class="op">.</SPAN>h<SPAN class="op">&gt;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="op">&lt;</SPAN>string<SPAN class="op">.</SPAN>h<SPAN class="op">&gt;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../../__code/include/agg_rendering_buffer.h.html">agg_rendering_buffer.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;agg_pixfmt_rgb24.h&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../../__code/include/agg_renderer_base.h.html">agg_renderer_base.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../../__code/include/agg_dda_line.h.html">agg_dda_line.h</A>&quot;</SPAN>
+
+<SPAN class="kw1">enum</SPAN>
+<SPAN class="op">{</SPAN>
+    square_size  <SPAN class="op">=</SPAN> <SPAN class="num">200</SPAN>
+<SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+<SPAN class="rem">// Writing the buffer to a .PPM file, assuming it has </SPAN>
+<SPAN class="rem">// RGB-structure, one byte per color component</SPAN>
+<SPAN class="rem">//--------------------------------------------------</SPAN>
+<SPAN class="kw1">bool</SPAN> write_ppm<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <SPAN class="kw1">unsigned</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN> buf<SPAN class="op">,</SPAN> 
+               <SPAN class="kw1">unsigned</SPAN> width<SPAN class="op">,</SPAN> 
+               <SPAN class="kw1">unsigned</SPAN> height<SPAN class="op">,</SPAN> 
+               <SPAN class="kw1">const</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN> file_name<SPAN class="op">)</SPAN>
+<SPAN class="op">{</SPAN>
+    FILE<SPAN class="op">*</SPAN> fd <SPAN class="op">=</SPAN> fopen<SPAN class="op">(</SPAN>file_name<SPAN class="op">,</SPAN> <SPAN class="str">&quot;wb&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>fd<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        fprintf<SPAN class="op">(</SPAN>fd<SPAN class="op">,</SPAN> <SPAN class="str">&quot;P6 %d %d 255 &quot;</SPAN><SPAN class="op">,</SPAN> width<SPAN class="op">,</SPAN> height<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        fwrite<SPAN class="op">(</SPAN>buf<SPAN class="op">,</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">,</SPAN> width <SPAN class="op">*</SPAN> height <SPAN class="op">*</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">,</SPAN> fd<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        fclose<SPAN class="op">(</SPAN>fd<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">return</SPAN> <SPAN class="kw1">true</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+    <SPAN class="kw1">return</SPAN> <SPAN class="kw1">false</SPAN><SPAN class="op">;</SPAN>
+<SPAN class="op">}</SPAN>
+
+
+<SPAN class="kw1">namespace</SPAN> agg
+<SPAN class="op">{</SPAN>
+    <SPAN class="kw1">class</SPAN> color_interpolator_rgba8
+    <SPAN class="op">{</SPAN>
+    <SPAN class="kw1">public</SPAN>:
+        color_interpolator_rgba8<SPAN class="op">(</SPAN>agg::<A href="../../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A> c1<SPAN class="op">,</SPAN> agg::<A href="../../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A> c2<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> len<SPAN class="op">)</SPAN> :
+            m_r<SPAN class="op">(</SPAN>c1<SPAN class="op">.</SPAN>r<SPAN class="op">,</SPAN> c2<SPAN class="op">.</SPAN>r<SPAN class="op">,</SPAN> len<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_g<SPAN class="op">(</SPAN>c1<SPAN class="op">.</SPAN>g<SPAN class="op">,</SPAN> c2<SPAN class="op">.</SPAN>g<SPAN class="op">,</SPAN> len<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_b<SPAN class="op">(</SPAN>c1<SPAN class="op">.</SPAN>b<SPAN class="op">,</SPAN> c2<SPAN class="op">.</SPAN>b<SPAN class="op">,</SPAN> len<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_a<SPAN class="op">(</SPAN>c1<SPAN class="op">.</SPAN>a<SPAN class="op">,</SPAN> c2<SPAN class="op">.</SPAN>a<SPAN class="op">,</SPAN> len<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">void</SPAN> <SPAN class="kw1">operator</SPAN> <SPAN class="op">++</SPAN> <SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="op">++</SPAN>m_r<SPAN class="op">;</SPAN> <SPAN class="op">++</SPAN>m_g<SPAN class="op">;</SPAN> <SPAN class="op">++</SPAN>m_b<SPAN class="op">;</SPAN> <SPAN class="op">++</SPAN>m_a<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <A href="../../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A> color<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">return</SPAN> <A href="../../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">(</SPAN>m_r<SPAN class="op">.</SPAN>y<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> m_g<SPAN class="op">.</SPAN>y<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> m_b<SPAN class="op">.</SPAN>y<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> m_a<SPAN class="op">.</SPAN>y<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+    <SPAN class="kw1">private</SPAN>:
+        <A href="../../__code/include/agg_dda_line.h.html#dda_line_interpolator">dda_line_interpolator</A><SPAN class="op">&lt;</SPAN><SPAN class="num">16</SPAN><SPAN class="op">&gt;</SPAN> m_r<SPAN class="op">;</SPAN>
+        <A href="../../__code/include/agg_dda_line.h.html#dda_line_interpolator">dda_line_interpolator</A><SPAN class="op">&lt;</SPAN><SPAN class="num">16</SPAN><SPAN class="op">&gt;</SPAN> m_g<SPAN class="op">;</SPAN>
+        <A href="../../__code/include/agg_dda_line.h.html#dda_line_interpolator">dda_line_interpolator</A><SPAN class="op">&lt;</SPAN><SPAN class="num">16</SPAN><SPAN class="op">&gt;</SPAN> m_b<SPAN class="op">;</SPAN>
+        <A href="../../__code/include/agg_dda_line.h.html#dda_line_interpolator">dda_line_interpolator</A><SPAN class="op">&lt;</SPAN><SPAN class="num">16</SPAN><SPAN class="op">&gt;</SPAN> m_a<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+
+    <SPAN class="rem">// Rendering a square with color interpolation between its corners</SPAN>
+    <SPAN class="rem">// The colors of the corners are ordered CCW started from bottom-left,</SPAN>
+    <SPAN class="rem">// assuming that the Y axis goes up.</SPAN>
+    <SPAN class="rem">//------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Renderer<SPAN class="op">&gt;</SPAN>
+    <SPAN class="kw1">void</SPAN> color_square_rgba8<SPAN class="op">(</SPAN>Renderer<SPAN class="op">&amp;</SPAN> r<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> size<SPAN class="op">,</SPAN> 
+                            <A href="../../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A> c1<SPAN class="op">,</SPAN> <A href="../../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A> c2<SPAN class="op">,</SPAN> <A href="../../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A> c3<SPAN class="op">,</SPAN> <A href="../../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A> c4<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">int</SPAN> i<SPAN class="op">,</SPAN> j<SPAN class="op">;</SPAN>
+        color_interpolator_rgba8 cy1<SPAN class="op">(</SPAN>c1<SPAN class="op">,</SPAN> c4<SPAN class="op">,</SPAN> size<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        color_interpolator_rgba8 cy2<SPAN class="op">(</SPAN>c2<SPAN class="op">,</SPAN> c3<SPAN class="op">,</SPAN> size<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;</SPAN> size<SPAN class="op">;</SPAN> <SPAN class="op">++</SPAN>i<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            color_interpolator_rgba8 cx<SPAN class="op">(</SPAN>cy1<SPAN class="op">.</SPAN>color<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> cy2<SPAN class="op">.</SPAN>color<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> size<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>j <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> j <SPAN class="op">&lt;</SPAN> size<SPAN class="op">;</SPAN> <SPAN class="op">++</SPAN>j<SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                r<SPAN class="op">.</SPAN>copy_pixel<SPAN class="op">(</SPAN>x <SPAN class="op">+</SPAN> j<SPAN class="op">,</SPAN> y <SPAN class="op">+</SPAN> i<SPAN class="op">,</SPAN> cx<SPAN class="op">.</SPAN>color<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">++</SPAN>cx<SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="op">++</SPAN>cy1<SPAN class="op">;</SPAN>
+            <SPAN class="op">++</SPAN>cy2<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN>
+<SPAN class="op">}</SPAN>
+
+
+<SPAN class="kw1">int</SPAN> <SPAN class="kw1">main</SPAN><SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+<SPAN class="op">{</SPAN>
+    <SPAN class="kw1">unsigned</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN> buffer <SPAN class="op">=</SPAN> <SPAN class="kw1">new</SPAN> <SPAN class="kw1">unsigned</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">[</SPAN>square_size <SPAN class="op">*</SPAN> square_size <SPAN class="op">*</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+
+    agg::<A href="../../doc/basic_renderers/basic_renderers.agdoc.html#rendering_buffer">rendering_buffer</A> rbuf<SPAN class="op">(</SPAN>buffer<SPAN class="op">,</SPAN> 
+                               square_size<SPAN class="op">,</SPAN> 
+                               square_size<SPAN class="op">,</SPAN> 
+                               <SPAN class="op">-</SPAN>square_size <SPAN class="op">*</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> <SPAN class="rem">// Flip Y to go up</SPAN>
+
+    agg::<A href="../../__code/include/agg_pixfmt_rgb.h.html#pixfmt_rgb24">pixfmt_rgb24</A>                     pf<SPAN class="op">(</SPAN>rbuf<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    agg::<A href="../../doc/basic_renderers/basic_renderers.agdoc.html#renderer_base">renderer_base</A><SPAN class="op">&lt;</SPAN>agg::<A href="../../__code/include/agg_pixfmt_rgb.h.html#pixfmt_rgb24">pixfmt_rgb24</A><SPAN class="op">&gt;</SPAN> rbase<SPAN class="op">(</SPAN>pf<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    agg::color_square_rgba8<SPAN class="op">(</SPAN>rbase<SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> square_size<SPAN class="op">,</SPAN> 
+                            agg::<A href="../../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">(</SPAN><SPAN class="num">0xc6</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">,</SPAN>    <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>     <SPAN class="rem">// Bottom-left</SPAN>
+                            agg::<A href="../../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">(</SPAN><SPAN class="num">0xc6</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">,</SPAN>    <SPAN class="num">0xff</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>  <SPAN class="rem">// Bottom-right</SPAN>
+                            agg::<A href="../../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">(</SPAN><SPAN class="num">0xc6</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0xff</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0xff</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>  <SPAN class="rem">// Top-right</SPAN>
+                            agg::<A href="../../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">(</SPAN><SPAN class="num">0xc6</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0xfe</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>    <SPAN class="rem">// Top-left</SPAN>
+
+
+    write_ppm<SPAN class="op">(</SPAN>buffer<SPAN class="op">,</SPAN> square_size<SPAN class="op">,</SPAN> square_size<SPAN class="op">,</SPAN> <SPAN class="str">&quot;agg_test.ppm&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">delete</SPAN> <SPAN class="op">[</SPAN><SPAN class="op">]</SPAN> buffer<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">return</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+<SPAN class="op">}</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Here is the result:</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD><CENTER><IMG src="agg_color_interpolation.png" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>It&#039;s not included into the distribution package because it&#039;s rather a specific class.
+Besides, it depends on the <A href="../../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A> color type. 
+</P></TD></TR></TABLE><TABLE width="640px" bgcolor="#583927" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0">
+<TR><TD><CENTER><SPAN class="authors">
+Copyright <SPAN class="larger">&#169;</SPAN> 2002-2006
+<A href="../../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+<TR><TD><CENTER><SPAN class="authors">
+Web Design and Programming
+<A href="../../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+</TABLE>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+</HTML>

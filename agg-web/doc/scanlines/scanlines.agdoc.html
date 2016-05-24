@@ -1,0 +1,164 @@
+<HTML><HEAD><TITLE>Anti-Grain Geometry - Scanlines and Scanline Renderers</TITLE>
+<META http-equiv="Content-Type" content="text/html"/>
+<LINK rel="stylesheet" type="text/css" href="../../agg.styles.css"/>
+</HEAD>
+<A name="PAGE_SCANLINES"><B></B></A>
+
+
+<TABLE width="640px" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR>
+<TD bgcolor="#583927"></TD>
+</TR>
+</TABLE>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR>
+<TD>
+<TABLE width="170px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR><TD><A href="../../index.html" class="mpmenu">Home/</A></TD></TR>
+<TR><TD><A href="../../doc/index.html" class="mpmenu">Table of Content/</A></TD></TR>
+<TR><TD><A href="" class="mpmenu"></A></TD></TR>
+<TR><TD><A href="" class="mpmenu"></A></TD></TR>
+<TR><TD><A href="" class="mpmenu"></A></TD></TR>
+<TR><TD><A href="" class="mpmenu"></A></TD></TR>
+</TABLE>
+</TD>
+<TD width="1px" bgcolor="#583927"></TD>
+<TD width="450px" valign="top" style="text-align:right">
+<TABLE border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR>
+<TD><IMG src="../../agg_logo.gif" border="0"/></TD>
+</TR>
+<TR>
+<TD>
+<TABLE border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR height="15px">
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../../news/index.html">News</A>&nbsp;&nbsp;</TD>
+<TD width="1px" bgcolor="#8e521d"></TD>
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../../doc/index.html">Docs</A>&nbsp;&nbsp;</TD>
+<TD width="1px" bgcolor="#8e521d"></TD>
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../../download/index.html">Download</A>&nbsp;&nbsp;</TD>
+<TD width="1px" bgcolor="#8e521d"></TD>
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../../maillist/index.html">Mailing List</A>&nbsp;&nbsp;</TD>
+<TD width="1px" bgcolor="#8e521d"></TD>
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../../cvs/index.html">CVS</A>&nbsp;&nbsp;</TD>
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+<TABLE width="640px" height="1px" bgcolor="#583927" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>
+</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD><H1>Scanlines and Scanline Renderers</H1></TD></TR></TABLE>
+
+<TABLE class="toc" width="640px"><TR><TD>
+    <DIV style="margin-left:2em; padding:3px; font-size:14px;"><A href="#toc0001"><B>Scanline Containers</B></A>
+        <DIV style="margin-left:2em; font-size:12px;"><A href="#toc0002">Introduction</A></DIV>
+        <DIV style="margin-left:2em; font-size:12px;"><A href="#toc0003">Interfaces</A>
+            <DIV style="margin-left:2em; font-size:12px;"><A href="#toc0004">Filling Interface (put)</A></DIV>
+            <DIV style="margin-left:2em; font-size:12px;"><A href="#toc0005">Iterating Interface (get)</A></DIV></DIV></DIV>
+    <DIV style="margin-left:2em; padding:3px; font-size:14px;"><A href="#toc0006"><B>Scanline Renderers</B></A></DIV>
+
+</TD></TR></TABLE>
+
+
+<H2>Scanline Containers<A name="toc0001"></A></H2>
+
+<H3>Introduction<A name="toc0002"></A></H3>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The low level renderers operate with
+simplest data and they are very simple too. In fact, the pixel format
+renderers are not the obligatory part of the library and can be 
+replaced or rewritten. For example, if you have an API with similar
+functionality, but hardware accelerated, it will be better to use it
+instead of pure software blending (the low level renderers are 
+essentially alpha-blenders). It&#039;s also possible to use Intel SSE/SSE2
+to write optimized renderers. All other rendering functionality in 
+AGG is based on these simple classes.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>To draw Anti-Aliased primitives one shoud <B>rasterize</B> them first.
+The primary rasterization technique in AGG is scanline based. That is, 
+a polygon is converted into a number of horizontal scanlines and then
+the scanlines are being rendered one by one. Again, the scanline
+rasterizer is not the only class that can produce scanlines. It can 
+be some container or even your own super-ultra-mega rasterizer.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>To transfer information from a rasterizer to the scanline renderer 
+there scanline containers are used.
+A scanline consists of a number of horizontal, non-intersecting spans.
+All spans must be ordered by X. It means that there is no sorting 
+operation provided, the order must be perserved when adding spans
+to the scanline. If the order is not guaranteed it can result in 
+undefined behaviour.</P></TD></TR></TABLE> 
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>In <B>AGG</B> there are three types of scanline containers:
+<UL type="disc">
+<LI><CODE>scanline_u</CODE> - unpacked scaline container</LI>
+<LI><CODE>scanline_p</CODE> - packed scanline container</LI>
+<LI><CODE><A href="../../__code/include/agg_scanline_bin.h.html#scanline_bin">scanline_bin</A></CODE> - container for binary, &#147;aliased&#148; scanlines</LI></UL></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>First two containers can keep <B><NOBR>Anti-Aliasing</NOBR></B> information, the third one cannot.</P></TD></TR></TABLE>
+
+<TABLE class="warning" width="640px"><TR><TD><B>IMPORTANT!</B><BR/>
+All the scanline containers are optimized for speed, not for 
+memory usage. In fact, it allocates memory for the worst case, 
+so there is some overhead. It&#039;s not critical when you use only
+few scanline containers, but it&#039;s not a good idea to use an 
+array of scanlines to store the whole shape because it will take
+more memory than the resulting image.
+</TD></TR></TABLE>
+
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The difference between <B>packed</B> and <B>unpacked</B> scanline 
+containers is that the <B>unpacked</B> scaline always keeps the 
+coverage values for all pixels including the ones that are 
+fully covered by a polygon. In the <B>packed</B> scanline 
+all pixels with the same coverage value are merged into <B>solid</B>
+spans.
+</P></TD></TR></TABLE><TABLE width="640px"><TR><TD><CENTER><IMG src="scanline_u.gif" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+<TABLE width="640px"><TR><TD><CENTER><IMG src="scanline_p.gif" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>It can seem it&#039;s always better to use the packed version, but in 
+practice it&#039;s not so. The scanline_p works faster when rendering 
+large solid polygons, that is when the area of the polygon is 
+much larger than the perimeter in the meaning of the number
+of pixels. But when renering text it&#039;s definitely better to use
+the scanline_u because of much less number of processed spans
+The difference is about three times and the number of spans 
+is also important for the overall performance. Besides, in most
+of the span generators, such as gradients, Gouraud shader, or 
+image transformers, the number of spans becomes even more critical, 
+and so, the scanline_p is not used there.</P></TD></TR></TABLE>
+
+
+<H3>Interfaces<A name="toc0003"></A></H3>
+
+<H4>Filling Interface (put)<A name="toc0004"></A></H4>
+
+<H4>Iterating Interface (get)<A name="toc0005"></A></H4>
+
+
+<BR/><H2>Scanline Renderers<A name="toc0006"></A></H2>
+
+<BR/><TABLE width="640px" bgcolor="#583927" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0">
+<TR><TD><CENTER><SPAN class="authors">
+Copyright <SPAN class="larger">&#169;</SPAN> 2002-2006
+<A href="../../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+<TR><TD><CENTER><SPAN class="authors">
+Web Design and Programming
+<A href="../../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+</TABLE>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+</HTML>

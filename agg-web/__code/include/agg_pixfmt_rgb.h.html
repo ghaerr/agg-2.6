@@ -1,0 +1,889 @@
+<HTML><HEAD><TITLE>Anti-Grain Geometry - </TITLE>
+<META http-equiv="Content-Type" content="text/html"/>
+<LINK rel="stylesheet" type="text/css" href="../../agg.styles.css"/>
+</HEAD>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE><SPAN class="rem">//----------------------------------------------------------------------------</SPAN>
+<SPAN class="rem">// Anti-Grain Geometry (AGG) - Version 2.5</SPAN>
+<SPAN class="rem">// A high quality rendering engine for C++</SPAN>
+<SPAN class="rem">// Copyright (C) 2002-2006 Maxim Shemanarev</SPAN>
+<SPAN class="rem">// Contact: mcseem@antigrain.com</SPAN>
+<SPAN class="rem">//          mcseemagg@yahoo.com</SPAN>
+<SPAN class="rem">//          http://antigrain.com</SPAN>
+<SPAN class="rem">// </SPAN>
+<SPAN class="rem">// AGG is free software; you can redistribute it and/or</SPAN>
+<SPAN class="rem">// modify it under the terms of the GNU General Public License</SPAN>
+<SPAN class="rem">// as published by the Free Software Foundation; either version 2</SPAN>
+<SPAN class="rem">// of the License, or (at your option) any later version.</SPAN>
+<SPAN class="rem">// </SPAN>
+<SPAN class="rem">// AGG is distributed in the hope that it will be useful,</SPAN>
+<SPAN class="rem">// but WITHOUT ANY WARRANTY; without even the implied warranty of</SPAN>
+<SPAN class="rem">// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</SPAN>
+<SPAN class="rem">// GNU General Public License for more details.</SPAN>
+<SPAN class="rem">// </SPAN>
+<SPAN class="rem">// You should have received a copy of the GNU General Public License</SPAN>
+<SPAN class="rem">// along with AGG; if not, write to the Free Software</SPAN>
+<SPAN class="rem">// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, </SPAN>
+<SPAN class="rem">// MA 02110-1301, USA.</SPAN>
+<SPAN class="rem">//----------------------------------------------------------------------------</SPAN>
+<SPAN class="rem">//</SPAN>
+<SPAN class="rem">// Adaptation for high precision colors has been sponsored by </SPAN>
+<SPAN class="rem">// Liberty Technology Systems, Inc., visit http://lib-sys.com</SPAN>
+<SPAN class="rem">//</SPAN>
+<SPAN class="rem">// Liberty Technology Systems, Inc. is the provider of</SPAN>
+<SPAN class="rem">// PostScript and PDF technology for software developers.</SPAN>
+<SPAN class="rem">// </SPAN>
+<SPAN class="rem">//----------------------------------------------------------------------------</SPAN>
+
+<SPAN class="kw2">#ifndef</SPAN> AGG_PIXFMT_RGB_INCLUDED
+<SPAN class="kw2">#define</SPAN> AGG_PIXFMT_RGB_INCLUDED
+
+<SPAN class="kw2">#include</SPAN> <SPAN class="op">&lt;</SPAN>string<SPAN class="op">.</SPAN>h<SPAN class="op">&gt;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="agg_basics.h.html">agg_basics.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="agg_color_rgba.h.html">agg_color_rgba.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="agg_rendering_buffer.h.html">agg_rendering_buffer.h</A>&quot;</SPAN>
+
+<SPAN class="kw1">namespace</SPAN> agg
+<SPAN class="op">{</SPAN>
+
+    <SPAN class="rem">//=====================================================<A name="apply_gamma_dir_rgb"><B></B></A><A href="agg_pixfmt_rgb.h.html#apply_gamma_dir_rgb">apply_gamma_dir_rgb</A></SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> ColorT<SPAN class="op">,</SPAN> <SPAN class="kw1">class</SPAN> Order<SPAN class="op">,</SPAN> <SPAN class="kw1">class</SPAN> GammaLut<SPAN class="op">&gt;</SPAN> <SPAN class="kw1">class</SPAN> <A href="agg_pixfmt_rgb.h.html#apply_gamma_dir_rgb">apply_gamma_dir_rgb</A>
+    <SPAN class="op">{</SPAN>
+    <SPAN class="kw1">public</SPAN>:
+        <SPAN class="kw1">typedef</SPAN> <SPAN class="kw1">typename</SPAN> ColorT::value_type value_type<SPAN class="op">;</SPAN>
+
+        <A href="agg_pixfmt_rgb.h.html#apply_gamma_dir_rgb">apply_gamma_dir_rgb</A><SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> GammaLut<SPAN class="op">&amp;</SPAN> gamma<SPAN class="op">)</SPAN> : m_gamma<SPAN class="op">(</SPAN>gamma<SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN><SPAN class="op">}</SPAN>
+
+        AGG_INLINE <SPAN class="kw1">void</SPAN> <SPAN class="kw1">operator</SPAN> <SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">(</SPAN>value_type<SPAN class="op">*</SPAN> p<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            p<SPAN class="op">[</SPAN>Order::R<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> m_gamma<SPAN class="op">.</SPAN>dir<SPAN class="op">(</SPAN>p<SPAN class="op">[</SPAN>Order::R<SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            p<SPAN class="op">[</SPAN>Order::G<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> m_gamma<SPAN class="op">.</SPAN>dir<SPAN class="op">(</SPAN>p<SPAN class="op">[</SPAN>Order::G<SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            p<SPAN class="op">[</SPAN>Order::B<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> m_gamma<SPAN class="op">.</SPAN>dir<SPAN class="op">(</SPAN>p<SPAN class="op">[</SPAN>Order::B<SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+    <SPAN class="kw1">private</SPAN>:
+        <SPAN class="kw1">const</SPAN> GammaLut<SPAN class="op">&amp;</SPAN> m_gamma<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+
+    <SPAN class="rem">//=====================================================<A name="apply_gamma_inv_rgb"><B></B></A><A href="agg_pixfmt_rgb.h.html#apply_gamma_inv_rgb">apply_gamma_inv_rgb</A></SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> ColorT<SPAN class="op">,</SPAN> <SPAN class="kw1">class</SPAN> Order<SPAN class="op">,</SPAN> <SPAN class="kw1">class</SPAN> GammaLut<SPAN class="op">&gt;</SPAN> <SPAN class="kw1">class</SPAN> <A href="agg_pixfmt_rgb.h.html#apply_gamma_inv_rgb">apply_gamma_inv_rgb</A>
+    <SPAN class="op">{</SPAN>
+    <SPAN class="kw1">public</SPAN>:
+        <SPAN class="kw1">typedef</SPAN> <SPAN class="kw1">typename</SPAN> ColorT::value_type value_type<SPAN class="op">;</SPAN>
+
+        <A href="agg_pixfmt_rgb.h.html#apply_gamma_inv_rgb">apply_gamma_inv_rgb</A><SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> GammaLut<SPAN class="op">&amp;</SPAN> gamma<SPAN class="op">)</SPAN> : m_gamma<SPAN class="op">(</SPAN>gamma<SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN><SPAN class="op">}</SPAN>
+
+        AGG_INLINE <SPAN class="kw1">void</SPAN> <SPAN class="kw1">operator</SPAN> <SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">(</SPAN>value_type<SPAN class="op">*</SPAN> p<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            p<SPAN class="op">[</SPAN>Order::R<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> m_gamma<SPAN class="op">.</SPAN>inv<SPAN class="op">(</SPAN>p<SPAN class="op">[</SPAN>Order::R<SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            p<SPAN class="op">[</SPAN>Order::G<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> m_gamma<SPAN class="op">.</SPAN>inv<SPAN class="op">(</SPAN>p<SPAN class="op">[</SPAN>Order::G<SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            p<SPAN class="op">[</SPAN>Order::B<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> m_gamma<SPAN class="op">.</SPAN>inv<SPAN class="op">(</SPAN>p<SPAN class="op">[</SPAN>Order::B<SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+    <SPAN class="kw1">private</SPAN>:
+        <SPAN class="kw1">const</SPAN> GammaLut<SPAN class="op">&amp;</SPAN> m_gamma<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+    <SPAN class="rem">//=========================================================<A name="blender_rgb"><B></B></A><A href="agg_pixfmt_rgb.h.html#blender_rgb">blender_rgb</A></SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> ColorT<SPAN class="op">,</SPAN> <SPAN class="kw1">class</SPAN> Order<SPAN class="op">&gt;</SPAN> <SPAN class="kw1">struct</SPAN> <A href="agg_pixfmt_rgb.h.html#blender_rgb">blender_rgb</A>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">typedef</SPAN> ColorT color_type<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">typedef</SPAN> Order order_type<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">typedef</SPAN> <SPAN class="kw1">typename</SPAN> color_type::value_type value_type<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">typedef</SPAN> <SPAN class="kw1">typename</SPAN> color_type::calc_type calc_type<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">enum</SPAN> base_scale_e <SPAN class="op">{</SPAN> base_shift <SPAN class="op">=</SPAN> color_type::base_shift <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">static</SPAN> AGG_INLINE <SPAN class="kw1">void</SPAN> blend_pix<SPAN class="op">(</SPAN>value_type<SPAN class="op">*</SPAN> p<SPAN class="op">,</SPAN> 
+                                         <SPAN class="kw1">unsigned</SPAN> cr<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> cg<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> cb<SPAN class="op">,</SPAN> 
+                                         <SPAN class="kw1">unsigned</SPAN> alpha<SPAN class="op">,</SPAN> 
+                                         <SPAN class="kw1">unsigned</SPAN> cover<SPAN class="op">=</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            p<SPAN class="op">[</SPAN>Order::R<SPAN class="op">]</SPAN> <SPAN class="op">+=</SPAN> <SPAN class="op">(</SPAN>value_type<SPAN class="op">)</SPAN><SPAN class="op">(</SPAN><SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>cr <SPAN class="op">-</SPAN> p<SPAN class="op">[</SPAN>Order::R<SPAN class="op">]</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> alpha<SPAN class="op">)</SPAN> <SPAN class="op">&gt;&gt;</SPAN> base_shift<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            p<SPAN class="op">[</SPAN>Order::G<SPAN class="op">]</SPAN> <SPAN class="op">+=</SPAN> <SPAN class="op">(</SPAN>value_type<SPAN class="op">)</SPAN><SPAN class="op">(</SPAN><SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>cg <SPAN class="op">-</SPAN> p<SPAN class="op">[</SPAN>Order::G<SPAN class="op">]</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> alpha<SPAN class="op">)</SPAN> <SPAN class="op">&gt;&gt;</SPAN> base_shift<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            p<SPAN class="op">[</SPAN>Order::B<SPAN class="op">]</SPAN> <SPAN class="op">+=</SPAN> <SPAN class="op">(</SPAN>value_type<SPAN class="op">)</SPAN><SPAN class="op">(</SPAN><SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>cb <SPAN class="op">-</SPAN> p<SPAN class="op">[</SPAN>Order::B<SPAN class="op">]</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> alpha<SPAN class="op">)</SPAN> <SPAN class="op">&gt;&gt;</SPAN> base_shift<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+    <SPAN class="rem">//======================================================<A name="blender_rgb_pre"><B></B></A><A href="agg_pixfmt_rgb.h.html#blender_rgb_pre">blender_rgb_pre</A></SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> ColorT<SPAN class="op">,</SPAN> <SPAN class="kw1">class</SPAN> Order<SPAN class="op">&gt;</SPAN> <SPAN class="kw1">struct</SPAN> <A href="agg_pixfmt_rgb.h.html#blender_rgb_pre">blender_rgb_pre</A>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">typedef</SPAN> ColorT color_type<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">typedef</SPAN> Order order_type<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">typedef</SPAN> <SPAN class="kw1">typename</SPAN> color_type::value_type value_type<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">typedef</SPAN> <SPAN class="kw1">typename</SPAN> color_type::calc_type calc_type<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">enum</SPAN> base_scale_e <SPAN class="op">{</SPAN> base_shift <SPAN class="op">=</SPAN> color_type::base_shift <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">static</SPAN> AGG_INLINE <SPAN class="kw1">void</SPAN> blend_pix<SPAN class="op">(</SPAN>value_type<SPAN class="op">*</SPAN> p<SPAN class="op">,</SPAN> 
+                                         <SPAN class="kw1">unsigned</SPAN> cr<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> cg<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> cb<SPAN class="op">,</SPAN>
+                                         <SPAN class="kw1">unsigned</SPAN> alpha<SPAN class="op">,</SPAN>
+                                         <SPAN class="kw1">unsigned</SPAN> cover<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            alpha <SPAN class="op">=</SPAN> color_type::base_mask <SPAN class="op">-</SPAN> alpha<SPAN class="op">;</SPAN>
+            cover <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>cover <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">&lt;&lt;</SPAN> <SPAN class="op">(</SPAN>base_shift <SPAN class="op">-</SPAN> <SPAN class="num">8</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            p<SPAN class="op">[</SPAN>Order::R<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>value_type<SPAN class="op">)</SPAN><SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>p<SPAN class="op">[</SPAN>Order::R<SPAN class="op">]</SPAN> <SPAN class="op">*</SPAN> alpha <SPAN class="op">+</SPAN> cr <SPAN class="op">*</SPAN> cover<SPAN class="op">)</SPAN> <SPAN class="op">&gt;&gt;</SPAN> base_shift<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            p<SPAN class="op">[</SPAN>Order::G<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>value_type<SPAN class="op">)</SPAN><SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>p<SPAN class="op">[</SPAN>Order::G<SPAN class="op">]</SPAN> <SPAN class="op">*</SPAN> alpha <SPAN class="op">+</SPAN> cg <SPAN class="op">*</SPAN> cover<SPAN class="op">)</SPAN> <SPAN class="op">&gt;&gt;</SPAN> base_shift<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            p<SPAN class="op">[</SPAN>Order::B<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>value_type<SPAN class="op">)</SPAN><SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>p<SPAN class="op">[</SPAN>Order::B<SPAN class="op">]</SPAN> <SPAN class="op">*</SPAN> alpha <SPAN class="op">+</SPAN> cb <SPAN class="op">*</SPAN> cover<SPAN class="op">)</SPAN> <SPAN class="op">&gt;&gt;</SPAN> base_shift<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">static</SPAN> AGG_INLINE <SPAN class="kw1">void</SPAN> blend_pix<SPAN class="op">(</SPAN>value_type<SPAN class="op">*</SPAN> p<SPAN class="op">,</SPAN> 
+                                         <SPAN class="kw1">unsigned</SPAN> cr<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> cg<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> cb<SPAN class="op">,</SPAN>
+                                         <SPAN class="kw1">unsigned</SPAN> alpha<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            alpha <SPAN class="op">=</SPAN> color_type::base_mask <SPAN class="op">-</SPAN> alpha<SPAN class="op">;</SPAN>
+            p<SPAN class="op">[</SPAN>Order::R<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>value_type<SPAN class="op">)</SPAN><SPAN class="op">(</SPAN><SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>p<SPAN class="op">[</SPAN>Order::R<SPAN class="op">]</SPAN> <SPAN class="op">*</SPAN> alpha<SPAN class="op">)</SPAN> <SPAN class="op">&gt;&gt;</SPAN> base_shift<SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> cr<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            p<SPAN class="op">[</SPAN>Order::G<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>value_type<SPAN class="op">)</SPAN><SPAN class="op">(</SPAN><SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>p<SPAN class="op">[</SPAN>Order::G<SPAN class="op">]</SPAN> <SPAN class="op">*</SPAN> alpha<SPAN class="op">)</SPAN> <SPAN class="op">&gt;&gt;</SPAN> base_shift<SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> cg<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            p<SPAN class="op">[</SPAN>Order::B<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>value_type<SPAN class="op">)</SPAN><SPAN class="op">(</SPAN><SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>p<SPAN class="op">[</SPAN>Order::B<SPAN class="op">]</SPAN> <SPAN class="op">*</SPAN> alpha<SPAN class="op">)</SPAN> <SPAN class="op">&gt;&gt;</SPAN> base_shift<SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> cb<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+
+    <SPAN class="rem">//===================================================<A name="blender_rgb_gamma"><B></B></A><A href="agg_pixfmt_rgb.h.html#blender_rgb_gamma">blender_rgb_gamma</A></SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> ColorT<SPAN class="op">,</SPAN> <SPAN class="kw1">class</SPAN> Order<SPAN class="op">,</SPAN> <SPAN class="kw1">class</SPAN> Gamma<SPAN class="op">&gt;</SPAN> <SPAN class="kw1">class</SPAN> <A href="agg_pixfmt_rgb.h.html#blender_rgb_gamma">blender_rgb_gamma</A>
+    <SPAN class="op">{</SPAN>
+    <SPAN class="kw1">public</SPAN>:
+        <SPAN class="kw1">typedef</SPAN> ColorT color_type<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">typedef</SPAN> Order order_type<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">typedef</SPAN> Gamma gamma_type<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">typedef</SPAN> <SPAN class="kw1">typename</SPAN> color_type::value_type value_type<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">typedef</SPAN> <SPAN class="kw1">typename</SPAN> color_type::calc_type calc_type<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">enum</SPAN> base_scale_e <SPAN class="op">{</SPAN> base_shift <SPAN class="op">=</SPAN> color_type::base_shift <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <A href="agg_pixfmt_rgb.h.html#blender_rgb_gamma">blender_rgb_gamma</A><SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> : m_gamma<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN><SPAN class="op">}</SPAN>
+        <SPAN class="kw1">void</SPAN> gamma<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> gamma_type<SPAN class="op">&amp;</SPAN> g<SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN> m_gamma <SPAN class="op">=</SPAN> <SPAN class="op">&amp;</SPAN>g<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        AGG_INLINE <SPAN class="kw1">void</SPAN> blend_pix<SPAN class="op">(</SPAN>value_type<SPAN class="op">*</SPAN> p<SPAN class="op">,</SPAN> 
+                                  <SPAN class="kw1">unsigned</SPAN> cr<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> cg<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> cb<SPAN class="op">,</SPAN>
+                                  <SPAN class="kw1">unsigned</SPAN> alpha<SPAN class="op">,</SPAN> 
+                                  <SPAN class="kw1">unsigned</SPAN> cover<SPAN class="op">=</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            calc_type r <SPAN class="op">=</SPAN> m_gamma<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>dir<SPAN class="op">(</SPAN>p<SPAN class="op">[</SPAN>Order::R<SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            calc_type g <SPAN class="op">=</SPAN> m_gamma<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>dir<SPAN class="op">(</SPAN>p<SPAN class="op">[</SPAN>Order::G<SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            calc_type b <SPAN class="op">=</SPAN> m_gamma<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>dir<SPAN class="op">(</SPAN>p<SPAN class="op">[</SPAN>Order::B<SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            p<SPAN class="op">[</SPAN>Order::R<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> m_gamma<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>inv<SPAN class="op">(</SPAN><SPAN class="op">(</SPAN><SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>m_gamma<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>dir<SPAN class="op">(</SPAN>cr<SPAN class="op">)</SPAN> <SPAN class="op">-</SPAN> r<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> alpha<SPAN class="op">)</SPAN> <SPAN class="op">&gt;&gt;</SPAN> base_shift<SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> r<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            p<SPAN class="op">[</SPAN>Order::G<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> m_gamma<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>inv<SPAN class="op">(</SPAN><SPAN class="op">(</SPAN><SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>m_gamma<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>dir<SPAN class="op">(</SPAN>cg<SPAN class="op">)</SPAN> <SPAN class="op">-</SPAN> g<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> alpha<SPAN class="op">)</SPAN> <SPAN class="op">&gt;&gt;</SPAN> base_shift<SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> g<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            p<SPAN class="op">[</SPAN>Order::B<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> m_gamma<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>inv<SPAN class="op">(</SPAN><SPAN class="op">(</SPAN><SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>m_gamma<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>dir<SPAN class="op">(</SPAN>cb<SPAN class="op">)</SPAN> <SPAN class="op">-</SPAN> b<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> alpha<SPAN class="op">)</SPAN> <SPAN class="op">&gt;&gt;</SPAN> base_shift<SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> b<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+    <SPAN class="kw1">private</SPAN>:
+        <SPAN class="kw1">const</SPAN> gamma_type<SPAN class="op">*</SPAN> m_gamma<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+
+    
+    <SPAN class="rem">//==================================================<A name="pixfmt_alpha_blend_rgb"><B></B></A><A href="agg_pixfmt_rgb.h.html#pixfmt_alpha_blend_rgb">pixfmt_alpha_blend_rgb</A></SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Blender<SPAN class="op">,</SPAN> <SPAN class="kw1">class</SPAN> RenBuf<SPAN class="op">&gt;</SPAN> <SPAN class="kw1">class</SPAN> <A href="agg_pixfmt_rgb.h.html#pixfmt_alpha_blend_rgb">pixfmt_alpha_blend_rgb</A>
+    <SPAN class="op">{</SPAN>
+    <SPAN class="kw1">public</SPAN>:
+        <SPAN class="kw1">typedef</SPAN> RenBuf   rbuf_type<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">typedef</SPAN> Blender  blender_type<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">typedef</SPAN> <SPAN class="kw1">typename</SPAN> rbuf_type::row_data row_data<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">typedef</SPAN> <SPAN class="kw1">typename</SPAN> blender_type::color_type color_type<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">typedef</SPAN> <SPAN class="kw1">typename</SPAN> blender_type::order_type order_type<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">typedef</SPAN> <SPAN class="kw1">typename</SPAN> color_type::value_type value_type<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">typedef</SPAN> <SPAN class="kw1">typename</SPAN> color_type::calc_type calc_type<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">enum</SPAN> base_scale_e 
+        <SPAN class="op">{</SPAN>
+            base_shift <SPAN class="op">=</SPAN> color_type::base_shift<SPAN class="op">,</SPAN>
+            base_scale <SPAN class="op">=</SPAN> color_type::base_scale<SPAN class="op">,</SPAN>
+            base_mask  <SPAN class="op">=</SPAN> color_type::base_mask<SPAN class="op">,</SPAN>
+            pix_width  <SPAN class="op">=</SPAN> <SPAN class="kw1">sizeof</SPAN><SPAN class="op">(</SPAN>value_type<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> <SPAN class="num">3</SPAN>
+        <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">private</SPAN>:
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        AGG_INLINE <SPAN class="kw1">void</SPAN> copy_or_blend_pix<SPAN class="op">(</SPAN>value_type<SPAN class="op">*</SPAN> p<SPAN class="op">,</SPAN> 
+                                          <SPAN class="kw1">const</SPAN> color_type<SPAN class="op">&amp;</SPAN> c<SPAN class="op">,</SPAN> 
+                                          <SPAN class="kw1">unsigned</SPAN> cover<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">if</SPAN> <SPAN class="op">(</SPAN>c<SPAN class="op">.</SPAN>a<SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                calc_type alpha <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>calc_type<SPAN class="op">(</SPAN>c<SPAN class="op">.</SPAN>a<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>cover <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">&gt;&gt;</SPAN> <SPAN class="num">8</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>alpha <SPAN class="op">==</SPAN> base_mask<SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    p<SPAN class="op">[</SPAN>order_type::R<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> c<SPAN class="op">.</SPAN>r<SPAN class="op">;</SPAN>
+                    p<SPAN class="op">[</SPAN>order_type::G<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> c<SPAN class="op">.</SPAN>g<SPAN class="op">;</SPAN>
+                    p<SPAN class="op">[</SPAN>order_type::B<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> c<SPAN class="op">.</SPAN>b<SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+                <SPAN class="kw1">else</SPAN>
+                <SPAN class="op">{</SPAN>
+                    m_blender<SPAN class="op">.</SPAN>blend_pix<SPAN class="op">(</SPAN>p<SPAN class="op">,</SPAN> c<SPAN class="op">.</SPAN>r<SPAN class="op">,</SPAN> c<SPAN class="op">.</SPAN>g<SPAN class="op">,</SPAN> c<SPAN class="op">.</SPAN>b<SPAN class="op">,</SPAN> alpha<SPAN class="op">,</SPAN> cover<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        AGG_INLINE <SPAN class="kw1">void</SPAN> copy_or_blend_pix<SPAN class="op">(</SPAN>value_type<SPAN class="op">*</SPAN> p<SPAN class="op">,</SPAN> 
+                                          <SPAN class="kw1">const</SPAN> color_type<SPAN class="op">&amp;</SPAN> c<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">if</SPAN> <SPAN class="op">(</SPAN>c<SPAN class="op">.</SPAN>a<SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>c<SPAN class="op">.</SPAN>a <SPAN class="op">==</SPAN> base_mask<SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    p<SPAN class="op">[</SPAN>order_type::R<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> c<SPAN class="op">.</SPAN>r<SPAN class="op">;</SPAN>
+                    p<SPAN class="op">[</SPAN>order_type::G<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> c<SPAN class="op">.</SPAN>g<SPAN class="op">;</SPAN>
+                    p<SPAN class="op">[</SPAN>order_type::B<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> c<SPAN class="op">.</SPAN>b<SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+                <SPAN class="kw1">else</SPAN>
+                <SPAN class="op">{</SPAN>
+                    m_blender<SPAN class="op">.</SPAN>blend_pix<SPAN class="op">(</SPAN>p<SPAN class="op">,</SPAN> c<SPAN class="op">.</SPAN>r<SPAN class="op">,</SPAN> c<SPAN class="op">.</SPAN>g<SPAN class="op">,</SPAN> c<SPAN class="op">.</SPAN>b<SPAN class="op">,</SPAN> c<SPAN class="op">.</SPAN>a<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="kw1">public</SPAN>:
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">explicit</SPAN> <A href="agg_pixfmt_rgb.h.html#pixfmt_alpha_blend_rgb">pixfmt_alpha_blend_rgb</A><SPAN class="op">(</SPAN>rbuf_type<SPAN class="op">&amp;</SPAN> rb<SPAN class="op">)</SPAN> :
+            m_rbuf<SPAN class="op">(</SPAN><SPAN class="op">&amp;</SPAN>rb<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN><SPAN class="op">}</SPAN>
+        <SPAN class="kw1">void</SPAN> attach<SPAN class="op">(</SPAN>rbuf_type<SPAN class="op">&amp;</SPAN> rb<SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN> m_rbuf <SPAN class="op">=</SPAN> <SPAN class="op">&amp;</SPAN>rb<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> PixFmt<SPAN class="op">&gt;</SPAN>
+        <SPAN class="kw1">bool</SPAN> attach<SPAN class="op">(</SPAN>PixFmt<SPAN class="op">&amp;</SPAN> pixf<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> x1<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y1<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> x2<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y2<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <A href="agg_basics.h.html#rect_i">rect_i</A> r<SPAN class="op">(</SPAN>x1<SPAN class="op">,</SPAN> y1<SPAN class="op">,</SPAN> x2<SPAN class="op">,</SPAN> y2<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>r<SPAN class="op">.</SPAN>clip<SPAN class="op">(</SPAN><A href="agg_basics.h.html#rect_i">rect_i</A><SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> pixf<SPAN class="op">.</SPAN>width<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">-</SPAN><SPAN class="num">1</SPAN><SPAN class="op">,</SPAN> pixf<SPAN class="op">.</SPAN>height<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">-</SPAN><SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                <SPAN class="kw1">int</SPAN> stride <SPAN class="op">=</SPAN> pixf<SPAN class="op">.</SPAN>stride<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                m_rbuf<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>attach<SPAN class="op">(</SPAN>pixf<SPAN class="op">.</SPAN>pix_ptr<SPAN class="op">(</SPAN>r<SPAN class="op">.</SPAN>x1<SPAN class="op">,</SPAN> stride <SPAN class="op">&lt;</SPAN> <SPAN class="num">0</SPAN> ? r<SPAN class="op">.</SPAN>y2 : r<SPAN class="op">.</SPAN>y1<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> 
+                               <SPAN class="op">(</SPAN>r<SPAN class="op">.</SPAN>x2 <SPAN class="op">-</SPAN> r<SPAN class="op">.</SPAN>x1<SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">,</SPAN>
+                               <SPAN class="op">(</SPAN>r<SPAN class="op">.</SPAN>y2 <SPAN class="op">-</SPAN> r<SPAN class="op">.</SPAN>y1<SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">,</SPAN>
+                               stride<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">return</SPAN> <SPAN class="kw1">true</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="kw1">return</SPAN> <SPAN class="kw1">false</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        Blender<SPAN class="op">&amp;</SPAN> blender<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_blender<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        AGG_INLINE <SPAN class="kw1">unsigned</SPAN> width<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>  <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_rbuf<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>width<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>  <SPAN class="op">}</SPAN>
+        AGG_INLINE <SPAN class="kw1">unsigned</SPAN> height<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_rbuf<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>height<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        AGG_INLINE <SPAN class="kw1">int</SPAN>      stride<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_rbuf<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>stride<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        AGG_INLINE       <A href="agg_basics.h.html#int8u">int8u</A><SPAN class="op">*</SPAN> row_ptr<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> y<SPAN class="op">)</SPAN>       <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_rbuf<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>row_ptr<SPAN class="op">(</SPAN>y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        AGG_INLINE <SPAN class="kw1">const</SPAN> <A href="agg_basics.h.html#int8u">int8u</A><SPAN class="op">*</SPAN> row_ptr<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> y<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_rbuf<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>row_ptr<SPAN class="op">(</SPAN>y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        AGG_INLINE row_data     row<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> y<SPAN class="op">)</SPAN>     <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_rbuf<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>row<SPAN class="op">(</SPAN>y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        AGG_INLINE <A href="agg_basics.h.html#int8u">int8u</A><SPAN class="op">*</SPAN> pix_ptr<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">)</SPAN> 
+        <SPAN class="op">{</SPAN> 
+            <SPAN class="kw1">return</SPAN> m_rbuf<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>row_ptr<SPAN class="op">(</SPAN>y<SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> x <SPAN class="op">*</SPAN> pix_width<SPAN class="op">;</SPAN> 
+        <SPAN class="op">}</SPAN>
+
+        AGG_INLINE <SPAN class="kw1">const</SPAN> <A href="agg_basics.h.html#int8u">int8u</A><SPAN class="op">*</SPAN> pix_ptr<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> 
+        <SPAN class="op">{</SPAN> 
+            <SPAN class="kw1">return</SPAN> m_rbuf<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>row_ptr<SPAN class="op">(</SPAN>y<SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> x <SPAN class="op">*</SPAN> pix_width<SPAN class="op">;</SPAN> 
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        AGG_INLINE <SPAN class="kw1">static</SPAN> <SPAN class="kw1">void</SPAN> make_pix<SPAN class="op">(</SPAN><A href="agg_basics.h.html#int8u">int8u</A><SPAN class="op">*</SPAN> p<SPAN class="op">,</SPAN> <SPAN class="kw1">const</SPAN> color_type<SPAN class="op">&amp;</SPAN> c<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>value_type<SPAN class="op">*</SPAN><SPAN class="op">)</SPAN>p<SPAN class="op">)</SPAN><SPAN class="op">[</SPAN>order_type::R<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> c<SPAN class="op">.</SPAN>r<SPAN class="op">;</SPAN>
+            <SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>value_type<SPAN class="op">*</SPAN><SPAN class="op">)</SPAN>p<SPAN class="op">)</SPAN><SPAN class="op">[</SPAN>order_type::G<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> c<SPAN class="op">.</SPAN>g<SPAN class="op">;</SPAN>
+            <SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>value_type<SPAN class="op">*</SPAN><SPAN class="op">)</SPAN>p<SPAN class="op">)</SPAN><SPAN class="op">[</SPAN>order_type::B<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> c<SPAN class="op">.</SPAN>b<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        AGG_INLINE color_type pixel<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN>
+        <SPAN class="op">{</SPAN>
+            value_type<SPAN class="op">*</SPAN> p <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>value_type<SPAN class="op">*</SPAN><SPAN class="op">)</SPAN>m_rbuf<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>row_ptr<SPAN class="op">(</SPAN>y<SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> x <SPAN class="op">+</SPAN> x <SPAN class="op">+</SPAN> x<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">return</SPAN> color_type<SPAN class="op">(</SPAN>p<SPAN class="op">[</SPAN>order_type::R<SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> 
+                              p<SPAN class="op">[</SPAN>order_type::G<SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> 
+                              p<SPAN class="op">[</SPAN>order_type::B<SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        AGG_INLINE <SPAN class="kw1">void</SPAN> copy_pixel<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">const</SPAN> color_type<SPAN class="op">&amp;</SPAN> c<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            value_type<SPAN class="op">*</SPAN> p <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>value_type<SPAN class="op">*</SPAN><SPAN class="op">)</SPAN>m_rbuf<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>row_ptr<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> x <SPAN class="op">+</SPAN> x <SPAN class="op">+</SPAN> x<SPAN class="op">;</SPAN>
+            p<SPAN class="op">[</SPAN>order_type::R<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> c<SPAN class="op">.</SPAN>r<SPAN class="op">;</SPAN>
+            p<SPAN class="op">[</SPAN>order_type::G<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> c<SPAN class="op">.</SPAN>g<SPAN class="op">;</SPAN>
+            p<SPAN class="op">[</SPAN>order_type::B<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> c<SPAN class="op">.</SPAN>b<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        AGG_INLINE <SPAN class="kw1">void</SPAN> blend_pixel<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">const</SPAN> color_type<SPAN class="op">&amp;</SPAN> c<SPAN class="op">,</SPAN> <A href="agg_basics.h.html#int8u">int8u</A> cover<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            copy_or_blend_pix<SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>value_type<SPAN class="op">*</SPAN><SPAN class="op">)</SPAN>m_rbuf<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>row_ptr<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> x <SPAN class="op">+</SPAN> x <SPAN class="op">+</SPAN> x<SPAN class="op">,</SPAN> c<SPAN class="op">,</SPAN> cover<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        AGG_INLINE <SPAN class="kw1">void</SPAN> copy_hline<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">,</SPAN> 
+                                   <SPAN class="kw1">unsigned</SPAN> len<SPAN class="op">,</SPAN> 
+                                   <SPAN class="kw1">const</SPAN> color_type<SPAN class="op">&amp;</SPAN> c<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            value_type<SPAN class="op">*</SPAN> p <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>value_type<SPAN class="op">*</SPAN><SPAN class="op">)</SPAN>m_rbuf<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>row_ptr<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> y<SPAN class="op">,</SPAN> len<SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> x <SPAN class="op">+</SPAN> x <SPAN class="op">+</SPAN> x<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">do</SPAN>
+            <SPAN class="op">{</SPAN>
+                p<SPAN class="op">[</SPAN>order_type::R<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> c<SPAN class="op">.</SPAN>r<SPAN class="op">;</SPAN> 
+                p<SPAN class="op">[</SPAN>order_type::G<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> c<SPAN class="op">.</SPAN>g<SPAN class="op">;</SPAN> 
+                p<SPAN class="op">[</SPAN>order_type::B<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> c<SPAN class="op">.</SPAN>b<SPAN class="op">;</SPAN>
+                p <SPAN class="op">+=</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN><SPAN class="op">--</SPAN>len<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        AGG_INLINE <SPAN class="kw1">void</SPAN> copy_vline<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">,</SPAN>
+                                   <SPAN class="kw1">unsigned</SPAN> len<SPAN class="op">,</SPAN> 
+                                   <SPAN class="kw1">const</SPAN> color_type<SPAN class="op">&amp;</SPAN> c<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">do</SPAN>
+            <SPAN class="op">{</SPAN>
+                value_type<SPAN class="op">*</SPAN> p <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>value_type<SPAN class="op">*</SPAN><SPAN class="op">)</SPAN>
+                    m_rbuf<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>row_ptr<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> y<SPAN class="op">++</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> x <SPAN class="op">+</SPAN> x <SPAN class="op">+</SPAN> x<SPAN class="op">;</SPAN>
+                p<SPAN class="op">[</SPAN>order_type::R<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> c<SPAN class="op">.</SPAN>r<SPAN class="op">;</SPAN> 
+                p<SPAN class="op">[</SPAN>order_type::G<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> c<SPAN class="op">.</SPAN>g<SPAN class="op">;</SPAN> 
+                p<SPAN class="op">[</SPAN>order_type::B<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> c<SPAN class="op">.</SPAN>b<SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN><SPAN class="op">--</SPAN>len<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">void</SPAN> blend_hline<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">,</SPAN>
+                         <SPAN class="kw1">unsigned</SPAN> len<SPAN class="op">,</SPAN> 
+                         <SPAN class="kw1">const</SPAN> color_type<SPAN class="op">&amp;</SPAN> c<SPAN class="op">,</SPAN>
+                         <A href="agg_basics.h.html#int8u">int8u</A> cover<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">if</SPAN> <SPAN class="op">(</SPAN>c<SPAN class="op">.</SPAN>a<SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                value_type<SPAN class="op">*</SPAN> p <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>value_type<SPAN class="op">*</SPAN><SPAN class="op">)</SPAN>
+                    m_rbuf<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>row_ptr<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> y<SPAN class="op">,</SPAN> len<SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> x <SPAN class="op">+</SPAN> x <SPAN class="op">+</SPAN> x<SPAN class="op">;</SPAN>
+
+                calc_type alpha <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>calc_type<SPAN class="op">(</SPAN>c<SPAN class="op">.</SPAN>a<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>calc_type<SPAN class="op">(</SPAN>cover<SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">&gt;&gt;</SPAN> <SPAN class="num">8</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>alpha <SPAN class="op">==</SPAN> base_mask<SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    <SPAN class="kw1">do</SPAN>
+                    <SPAN class="op">{</SPAN>
+                        p<SPAN class="op">[</SPAN>order_type::R<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> c<SPAN class="op">.</SPAN>r<SPAN class="op">;</SPAN> 
+                        p<SPAN class="op">[</SPAN>order_type::G<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> c<SPAN class="op">.</SPAN>g<SPAN class="op">;</SPAN> 
+                        p<SPAN class="op">[</SPAN>order_type::B<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> c<SPAN class="op">.</SPAN>b<SPAN class="op">;</SPAN>
+                        p <SPAN class="op">+=</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="op">}</SPAN>
+                    <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN><SPAN class="op">--</SPAN>len<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+                <SPAN class="kw1">else</SPAN>
+                <SPAN class="op">{</SPAN>
+                    <SPAN class="kw1">do</SPAN>
+                    <SPAN class="op">{</SPAN>
+                        m_blender<SPAN class="op">.</SPAN>blend_pix<SPAN class="op">(</SPAN>p<SPAN class="op">,</SPAN> c<SPAN class="op">.</SPAN>r<SPAN class="op">,</SPAN> c<SPAN class="op">.</SPAN>g<SPAN class="op">,</SPAN> c<SPAN class="op">.</SPAN>b<SPAN class="op">,</SPAN> alpha<SPAN class="op">,</SPAN> cover<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                        p <SPAN class="op">+=</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="op">}</SPAN>
+                    <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN><SPAN class="op">--</SPAN>len<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">void</SPAN> blend_vline<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">,</SPAN>
+                         <SPAN class="kw1">unsigned</SPAN> len<SPAN class="op">,</SPAN> 
+                         <SPAN class="kw1">const</SPAN> color_type<SPAN class="op">&amp;</SPAN> c<SPAN class="op">,</SPAN>
+                         <A href="agg_basics.h.html#int8u">int8u</A> cover<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">if</SPAN> <SPAN class="op">(</SPAN>c<SPAN class="op">.</SPAN>a<SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                value_type<SPAN class="op">*</SPAN> p<SPAN class="op">;</SPAN>
+                calc_type alpha <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>calc_type<SPAN class="op">(</SPAN>c<SPAN class="op">.</SPAN>a<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>cover <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">&gt;&gt;</SPAN> <SPAN class="num">8</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>alpha <SPAN class="op">==</SPAN> base_mask<SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    <SPAN class="kw1">do</SPAN>
+                    <SPAN class="op">{</SPAN>
+                        p <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>value_type<SPAN class="op">*</SPAN><SPAN class="op">)</SPAN>
+                            m_rbuf<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>row_ptr<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> y<SPAN class="op">++</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> x <SPAN class="op">+</SPAN> x <SPAN class="op">+</SPAN> x<SPAN class="op">;</SPAN>
+
+                        p<SPAN class="op">[</SPAN>order_type::R<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> c<SPAN class="op">.</SPAN>r<SPAN class="op">;</SPAN> 
+                        p<SPAN class="op">[</SPAN>order_type::G<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> c<SPAN class="op">.</SPAN>g<SPAN class="op">;</SPAN> 
+                        p<SPAN class="op">[</SPAN>order_type::B<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> c<SPAN class="op">.</SPAN>b<SPAN class="op">;</SPAN>
+                    <SPAN class="op">}</SPAN>
+                    <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN><SPAN class="op">--</SPAN>len<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+                <SPAN class="kw1">else</SPAN>
+                <SPAN class="op">{</SPAN>
+                    <SPAN class="kw1">do</SPAN>
+                    <SPAN class="op">{</SPAN>
+                        p <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>value_type<SPAN class="op">*</SPAN><SPAN class="op">)</SPAN>
+                            m_rbuf<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>row_ptr<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> y<SPAN class="op">++</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> x <SPAN class="op">+</SPAN> x <SPAN class="op">+</SPAN> x<SPAN class="op">;</SPAN>
+
+                        m_blender<SPAN class="op">.</SPAN>blend_pix<SPAN class="op">(</SPAN>p<SPAN class="op">,</SPAN> c<SPAN class="op">.</SPAN>r<SPAN class="op">,</SPAN> c<SPAN class="op">.</SPAN>g<SPAN class="op">,</SPAN> c<SPAN class="op">.</SPAN>b<SPAN class="op">,</SPAN> alpha<SPAN class="op">,</SPAN> cover<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="op">}</SPAN>
+                    <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN><SPAN class="op">--</SPAN>len<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">void</SPAN> blend_solid_hspan<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">,</SPAN>
+                               <SPAN class="kw1">unsigned</SPAN> len<SPAN class="op">,</SPAN> 
+                               <SPAN class="kw1">const</SPAN> color_type<SPAN class="op">&amp;</SPAN> c<SPAN class="op">,</SPAN>
+                               <SPAN class="kw1">const</SPAN> <A href="agg_basics.h.html#int8u">int8u</A><SPAN class="op">*</SPAN> covers<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">if</SPAN> <SPAN class="op">(</SPAN>c<SPAN class="op">.</SPAN>a<SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                value_type<SPAN class="op">*</SPAN> p <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>value_type<SPAN class="op">*</SPAN><SPAN class="op">)</SPAN>
+                    m_rbuf<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>row_ptr<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> y<SPAN class="op">,</SPAN> len<SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> x <SPAN class="op">+</SPAN> x <SPAN class="op">+</SPAN> x<SPAN class="op">;</SPAN>
+
+                <SPAN class="kw1">do</SPAN> 
+                <SPAN class="op">{</SPAN>
+                    calc_type alpha <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>calc_type<SPAN class="op">(</SPAN>c<SPAN class="op">.</SPAN>a<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>calc_type<SPAN class="op">(</SPAN><SPAN class="op">*</SPAN>covers<SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">&gt;&gt;</SPAN> <SPAN class="num">8</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>alpha <SPAN class="op">==</SPAN> base_mask<SPAN class="op">)</SPAN>
+                    <SPAN class="op">{</SPAN>
+                        p<SPAN class="op">[</SPAN>order_type::R<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> c<SPAN class="op">.</SPAN>r<SPAN class="op">;</SPAN>
+                        p<SPAN class="op">[</SPAN>order_type::G<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> c<SPAN class="op">.</SPAN>g<SPAN class="op">;</SPAN>
+                        p<SPAN class="op">[</SPAN>order_type::B<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> c<SPAN class="op">.</SPAN>b<SPAN class="op">;</SPAN>
+                    <SPAN class="op">}</SPAN>
+                    <SPAN class="kw1">else</SPAN>
+                    <SPAN class="op">{</SPAN>
+                        m_blender<SPAN class="op">.</SPAN>blend_pix<SPAN class="op">(</SPAN>p<SPAN class="op">,</SPAN> c<SPAN class="op">.</SPAN>r<SPAN class="op">,</SPAN> c<SPAN class="op">.</SPAN>g<SPAN class="op">,</SPAN> c<SPAN class="op">.</SPAN>b<SPAN class="op">,</SPAN> alpha<SPAN class="op">,</SPAN> <SPAN class="op">*</SPAN>covers<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="op">}</SPAN>
+                    p <SPAN class="op">+=</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="op">++</SPAN>covers<SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+                <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN><SPAN class="op">--</SPAN>len<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">void</SPAN> blend_solid_vspan<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">,</SPAN>
+                               <SPAN class="kw1">unsigned</SPAN> len<SPAN class="op">,</SPAN> 
+                               <SPAN class="kw1">const</SPAN> color_type<SPAN class="op">&amp;</SPAN> c<SPAN class="op">,</SPAN>
+                               <SPAN class="kw1">const</SPAN> <A href="agg_basics.h.html#int8u">int8u</A><SPAN class="op">*</SPAN> covers<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">if</SPAN> <SPAN class="op">(</SPAN>c<SPAN class="op">.</SPAN>a<SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                <SPAN class="kw1">do</SPAN> 
+                <SPAN class="op">{</SPAN>
+                    value_type<SPAN class="op">*</SPAN> p <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>value_type<SPAN class="op">*</SPAN><SPAN class="op">)</SPAN>
+                        m_rbuf<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>row_ptr<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> y<SPAN class="op">++</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> x <SPAN class="op">+</SPAN> x <SPAN class="op">+</SPAN> x<SPAN class="op">;</SPAN>
+
+                    calc_type alpha <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>calc_type<SPAN class="op">(</SPAN>c<SPAN class="op">.</SPAN>a<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>calc_type<SPAN class="op">(</SPAN><SPAN class="op">*</SPAN>covers<SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">&gt;&gt;</SPAN> <SPAN class="num">8</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>alpha <SPAN class="op">==</SPAN> base_mask<SPAN class="op">)</SPAN>
+                    <SPAN class="op">{</SPAN>
+                        p<SPAN class="op">[</SPAN>order_type::R<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> c<SPAN class="op">.</SPAN>r<SPAN class="op">;</SPAN>
+                        p<SPAN class="op">[</SPAN>order_type::G<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> c<SPAN class="op">.</SPAN>g<SPAN class="op">;</SPAN>
+                        p<SPAN class="op">[</SPAN>order_type::B<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> c<SPAN class="op">.</SPAN>b<SPAN class="op">;</SPAN>
+                    <SPAN class="op">}</SPAN>
+                    <SPAN class="kw1">else</SPAN>
+                    <SPAN class="op">{</SPAN>
+                        m_blender<SPAN class="op">.</SPAN>blend_pix<SPAN class="op">(</SPAN>p<SPAN class="op">,</SPAN> c<SPAN class="op">.</SPAN>r<SPAN class="op">,</SPAN> c<SPAN class="op">.</SPAN>g<SPAN class="op">,</SPAN> c<SPAN class="op">.</SPAN>b<SPAN class="op">,</SPAN> alpha<SPAN class="op">,</SPAN> <SPAN class="op">*</SPAN>covers<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="op">}</SPAN>
+                    <SPAN class="op">++</SPAN>covers<SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+                <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN><SPAN class="op">--</SPAN>len<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">void</SPAN> copy_color_hspan<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">,</SPAN>
+                              <SPAN class="kw1">unsigned</SPAN> len<SPAN class="op">,</SPAN> 
+                              <SPAN class="kw1">const</SPAN> color_type<SPAN class="op">*</SPAN> colors<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            value_type<SPAN class="op">*</SPAN> p <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>value_type<SPAN class="op">*</SPAN><SPAN class="op">)</SPAN>
+                m_rbuf<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>row_ptr<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> y<SPAN class="op">,</SPAN> len<SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> x <SPAN class="op">+</SPAN> x <SPAN class="op">+</SPAN> x<SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">do</SPAN> 
+            <SPAN class="op">{</SPAN>
+                p<SPAN class="op">[</SPAN>order_type::R<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> colors<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>r<SPAN class="op">;</SPAN>
+                p<SPAN class="op">[</SPAN>order_type::G<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> colors<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>g<SPAN class="op">;</SPAN>
+                p<SPAN class="op">[</SPAN>order_type::B<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> colors<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>b<SPAN class="op">;</SPAN>
+                <SPAN class="op">++</SPAN>colors<SPAN class="op">;</SPAN>
+                p <SPAN class="op">+=</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN><SPAN class="op">--</SPAN>len<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">void</SPAN> copy_color_vspan<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">,</SPAN>
+                              <SPAN class="kw1">unsigned</SPAN> len<SPAN class="op">,</SPAN> 
+                              <SPAN class="kw1">const</SPAN> color_type<SPAN class="op">*</SPAN> colors<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">do</SPAN> 
+            <SPAN class="op">{</SPAN>
+                value_type<SPAN class="op">*</SPAN> p <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>value_type<SPAN class="op">*</SPAN><SPAN class="op">)</SPAN>
+                    m_rbuf<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>row_ptr<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> y<SPAN class="op">++</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> x <SPAN class="op">+</SPAN> x <SPAN class="op">+</SPAN> x<SPAN class="op">;</SPAN>
+                p<SPAN class="op">[</SPAN>order_type::R<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> colors<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>r<SPAN class="op">;</SPAN>
+                p<SPAN class="op">[</SPAN>order_type::G<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> colors<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>g<SPAN class="op">;</SPAN>
+                p<SPAN class="op">[</SPAN>order_type::B<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> colors<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>b<SPAN class="op">;</SPAN>
+                <SPAN class="op">++</SPAN>colors<SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN><SPAN class="op">--</SPAN>len<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">void</SPAN> blend_color_hspan<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">,</SPAN>
+                               <SPAN class="kw1">unsigned</SPAN> len<SPAN class="op">,</SPAN> 
+                               <SPAN class="kw1">const</SPAN> color_type<SPAN class="op">*</SPAN> colors<SPAN class="op">,</SPAN>
+                               <SPAN class="kw1">const</SPAN> <A href="agg_basics.h.html#int8u">int8u</A><SPAN class="op">*</SPAN> covers<SPAN class="op">,</SPAN>
+                               <A href="agg_basics.h.html#int8u">int8u</A> cover<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            value_type<SPAN class="op">*</SPAN> p <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>value_type<SPAN class="op">*</SPAN><SPAN class="op">)</SPAN>
+                m_rbuf<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>row_ptr<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> y<SPAN class="op">,</SPAN> len<SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> x <SPAN class="op">+</SPAN> x <SPAN class="op">+</SPAN> x<SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>covers<SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                <SPAN class="kw1">do</SPAN> 
+                <SPAN class="op">{</SPAN>
+                    copy_or_blend_pix<SPAN class="op">(</SPAN>p<SPAN class="op">,</SPAN> <SPAN class="op">*</SPAN>colors<SPAN class="op">++</SPAN><SPAN class="op">,</SPAN> <SPAN class="op">*</SPAN>covers<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    p <SPAN class="op">+=</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+                <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN><SPAN class="op">--</SPAN>len<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="kw1">else</SPAN>
+            <SPAN class="op">{</SPAN>
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>cover <SPAN class="op">==</SPAN> <SPAN class="num">255</SPAN><SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    <SPAN class="kw1">do</SPAN> 
+                    <SPAN class="op">{</SPAN>
+                        copy_or_blend_pix<SPAN class="op">(</SPAN>p<SPAN class="op">,</SPAN> <SPAN class="op">*</SPAN>colors<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                        p <SPAN class="op">+=</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="op">}</SPAN>
+                    <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN><SPAN class="op">--</SPAN>len<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+                <SPAN class="kw1">else</SPAN>
+                <SPAN class="op">{</SPAN>
+                    <SPAN class="kw1">do</SPAN> 
+                    <SPAN class="op">{</SPAN>
+                        copy_or_blend_pix<SPAN class="op">(</SPAN>p<SPAN class="op">,</SPAN> <SPAN class="op">*</SPAN>colors<SPAN class="op">++</SPAN><SPAN class="op">,</SPAN> cover<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                        p <SPAN class="op">+=</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="op">}</SPAN>
+                    <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN><SPAN class="op">--</SPAN>len<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+
+
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">void</SPAN> blend_color_vspan<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">,</SPAN>
+                               <SPAN class="kw1">unsigned</SPAN> len<SPAN class="op">,</SPAN> 
+                               <SPAN class="kw1">const</SPAN> color_type<SPAN class="op">*</SPAN> colors<SPAN class="op">,</SPAN>
+                               <SPAN class="kw1">const</SPAN> <A href="agg_basics.h.html#int8u">int8u</A><SPAN class="op">*</SPAN> covers<SPAN class="op">,</SPAN>
+                               <A href="agg_basics.h.html#int8u">int8u</A> cover<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            value_type<SPAN class="op">*</SPAN> p<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>covers<SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                <SPAN class="kw1">do</SPAN> 
+                <SPAN class="op">{</SPAN>
+                    p <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>value_type<SPAN class="op">*</SPAN><SPAN class="op">)</SPAN>
+                        m_rbuf<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>row_ptr<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> y<SPAN class="op">++</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> x <SPAN class="op">+</SPAN> x <SPAN class="op">+</SPAN> x<SPAN class="op">;</SPAN>
+
+                    copy_or_blend_pix<SPAN class="op">(</SPAN>p<SPAN class="op">,</SPAN> <SPAN class="op">*</SPAN>colors<SPAN class="op">++</SPAN><SPAN class="op">,</SPAN> <SPAN class="op">*</SPAN>covers<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+                <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN><SPAN class="op">--</SPAN>len<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="kw1">else</SPAN>
+            <SPAN class="op">{</SPAN>
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>cover <SPAN class="op">==</SPAN> <SPAN class="num">255</SPAN><SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    <SPAN class="kw1">do</SPAN> 
+                    <SPAN class="op">{</SPAN>
+                        p <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>value_type<SPAN class="op">*</SPAN><SPAN class="op">)</SPAN>
+                            m_rbuf<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>row_ptr<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> y<SPAN class="op">++</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> x <SPAN class="op">+</SPAN> x <SPAN class="op">+</SPAN> x<SPAN class="op">;</SPAN>
+
+                        copy_or_blend_pix<SPAN class="op">(</SPAN>p<SPAN class="op">,</SPAN> <SPAN class="op">*</SPAN>colors<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="op">}</SPAN>
+                    <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN><SPAN class="op">--</SPAN>len<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+                <SPAN class="kw1">else</SPAN>
+                <SPAN class="op">{</SPAN>
+                    <SPAN class="kw1">do</SPAN> 
+                    <SPAN class="op">{</SPAN>
+                        p <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>value_type<SPAN class="op">*</SPAN><SPAN class="op">)</SPAN>
+                            m_rbuf<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>row_ptr<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> y<SPAN class="op">++</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> x <SPAN class="op">+</SPAN> x <SPAN class="op">+</SPAN> x<SPAN class="op">;</SPAN>
+
+                        copy_or_blend_pix<SPAN class="op">(</SPAN>p<SPAN class="op">,</SPAN> <SPAN class="op">*</SPAN>colors<SPAN class="op">++</SPAN><SPAN class="op">,</SPAN> cover<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="op">}</SPAN>
+                    <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN><SPAN class="op">--</SPAN>len<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Function<SPAN class="op">&gt;</SPAN> <SPAN class="kw1">void</SPAN> for_each_pixel<SPAN class="op">(</SPAN>Function f<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">unsigned</SPAN> y<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>y <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> y <SPAN class="op">&lt;</SPAN> height<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">++</SPAN>y<SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                row_data r <SPAN class="op">=</SPAN> m_rbuf<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>row<SPAN class="op">(</SPAN>y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>r<SPAN class="op">.</SPAN>ptr<SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    <SPAN class="kw1">unsigned</SPAN> len <SPAN class="op">=</SPAN> r<SPAN class="op">.</SPAN>x2 <SPAN class="op">-</SPAN> r<SPAN class="op">.</SPAN>x1 <SPAN class="op">+</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+                    value_type<SPAN class="op">*</SPAN> p <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>value_type<SPAN class="op">*</SPAN><SPAN class="op">)</SPAN>
+                        m_rbuf<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>row_ptr<SPAN class="op">(</SPAN>r<SPAN class="op">.</SPAN>x1<SPAN class="op">,</SPAN> y<SPAN class="op">,</SPAN> len<SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> r<SPAN class="op">.</SPAN>x1 <SPAN class="op">*</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="kw1">do</SPAN>
+                    <SPAN class="op">{</SPAN>
+                        f<SPAN class="op">(</SPAN>p<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                        p <SPAN class="op">+=</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="op">}</SPAN>
+                    <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN><SPAN class="op">--</SPAN>len<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> GammaLut<SPAN class="op">&gt;</SPAN> <SPAN class="kw1">void</SPAN> apply_gamma_dir<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> GammaLut<SPAN class="op">&amp;</SPAN> g<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            for_each_pixel<SPAN class="op">(</SPAN><A href="agg_pixfmt_rgb.h.html#apply_gamma_dir_rgb">apply_gamma_dir_rgb</A><SPAN class="op">&lt;</SPAN>color_type<SPAN class="op">,</SPAN> order_type<SPAN class="op">,</SPAN> GammaLut<SPAN class="op">&gt;</SPAN><SPAN class="op">(</SPAN>g<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> GammaLut<SPAN class="op">&gt;</SPAN> <SPAN class="kw1">void</SPAN> apply_gamma_inv<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> GammaLut<SPAN class="op">&amp;</SPAN> g<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            for_each_pixel<SPAN class="op">(</SPAN><A href="agg_pixfmt_rgb.h.html#apply_gamma_inv_rgb">apply_gamma_inv_rgb</A><SPAN class="op">&lt;</SPAN>color_type<SPAN class="op">,</SPAN> order_type<SPAN class="op">,</SPAN> GammaLut<SPAN class="op">&gt;</SPAN><SPAN class="op">(</SPAN>g<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> RenBuf2<SPAN class="op">&gt;</SPAN>
+        <SPAN class="kw1">void</SPAN> copy_from<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> RenBuf2<SPAN class="op">&amp;</SPAN> from<SPAN class="op">,</SPAN> 
+                       <SPAN class="kw1">int</SPAN> xdst<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> ydst<SPAN class="op">,</SPAN>
+                       <SPAN class="kw1">int</SPAN> xsrc<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> ysrc<SPAN class="op">,</SPAN>
+                       <SPAN class="kw1">unsigned</SPAN> len<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">const</SPAN> <A href="agg_basics.h.html#int8u">int8u</A><SPAN class="op">*</SPAN> p <SPAN class="op">=</SPAN> from<SPAN class="op">.</SPAN>row_ptr<SPAN class="op">(</SPAN>ysrc<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>p<SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                memmove<SPAN class="op">(</SPAN>m_rbuf<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>row_ptr<SPAN class="op">(</SPAN>xdst<SPAN class="op">,</SPAN> ydst<SPAN class="op">,</SPAN> len<SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> xdst <SPAN class="op">*</SPAN> pix_width<SPAN class="op">,</SPAN> 
+                        p <SPAN class="op">+</SPAN> xsrc <SPAN class="op">*</SPAN> pix_width<SPAN class="op">,</SPAN> 
+                        len <SPAN class="op">*</SPAN> pix_width<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> SrcPixelFormatRenderer<SPAN class="op">&gt;</SPAN>
+        <SPAN class="kw1">void</SPAN> blend_from<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> SrcPixelFormatRenderer<SPAN class="op">&amp;</SPAN> from<SPAN class="op">,</SPAN> 
+                        <SPAN class="kw1">int</SPAN> xdst<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> ydst<SPAN class="op">,</SPAN>
+                        <SPAN class="kw1">int</SPAN> xsrc<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> ysrc<SPAN class="op">,</SPAN>
+                        <SPAN class="kw1">unsigned</SPAN> len<SPAN class="op">,</SPAN>
+                        <A href="agg_basics.h.html#int8u">int8u</A> cover<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">typedef</SPAN> <SPAN class="kw1">typename</SPAN> SrcPixelFormatRenderer::order_type src_order<SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">const</SPAN> value_type<SPAN class="op">*</SPAN> psrc <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> value_type<SPAN class="op">*</SPAN><SPAN class="op">)</SPAN>from<SPAN class="op">.</SPAN>row_ptr<SPAN class="op">(</SPAN>ysrc<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>psrc<SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                psrc <SPAN class="op">+=</SPAN> xsrc <SPAN class="op">*</SPAN> <SPAN class="num">4</SPAN><SPAN class="op">;</SPAN>
+                value_type<SPAN class="op">*</SPAN> pdst <SPAN class="op">=</SPAN> 
+                    <SPAN class="op">(</SPAN>value_type<SPAN class="op">*</SPAN><SPAN class="op">)</SPAN>m_rbuf<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>row_ptr<SPAN class="op">(</SPAN>xdst<SPAN class="op">,</SPAN> ydst<SPAN class="op">,</SPAN> len<SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> xdst <SPAN class="op">*</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">;</SPAN>   
+
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>cover <SPAN class="op">==</SPAN> <SPAN class="num">255</SPAN><SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    <SPAN class="kw1">do</SPAN> 
+                    <SPAN class="op">{</SPAN>
+                        value_type alpha <SPAN class="op">=</SPAN> psrc<SPAN class="op">[</SPAN>src_order::A<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>alpha<SPAN class="op">)</SPAN>
+                        <SPAN class="op">{</SPAN>
+                            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>alpha <SPAN class="op">==</SPAN> base_mask<SPAN class="op">)</SPAN>
+                            <SPAN class="op">{</SPAN>
+                                pdst<SPAN class="op">[</SPAN>order_type::R<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> psrc<SPAN class="op">[</SPAN>src_order::R<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                                pdst<SPAN class="op">[</SPAN>order_type::G<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> psrc<SPAN class="op">[</SPAN>src_order::G<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                                pdst<SPAN class="op">[</SPAN>order_type::B<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> psrc<SPAN class="op">[</SPAN>src_order::B<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                            <SPAN class="op">}</SPAN>
+                            <SPAN class="kw1">else</SPAN>
+                            <SPAN class="op">{</SPAN>
+                                m_blender<SPAN class="op">.</SPAN>blend_pix<SPAN class="op">(</SPAN>pdst<SPAN class="op">,</SPAN> 
+                                                    psrc<SPAN class="op">[</SPAN>src_order::R<SPAN class="op">]</SPAN><SPAN class="op">,</SPAN>
+                                                    psrc<SPAN class="op">[</SPAN>src_order::G<SPAN class="op">]</SPAN><SPAN class="op">,</SPAN>
+                                                    psrc<SPAN class="op">[</SPAN>src_order::B<SPAN class="op">]</SPAN><SPAN class="op">,</SPAN>
+                                                    alpha<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                            <SPAN class="op">}</SPAN>
+                        <SPAN class="op">}</SPAN>
+                        psrc <SPAN class="op">+=</SPAN> <SPAN class="num">4</SPAN><SPAN class="op">;</SPAN>
+                        pdst <SPAN class="op">+=</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="op">}</SPAN>
+                    <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN><SPAN class="op">--</SPAN>len<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+                <SPAN class="kw1">else</SPAN>
+                <SPAN class="op">{</SPAN>
+                    color_type color<SPAN class="op">;</SPAN>
+                    <SPAN class="kw1">do</SPAN> 
+                    <SPAN class="op">{</SPAN>
+                        color<SPAN class="op">.</SPAN>r <SPAN class="op">=</SPAN> psrc<SPAN class="op">[</SPAN>src_order::R<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                        color<SPAN class="op">.</SPAN>g <SPAN class="op">=</SPAN> psrc<SPAN class="op">[</SPAN>src_order::G<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                        color<SPAN class="op">.</SPAN>b <SPAN class="op">=</SPAN> psrc<SPAN class="op">[</SPAN>src_order::B<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                        color<SPAN class="op">.</SPAN>a <SPAN class="op">=</SPAN> psrc<SPAN class="op">[</SPAN>src_order::A<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                        copy_or_blend_pix<SPAN class="op">(</SPAN>pdst<SPAN class="op">,</SPAN> color<SPAN class="op">,</SPAN> cover<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                        psrc <SPAN class="op">+=</SPAN> <SPAN class="num">4</SPAN><SPAN class="op">;</SPAN>
+                        pdst <SPAN class="op">+=</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="op">}</SPAN>
+                    <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN><SPAN class="op">--</SPAN>len<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> SrcPixelFormatRenderer<SPAN class="op">&gt;</SPAN>
+        <SPAN class="kw1">void</SPAN> blend_from_color<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> SrcPixelFormatRenderer<SPAN class="op">&amp;</SPAN> from<SPAN class="op">,</SPAN> 
+                              <SPAN class="kw1">const</SPAN> color_type<SPAN class="op">&amp;</SPAN> color<SPAN class="op">,</SPAN>
+                              <SPAN class="kw1">int</SPAN> xdst<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> ydst<SPAN class="op">,</SPAN>
+                              <SPAN class="kw1">int</SPAN> xsrc<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> ysrc<SPAN class="op">,</SPAN>
+                              <SPAN class="kw1">unsigned</SPAN> len<SPAN class="op">,</SPAN>
+                              <A href="agg_basics.h.html#int8u">int8u</A> cover<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">typedef</SPAN> <SPAN class="kw1">typename</SPAN> SrcPixelFormatRenderer::value_type src_value_type<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">const</SPAN> src_value_type<SPAN class="op">*</SPAN> psrc <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>src_value_type<SPAN class="op">*</SPAN><SPAN class="op">)</SPAN>from<SPAN class="op">.</SPAN>row_ptr<SPAN class="op">(</SPAN>ysrc<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>psrc<SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                value_type<SPAN class="op">*</SPAN> pdst <SPAN class="op">=</SPAN> 
+                    <SPAN class="op">(</SPAN>value_type<SPAN class="op">*</SPAN><SPAN class="op">)</SPAN>m_rbuf<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>row_ptr<SPAN class="op">(</SPAN>xdst<SPAN class="op">,</SPAN> ydst<SPAN class="op">,</SPAN> len<SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> xdst <SPAN class="op">*</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">do</SPAN> 
+                <SPAN class="op">{</SPAN>
+                    copy_or_blend_pix<SPAN class="op">(</SPAN>pdst<SPAN class="op">,</SPAN> 
+                                      color<SPAN class="op">,</SPAN> 
+                                      <SPAN class="op">(</SPAN><SPAN class="op">*</SPAN>psrc <SPAN class="op">*</SPAN> cover <SPAN class="op">+</SPAN> base_mask<SPAN class="op">)</SPAN> <SPAN class="op">&gt;&gt;</SPAN> base_shift<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="op">++</SPAN>psrc<SPAN class="op">;</SPAN>
+                    pdst <SPAN class="op">+=</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+                <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN><SPAN class="op">--</SPAN>len<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> SrcPixelFormatRenderer<SPAN class="op">&gt;</SPAN>
+        <SPAN class="kw1">void</SPAN> blend_from_lut<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> SrcPixelFormatRenderer<SPAN class="op">&amp;</SPAN> from<SPAN class="op">,</SPAN> 
+                            <SPAN class="kw1">const</SPAN> color_type<SPAN class="op">*</SPAN> color_lut<SPAN class="op">,</SPAN>
+                            <SPAN class="kw1">int</SPAN> xdst<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> ydst<SPAN class="op">,</SPAN>
+                            <SPAN class="kw1">int</SPAN> xsrc<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> ysrc<SPAN class="op">,</SPAN>
+                            <SPAN class="kw1">unsigned</SPAN> len<SPAN class="op">,</SPAN>
+                            <A href="agg_basics.h.html#int8u">int8u</A> cover<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">typedef</SPAN> <SPAN class="kw1">typename</SPAN> SrcPixelFormatRenderer::value_type src_value_type<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">const</SPAN> src_value_type<SPAN class="op">*</SPAN> psrc <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>src_value_type<SPAN class="op">*</SPAN><SPAN class="op">)</SPAN>from<SPAN class="op">.</SPAN>row_ptr<SPAN class="op">(</SPAN>ysrc<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>psrc<SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                value_type<SPAN class="op">*</SPAN> pdst <SPAN class="op">=</SPAN> 
+                    <SPAN class="op">(</SPAN>value_type<SPAN class="op">*</SPAN><SPAN class="op">)</SPAN>m_rbuf<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>row_ptr<SPAN class="op">(</SPAN>xdst<SPAN class="op">,</SPAN> ydst<SPAN class="op">,</SPAN> len<SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> xdst <SPAN class="op">*</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">;</SPAN>
+
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>cover <SPAN class="op">==</SPAN> <SPAN class="num">255</SPAN><SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    <SPAN class="kw1">do</SPAN> 
+                    <SPAN class="op">{</SPAN>
+                        <SPAN class="kw1">const</SPAN> color_type<SPAN class="op">&amp;</SPAN> color <SPAN class="op">=</SPAN> color_lut<SPAN class="op">[</SPAN><SPAN class="op">*</SPAN>psrc<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                        m_blender<SPAN class="op">.</SPAN>blend_pix<SPAN class="op">(</SPAN>pdst<SPAN class="op">,</SPAN> 
+                                            color<SPAN class="op">.</SPAN>r<SPAN class="op">,</SPAN> color<SPAN class="op">.</SPAN>g<SPAN class="op">,</SPAN> color<SPAN class="op">.</SPAN>b<SPAN class="op">,</SPAN> color<SPAN class="op">.</SPAN>a<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                        <SPAN class="op">++</SPAN>psrc<SPAN class="op">;</SPAN>
+                        pdst <SPAN class="op">+=</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="op">}</SPAN>
+                    <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN><SPAN class="op">--</SPAN>len<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+                <SPAN class="kw1">else</SPAN>
+                <SPAN class="op">{</SPAN>
+                    <SPAN class="kw1">do</SPAN> 
+                    <SPAN class="op">{</SPAN>
+                        copy_or_blend_pix<SPAN class="op">(</SPAN>pdst<SPAN class="op">,</SPAN> color_lut<SPAN class="op">[</SPAN><SPAN class="op">*</SPAN>psrc<SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> cover<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                        <SPAN class="op">++</SPAN>psrc<SPAN class="op">;</SPAN>
+                        pdst <SPAN class="op">+=</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="op">}</SPAN>
+                    <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN><SPAN class="op">--</SPAN>len<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+
+    <SPAN class="kw1">private</SPAN>:
+        rbuf_type<SPAN class="op">*</SPAN> m_rbuf<SPAN class="op">;</SPAN>
+        Blender    m_blender<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">typedef</SPAN> <A href="agg_pixfmt_rgb.h.html#pixfmt_alpha_blend_rgb">pixfmt_alpha_blend_rgb</A><SPAN class="op">&lt;</SPAN><A href="agg_pixfmt_rgb.h.html#blender_rgb">blender_rgb</A><SPAN class="op">&lt;</SPAN><A href="agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">,</SPAN>  <A href="agg_color_rgba.h.html#order_rgb">order_rgb</A><SPAN class="op">&gt;</SPAN><SPAN class="op">,</SPAN> <A href="../../doc/basic_renderers/basic_renderers.agdoc.html#rendering_buffer">rendering_buffer</A><SPAN class="op">&gt;</SPAN> <A href="agg_pixfmt_rgb.h.html#pixfmt_rgb24">pixfmt_rgb24</A><SPAN class="op">;</SPAN>    <SPAN class="rem">//----<A name="pixfmt_rgb24"><B></B></A><A href="agg_pixfmt_rgb.h.html#pixfmt_rgb24">pixfmt_rgb24</A></SPAN>
+    <SPAN class="kw1">typedef</SPAN> <A href="agg_pixfmt_rgb.h.html#pixfmt_alpha_blend_rgb">pixfmt_alpha_blend_rgb</A><SPAN class="op">&lt;</SPAN><A href="agg_pixfmt_rgb.h.html#blender_rgb">blender_rgb</A><SPAN class="op">&lt;</SPAN><A href="agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">,</SPAN>  <A href="agg_color_rgba.h.html#order_bgr">order_bgr</A><SPAN class="op">&gt;</SPAN><SPAN class="op">,</SPAN> <A href="../../doc/basic_renderers/basic_renderers.agdoc.html#rendering_buffer">rendering_buffer</A><SPAN class="op">&gt;</SPAN> <A href="agg_pixfmt_rgb.h.html#pixfmt_bgr24">pixfmt_bgr24</A><SPAN class="op">;</SPAN>    <SPAN class="rem">//----<A name="pixfmt_bgr24"><B></B></A><A href="agg_pixfmt_rgb.h.html#pixfmt_bgr24">pixfmt_bgr24</A></SPAN>
+    <SPAN class="kw1">typedef</SPAN> <A href="agg_pixfmt_rgb.h.html#pixfmt_alpha_blend_rgb">pixfmt_alpha_blend_rgb</A><SPAN class="op">&lt;</SPAN><A href="agg_pixfmt_rgb.h.html#blender_rgb">blender_rgb</A><SPAN class="op">&lt;</SPAN><A href="agg_color_rgba.h.html#rgba16">rgba16</A><SPAN class="op">,</SPAN> <A href="agg_color_rgba.h.html#order_rgb">order_rgb</A><SPAN class="op">&gt;</SPAN><SPAN class="op">,</SPAN> <A href="../../doc/basic_renderers/basic_renderers.agdoc.html#rendering_buffer">rendering_buffer</A><SPAN class="op">&gt;</SPAN> <A href="agg_pixfmt_rgb.h.html#pixfmt_rgb48">pixfmt_rgb48</A><SPAN class="op">;</SPAN>    <SPAN class="rem">//----<A name="pixfmt_rgb48"><B></B></A><A href="agg_pixfmt_rgb.h.html#pixfmt_rgb48">pixfmt_rgb48</A></SPAN>
+    <SPAN class="kw1">typedef</SPAN> <A href="agg_pixfmt_rgb.h.html#pixfmt_alpha_blend_rgb">pixfmt_alpha_blend_rgb</A><SPAN class="op">&lt;</SPAN><A href="agg_pixfmt_rgb.h.html#blender_rgb">blender_rgb</A><SPAN class="op">&lt;</SPAN><A href="agg_color_rgba.h.html#rgba16">rgba16</A><SPAN class="op">,</SPAN> <A href="agg_color_rgba.h.html#order_bgr">order_bgr</A><SPAN class="op">&gt;</SPAN><SPAN class="op">,</SPAN> <A href="../../doc/basic_renderers/basic_renderers.agdoc.html#rendering_buffer">rendering_buffer</A><SPAN class="op">&gt;</SPAN> <A href="agg_pixfmt_rgb.h.html#pixfmt_bgr48">pixfmt_bgr48</A><SPAN class="op">;</SPAN>    <SPAN class="rem">//----<A name="pixfmt_bgr48"><B></B></A><A href="agg_pixfmt_rgb.h.html#pixfmt_bgr48">pixfmt_bgr48</A></SPAN>
+
+    <SPAN class="kw1">typedef</SPAN> <A href="agg_pixfmt_rgb.h.html#pixfmt_alpha_blend_rgb">pixfmt_alpha_blend_rgb</A><SPAN class="op">&lt;</SPAN><A href="agg_pixfmt_rgb.h.html#blender_rgb_pre">blender_rgb_pre</A><SPAN class="op">&lt;</SPAN><A href="agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">,</SPAN>  <A href="agg_color_rgba.h.html#order_rgb">order_rgb</A><SPAN class="op">&gt;</SPAN><SPAN class="op">,</SPAN> <A href="../../doc/basic_renderers/basic_renderers.agdoc.html#rendering_buffer">rendering_buffer</A><SPAN class="op">&gt;</SPAN> <A href="agg_pixfmt_rgb.h.html#pixfmt_rgb24_pre">pixfmt_rgb24_pre</A><SPAN class="op">;</SPAN> <SPAN class="rem">//----<A name="pixfmt_rgb24_pre"><B></B></A><A href="agg_pixfmt_rgb.h.html#pixfmt_rgb24_pre">pixfmt_rgb24_pre</A></SPAN>
+    <SPAN class="kw1">typedef</SPAN> <A href="agg_pixfmt_rgb.h.html#pixfmt_alpha_blend_rgb">pixfmt_alpha_blend_rgb</A><SPAN class="op">&lt;</SPAN><A href="agg_pixfmt_rgb.h.html#blender_rgb_pre">blender_rgb_pre</A><SPAN class="op">&lt;</SPAN><A href="agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">,</SPAN>  <A href="agg_color_rgba.h.html#order_bgr">order_bgr</A><SPAN class="op">&gt;</SPAN><SPAN class="op">,</SPAN> <A href="../../doc/basic_renderers/basic_renderers.agdoc.html#rendering_buffer">rendering_buffer</A><SPAN class="op">&gt;</SPAN> <A href="agg_pixfmt_rgb.h.html#pixfmt_bgr24_pre">pixfmt_bgr24_pre</A><SPAN class="op">;</SPAN> <SPAN class="rem">//----<A name="pixfmt_bgr24_pre"><B></B></A><A href="agg_pixfmt_rgb.h.html#pixfmt_bgr24_pre">pixfmt_bgr24_pre</A></SPAN>
+    <SPAN class="kw1">typedef</SPAN> <A href="agg_pixfmt_rgb.h.html#pixfmt_alpha_blend_rgb">pixfmt_alpha_blend_rgb</A><SPAN class="op">&lt;</SPAN><A href="agg_pixfmt_rgb.h.html#blender_rgb_pre">blender_rgb_pre</A><SPAN class="op">&lt;</SPAN><A href="agg_color_rgba.h.html#rgba16">rgba16</A><SPAN class="op">,</SPAN> <A href="agg_color_rgba.h.html#order_rgb">order_rgb</A><SPAN class="op">&gt;</SPAN><SPAN class="op">,</SPAN> <A href="../../doc/basic_renderers/basic_renderers.agdoc.html#rendering_buffer">rendering_buffer</A><SPAN class="op">&gt;</SPAN> <A href="agg_pixfmt_rgb.h.html#pixfmt_rgb48_pre">pixfmt_rgb48_pre</A><SPAN class="op">;</SPAN> <SPAN class="rem">//----<A name="pixfmt_rgb48_pre"><B></B></A><A href="agg_pixfmt_rgb.h.html#pixfmt_rgb48_pre">pixfmt_rgb48_pre</A></SPAN>
+    <SPAN class="kw1">typedef</SPAN> <A href="agg_pixfmt_rgb.h.html#pixfmt_alpha_blend_rgb">pixfmt_alpha_blend_rgb</A><SPAN class="op">&lt;</SPAN><A href="agg_pixfmt_rgb.h.html#blender_rgb_pre">blender_rgb_pre</A><SPAN class="op">&lt;</SPAN><A href="agg_color_rgba.h.html#rgba16">rgba16</A><SPAN class="op">,</SPAN> <A href="agg_color_rgba.h.html#order_bgr">order_bgr</A><SPAN class="op">&gt;</SPAN><SPAN class="op">,</SPAN> <A href="../../doc/basic_renderers/basic_renderers.agdoc.html#rendering_buffer">rendering_buffer</A><SPAN class="op">&gt;</SPAN> <A href="agg_pixfmt_rgb.h.html#pixfmt_bgr48_pre">pixfmt_bgr48_pre</A><SPAN class="op">;</SPAN> <SPAN class="rem">//----<A name="pixfmt_bgr48_pre"><B></B></A><A href="agg_pixfmt_rgb.h.html#pixfmt_bgr48_pre">pixfmt_bgr48_pre</A></SPAN>
+
+    <SPAN class="rem">//-----------------------------------------------------<A name="pixfmt_rgb24_gamma"><B></B></A><A href="agg_pixfmt_rgb.h.html#pixfmt_rgb24_gamma">pixfmt_rgb24_gamma</A></SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Gamma<SPAN class="op">&gt;</SPAN> <SPAN class="kw1">class</SPAN> <A href="agg_pixfmt_rgb.h.html#pixfmt_rgb24_gamma">pixfmt_rgb24_gamma</A> : 
+    <SPAN class="kw1">public</SPAN> <A href="agg_pixfmt_rgb.h.html#pixfmt_alpha_blend_rgb">pixfmt_alpha_blend_rgb</A><SPAN class="op">&lt;</SPAN><A href="agg_pixfmt_rgb.h.html#blender_rgb_gamma">blender_rgb_gamma</A><SPAN class="op">&lt;</SPAN><A href="agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">,</SPAN> <A href="agg_color_rgba.h.html#order_rgb">order_rgb</A><SPAN class="op">,</SPAN> Gamma<SPAN class="op">&gt;</SPAN><SPAN class="op">,</SPAN> <A href="../../doc/basic_renderers/basic_renderers.agdoc.html#rendering_buffer">rendering_buffer</A><SPAN class="op">&gt;</SPAN>
+    <SPAN class="op">{</SPAN>
+    <SPAN class="kw1">public</SPAN>:
+        <A href="agg_pixfmt_rgb.h.html#pixfmt_rgb24_gamma">pixfmt_rgb24_gamma</A><SPAN class="op">(</SPAN><A href="../../doc/basic_renderers/basic_renderers.agdoc.html#rendering_buffer">rendering_buffer</A><SPAN class="op">&amp;</SPAN> rb<SPAN class="op">,</SPAN> <SPAN class="kw1">const</SPAN> Gamma<SPAN class="op">&amp;</SPAN> g<SPAN class="op">)</SPAN> :
+            <A href="agg_pixfmt_rgb.h.html#pixfmt_alpha_blend_rgb">pixfmt_alpha_blend_rgb</A><SPAN class="op">&lt;</SPAN><A href="agg_pixfmt_rgb.h.html#blender_rgb_gamma">blender_rgb_gamma</A><SPAN class="op">&lt;</SPAN><A href="agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">,</SPAN> <A href="agg_color_rgba.h.html#order_rgb">order_rgb</A><SPAN class="op">,</SPAN> Gamma<SPAN class="op">&gt;</SPAN><SPAN class="op">,</SPAN> <A href="../../doc/basic_renderers/basic_renderers.agdoc.html#rendering_buffer">rendering_buffer</A><SPAN class="op">&gt;</SPAN><SPAN class="op">(</SPAN>rb<SPAN class="op">)</SPAN> 
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">this</SPAN><SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>blender<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">.</SPAN>gamma<SPAN class="op">(</SPAN>g<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+        
+    <SPAN class="rem">//-----------------------------------------------------<A name="pixfmt_bgr24_gamma"><B></B></A><A href="agg_pixfmt_rgb.h.html#pixfmt_bgr24_gamma">pixfmt_bgr24_gamma</A></SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Gamma<SPAN class="op">&gt;</SPAN> <SPAN class="kw1">class</SPAN> <A href="agg_pixfmt_rgb.h.html#pixfmt_bgr24_gamma">pixfmt_bgr24_gamma</A> : 
+    <SPAN class="kw1">public</SPAN> <A href="agg_pixfmt_rgb.h.html#pixfmt_alpha_blend_rgb">pixfmt_alpha_blend_rgb</A><SPAN class="op">&lt;</SPAN><A href="agg_pixfmt_rgb.h.html#blender_rgb_gamma">blender_rgb_gamma</A><SPAN class="op">&lt;</SPAN><A href="agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">,</SPAN> <A href="agg_color_rgba.h.html#order_bgr">order_bgr</A><SPAN class="op">,</SPAN> Gamma<SPAN class="op">&gt;</SPAN><SPAN class="op">,</SPAN> <A href="../../doc/basic_renderers/basic_renderers.agdoc.html#rendering_buffer">rendering_buffer</A><SPAN class="op">&gt;</SPAN>
+    <SPAN class="op">{</SPAN>
+    <SPAN class="kw1">public</SPAN>:
+        <A href="agg_pixfmt_rgb.h.html#pixfmt_bgr24_gamma">pixfmt_bgr24_gamma</A><SPAN class="op">(</SPAN><A href="../../doc/basic_renderers/basic_renderers.agdoc.html#rendering_buffer">rendering_buffer</A><SPAN class="op">&amp;</SPAN> rb<SPAN class="op">,</SPAN> <SPAN class="kw1">const</SPAN> Gamma<SPAN class="op">&amp;</SPAN> g<SPAN class="op">)</SPAN> :
+            <A href="agg_pixfmt_rgb.h.html#pixfmt_alpha_blend_rgb">pixfmt_alpha_blend_rgb</A><SPAN class="op">&lt;</SPAN><A href="agg_pixfmt_rgb.h.html#blender_rgb_gamma">blender_rgb_gamma</A><SPAN class="op">&lt;</SPAN><A href="agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">,</SPAN> <A href="agg_color_rgba.h.html#order_bgr">order_bgr</A><SPAN class="op">,</SPAN> Gamma<SPAN class="op">&gt;</SPAN><SPAN class="op">,</SPAN> <A href="../../doc/basic_renderers/basic_renderers.agdoc.html#rendering_buffer">rendering_buffer</A><SPAN class="op">&gt;</SPAN><SPAN class="op">(</SPAN>rb<SPAN class="op">)</SPAN> 
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">this</SPAN><SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>blender<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">.</SPAN>gamma<SPAN class="op">(</SPAN>g<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="rem">//-----------------------------------------------------<A name="pixfmt_rgb48_gamma"><B></B></A><A href="agg_pixfmt_rgb.h.html#pixfmt_rgb48_gamma">pixfmt_rgb48_gamma</A></SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Gamma<SPAN class="op">&gt;</SPAN> <SPAN class="kw1">class</SPAN> <A href="agg_pixfmt_rgb.h.html#pixfmt_rgb48_gamma">pixfmt_rgb48_gamma</A> : 
+    <SPAN class="kw1">public</SPAN> <A href="agg_pixfmt_rgb.h.html#pixfmt_alpha_blend_rgb">pixfmt_alpha_blend_rgb</A><SPAN class="op">&lt;</SPAN><A href="agg_pixfmt_rgb.h.html#blender_rgb_gamma">blender_rgb_gamma</A><SPAN class="op">&lt;</SPAN><A href="agg_color_rgba.h.html#rgba16">rgba16</A><SPAN class="op">,</SPAN> <A href="agg_color_rgba.h.html#order_rgb">order_rgb</A><SPAN class="op">,</SPAN> Gamma<SPAN class="op">&gt;</SPAN><SPAN class="op">,</SPAN> <A href="../../doc/basic_renderers/basic_renderers.agdoc.html#rendering_buffer">rendering_buffer</A><SPAN class="op">&gt;</SPAN>
+    <SPAN class="op">{</SPAN>
+    <SPAN class="kw1">public</SPAN>:
+        <A href="agg_pixfmt_rgb.h.html#pixfmt_rgb48_gamma">pixfmt_rgb48_gamma</A><SPAN class="op">(</SPAN><A href="../../doc/basic_renderers/basic_renderers.agdoc.html#rendering_buffer">rendering_buffer</A><SPAN class="op">&amp;</SPAN> rb<SPAN class="op">,</SPAN> <SPAN class="kw1">const</SPAN> Gamma<SPAN class="op">&amp;</SPAN> g<SPAN class="op">)</SPAN> :
+            <A href="agg_pixfmt_rgb.h.html#pixfmt_alpha_blend_rgb">pixfmt_alpha_blend_rgb</A><SPAN class="op">&lt;</SPAN><A href="agg_pixfmt_rgb.h.html#blender_rgb_gamma">blender_rgb_gamma</A><SPAN class="op">&lt;</SPAN><A href="agg_color_rgba.h.html#rgba16">rgba16</A><SPAN class="op">,</SPAN> <A href="agg_color_rgba.h.html#order_rgb">order_rgb</A><SPAN class="op">,</SPAN> Gamma<SPAN class="op">&gt;</SPAN><SPAN class="op">,</SPAN> <A href="../../doc/basic_renderers/basic_renderers.agdoc.html#rendering_buffer">rendering_buffer</A><SPAN class="op">&gt;</SPAN><SPAN class="op">(</SPAN>rb<SPAN class="op">)</SPAN> 
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">this</SPAN><SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>blender<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">.</SPAN>gamma<SPAN class="op">(</SPAN>g<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+        
+    <SPAN class="rem">//-----------------------------------------------------<A name="pixfmt_bgr48_gamma"><B></B></A><A href="agg_pixfmt_rgb.h.html#pixfmt_bgr48_gamma">pixfmt_bgr48_gamma</A></SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Gamma<SPAN class="op">&gt;</SPAN> <SPAN class="kw1">class</SPAN> <A href="agg_pixfmt_rgb.h.html#pixfmt_bgr48_gamma">pixfmt_bgr48_gamma</A> : 
+    <SPAN class="kw1">public</SPAN> <A href="agg_pixfmt_rgb.h.html#pixfmt_alpha_blend_rgb">pixfmt_alpha_blend_rgb</A><SPAN class="op">&lt;</SPAN><A href="agg_pixfmt_rgb.h.html#blender_rgb_gamma">blender_rgb_gamma</A><SPAN class="op">&lt;</SPAN><A href="agg_color_rgba.h.html#rgba16">rgba16</A><SPAN class="op">,</SPAN> <A href="agg_color_rgba.h.html#order_bgr">order_bgr</A><SPAN class="op">,</SPAN> Gamma<SPAN class="op">&gt;</SPAN><SPAN class="op">,</SPAN> <A href="../../doc/basic_renderers/basic_renderers.agdoc.html#rendering_buffer">rendering_buffer</A><SPAN class="op">&gt;</SPAN>
+    <SPAN class="op">{</SPAN>
+    <SPAN class="kw1">public</SPAN>:
+        <A href="agg_pixfmt_rgb.h.html#pixfmt_bgr48_gamma">pixfmt_bgr48_gamma</A><SPAN class="op">(</SPAN><A href="../../doc/basic_renderers/basic_renderers.agdoc.html#rendering_buffer">rendering_buffer</A><SPAN class="op">&amp;</SPAN> rb<SPAN class="op">,</SPAN> <SPAN class="kw1">const</SPAN> Gamma<SPAN class="op">&amp;</SPAN> g<SPAN class="op">)</SPAN> :
+            <A href="agg_pixfmt_rgb.h.html#pixfmt_alpha_blend_rgb">pixfmt_alpha_blend_rgb</A><SPAN class="op">&lt;</SPAN><A href="agg_pixfmt_rgb.h.html#blender_rgb_gamma">blender_rgb_gamma</A><SPAN class="op">&lt;</SPAN><A href="agg_color_rgba.h.html#rgba16">rgba16</A><SPAN class="op">,</SPAN> <A href="agg_color_rgba.h.html#order_bgr">order_bgr</A><SPAN class="op">,</SPAN> Gamma<SPAN class="op">&gt;</SPAN><SPAN class="op">,</SPAN> <A href="../../doc/basic_renderers/basic_renderers.agdoc.html#rendering_buffer">rendering_buffer</A><SPAN class="op">&gt;</SPAN><SPAN class="op">(</SPAN>rb<SPAN class="op">)</SPAN> 
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">this</SPAN><SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>blender<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">.</SPAN>gamma<SPAN class="op">(</SPAN>g<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+<SPAN class="op">}</SPAN>
+
+<SPAN class="kw2">#endif</SPAN>
+
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT><TABLE width="640px" bgcolor="#583927" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0">
+<TR><TD><CENTER><SPAN class="authors">
+Copyright <SPAN class="larger">&#169;</SPAN> 2002-2006
+<A href="../../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+<TR><TD><CENTER><SPAN class="authors">
+Web Design and Programming
+<A href="../../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+</TABLE>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+</HTML>

@@ -1,0 +1,757 @@
+<HTML><HEAD><TITLE>Anti-Grain Geometry - </TITLE>
+<META http-equiv="Content-Type" content="text/html"/>
+<LINK rel="stylesheet" type="text/css" href="../../agg.styles.css"/>
+</HEAD>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE><SPAN class="rem">//----------------------------------------------------------------------------</SPAN>
+<SPAN class="rem">// Anti-Grain Geometry (AGG) - Version 2.5</SPAN>
+<SPAN class="rem">// A high quality rendering engine for C++</SPAN>
+<SPAN class="rem">// Copyright (C) 2002-2006 Maxim Shemanarev</SPAN>
+<SPAN class="rem">// Contact: mcseem@antigrain.com</SPAN>
+<SPAN class="rem">//          mcseemagg@yahoo.com</SPAN>
+<SPAN class="rem">//          http://antigrain.com</SPAN>
+<SPAN class="rem">// </SPAN>
+<SPAN class="rem">// AGG is free software; you can redistribute it and/or</SPAN>
+<SPAN class="rem">// modify it under the terms of the GNU General Public License</SPAN>
+<SPAN class="rem">// as published by the Free Software Foundation; either version 2</SPAN>
+<SPAN class="rem">// of the License, or (at your option) any later version.</SPAN>
+<SPAN class="rem">// </SPAN>
+<SPAN class="rem">// AGG is distributed in the hope that it will be useful,</SPAN>
+<SPAN class="rem">// but WITHOUT ANY WARRANTY; without even the implied warranty of</SPAN>
+<SPAN class="rem">// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</SPAN>
+<SPAN class="rem">// GNU General Public License for more details.</SPAN>
+<SPAN class="rem">// </SPAN>
+<SPAN class="rem">// You should have received a copy of the GNU General Public License</SPAN>
+<SPAN class="rem">// along with AGG; if not, write to the Free Software</SPAN>
+<SPAN class="rem">// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, </SPAN>
+<SPAN class="rem">// MA 02110-1301, USA.</SPAN>
+<SPAN class="rem">//----------------------------------------------------------------------------</SPAN>
+
+<SPAN class="kw2">#ifndef</SPAN> AGG_TRANS_PERSPECTIVE_INCLUDED
+<SPAN class="kw2">#define</SPAN> AGG_TRANS_PERSPECTIVE_INCLUDED
+
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="agg_trans_affine.h.html">agg_trans_affine.h</A>&quot;</SPAN>
+
+<SPAN class="kw1">namespace</SPAN> agg
+<SPAN class="op">{</SPAN>
+    <SPAN class="rem">//=======================================================<A name="trans_perspective"><B></B></A><A href="agg_trans_perspective.h.html#trans_perspective">trans_perspective</A></SPAN>
+    <SPAN class="kw1">struct</SPAN> <A href="agg_trans_perspective.h.html#trans_perspective">trans_perspective</A>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">double</SPAN> sx<SPAN class="op">,</SPAN> shy<SPAN class="op">,</SPAN> w0<SPAN class="op">,</SPAN> shx<SPAN class="op">,</SPAN> sy<SPAN class="op">,</SPAN> w1<SPAN class="op">,</SPAN> tx<SPAN class="op">,</SPAN> ty<SPAN class="op">,</SPAN> w2<SPAN class="op">;</SPAN>
+
+        <SPAN class="rem">//------------------------------------------------------- Construction</SPAN>
+        <SPAN class="rem">// Identity matrix</SPAN>
+        <A href="agg_trans_perspective.h.html#trans_perspective">trans_perspective</A><SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> : 
+            sx <SPAN class="op">(</SPAN><SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> shy<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> w0<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> 
+            shx<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> sy <SPAN class="op">(</SPAN><SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> w1<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> 
+            tx <SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> ty <SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> w2<SPAN class="op">(</SPAN><SPAN class="num">1</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN><SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">// Custom matrix</SPAN>
+        <A href="agg_trans_perspective.h.html#trans_perspective">trans_perspective</A><SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> v0<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> v1<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> v2<SPAN class="op">,</SPAN> 
+                          <SPAN class="kw1">double</SPAN> v3<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> v4<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> v5<SPAN class="op">,</SPAN>
+                          <SPAN class="kw1">double</SPAN> v6<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> v7<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> v8<SPAN class="op">)</SPAN> :
+           sx <SPAN class="op">(</SPAN>v0<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> shy<SPAN class="op">(</SPAN>v1<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> w0<SPAN class="op">(</SPAN>v2<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> 
+           shx<SPAN class="op">(</SPAN>v3<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> sy <SPAN class="op">(</SPAN>v4<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> w1<SPAN class="op">(</SPAN>v5<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> 
+           tx <SPAN class="op">(</SPAN>v6<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> ty <SPAN class="op">(</SPAN>v7<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> w2<SPAN class="op">(</SPAN>v8<SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN><SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">// Custom matrix from m[9]</SPAN>
+        <SPAN class="kw1">explicit</SPAN> <A href="agg_trans_perspective.h.html#trans_perspective">trans_perspective</A><SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> m<SPAN class="op">)</SPAN> :
+           sx <SPAN class="op">(</SPAN>m<SPAN class="op">[</SPAN><SPAN class="num">0</SPAN><SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> shy<SPAN class="op">(</SPAN>m<SPAN class="op">[</SPAN><SPAN class="num">1</SPAN><SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> w0<SPAN class="op">(</SPAN>m<SPAN class="op">[</SPAN><SPAN class="num">2</SPAN><SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> 
+           shx<SPAN class="op">(</SPAN>m<SPAN class="op">[</SPAN><SPAN class="num">3</SPAN><SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> sy <SPAN class="op">(</SPAN>m<SPAN class="op">[</SPAN><SPAN class="num">4</SPAN><SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> w1<SPAN class="op">(</SPAN>m<SPAN class="op">[</SPAN><SPAN class="num">5</SPAN><SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> 
+           tx <SPAN class="op">(</SPAN>m<SPAN class="op">[</SPAN><SPAN class="num">6</SPAN><SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> ty <SPAN class="op">(</SPAN>m<SPAN class="op">[</SPAN><SPAN class="num">7</SPAN><SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> w2<SPAN class="op">(</SPAN>m<SPAN class="op">[</SPAN><SPAN class="num">8</SPAN><SPAN class="op">]</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN><SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">// From affine</SPAN>
+        <SPAN class="kw1">explicit</SPAN> <A href="agg_trans_perspective.h.html#trans_perspective">trans_perspective</A><SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <A href="agg_trans_affine.h.html#trans_affine">trans_affine</A><SPAN class="op">&amp;</SPAN> a<SPAN class="op">)</SPAN> : 
+           sx <SPAN class="op">(</SPAN>a<SPAN class="op">.</SPAN>sx <SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> shy<SPAN class="op">(</SPAN>a<SPAN class="op">.</SPAN>shy<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> w0<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> 
+           shx<SPAN class="op">(</SPAN>a<SPAN class="op">.</SPAN>shx<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> sy <SPAN class="op">(</SPAN>a<SPAN class="op">.</SPAN>sy <SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> w1<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> 
+           tx <SPAN class="op">(</SPAN>a<SPAN class="op">.</SPAN>tx <SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> ty <SPAN class="op">(</SPAN>a<SPAN class="op">.</SPAN>ty <SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> w2<SPAN class="op">(</SPAN><SPAN class="num">1</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN><SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">// Rectangle to quadrilateral</SPAN>
+        <A href="agg_trans_perspective.h.html#trans_perspective">trans_perspective</A><SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x1<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y1<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> x2<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y2<SPAN class="op">,</SPAN> 
+                          <SPAN class="kw1">const</SPAN> <SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> quad<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="rem">// Quadrilateral to rectangle</SPAN>
+        <A href="agg_trans_perspective.h.html#trans_perspective">trans_perspective</A><SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> quad<SPAN class="op">,</SPAN> 
+                          <SPAN class="kw1">double</SPAN> x1<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y1<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> x2<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y2<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="rem">// Arbitrary quadrilateral transformations</SPAN>
+        <A href="agg_trans_perspective.h.html#trans_perspective">trans_perspective</A><SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> src<SPAN class="op">,</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> dst<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="rem">//-------------------------------------- Quadrilateral transformations</SPAN>
+        <SPAN class="rem">// The arguments are double[8] that are mapped to quadrilaterals:</SPAN>
+        <SPAN class="rem">// x1,y1, x2,y2, x3,y3, x4,y4</SPAN>
+        <SPAN class="kw1">bool</SPAN> quad_to_quad<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> qs<SPAN class="op">,</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> qd<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">bool</SPAN> rect_to_quad<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x1<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y1<SPAN class="op">,</SPAN> 
+                          <SPAN class="kw1">double</SPAN> x2<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y2<SPAN class="op">,</SPAN>
+                          <SPAN class="kw1">const</SPAN> <SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> q<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">bool</SPAN> quad_to_rect<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> q<SPAN class="op">,</SPAN>
+                          <SPAN class="kw1">double</SPAN> x1<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y1<SPAN class="op">,</SPAN> 
+                          <SPAN class="kw1">double</SPAN> x2<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y2<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="rem">// Map square (0,0,1,1) to the quadrilateral and vice versa</SPAN>
+        <SPAN class="kw1">bool</SPAN> square_to_quad<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> q<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">bool</SPAN> quad_to_square<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> q<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+
+        <SPAN class="rem">//--------------------------------------------------------- Operations</SPAN>
+        <SPAN class="rem">// Reset - load an identity matrix</SPAN>
+        <SPAN class="kw1">const</SPAN> <A href="agg_trans_perspective.h.html#trans_perspective">trans_perspective</A><SPAN class="op">&amp;</SPAN> reset<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="rem">// Invert matrix. Returns false in degenerate case</SPAN>
+        <SPAN class="kw1">bool</SPAN> invert<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="rem">// Direct transformations operations</SPAN>
+        <SPAN class="kw1">const</SPAN> <A href="agg_trans_perspective.h.html#trans_perspective">trans_perspective</A><SPAN class="op">&amp;</SPAN> translate<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">const</SPAN> <A href="agg_trans_perspective.h.html#trans_perspective">trans_perspective</A><SPAN class="op">&amp;</SPAN> rotate<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> a<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">const</SPAN> <A href="agg_trans_perspective.h.html#trans_perspective">trans_perspective</A><SPAN class="op">&amp;</SPAN> scale<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> s<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">const</SPAN> <A href="agg_trans_perspective.h.html#trans_perspective">trans_perspective</A><SPAN class="op">&amp;</SPAN> scale<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="rem">// Multiply the matrix by another one</SPAN>
+        <SPAN class="kw1">const</SPAN> <A href="agg_trans_perspective.h.html#trans_perspective">trans_perspective</A><SPAN class="op">&amp;</SPAN> multiply<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <A href="agg_trans_perspective.h.html#trans_perspective">trans_perspective</A><SPAN class="op">&amp;</SPAN> m<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="rem">// Multiply &quot;m&quot; by &quot;this&quot; and assign the result to &quot;this&quot;</SPAN>
+        <SPAN class="kw1">const</SPAN> <A href="agg_trans_perspective.h.html#trans_perspective">trans_perspective</A><SPAN class="op">&amp;</SPAN> premultiply<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <A href="agg_trans_perspective.h.html#trans_perspective">trans_perspective</A><SPAN class="op">&amp;</SPAN> m<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="rem">// Multiply matrix to inverse of another one</SPAN>
+        <SPAN class="kw1">const</SPAN> <A href="agg_trans_perspective.h.html#trans_perspective">trans_perspective</A><SPAN class="op">&amp;</SPAN> multiply_inv<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <A href="agg_trans_perspective.h.html#trans_perspective">trans_perspective</A><SPAN class="op">&amp;</SPAN> m<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="rem">// Multiply inverse of &quot;m&quot; by &quot;this&quot; and assign the result to &quot;this&quot;</SPAN>
+        <SPAN class="kw1">const</SPAN> <A href="agg_trans_perspective.h.html#trans_perspective">trans_perspective</A><SPAN class="op">&amp;</SPAN> premultiply_inv<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <A href="agg_trans_perspective.h.html#trans_perspective">trans_perspective</A><SPAN class="op">&amp;</SPAN> m<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="rem">// Multiply the matrix by another one</SPAN>
+        <SPAN class="kw1">const</SPAN> <A href="agg_trans_perspective.h.html#trans_perspective">trans_perspective</A><SPAN class="op">&amp;</SPAN> multiply<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <A href="agg_trans_affine.h.html#trans_affine">trans_affine</A><SPAN class="op">&amp;</SPAN> m<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="rem">// Multiply &quot;m&quot; by &quot;this&quot; and assign the result to &quot;this&quot;</SPAN>
+        <SPAN class="kw1">const</SPAN> <A href="agg_trans_perspective.h.html#trans_perspective">trans_perspective</A><SPAN class="op">&amp;</SPAN> premultiply<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <A href="agg_trans_affine.h.html#trans_affine">trans_affine</A><SPAN class="op">&amp;</SPAN> m<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="rem">// Multiply the matrix by inverse of another one</SPAN>
+        <SPAN class="kw1">const</SPAN> <A href="agg_trans_perspective.h.html#trans_perspective">trans_perspective</A><SPAN class="op">&amp;</SPAN> multiply_inv<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <A href="agg_trans_affine.h.html#trans_affine">trans_affine</A><SPAN class="op">&amp;</SPAN> m<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="rem">// Multiply inverse of &quot;m&quot; by &quot;this&quot; and assign the result to &quot;this&quot;</SPAN>
+        <SPAN class="kw1">const</SPAN> <A href="agg_trans_perspective.h.html#trans_perspective">trans_perspective</A><SPAN class="op">&amp;</SPAN> premultiply_inv<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <A href="agg_trans_affine.h.html#trans_affine">trans_affine</A><SPAN class="op">&amp;</SPAN> m<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------- Load/Store</SPAN>
+        <SPAN class="kw1">void</SPAN> store_to<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> m<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">const</SPAN> <A href="agg_trans_perspective.h.html#trans_perspective">trans_perspective</A><SPAN class="op">&amp;</SPAN> load_from<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> m<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="rem">//---------------------------------------------------------- Operators</SPAN>
+        <SPAN class="rem">// Multiply the matrix by another one</SPAN>
+        <SPAN class="kw1">const</SPAN> <A href="agg_trans_perspective.h.html#trans_perspective">trans_perspective</A><SPAN class="op">&amp;</SPAN> <SPAN class="kw1">operator</SPAN> <SPAN class="op">*=</SPAN> <SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <A href="agg_trans_perspective.h.html#trans_perspective">trans_perspective</A><SPAN class="op">&amp;</SPAN> m<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">return</SPAN> multiply<SPAN class="op">(</SPAN>m<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">const</SPAN> <A href="agg_trans_perspective.h.html#trans_perspective">trans_perspective</A><SPAN class="op">&amp;</SPAN> <SPAN class="kw1">operator</SPAN> <SPAN class="op">*=</SPAN> <SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <A href="agg_trans_affine.h.html#trans_affine">trans_affine</A><SPAN class="op">&amp;</SPAN> m<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">return</SPAN> multiply<SPAN class="op">(</SPAN>m<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">// Multiply the matrix by inverse of another one</SPAN>
+        <SPAN class="kw1">const</SPAN> <A href="agg_trans_perspective.h.html#trans_perspective">trans_perspective</A><SPAN class="op">&amp;</SPAN> <SPAN class="kw1">operator</SPAN> <SPAN class="op">/=</SPAN> <SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <A href="agg_trans_perspective.h.html#trans_perspective">trans_perspective</A><SPAN class="op">&amp;</SPAN> m<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">return</SPAN> multiply_inv<SPAN class="op">(</SPAN>m<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">const</SPAN> <A href="agg_trans_perspective.h.html#trans_perspective">trans_perspective</A><SPAN class="op">&amp;</SPAN> <SPAN class="kw1">operator</SPAN> <SPAN class="op">/=</SPAN> <SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <A href="agg_trans_affine.h.html#trans_affine">trans_affine</A><SPAN class="op">&amp;</SPAN> m<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">return</SPAN> multiply_inv<SPAN class="op">(</SPAN>m<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">// Multiply the matrix by another one and return</SPAN>
+        <SPAN class="rem">// the result in a separete matrix.</SPAN>
+        <A href="agg_trans_perspective.h.html#trans_perspective">trans_perspective</A> <SPAN class="kw1">operator</SPAN> <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <A href="agg_trans_perspective.h.html#trans_perspective">trans_perspective</A><SPAN class="op">&amp;</SPAN> m<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">return</SPAN> <A href="agg_trans_perspective.h.html#trans_perspective">trans_perspective</A><SPAN class="op">(</SPAN><SPAN class="op">*</SPAN><SPAN class="kw1">this</SPAN><SPAN class="op">)</SPAN><SPAN class="op">.</SPAN>multiply<SPAN class="op">(</SPAN>m<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        <A href="agg_trans_perspective.h.html#trans_perspective">trans_perspective</A> <SPAN class="kw1">operator</SPAN> <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <A href="agg_trans_affine.h.html#trans_affine">trans_affine</A><SPAN class="op">&amp;</SPAN> m<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">return</SPAN> <A href="agg_trans_perspective.h.html#trans_perspective">trans_perspective</A><SPAN class="op">(</SPAN><SPAN class="op">*</SPAN><SPAN class="kw1">this</SPAN><SPAN class="op">)</SPAN><SPAN class="op">.</SPAN>multiply<SPAN class="op">(</SPAN>m<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">// Multiply the matrix by inverse of another one </SPAN>
+        <SPAN class="rem">// and return the result in a separete matrix.</SPAN>
+        <A href="agg_trans_perspective.h.html#trans_perspective">trans_perspective</A> <SPAN class="kw1">operator</SPAN> <SPAN class="op">/</SPAN> <SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <A href="agg_trans_perspective.h.html#trans_perspective">trans_perspective</A><SPAN class="op">&amp;</SPAN> m<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">return</SPAN> <A href="agg_trans_perspective.h.html#trans_perspective">trans_perspective</A><SPAN class="op">(</SPAN><SPAN class="op">*</SPAN><SPAN class="kw1">this</SPAN><SPAN class="op">)</SPAN><SPAN class="op">.</SPAN>multiply_inv<SPAN class="op">(</SPAN>m<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        <A href="agg_trans_perspective.h.html#trans_perspective">trans_perspective</A> <SPAN class="kw1">operator</SPAN> <SPAN class="op">/</SPAN> <SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <A href="agg_trans_affine.h.html#trans_affine">trans_affine</A><SPAN class="op">&amp;</SPAN> m<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">return</SPAN> <A href="agg_trans_perspective.h.html#trans_perspective">trans_perspective</A><SPAN class="op">(</SPAN><SPAN class="op">*</SPAN><SPAN class="kw1">this</SPAN><SPAN class="op">)</SPAN><SPAN class="op">.</SPAN>multiply_inv<SPAN class="op">(</SPAN>m<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">// Calculate and return the inverse matrix</SPAN>
+        <A href="agg_trans_perspective.h.html#trans_perspective">trans_perspective</A> <SPAN class="kw1">operator</SPAN> ~ <SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN>
+        <SPAN class="op">{</SPAN>
+            <A href="agg_trans_perspective.h.html#trans_perspective">trans_perspective</A> ret <SPAN class="op">=</SPAN> <SPAN class="op">*</SPAN><SPAN class="kw1">this</SPAN><SPAN class="op">;</SPAN>
+            ret<SPAN class="op">.</SPAN>invert<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">return</SPAN> ret<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">// Equal operator with default epsilon</SPAN>
+        <SPAN class="kw1">bool</SPAN> <SPAN class="kw1">operator</SPAN> <SPAN class="op">==</SPAN> <SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <A href="agg_trans_perspective.h.html#trans_perspective">trans_perspective</A><SPAN class="op">&amp;</SPAN> m<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">return</SPAN> is_equal<SPAN class="op">(</SPAN>m<SPAN class="op">,</SPAN> affine_epsilon<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">// Not Equal operator with default epsilon</SPAN>
+        <SPAN class="kw1">bool</SPAN> <SPAN class="kw1">operator</SPAN> <SPAN class="op">!=</SPAN> <SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <A href="agg_trans_perspective.h.html#trans_perspective">trans_perspective</A><SPAN class="op">&amp;</SPAN> m<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">return</SPAN> <SPAN class="op">!</SPAN>is_equal<SPAN class="op">(</SPAN>m<SPAN class="op">,</SPAN> affine_epsilon<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//---------------------------------------------------- Transformations</SPAN>
+        <SPAN class="rem">// Direct transformation of x and y</SPAN>
+        <SPAN class="kw1">void</SPAN> transform<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> y<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="rem">// Direct transformation of x and y, affine part only</SPAN>
+        <SPAN class="kw1">void</SPAN> transform_affine<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> y<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="rem">// Direct transformation of x and y, 2x2 matrix only, no translation</SPAN>
+        <SPAN class="kw1">void</SPAN> transform_2x2<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> y<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="rem">// Inverse transformation of x and y. It works slow because</SPAN>
+        <SPAN class="rem">// it explicitly inverts the matrix on every call. For massive </SPAN>
+        <SPAN class="rem">// operations it&#039;s better to invert() the matrix and then use </SPAN>
+        <SPAN class="rem">// direct transformations. </SPAN>
+        <SPAN class="kw1">void</SPAN> inverse_transform<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> y<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN><SPAN class="op">;</SPAN>
+
+
+        <SPAN class="rem">//---------------------------------------------------------- Auxiliary</SPAN>
+        <SPAN class="kw1">const</SPAN> <A href="agg_trans_perspective.h.html#trans_perspective">trans_perspective</A><SPAN class="op">&amp;</SPAN> from_affine<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <A href="agg_trans_affine.h.html#trans_affine">trans_affine</A><SPAN class="op">&amp;</SPAN> a<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> determinant<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> determinant_reciprocal<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">bool</SPAN> is_valid<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> epsilon <SPAN class="op">=</SPAN> affine_epsilon<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">bool</SPAN> is_identity<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> epsilon <SPAN class="op">=</SPAN> affine_epsilon<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">bool</SPAN> is_equal<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <A href="agg_trans_perspective.h.html#trans_perspective">trans_perspective</A><SPAN class="op">&amp;</SPAN> m<SPAN class="op">,</SPAN> 
+                      <SPAN class="kw1">double</SPAN> epsilon <SPAN class="op">=</SPAN> affine_epsilon<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="rem">// Determine the major affine parameters. Use with caution </SPAN>
+        <SPAN class="rem">// considering possible degenerate cases.</SPAN>
+        <SPAN class="kw1">double</SPAN> scale<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> rotation<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">void</SPAN>   translation<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> dx<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> dy<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">void</SPAN>   scaling<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> y<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">void</SPAN>   scaling_abs<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> y<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN><SPAN class="op">;</SPAN>
+
+
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">class</SPAN> iterator_x
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">double</SPAN> den<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">double</SPAN> den_step<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">double</SPAN> nom_x<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">double</SPAN> nom_x_step<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">double</SPAN> nom_y<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">double</SPAN> nom_y_step<SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">public</SPAN>:
+            <SPAN class="kw1">double</SPAN> x<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">double</SPAN> y<SPAN class="op">;</SPAN>
+
+            iterator_x<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN><SPAN class="op">}</SPAN>
+            iterator_x<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> px<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> py<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> step<SPAN class="op">,</SPAN> <SPAN class="kw1">const</SPAN> <A href="agg_trans_perspective.h.html#trans_perspective">trans_perspective</A><SPAN class="op">&amp;</SPAN> m<SPAN class="op">)</SPAN> :
+                den<SPAN class="op">(</SPAN>px <SPAN class="op">*</SPAN> m<SPAN class="op">.</SPAN>w0 <SPAN class="op">+</SPAN> py <SPAN class="op">*</SPAN> m<SPAN class="op">.</SPAN>w1 <SPAN class="op">+</SPAN> m<SPAN class="op">.</SPAN>w2<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+                den_step<SPAN class="op">(</SPAN>m<SPAN class="op">.</SPAN>w0 <SPAN class="op">*</SPAN> step<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+                nom_x<SPAN class="op">(</SPAN>px <SPAN class="op">*</SPAN> m<SPAN class="op">.</SPAN>sx <SPAN class="op">+</SPAN> py <SPAN class="op">*</SPAN> m<SPAN class="op">.</SPAN>shx <SPAN class="op">+</SPAN> m<SPAN class="op">.</SPAN>tx<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+                nom_x_step<SPAN class="op">(</SPAN>step <SPAN class="op">*</SPAN> m<SPAN class="op">.</SPAN>sx<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+                nom_y<SPAN class="op">(</SPAN>px <SPAN class="op">*</SPAN> m<SPAN class="op">.</SPAN>shy <SPAN class="op">+</SPAN> py <SPAN class="op">*</SPAN> m<SPAN class="op">.</SPAN>sy <SPAN class="op">+</SPAN> m<SPAN class="op">.</SPAN>ty<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+                nom_y_step<SPAN class="op">(</SPAN>step <SPAN class="op">*</SPAN> m<SPAN class="op">.</SPAN>shy<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+                x<SPAN class="op">(</SPAN>nom_x <SPAN class="op">/</SPAN> den<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+                y<SPAN class="op">(</SPAN>nom_y <SPAN class="op">/</SPAN> den<SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN><SPAN class="op">}</SPAN>
+
+            <SPAN class="kw1">void</SPAN> <SPAN class="kw1">operator</SPAN> <SPAN class="op">++</SPAN> <SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                den   <SPAN class="op">+=</SPAN> den_step<SPAN class="op">;</SPAN>
+                nom_x <SPAN class="op">+=</SPAN> nom_x_step<SPAN class="op">;</SPAN>
+                nom_y <SPAN class="op">+=</SPAN> nom_y_step<SPAN class="op">;</SPAN>
+                <SPAN class="kw1">double</SPAN> d <SPAN class="op">=</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">/</SPAN> den<SPAN class="op">;</SPAN>
+                x <SPAN class="op">=</SPAN> nom_x <SPAN class="op">*</SPAN> d<SPAN class="op">;</SPAN>
+                y <SPAN class="op">=</SPAN> nom_y <SPAN class="op">*</SPAN> d<SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="rem">//--------------------------------------------------------------------</SPAN>
+        iterator_x begin<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> step<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">return</SPAN> iterator_x<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> y<SPAN class="op">,</SPAN> step<SPAN class="op">,</SPAN> <SPAN class="op">*</SPAN><SPAN class="kw1">this</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+
+
+
+
+
+
+
+   
+
+
+
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">inline</SPAN> <SPAN class="kw1">bool</SPAN> trans_perspective::square_to_quad<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> q<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">double</SPAN> dx <SPAN class="op">=</SPAN> q<SPAN class="op">[</SPAN><SPAN class="num">0</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">-</SPAN> q<SPAN class="op">[</SPAN><SPAN class="num">2</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">+</SPAN> q<SPAN class="op">[</SPAN><SPAN class="num">4</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">-</SPAN> q<SPAN class="op">[</SPAN><SPAN class="num">6</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> dy <SPAN class="op">=</SPAN> q<SPAN class="op">[</SPAN><SPAN class="num">1</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">-</SPAN> q<SPAN class="op">[</SPAN><SPAN class="num">3</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">+</SPAN> q<SPAN class="op">[</SPAN><SPAN class="num">5</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">-</SPAN> q<SPAN class="op">[</SPAN><SPAN class="num">7</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>dx <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">&amp;&amp;</SPAN> dy <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>   
+            <SPAN class="rem">// Affine case (parallelogram)</SPAN>
+            <SPAN class="rem">//---------------</SPAN>
+            sx  <SPAN class="op">=</SPAN> q<SPAN class="op">[</SPAN><SPAN class="num">2</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">-</SPAN> q<SPAN class="op">[</SPAN><SPAN class="num">0</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+            shy <SPAN class="op">=</SPAN> q<SPAN class="op">[</SPAN><SPAN class="num">3</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">-</SPAN> q<SPAN class="op">[</SPAN><SPAN class="num">1</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+            w0  <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+            shx <SPAN class="op">=</SPAN> q<SPAN class="op">[</SPAN><SPAN class="num">4</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">-</SPAN> q<SPAN class="op">[</SPAN><SPAN class="num">2</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+            sy  <SPAN class="op">=</SPAN> q<SPAN class="op">[</SPAN><SPAN class="num">5</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">-</SPAN> q<SPAN class="op">[</SPAN><SPAN class="num">3</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+            w1  <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+            tx  <SPAN class="op">=</SPAN> q<SPAN class="op">[</SPAN><SPAN class="num">0</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+            ty  <SPAN class="op">=</SPAN> q<SPAN class="op">[</SPAN><SPAN class="num">1</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+            w2  <SPAN class="op">=</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">else</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">double</SPAN> dx1 <SPAN class="op">=</SPAN> q<SPAN class="op">[</SPAN><SPAN class="num">2</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">-</SPAN> q<SPAN class="op">[</SPAN><SPAN class="num">4</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">double</SPAN> dy1 <SPAN class="op">=</SPAN> q<SPAN class="op">[</SPAN><SPAN class="num">3</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">-</SPAN> q<SPAN class="op">[</SPAN><SPAN class="num">5</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">double</SPAN> dx2 <SPAN class="op">=</SPAN> q<SPAN class="op">[</SPAN><SPAN class="num">6</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">-</SPAN> q<SPAN class="op">[</SPAN><SPAN class="num">4</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">double</SPAN> dy2 <SPAN class="op">=</SPAN> q<SPAN class="op">[</SPAN><SPAN class="num">7</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">-</SPAN> q<SPAN class="op">[</SPAN><SPAN class="num">5</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">double</SPAN> den <SPAN class="op">=</SPAN> dx1 <SPAN class="op">*</SPAN> dy2 <SPAN class="op">-</SPAN> dx2 <SPAN class="op">*</SPAN> dy1<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>den <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                <SPAN class="rem">// Singular case</SPAN>
+                <SPAN class="rem">//---------------</SPAN>
+                sx <SPAN class="op">=</SPAN> shy <SPAN class="op">=</SPAN> w0 <SPAN class="op">=</SPAN> shx <SPAN class="op">=</SPAN> sy <SPAN class="op">=</SPAN> w1 <SPAN class="op">=</SPAN> tx <SPAN class="op">=</SPAN> ty <SPAN class="op">=</SPAN> w2 <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">return</SPAN> <SPAN class="kw1">false</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="rem">// General case</SPAN>
+            <SPAN class="rem">//---------------</SPAN>
+            <SPAN class="kw1">double</SPAN> u <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>dx <SPAN class="op">*</SPAN> dy2 <SPAN class="op">-</SPAN> dy <SPAN class="op">*</SPAN> dx2<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> den<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">double</SPAN> v <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>dy <SPAN class="op">*</SPAN> dx1 <SPAN class="op">-</SPAN> dx <SPAN class="op">*</SPAN> dy1<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> den<SPAN class="op">;</SPAN>
+            sx  <SPAN class="op">=</SPAN> q<SPAN class="op">[</SPAN><SPAN class="num">2</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">-</SPAN> q<SPAN class="op">[</SPAN><SPAN class="num">0</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">+</SPAN> u <SPAN class="op">*</SPAN> q<SPAN class="op">[</SPAN><SPAN class="num">2</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+            shy <SPAN class="op">=</SPAN> q<SPAN class="op">[</SPAN><SPAN class="num">3</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">-</SPAN> q<SPAN class="op">[</SPAN><SPAN class="num">1</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">+</SPAN> u <SPAN class="op">*</SPAN> q<SPAN class="op">[</SPAN><SPAN class="num">3</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+            w0  <SPAN class="op">=</SPAN> u<SPAN class="op">;</SPAN>
+            shx <SPAN class="op">=</SPAN> q<SPAN class="op">[</SPAN><SPAN class="num">6</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">-</SPAN> q<SPAN class="op">[</SPAN><SPAN class="num">0</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">+</SPAN> v <SPAN class="op">*</SPAN> q<SPAN class="op">[</SPAN><SPAN class="num">6</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+            sy  <SPAN class="op">=</SPAN> q<SPAN class="op">[</SPAN><SPAN class="num">7</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">-</SPAN> q<SPAN class="op">[</SPAN><SPAN class="num">1</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">+</SPAN> v <SPAN class="op">*</SPAN> q<SPAN class="op">[</SPAN><SPAN class="num">7</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+            w1  <SPAN class="op">=</SPAN> v<SPAN class="op">;</SPAN>
+            tx  <SPAN class="op">=</SPAN> q<SPAN class="op">[</SPAN><SPAN class="num">0</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+            ty  <SPAN class="op">=</SPAN> q<SPAN class="op">[</SPAN><SPAN class="num">1</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+            w2  <SPAN class="op">=</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">return</SPAN> <SPAN class="kw1">true</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">inline</SPAN> <SPAN class="kw1">bool</SPAN> trans_perspective::invert<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">double</SPAN> d0 <SPAN class="op">=</SPAN> sy  <SPAN class="op">*</SPAN> w2 <SPAN class="op">-</SPAN> w1  <SPAN class="op">*</SPAN> ty<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> d1 <SPAN class="op">=</SPAN> w0  <SPAN class="op">*</SPAN> ty <SPAN class="op">-</SPAN> shy <SPAN class="op">*</SPAN> w2<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> d2 <SPAN class="op">=</SPAN> shy <SPAN class="op">*</SPAN> w1 <SPAN class="op">-</SPAN> w0  <SPAN class="op">*</SPAN> sy<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> d  <SPAN class="op">=</SPAN> sx  <SPAN class="op">*</SPAN> d0 <SPAN class="op">+</SPAN> shx <SPAN class="op">*</SPAN> d1 <SPAN class="op">+</SPAN> tx <SPAN class="op">*</SPAN> d2<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>d <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> 
+        <SPAN class="op">{</SPAN>
+            sx <SPAN class="op">=</SPAN> shy <SPAN class="op">=</SPAN> w0 <SPAN class="op">=</SPAN> shx <SPAN class="op">=</SPAN> sy <SPAN class="op">=</SPAN> w1 <SPAN class="op">=</SPAN> tx <SPAN class="op">=</SPAN> ty <SPAN class="op">=</SPAN> w2 <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">return</SPAN> <SPAN class="kw1">false</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        d <SPAN class="op">=</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">/</SPAN> d<SPAN class="op">;</SPAN>
+        <A href="agg_trans_perspective.h.html#trans_perspective">trans_perspective</A> a <SPAN class="op">=</SPAN> <SPAN class="op">*</SPAN><SPAN class="kw1">this</SPAN><SPAN class="op">;</SPAN>
+        sx  <SPAN class="op">=</SPAN> d <SPAN class="op">*</SPAN> d0<SPAN class="op">;</SPAN>
+        shy <SPAN class="op">=</SPAN> d <SPAN class="op">*</SPAN> d1<SPAN class="op">;</SPAN>
+        w0  <SPAN class="op">=</SPAN> d <SPAN class="op">*</SPAN> d2<SPAN class="op">;</SPAN>
+        shx <SPAN class="op">=</SPAN> d <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>a<SPAN class="op">.</SPAN>w1 <SPAN class="op">*</SPAN>a<SPAN class="op">.</SPAN>tx  <SPAN class="op">-</SPAN> a<SPAN class="op">.</SPAN>shx<SPAN class="op">*</SPAN>a<SPAN class="op">.</SPAN>w2<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        sy  <SPAN class="op">=</SPAN> d <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>a<SPAN class="op">.</SPAN>sx <SPAN class="op">*</SPAN>a<SPAN class="op">.</SPAN>w2  <SPAN class="op">-</SPAN> a<SPAN class="op">.</SPAN>w0 <SPAN class="op">*</SPAN>a<SPAN class="op">.</SPAN>tx<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        w1  <SPAN class="op">=</SPAN> d <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>a<SPAN class="op">.</SPAN>w0 <SPAN class="op">*</SPAN>a<SPAN class="op">.</SPAN>shx <SPAN class="op">-</SPAN> a<SPAN class="op">.</SPAN>sx <SPAN class="op">*</SPAN>a<SPAN class="op">.</SPAN>w1<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        tx  <SPAN class="op">=</SPAN> d <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>a<SPAN class="op">.</SPAN>shx<SPAN class="op">*</SPAN>a<SPAN class="op">.</SPAN>ty  <SPAN class="op">-</SPAN> a<SPAN class="op">.</SPAN>sy <SPAN class="op">*</SPAN>a<SPAN class="op">.</SPAN>tx<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        ty  <SPAN class="op">=</SPAN> d <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>a<SPAN class="op">.</SPAN>shy<SPAN class="op">*</SPAN>a<SPAN class="op">.</SPAN>tx  <SPAN class="op">-</SPAN> a<SPAN class="op">.</SPAN>sx <SPAN class="op">*</SPAN>a<SPAN class="op">.</SPAN>ty<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        w2  <SPAN class="op">=</SPAN> d <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>a<SPAN class="op">.</SPAN>sx <SPAN class="op">*</SPAN>a<SPAN class="op">.</SPAN>sy  <SPAN class="op">-</SPAN> a<SPAN class="op">.</SPAN>shy<SPAN class="op">*</SPAN>a<SPAN class="op">.</SPAN>shx<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">return</SPAN> <SPAN class="kw1">true</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">inline</SPAN> <SPAN class="kw1">bool</SPAN> trans_perspective::quad_to_square<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> q<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN><SPAN class="op">!</SPAN>square_to_quad<SPAN class="op">(</SPAN>q<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">return</SPAN> <SPAN class="kw1">false</SPAN><SPAN class="op">;</SPAN>
+        invert<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">return</SPAN> <SPAN class="kw1">true</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">inline</SPAN> <SPAN class="kw1">bool</SPAN> trans_perspective::quad_to_quad<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> qs<SPAN class="op">,</SPAN> 
+                                                <SPAN class="kw1">const</SPAN> <SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> qd<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <A href="agg_trans_perspective.h.html#trans_perspective">trans_perspective</A> p<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN><SPAN class="op">!</SPAN>  quad_to_square<SPAN class="op">(</SPAN>qs<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">return</SPAN> <SPAN class="kw1">false</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN><SPAN class="op">!</SPAN>p<SPAN class="op">.</SPAN>square_to_quad<SPAN class="op">(</SPAN>qd<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">return</SPAN> <SPAN class="kw1">false</SPAN><SPAN class="op">;</SPAN>
+        multiply<SPAN class="op">(</SPAN>p<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">return</SPAN> <SPAN class="kw1">true</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">inline</SPAN> <SPAN class="kw1">bool</SPAN> trans_perspective::rect_to_quad<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x1<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y1<SPAN class="op">,</SPAN> 
+                                                <SPAN class="kw1">double</SPAN> x2<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y2<SPAN class="op">,</SPAN>
+                                                <SPAN class="kw1">const</SPAN> <SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> q<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">double</SPAN> r<SPAN class="op">[</SPAN><SPAN class="num">8</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+        r<SPAN class="op">[</SPAN><SPAN class="num">0</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> r<SPAN class="op">[</SPAN><SPAN class="num">6</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> x1<SPAN class="op">;</SPAN>
+        r<SPAN class="op">[</SPAN><SPAN class="num">2</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> r<SPAN class="op">[</SPAN><SPAN class="num">4</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> x2<SPAN class="op">;</SPAN>
+        r<SPAN class="op">[</SPAN><SPAN class="num">1</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> r<SPAN class="op">[</SPAN><SPAN class="num">3</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> y1<SPAN class="op">;</SPAN>
+        r<SPAN class="op">[</SPAN><SPAN class="num">5</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> r<SPAN class="op">[</SPAN><SPAN class="num">7</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> y2<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">return</SPAN> quad_to_quad<SPAN class="op">(</SPAN>r<SPAN class="op">,</SPAN> q<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">inline</SPAN> <SPAN class="kw1">bool</SPAN> trans_perspective::quad_to_rect<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> q<SPAN class="op">,</SPAN>
+                                                <SPAN class="kw1">double</SPAN> x1<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y1<SPAN class="op">,</SPAN> 
+                                                <SPAN class="kw1">double</SPAN> x2<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y2<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">double</SPAN> r<SPAN class="op">[</SPAN><SPAN class="num">8</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+        r<SPAN class="op">[</SPAN><SPAN class="num">0</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> r<SPAN class="op">[</SPAN><SPAN class="num">6</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> x1<SPAN class="op">;</SPAN>
+        r<SPAN class="op">[</SPAN><SPAN class="num">2</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> r<SPAN class="op">[</SPAN><SPAN class="num">4</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> x2<SPAN class="op">;</SPAN>
+        r<SPAN class="op">[</SPAN><SPAN class="num">1</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> r<SPAN class="op">[</SPAN><SPAN class="num">3</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> y1<SPAN class="op">;</SPAN>
+        r<SPAN class="op">[</SPAN><SPAN class="num">5</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> r<SPAN class="op">[</SPAN><SPAN class="num">7</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> y2<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">return</SPAN> quad_to_quad<SPAN class="op">(</SPAN>q<SPAN class="op">,</SPAN> r<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">inline</SPAN> trans_perspective::<A href="agg_trans_perspective.h.html#trans_perspective">trans_perspective</A><SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x1<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y1<SPAN class="op">,</SPAN> 
+                                                <SPAN class="kw1">double</SPAN> x2<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y2<SPAN class="op">,</SPAN> 
+                                                <SPAN class="kw1">const</SPAN> <SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> quad<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        rect_to_quad<SPAN class="op">(</SPAN>x1<SPAN class="op">,</SPAN> y1<SPAN class="op">,</SPAN> x2<SPAN class="op">,</SPAN> y2<SPAN class="op">,</SPAN> quad<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">inline</SPAN> trans_perspective::<A href="agg_trans_perspective.h.html#trans_perspective">trans_perspective</A><SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> quad<SPAN class="op">,</SPAN> 
+                                                <SPAN class="kw1">double</SPAN> x1<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y1<SPAN class="op">,</SPAN> 
+                                                <SPAN class="kw1">double</SPAN> x2<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y2<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        quad_to_rect<SPAN class="op">(</SPAN>quad<SPAN class="op">,</SPAN> x1<SPAN class="op">,</SPAN> y1<SPAN class="op">,</SPAN> x2<SPAN class="op">,</SPAN> y2<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">inline</SPAN> trans_perspective::<A href="agg_trans_perspective.h.html#trans_perspective">trans_perspective</A><SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> src<SPAN class="op">,</SPAN> 
+                                                <SPAN class="kw1">const</SPAN> <SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> dst<SPAN class="op">)</SPAN> 
+    <SPAN class="op">{</SPAN>
+        quad_to_quad<SPAN class="op">(</SPAN>src<SPAN class="op">,</SPAN> dst<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">inline</SPAN> <SPAN class="kw1">const</SPAN> <A href="agg_trans_perspective.h.html#trans_perspective">trans_perspective</A><SPAN class="op">&amp;</SPAN> trans_perspective::reset<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        sx  <SPAN class="op">=</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN> shy <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> w0 <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> 
+        shx <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> sy  <SPAN class="op">=</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN> w1 <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        tx  <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> ty  <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> w2 <SPAN class="op">=</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">return</SPAN> <SPAN class="op">*</SPAN><SPAN class="kw1">this</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">inline</SPAN> <SPAN class="kw1">const</SPAN> <A href="agg_trans_perspective.h.html#trans_perspective">trans_perspective</A><SPAN class="op">&amp;</SPAN> 
+    trans_perspective::multiply<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <A href="agg_trans_perspective.h.html#trans_perspective">trans_perspective</A><SPAN class="op">&amp;</SPAN> a<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <A href="agg_trans_perspective.h.html#trans_perspective">trans_perspective</A> b <SPAN class="op">=</SPAN> <SPAN class="op">*</SPAN><SPAN class="kw1">this</SPAN><SPAN class="op">;</SPAN>
+        sx  <SPAN class="op">=</SPAN> a<SPAN class="op">.</SPAN>sx <SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>sx  <SPAN class="op">+</SPAN> a<SPAN class="op">.</SPAN>shx<SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>shy <SPAN class="op">+</SPAN> a<SPAN class="op">.</SPAN>tx<SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>w0<SPAN class="op">;</SPAN>
+        shx <SPAN class="op">=</SPAN> a<SPAN class="op">.</SPAN>sx <SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>shx <SPAN class="op">+</SPAN> a<SPAN class="op">.</SPAN>shx<SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>sy  <SPAN class="op">+</SPAN> a<SPAN class="op">.</SPAN>tx<SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>w1<SPAN class="op">;</SPAN>
+        tx  <SPAN class="op">=</SPAN> a<SPAN class="op">.</SPAN>sx <SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>tx  <SPAN class="op">+</SPAN> a<SPAN class="op">.</SPAN>shx<SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>ty  <SPAN class="op">+</SPAN> a<SPAN class="op">.</SPAN>tx<SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>w2<SPAN class="op">;</SPAN>
+        shy <SPAN class="op">=</SPAN> a<SPAN class="op">.</SPAN>shy<SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>sx  <SPAN class="op">+</SPAN> a<SPAN class="op">.</SPAN>sy <SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>shy <SPAN class="op">+</SPAN> a<SPAN class="op">.</SPAN>ty<SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>w0<SPAN class="op">;</SPAN>
+        sy  <SPAN class="op">=</SPAN> a<SPAN class="op">.</SPAN>shy<SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>shx <SPAN class="op">+</SPAN> a<SPAN class="op">.</SPAN>sy <SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>sy  <SPAN class="op">+</SPAN> a<SPAN class="op">.</SPAN>ty<SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>w1<SPAN class="op">;</SPAN>
+        ty  <SPAN class="op">=</SPAN> a<SPAN class="op">.</SPAN>shy<SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>tx  <SPAN class="op">+</SPAN> a<SPAN class="op">.</SPAN>sy <SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>ty  <SPAN class="op">+</SPAN> a<SPAN class="op">.</SPAN>ty<SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>w2<SPAN class="op">;</SPAN>
+        w0  <SPAN class="op">=</SPAN> a<SPAN class="op">.</SPAN>w0 <SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>sx  <SPAN class="op">+</SPAN> a<SPAN class="op">.</SPAN>w1 <SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>shy <SPAN class="op">+</SPAN> a<SPAN class="op">.</SPAN>w2<SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>w0<SPAN class="op">;</SPAN>
+        w1  <SPAN class="op">=</SPAN> a<SPAN class="op">.</SPAN>w0 <SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>shx <SPAN class="op">+</SPAN> a<SPAN class="op">.</SPAN>w1 <SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>sy  <SPAN class="op">+</SPAN> a<SPAN class="op">.</SPAN>w2<SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>w1<SPAN class="op">;</SPAN>
+        w2  <SPAN class="op">=</SPAN> a<SPAN class="op">.</SPAN>w0 <SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>tx  <SPAN class="op">+</SPAN> a<SPAN class="op">.</SPAN>w1 <SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>ty  <SPAN class="op">+</SPAN> a<SPAN class="op">.</SPAN>w2<SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>w2<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">return</SPAN> <SPAN class="op">*</SPAN><SPAN class="kw1">this</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">inline</SPAN> <SPAN class="kw1">const</SPAN> <A href="agg_trans_perspective.h.html#trans_perspective">trans_perspective</A><SPAN class="op">&amp;</SPAN> 
+    trans_perspective::multiply<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <A href="agg_trans_affine.h.html#trans_affine">trans_affine</A><SPAN class="op">&amp;</SPAN> a<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <A href="agg_trans_perspective.h.html#trans_perspective">trans_perspective</A> b <SPAN class="op">=</SPAN> <SPAN class="op">*</SPAN><SPAN class="kw1">this</SPAN><SPAN class="op">;</SPAN>
+        sx  <SPAN class="op">=</SPAN> a<SPAN class="op">.</SPAN>sx <SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>sx  <SPAN class="op">+</SPAN> a<SPAN class="op">.</SPAN>shx<SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>shy <SPAN class="op">+</SPAN> a<SPAN class="op">.</SPAN>tx<SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>w0<SPAN class="op">;</SPAN>
+        shx <SPAN class="op">=</SPAN> a<SPAN class="op">.</SPAN>sx <SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>shx <SPAN class="op">+</SPAN> a<SPAN class="op">.</SPAN>shx<SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>sy  <SPAN class="op">+</SPAN> a<SPAN class="op">.</SPAN>tx<SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>w1<SPAN class="op">;</SPAN>
+        tx  <SPAN class="op">=</SPAN> a<SPAN class="op">.</SPAN>sx <SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>tx  <SPAN class="op">+</SPAN> a<SPAN class="op">.</SPAN>shx<SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>ty  <SPAN class="op">+</SPAN> a<SPAN class="op">.</SPAN>tx<SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>w2<SPAN class="op">;</SPAN>
+        shy <SPAN class="op">=</SPAN> a<SPAN class="op">.</SPAN>shy<SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>sx  <SPAN class="op">+</SPAN> a<SPAN class="op">.</SPAN>sy <SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>shy <SPAN class="op">+</SPAN> a<SPAN class="op">.</SPAN>ty<SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>w0<SPAN class="op">;</SPAN>
+        sy  <SPAN class="op">=</SPAN> a<SPAN class="op">.</SPAN>shy<SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>shx <SPAN class="op">+</SPAN> a<SPAN class="op">.</SPAN>sy <SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>sy  <SPAN class="op">+</SPAN> a<SPAN class="op">.</SPAN>ty<SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>w1<SPAN class="op">;</SPAN>
+        ty  <SPAN class="op">=</SPAN> a<SPAN class="op">.</SPAN>shy<SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>tx  <SPAN class="op">+</SPAN> a<SPAN class="op">.</SPAN>sy <SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>ty  <SPAN class="op">+</SPAN> a<SPAN class="op">.</SPAN>ty<SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>w2<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">return</SPAN> <SPAN class="op">*</SPAN><SPAN class="kw1">this</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">inline</SPAN> <SPAN class="kw1">const</SPAN> <A href="agg_trans_perspective.h.html#trans_perspective">trans_perspective</A><SPAN class="op">&amp;</SPAN> 
+    trans_perspective::premultiply<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <A href="agg_trans_perspective.h.html#trans_perspective">trans_perspective</A><SPAN class="op">&amp;</SPAN> b<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <A href="agg_trans_perspective.h.html#trans_perspective">trans_perspective</A> a <SPAN class="op">=</SPAN> <SPAN class="op">*</SPAN><SPAN class="kw1">this</SPAN><SPAN class="op">;</SPAN>
+        sx  <SPAN class="op">=</SPAN> a<SPAN class="op">.</SPAN>sx <SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>sx  <SPAN class="op">+</SPAN> a<SPAN class="op">.</SPAN>shx<SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>shy <SPAN class="op">+</SPAN> a<SPAN class="op">.</SPAN>tx<SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>w0<SPAN class="op">;</SPAN>
+        shx <SPAN class="op">=</SPAN> a<SPAN class="op">.</SPAN>sx <SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>shx <SPAN class="op">+</SPAN> a<SPAN class="op">.</SPAN>shx<SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>sy  <SPAN class="op">+</SPAN> a<SPAN class="op">.</SPAN>tx<SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>w1<SPAN class="op">;</SPAN>
+        tx  <SPAN class="op">=</SPAN> a<SPAN class="op">.</SPAN>sx <SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>tx  <SPAN class="op">+</SPAN> a<SPAN class="op">.</SPAN>shx<SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>ty  <SPAN class="op">+</SPAN> a<SPAN class="op">.</SPAN>tx<SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>w2<SPAN class="op">;</SPAN>
+        shy <SPAN class="op">=</SPAN> a<SPAN class="op">.</SPAN>shy<SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>sx  <SPAN class="op">+</SPAN> a<SPAN class="op">.</SPAN>sy <SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>shy <SPAN class="op">+</SPAN> a<SPAN class="op">.</SPAN>ty<SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>w0<SPAN class="op">;</SPAN>
+        sy  <SPAN class="op">=</SPAN> a<SPAN class="op">.</SPAN>shy<SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>shx <SPAN class="op">+</SPAN> a<SPAN class="op">.</SPAN>sy <SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>sy  <SPAN class="op">+</SPAN> a<SPAN class="op">.</SPAN>ty<SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>w1<SPAN class="op">;</SPAN>
+        ty  <SPAN class="op">=</SPAN> a<SPAN class="op">.</SPAN>shy<SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>tx  <SPAN class="op">+</SPAN> a<SPAN class="op">.</SPAN>sy <SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>ty  <SPAN class="op">+</SPAN> a<SPAN class="op">.</SPAN>ty<SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>w2<SPAN class="op">;</SPAN>
+        w0  <SPAN class="op">=</SPAN> a<SPAN class="op">.</SPAN>w0 <SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>sx  <SPAN class="op">+</SPAN> a<SPAN class="op">.</SPAN>w1 <SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>shy <SPAN class="op">+</SPAN> a<SPAN class="op">.</SPAN>w2<SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>w0<SPAN class="op">;</SPAN>
+        w1  <SPAN class="op">=</SPAN> a<SPAN class="op">.</SPAN>w0 <SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>shx <SPAN class="op">+</SPAN> a<SPAN class="op">.</SPAN>w1 <SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>sy  <SPAN class="op">+</SPAN> a<SPAN class="op">.</SPAN>w2<SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>w1<SPAN class="op">;</SPAN>
+        w2  <SPAN class="op">=</SPAN> a<SPAN class="op">.</SPAN>w0 <SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>tx  <SPAN class="op">+</SPAN> a<SPAN class="op">.</SPAN>w1 <SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>ty  <SPAN class="op">+</SPAN> a<SPAN class="op">.</SPAN>w2<SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>w2<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">return</SPAN> <SPAN class="op">*</SPAN><SPAN class="kw1">this</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">inline</SPAN> <SPAN class="kw1">const</SPAN> <A href="agg_trans_perspective.h.html#trans_perspective">trans_perspective</A><SPAN class="op">&amp;</SPAN> 
+    trans_perspective::premultiply<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <A href="agg_trans_affine.h.html#trans_affine">trans_affine</A><SPAN class="op">&amp;</SPAN> b<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <A href="agg_trans_perspective.h.html#trans_perspective">trans_perspective</A> a <SPAN class="op">=</SPAN> <SPAN class="op">*</SPAN><SPAN class="kw1">this</SPAN><SPAN class="op">;</SPAN>
+        sx  <SPAN class="op">=</SPAN> a<SPAN class="op">.</SPAN>sx <SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>sx  <SPAN class="op">+</SPAN> a<SPAN class="op">.</SPAN>shx<SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>shy<SPAN class="op">;</SPAN>
+        shx <SPAN class="op">=</SPAN> a<SPAN class="op">.</SPAN>sx <SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>shx <SPAN class="op">+</SPAN> a<SPAN class="op">.</SPAN>shx<SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>sy<SPAN class="op">;</SPAN>
+        tx  <SPAN class="op">=</SPAN> a<SPAN class="op">.</SPAN>sx <SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>tx  <SPAN class="op">+</SPAN> a<SPAN class="op">.</SPAN>shx<SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>ty  <SPAN class="op">+</SPAN> a<SPAN class="op">.</SPAN>tx<SPAN class="op">;</SPAN>
+        shy <SPAN class="op">=</SPAN> a<SPAN class="op">.</SPAN>shy<SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>sx  <SPAN class="op">+</SPAN> a<SPAN class="op">.</SPAN>sy <SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>shy<SPAN class="op">;</SPAN>
+        sy  <SPAN class="op">=</SPAN> a<SPAN class="op">.</SPAN>shy<SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>shx <SPAN class="op">+</SPAN> a<SPAN class="op">.</SPAN>sy <SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>sy<SPAN class="op">;</SPAN>
+        ty  <SPAN class="op">=</SPAN> a<SPAN class="op">.</SPAN>shy<SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>tx  <SPAN class="op">+</SPAN> a<SPAN class="op">.</SPAN>sy <SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>ty  <SPAN class="op">+</SPAN> a<SPAN class="op">.</SPAN>ty<SPAN class="op">;</SPAN>
+        w0  <SPAN class="op">=</SPAN> a<SPAN class="op">.</SPAN>w0 <SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>sx  <SPAN class="op">+</SPAN> a<SPAN class="op">.</SPAN>w1 <SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>shy<SPAN class="op">;</SPAN>
+        w1  <SPAN class="op">=</SPAN> a<SPAN class="op">.</SPAN>w0 <SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>shx <SPAN class="op">+</SPAN> a<SPAN class="op">.</SPAN>w1 <SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>sy<SPAN class="op">;</SPAN>
+        w2  <SPAN class="op">=</SPAN> a<SPAN class="op">.</SPAN>w0 <SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>tx  <SPAN class="op">+</SPAN> a<SPAN class="op">.</SPAN>w1 <SPAN class="op">*</SPAN>b<SPAN class="op">.</SPAN>ty  <SPAN class="op">+</SPAN> a<SPAN class="op">.</SPAN>w2<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">return</SPAN> <SPAN class="op">*</SPAN><SPAN class="kw1">this</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">const</SPAN> <A href="agg_trans_perspective.h.html#trans_perspective">trans_perspective</A><SPAN class="op">&amp;</SPAN> 
+    trans_perspective::multiply_inv<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <A href="agg_trans_perspective.h.html#trans_perspective">trans_perspective</A><SPAN class="op">&amp;</SPAN> m<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <A href="agg_trans_perspective.h.html#trans_perspective">trans_perspective</A> t <SPAN class="op">=</SPAN> m<SPAN class="op">;</SPAN>
+        t<SPAN class="op">.</SPAN>invert<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">return</SPAN> multiply<SPAN class="op">(</SPAN>t<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">const</SPAN> <A href="agg_trans_perspective.h.html#trans_perspective">trans_perspective</A><SPAN class="op">&amp;</SPAN>
+    trans_perspective::multiply_inv<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <A href="agg_trans_affine.h.html#trans_affine">trans_affine</A><SPAN class="op">&amp;</SPAN> m<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <A href="agg_trans_affine.h.html#trans_affine">trans_affine</A> t <SPAN class="op">=</SPAN> m<SPAN class="op">;</SPAN>
+        t<SPAN class="op">.</SPAN>invert<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">return</SPAN> multiply<SPAN class="op">(</SPAN>t<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">const</SPAN> <A href="agg_trans_perspective.h.html#trans_perspective">trans_perspective</A><SPAN class="op">&amp;</SPAN>
+    trans_perspective::premultiply_inv<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <A href="agg_trans_perspective.h.html#trans_perspective">trans_perspective</A><SPAN class="op">&amp;</SPAN> m<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <A href="agg_trans_perspective.h.html#trans_perspective">trans_perspective</A> t <SPAN class="op">=</SPAN> m<SPAN class="op">;</SPAN>
+        t<SPAN class="op">.</SPAN>invert<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">return</SPAN> <SPAN class="op">*</SPAN><SPAN class="kw1">this</SPAN> <SPAN class="op">=</SPAN> t<SPAN class="op">.</SPAN>multiply<SPAN class="op">(</SPAN><SPAN class="op">*</SPAN><SPAN class="kw1">this</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">const</SPAN> <A href="agg_trans_perspective.h.html#trans_perspective">trans_perspective</A><SPAN class="op">&amp;</SPAN>
+    trans_perspective::premultiply_inv<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <A href="agg_trans_affine.h.html#trans_affine">trans_affine</A><SPAN class="op">&amp;</SPAN> m<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <A href="agg_trans_perspective.h.html#trans_perspective">trans_perspective</A> t<SPAN class="op">(</SPAN>m<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        t<SPAN class="op">.</SPAN>invert<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">return</SPAN> <SPAN class="op">*</SPAN><SPAN class="kw1">this</SPAN> <SPAN class="op">=</SPAN> t<SPAN class="op">.</SPAN>multiply<SPAN class="op">(</SPAN><SPAN class="op">*</SPAN><SPAN class="kw1">this</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">inline</SPAN> <SPAN class="kw1">const</SPAN> <A href="agg_trans_perspective.h.html#trans_perspective">trans_perspective</A><SPAN class="op">&amp;</SPAN> 
+    trans_perspective::translate<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        tx <SPAN class="op">+=</SPAN> x<SPAN class="op">;</SPAN>
+        ty <SPAN class="op">+=</SPAN> y<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">return</SPAN> <SPAN class="op">*</SPAN><SPAN class="kw1">this</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">inline</SPAN> <SPAN class="kw1">const</SPAN> <A href="agg_trans_perspective.h.html#trans_perspective">trans_perspective</A><SPAN class="op">&amp;</SPAN> trans_perspective::rotate<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> a<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        multiply<SPAN class="op">(</SPAN><A href="agg_trans_affine.h.html#trans_affine_rotation">trans_affine_rotation</A><SPAN class="op">(</SPAN>a<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">return</SPAN> <SPAN class="op">*</SPAN><SPAN class="kw1">this</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">inline</SPAN> <SPAN class="kw1">const</SPAN> <A href="agg_trans_perspective.h.html#trans_perspective">trans_perspective</A><SPAN class="op">&amp;</SPAN> trans_perspective::scale<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> s<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        multiply<SPAN class="op">(</SPAN><A href="agg_trans_affine.h.html#trans_affine_scaling">trans_affine_scaling</A><SPAN class="op">(</SPAN>s<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">return</SPAN> <SPAN class="op">*</SPAN><SPAN class="kw1">this</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">inline</SPAN> <SPAN class="kw1">const</SPAN> <A href="agg_trans_perspective.h.html#trans_perspective">trans_perspective</A><SPAN class="op">&amp;</SPAN> trans_perspective::scale<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        multiply<SPAN class="op">(</SPAN><A href="agg_trans_affine.h.html#trans_affine_scaling">trans_affine_scaling</A><SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">return</SPAN> <SPAN class="op">*</SPAN><SPAN class="kw1">this</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">inline</SPAN> <SPAN class="kw1">void</SPAN> trans_perspective::transform<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> px<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> py<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">double</SPAN> x <SPAN class="op">=</SPAN> <SPAN class="op">*</SPAN>px<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> y <SPAN class="op">=</SPAN> <SPAN class="op">*</SPAN>py<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> m <SPAN class="op">=</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">/</SPAN> <SPAN class="op">(</SPAN>x<SPAN class="op">*</SPAN>w0 <SPAN class="op">+</SPAN> y<SPAN class="op">*</SPAN>w1 <SPAN class="op">+</SPAN> w2<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">*</SPAN>px <SPAN class="op">=</SPAN> m <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>x<SPAN class="op">*</SPAN>sx  <SPAN class="op">+</SPAN> y<SPAN class="op">*</SPAN>shx <SPAN class="op">+</SPAN> tx<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">*</SPAN>py <SPAN class="op">=</SPAN> m <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>x<SPAN class="op">*</SPAN>shy <SPAN class="op">+</SPAN> y<SPAN class="op">*</SPAN>sy  <SPAN class="op">+</SPAN> ty<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">inline</SPAN> <SPAN class="kw1">void</SPAN> trans_perspective::transform_affine<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> y<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">double</SPAN> tmp <SPAN class="op">=</SPAN> <SPAN class="op">*</SPAN>x<SPAN class="op">;</SPAN>
+        <SPAN class="op">*</SPAN>x <SPAN class="op">=</SPAN> tmp <SPAN class="op">*</SPAN> sx  <SPAN class="op">+</SPAN> <SPAN class="op">*</SPAN>y <SPAN class="op">*</SPAN> shx <SPAN class="op">+</SPAN> tx<SPAN class="op">;</SPAN>
+        <SPAN class="op">*</SPAN>y <SPAN class="op">=</SPAN> tmp <SPAN class="op">*</SPAN> shy <SPAN class="op">+</SPAN> <SPAN class="op">*</SPAN>y <SPAN class="op">*</SPAN> sy  <SPAN class="op">+</SPAN> ty<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">inline</SPAN> <SPAN class="kw1">void</SPAN> trans_perspective::transform_2x2<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> y<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">double</SPAN> tmp <SPAN class="op">=</SPAN> <SPAN class="op">*</SPAN>x<SPAN class="op">;</SPAN>
+        <SPAN class="op">*</SPAN>x <SPAN class="op">=</SPAN> tmp <SPAN class="op">*</SPAN> sx  <SPAN class="op">+</SPAN> <SPAN class="op">*</SPAN>y <SPAN class="op">*</SPAN> shx<SPAN class="op">;</SPAN>
+        <SPAN class="op">*</SPAN>y <SPAN class="op">=</SPAN> tmp <SPAN class="op">*</SPAN> shy <SPAN class="op">+</SPAN> <SPAN class="op">*</SPAN>y <SPAN class="op">*</SPAN> sy<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">inline</SPAN> <SPAN class="kw1">void</SPAN> trans_perspective::inverse_transform<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> y<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN>
+    <SPAN class="op">{</SPAN>
+        <A href="agg_trans_perspective.h.html#trans_perspective">trans_perspective</A> t<SPAN class="op">(</SPAN><SPAN class="op">*</SPAN><SPAN class="kw1">this</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>t<SPAN class="op">.</SPAN>invert<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> t<SPAN class="op">.</SPAN>transform<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">inline</SPAN> <SPAN class="kw1">void</SPAN> trans_perspective::store_to<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> m<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="op">*</SPAN>m<SPAN class="op">++</SPAN> <SPAN class="op">=</SPAN> sx<SPAN class="op">;</SPAN>  <SPAN class="op">*</SPAN>m<SPAN class="op">++</SPAN> <SPAN class="op">=</SPAN> shy<SPAN class="op">;</SPAN> <SPAN class="op">*</SPAN>m<SPAN class="op">++</SPAN> <SPAN class="op">=</SPAN> w0<SPAN class="op">;</SPAN> 
+        <SPAN class="op">*</SPAN>m<SPAN class="op">++</SPAN> <SPAN class="op">=</SPAN> shx<SPAN class="op">;</SPAN> <SPAN class="op">*</SPAN>m<SPAN class="op">++</SPAN> <SPAN class="op">=</SPAN> sy<SPAN class="op">;</SPAN>  <SPAN class="op">*</SPAN>m<SPAN class="op">++</SPAN> <SPAN class="op">=</SPAN> w1<SPAN class="op">;</SPAN>
+        <SPAN class="op">*</SPAN>m<SPAN class="op">++</SPAN> <SPAN class="op">=</SPAN> tx<SPAN class="op">;</SPAN>  <SPAN class="op">*</SPAN>m<SPAN class="op">++</SPAN> <SPAN class="op">=</SPAN> ty<SPAN class="op">;</SPAN>  <SPAN class="op">*</SPAN>m<SPAN class="op">++</SPAN> <SPAN class="op">=</SPAN> w2<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">inline</SPAN> <SPAN class="kw1">const</SPAN> <A href="agg_trans_perspective.h.html#trans_perspective">trans_perspective</A><SPAN class="op">&amp;</SPAN> trans_perspective::load_from<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> m<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        sx  <SPAN class="op">=</SPAN> <SPAN class="op">*</SPAN>m<SPAN class="op">++</SPAN><SPAN class="op">;</SPAN> shy <SPAN class="op">=</SPAN> <SPAN class="op">*</SPAN>m<SPAN class="op">++</SPAN><SPAN class="op">;</SPAN> w0 <SPAN class="op">=</SPAN> <SPAN class="op">*</SPAN>m<SPAN class="op">++</SPAN><SPAN class="op">;</SPAN> 
+        shx <SPAN class="op">=</SPAN> <SPAN class="op">*</SPAN>m<SPAN class="op">++</SPAN><SPAN class="op">;</SPAN> sy  <SPAN class="op">=</SPAN> <SPAN class="op">*</SPAN>m<SPAN class="op">++</SPAN><SPAN class="op">;</SPAN> w1 <SPAN class="op">=</SPAN> <SPAN class="op">*</SPAN>m<SPAN class="op">++</SPAN><SPAN class="op">;</SPAN>
+        tx  <SPAN class="op">=</SPAN> <SPAN class="op">*</SPAN>m<SPAN class="op">++</SPAN><SPAN class="op">;</SPAN> ty  <SPAN class="op">=</SPAN> <SPAN class="op">*</SPAN>m<SPAN class="op">++</SPAN><SPAN class="op">;</SPAN> w2 <SPAN class="op">=</SPAN> <SPAN class="op">*</SPAN>m<SPAN class="op">++</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">return</SPAN> <SPAN class="op">*</SPAN><SPAN class="kw1">this</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">inline</SPAN> <SPAN class="kw1">const</SPAN> <A href="agg_trans_perspective.h.html#trans_perspective">trans_perspective</A><SPAN class="op">&amp;</SPAN> 
+    trans_perspective::from_affine<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <A href="agg_trans_affine.h.html#trans_affine">trans_affine</A><SPAN class="op">&amp;</SPAN> a<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        sx  <SPAN class="op">=</SPAN> a<SPAN class="op">.</SPAN>sx<SPAN class="op">;</SPAN>  shy <SPAN class="op">=</SPAN> a<SPAN class="op">.</SPAN>shy<SPAN class="op">;</SPAN> w0 <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> 
+        shx <SPAN class="op">=</SPAN> a<SPAN class="op">.</SPAN>shx<SPAN class="op">;</SPAN> sy  <SPAN class="op">=</SPAN> a<SPAN class="op">.</SPAN>sy<SPAN class="op">;</SPAN>  w1 <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        tx  <SPAN class="op">=</SPAN> a<SPAN class="op">.</SPAN>tx<SPAN class="op">;</SPAN>  ty  <SPAN class="op">=</SPAN> a<SPAN class="op">.</SPAN>ty<SPAN class="op">;</SPAN>  w2 <SPAN class="op">=</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">return</SPAN> <SPAN class="op">*</SPAN><SPAN class="kw1">this</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">inline</SPAN> <SPAN class="kw1">double</SPAN> trans_perspective::determinant<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">return</SPAN> sx  <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>sy  <SPAN class="op">*</SPAN> w2 <SPAN class="op">-</SPAN> ty  <SPAN class="op">*</SPAN> w1<SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN>
+               shx <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>ty  <SPAN class="op">*</SPAN> w0 <SPAN class="op">-</SPAN> shy <SPAN class="op">*</SPAN> w2<SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN>
+               tx  <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>shy <SPAN class="op">*</SPAN> w1 <SPAN class="op">-</SPAN> sy  <SPAN class="op">*</SPAN> w0<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+  
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">inline</SPAN> <SPAN class="kw1">double</SPAN> trans_perspective::determinant_reciprocal<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">return</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">/</SPAN> determinant<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">inline</SPAN> <SPAN class="kw1">bool</SPAN> trans_perspective::is_valid<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> epsilon<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">return</SPAN> fabs<SPAN class="op">(</SPAN>sx<SPAN class="op">)</SPAN> <SPAN class="op">&gt;</SPAN> epsilon <SPAN class="op">&amp;&amp;</SPAN> fabs<SPAN class="op">(</SPAN>sy<SPAN class="op">)</SPAN> <SPAN class="op">&gt;</SPAN> epsilon <SPAN class="op">&amp;&amp;</SPAN> fabs<SPAN class="op">(</SPAN>w2<SPAN class="op">)</SPAN> <SPAN class="op">&gt;</SPAN> epsilon<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">inline</SPAN> <SPAN class="kw1">bool</SPAN> trans_perspective::is_identity<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> epsilon<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">return</SPAN> <A href="agg_basics.h.html#is_equal_eps">is_equal_eps</A><SPAN class="op">(</SPAN>sx<SPAN class="op">,</SPAN>  <SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> epsilon<SPAN class="op">)</SPAN> <SPAN class="op">&amp;&amp;</SPAN>
+               <A href="agg_basics.h.html#is_equal_eps">is_equal_eps</A><SPAN class="op">(</SPAN>shy<SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> epsilon<SPAN class="op">)</SPAN> <SPAN class="op">&amp;&amp;</SPAN>
+               <A href="agg_basics.h.html#is_equal_eps">is_equal_eps</A><SPAN class="op">(</SPAN>w0<SPAN class="op">,</SPAN>  <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> epsilon<SPAN class="op">)</SPAN> <SPAN class="op">&amp;&amp;</SPAN>
+               <A href="agg_basics.h.html#is_equal_eps">is_equal_eps</A><SPAN class="op">(</SPAN>shx<SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> epsilon<SPAN class="op">)</SPAN> <SPAN class="op">&amp;&amp;</SPAN> 
+               <A href="agg_basics.h.html#is_equal_eps">is_equal_eps</A><SPAN class="op">(</SPAN>sy<SPAN class="op">,</SPAN>  <SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> epsilon<SPAN class="op">)</SPAN> <SPAN class="op">&amp;&amp;</SPAN>
+               <A href="agg_basics.h.html#is_equal_eps">is_equal_eps</A><SPAN class="op">(</SPAN>w1<SPAN class="op">,</SPAN>  <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> epsilon<SPAN class="op">)</SPAN> <SPAN class="op">&amp;&amp;</SPAN>
+               <A href="agg_basics.h.html#is_equal_eps">is_equal_eps</A><SPAN class="op">(</SPAN>tx<SPAN class="op">,</SPAN>  <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> epsilon<SPAN class="op">)</SPAN> <SPAN class="op">&amp;&amp;</SPAN>
+               <A href="agg_basics.h.html#is_equal_eps">is_equal_eps</A><SPAN class="op">(</SPAN>ty<SPAN class="op">,</SPAN>  <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> epsilon<SPAN class="op">)</SPAN> <SPAN class="op">&amp;&amp;</SPAN>
+               <A href="agg_basics.h.html#is_equal_eps">is_equal_eps</A><SPAN class="op">(</SPAN>w2<SPAN class="op">,</SPAN>  <SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> epsilon<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">inline</SPAN> <SPAN class="kw1">bool</SPAN> trans_perspective::is_equal<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <A href="agg_trans_perspective.h.html#trans_perspective">trans_perspective</A><SPAN class="op">&amp;</SPAN> m<SPAN class="op">,</SPAN> 
+                                            <SPAN class="kw1">double</SPAN> epsilon<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">return</SPAN> <A href="agg_basics.h.html#is_equal_eps">is_equal_eps</A><SPAN class="op">(</SPAN>sx<SPAN class="op">,</SPAN>  m<SPAN class="op">.</SPAN>sx<SPAN class="op">,</SPAN>  epsilon<SPAN class="op">)</SPAN> <SPAN class="op">&amp;&amp;</SPAN>
+               <A href="agg_basics.h.html#is_equal_eps">is_equal_eps</A><SPAN class="op">(</SPAN>shy<SPAN class="op">,</SPAN> m<SPAN class="op">.</SPAN>shy<SPAN class="op">,</SPAN> epsilon<SPAN class="op">)</SPAN> <SPAN class="op">&amp;&amp;</SPAN>
+               <A href="agg_basics.h.html#is_equal_eps">is_equal_eps</A><SPAN class="op">(</SPAN>w0<SPAN class="op">,</SPAN>  m<SPAN class="op">.</SPAN>w0<SPAN class="op">,</SPAN>  epsilon<SPAN class="op">)</SPAN> <SPAN class="op">&amp;&amp;</SPAN>
+               <A href="agg_basics.h.html#is_equal_eps">is_equal_eps</A><SPAN class="op">(</SPAN>shx<SPAN class="op">,</SPAN> m<SPAN class="op">.</SPAN>shx<SPAN class="op">,</SPAN> epsilon<SPAN class="op">)</SPAN> <SPAN class="op">&amp;&amp;</SPAN> 
+               <A href="agg_basics.h.html#is_equal_eps">is_equal_eps</A><SPAN class="op">(</SPAN>sy<SPAN class="op">,</SPAN>  m<SPAN class="op">.</SPAN>sy<SPAN class="op">,</SPAN>  epsilon<SPAN class="op">)</SPAN> <SPAN class="op">&amp;&amp;</SPAN>
+               <A href="agg_basics.h.html#is_equal_eps">is_equal_eps</A><SPAN class="op">(</SPAN>w1<SPAN class="op">,</SPAN>  m<SPAN class="op">.</SPAN>w1<SPAN class="op">,</SPAN>  epsilon<SPAN class="op">)</SPAN> <SPAN class="op">&amp;&amp;</SPAN>
+               <A href="agg_basics.h.html#is_equal_eps">is_equal_eps</A><SPAN class="op">(</SPAN>tx<SPAN class="op">,</SPAN>  m<SPAN class="op">.</SPAN>tx<SPAN class="op">,</SPAN>  epsilon<SPAN class="op">)</SPAN> <SPAN class="op">&amp;&amp;</SPAN>
+               <A href="agg_basics.h.html#is_equal_eps">is_equal_eps</A><SPAN class="op">(</SPAN>ty<SPAN class="op">,</SPAN>  m<SPAN class="op">.</SPAN>ty<SPAN class="op">,</SPAN>  epsilon<SPAN class="op">)</SPAN> <SPAN class="op">&amp;&amp;</SPAN>
+               <A href="agg_basics.h.html#is_equal_eps">is_equal_eps</A><SPAN class="op">(</SPAN>w2<SPAN class="op">,</SPAN>  m<SPAN class="op">.</SPAN>w2<SPAN class="op">,</SPAN>  epsilon<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">inline</SPAN> <SPAN class="kw1">double</SPAN> trans_perspective::scale<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">double</SPAN> x <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">707106781</SPAN> <SPAN class="op">*</SPAN> sx  <SPAN class="op">+</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">707106781</SPAN> <SPAN class="op">*</SPAN> shx<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> y <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">707106781</SPAN> <SPAN class="op">*</SPAN> shy <SPAN class="op">+</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">707106781</SPAN> <SPAN class="op">*</SPAN> sy<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">return</SPAN> sqrt<SPAN class="op">(</SPAN>x<SPAN class="op">*</SPAN>x <SPAN class="op">+</SPAN> y<SPAN class="op">*</SPAN>y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">inline</SPAN> <SPAN class="kw1">double</SPAN> trans_perspective::rotation<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">double</SPAN> x1 <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> y1 <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> x2 <SPAN class="op">=</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> y2 <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        transform<SPAN class="op">(</SPAN><SPAN class="op">&amp;</SPAN>x1<SPAN class="op">,</SPAN> <SPAN class="op">&amp;</SPAN>y1<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        transform<SPAN class="op">(</SPAN><SPAN class="op">&amp;</SPAN>x2<SPAN class="op">,</SPAN> <SPAN class="op">&amp;</SPAN>y2<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">return</SPAN> atan2<SPAN class="op">(</SPAN>y2<SPAN class="op">-</SPAN>y1<SPAN class="op">,</SPAN> x2<SPAN class="op">-</SPAN>x1<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">void</SPAN> trans_perspective::translation<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> dx<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> dy<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="op">*</SPAN>dx <SPAN class="op">=</SPAN> tx<SPAN class="op">;</SPAN>
+        <SPAN class="op">*</SPAN>dy <SPAN class="op">=</SPAN> ty<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">void</SPAN> trans_perspective::scaling<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> y<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">double</SPAN> x1 <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> y1 <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> x2 <SPAN class="op">=</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> y2 <SPAN class="op">=</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        <A href="agg_trans_perspective.h.html#trans_perspective">trans_perspective</A> t<SPAN class="op">(</SPAN><SPAN class="op">*</SPAN><SPAN class="kw1">this</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        t <SPAN class="op">*=</SPAN> <A href="agg_trans_affine.h.html#trans_affine_rotation">trans_affine_rotation</A><SPAN class="op">(</SPAN><SPAN class="op">-</SPAN>rotation<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        t<SPAN class="op">.</SPAN>transform<SPAN class="op">(</SPAN><SPAN class="op">&amp;</SPAN>x1<SPAN class="op">,</SPAN> <SPAN class="op">&amp;</SPAN>y1<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        t<SPAN class="op">.</SPAN>transform<SPAN class="op">(</SPAN><SPAN class="op">&amp;</SPAN>x2<SPAN class="op">,</SPAN> <SPAN class="op">&amp;</SPAN>y2<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">*</SPAN>x <SPAN class="op">=</SPAN> x2 <SPAN class="op">-</SPAN> x1<SPAN class="op">;</SPAN>
+        <SPAN class="op">*</SPAN>y <SPAN class="op">=</SPAN> y2 <SPAN class="op">-</SPAN> y1<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">void</SPAN> trans_perspective::scaling_abs<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> y<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="op">*</SPAN>x <SPAN class="op">=</SPAN> sqrt<SPAN class="op">(</SPAN>sx  <SPAN class="op">*</SPAN> sx  <SPAN class="op">+</SPAN> shx <SPAN class="op">*</SPAN> shx<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">*</SPAN>y <SPAN class="op">=</SPAN> sqrt<SPAN class="op">(</SPAN>shy <SPAN class="op">*</SPAN> shy <SPAN class="op">+</SPAN> sy  <SPAN class="op">*</SPAN> sy<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+<SPAN class="op">}</SPAN>
+
+<SPAN class="kw2">#endif</SPAN>
+
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT><TABLE width="640px" bgcolor="#583927" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0">
+<TR><TD><CENTER><SPAN class="authors">
+Copyright <SPAN class="larger">&#169;</SPAN> 2002-2006
+<A href="../../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+<TR><TD><CENTER><SPAN class="authors">
+Web Design and Programming
+<A href="../../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+</TABLE>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+</HTML>

@@ -1,0 +1,315 @@
+<HTML><HEAD><TITLE>Anti-Grain Geometry - Version 2.3 Release Notes</TITLE>
+<META http-equiv="Content-Type" content="text/html"/>
+<LINK rel="stylesheet" type="text/css" href="../../agg.styles.css"/>
+</HEAD>
+<A name="PAGE_RELEASE_V23"><B></B></A>
+
+
+<TABLE width="640px" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR>
+<TD bgcolor="#583927"></TD>
+</TR>
+</TABLE>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR>
+<TD>
+<TABLE width="170px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR><TD><A href="../../index.html" class="mpmenu">Home/</A></TD></TR>
+<TR><TD><A href="../index.html" class="mpmenu">News/</A></TD></TR>
+<TR><TD><A href="" class="mpmenu"></A></TD></TR>
+<TR><TD><A href="" class="mpmenu"></A></TD></TR>
+<TR><TD><A href="" class="mpmenu"></A></TD></TR>
+<TR><TD><A href="" class="mpmenu"></A></TD></TR>
+</TABLE>
+</TD>
+<TD width="1px" bgcolor="#583927"></TD>
+<TD width="450px" valign="top" style="text-align:right">
+<TABLE border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR>
+<TD><IMG src="../../agg_logo.gif" border="0"/></TD>
+</TR>
+<TR>
+<TD>
+<TABLE border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR height="15px">
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../../news/index.html">News</A>&nbsp;&nbsp;</TD>
+<TD width="1px" bgcolor="#8e521d"></TD>
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../../doc/index.html">Docs</A>&nbsp;&nbsp;</TD>
+<TD width="1px" bgcolor="#8e521d"></TD>
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../../download/index.html">Download</A>&nbsp;&nbsp;</TD>
+<TD width="1px" bgcolor="#8e521d"></TD>
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../../maillist/index.html">Mailing List</A>&nbsp;&nbsp;</TD>
+<TD width="1px" bgcolor="#8e521d"></TD>
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../../cvs/index.html">CVS</A>&nbsp;&nbsp;</TD>
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+<TABLE width="640px" height="1px" bgcolor="#583927" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>
+</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD><H1>Version 2.3 Release Notes</H1></TD></TR></TABLE>
+
+<TABLE class="toc" width="640px"><TR><TD>
+    <DIV style="margin-left:2em; padding:3px; font-size:14px;"><A href="#toc0001"><B>Include Files</B></A></DIV>
+    <DIV style="margin-left:2em; padding:3px; font-size:14px;"><A href="#toc0002"><B> Colors </B></A></DIV>
+    <DIV style="margin-left:2em; padding:3px; font-size:14px;"><A href="#toc0003"><B> Component Orders </B></A></DIV>
+    <DIV style="margin-left:2em; padding:3px; font-size:14px;"><A href="#toc0004"><B> Gradients </B></A></DIV>
+    <DIV style="margin-left:2em; padding:3px; font-size:14px;"><A href="#toc0005"><B> Gouraud Shaders </B></A></DIV>
+    <DIV style="margin-left:2em; padding:3px; font-size:14px;"><A href="#toc0006"><B> Image transformers </B></A></DIV>
+    <DIV style="margin-left:2em; padding:3px; font-size:14px;"><A href="#toc0007"><B> Pattern fill and transformers </B></A></DIV>
+    <DIV style="margin-left:2em; padding:3px; font-size:14px;"><A href="#toc0008"><B> Gray scale imeges support </B></A></DIV>
+
+</TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The major change is that pixel format renderers were generalized for the use 
+of high quality color spaces (16 bit per component).</P></TD></TR></TABLE>
+
+<H2>Include Files<A name="toc0001"></A></H2>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>First of all, there are changes in include file names. The &#147;capacity&#148; numbers 
+were removed from the names and now <A href="../../__code/include/agg_pixfmt_rgb.h.html">agg_pixfmt_rgb.h</A> contains formats such as 
+agg::<A href="../../__code/include/agg_pixfmt_rgb.h.html#pixfmt_rgb24">pixfmt_rgb24</A> and agg::<A href="../../__code/include/agg_pixfmt_rgb.h.html#pixfmt_rgb48">pixfmt_rgb48</A>. Below if the table of changes.</P></TD></TR></TABLE>
+
+<TABLE class="tbl" width="640px" border="0" cellspacing="1px" cellpadding="5px">
+<TH>Old file</TH><TH>New File</TH>
+<TR><TD>#include&#160;&quot;agg_gray8.h&quot;</TD><TD>#include&#160;&quot;<A href="../../__code/include/agg_color_gray.h.html">agg_color_gray.h</A>&quot;</TD></TR>
+<TR><TD>#include&#160;&quot;agg_color_rgba8.h&quot;</TD><TD>#include&#160;&quot;<A href="../../__code/include/agg_color_rgba.h.html">agg_color_rgba.h</A>&quot;</TD></TR>
+<TR><TD>#include&#160;&quot;agg_pixfmt_rgb24.h&quot;</TD><TD>#include&#160;&quot;<A href="../../__code/include/agg_pixfmt_rgb.h.html">agg_pixfmt_rgb.h</A>&quot;</TD></TR>
+<TR><TD>#include&#160;&quot;agg_pixfmt_rgb555.h&quot;</TD><TD>#include&#160;&quot;<A href="../../__code/include/agg_pixfmt_rgb_packed.h.html">agg_pixfmt_rgb_packed.h</A>&quot;</TD></TR>
+<TR><TD>#include&#160;&quot;agg_pixfmt_rgb565.h&quot;</TD><TD>#include&#160;&quot;<A href="../../__code/include/agg_pixfmt_rgb_packed.h.html">agg_pixfmt_rgb_packed.h</A>&quot;</TD></TR>
+<TR><TD>#include&#160;&quot;agg_pixfmt_rgba32.h&quot;</TD><TD>#include&#160;&quot;<A href="../../__code/include/agg_pixfmt_rgba.h.html">agg_pixfmt_rgba.h</A>&quot;</TD></TR>
+<TR><TD>#include&#160;&quot;agg_pixfmt_gray8.h&quot;</TD><TD>#include&#160;&quot;<A href="../../__code/include/agg_pixfmt_gray.h.html">agg_pixfmt_gray.h</A>&quot;</TD></TR>
+<TR><TD>#include&#160;&quot;agg_span_gouraud_rgba8.h&quot;</TD><TD>#include&#160;&quot;<A href="../../__code/include/agg_span_gouraud_rgba.h.html">agg_span_gouraud_rgba.h</A>&quot;</TD></TR>
+<TR><TD>#include&#160;&quot;agg_span_image_filter_rgb24.h&quot;</TD><TD>#include&#160;&quot;<A href="../../__code/include/agg_span_image_filter_rgb.h.html">agg_span_image_filter_rgb.h</A>&quot;</TD></TR>
+<TR><TD>#include&#160;&quot;agg_span_image_filter_rgba32.h&quot;</TD><TD>#include&#160;&quot;<A href="../../__code/include/agg_span_image_filter_rgba.h.html">agg_span_image_filter_rgba.h</A>&quot;</TD></TR>
+<TR><TD>#include&#160;&quot;agg_span_pattern_rgba32.h&quot;</TD><TD>#include&#160;&quot;<A href="../../__code/include/agg_span_pattern_rgba.h.html">agg_span_pattern_rgba.h</A>&quot;</TD></TR>
+<TR><TD>#include&#160;&quot;agg_span_pattern_rgb24.h&quot;</TD><TD>#include&#160;&quot;<A href="../../__code/include/agg_span_pattern_rgb.h.html">agg_span_pattern_rgb.h</A>&quot;</TD></TR>
+<TR><TD>#include&#160;&quot;agg_span_gouraud_rgba8.h&quot;</TD><TD>#include&#160;&quot;<A href="../../__code/include/agg_span_gouraud_rgba.h.html">agg_span_gouraud_rgba.h</A>&quot;</TD></TR>
+<TR><TD>#include&#160;&quot;agg_span_gouraud_gray8.h&quot;</TD><TD>#include&#160;&quot;<A href="../../__code/include/agg_span_gouraud_gray.h.html">agg_span_gouraud_gray.h</A>&quot;</TD></TR>
+<TR><TD>#include&#160;&quot;agg_span_pattern_filter_rgba32.h&quot;</TD><TD>#include&#160;&quot;agg_span_pattern_filter_rgba.h&quot;</TD></TR>
+<TR><TD>#include&#160;&quot;agg_span_pattern_filter_rgb24.h&quot;</TD><TD>#include&#160;&quot;agg_span_pattern_filter_rgb.h&quot;</TD></TR>
+</TABLE><FONT style="margin-left:1em"><I></I></FONT>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Color formats supported by <A href="../../__code/include/agg_pixfmt_rgb.h.html">agg_pixfmt_rgb.h</A>:
+</P></TD></TR></TABLE><TABLE class="tbl" width="640px" border="0" cellspacing="1px" cellpadding="5px">
+
+<TR><TD><A href="../../__code/include/agg_pixfmt_rgb.h.html#pixfmt_rgb24">pixfmt_rgb24</A></TD><TD><A href="../../__code/include/agg_pixfmt_rgb.h.html#pixfmt_rgb24_pre">pixfmt_rgb24_pre</A></TD><TD><A href="../../__code/include/agg_pixfmt_rgb.h.html#pixfmt_rgb24_gamma">pixfmt_rgb24_gamma</A></TD></TR>
+<TR><TD><A href="../../__code/include/agg_pixfmt_rgb.h.html#pixfmt_bgr24">pixfmt_bgr24</A></TD><TD><A href="../../__code/include/agg_pixfmt_rgb.h.html#pixfmt_bgr24_pre">pixfmt_bgr24_pre</A></TD><TD><A href="../../__code/include/agg_pixfmt_rgb.h.html#pixfmt_bgr24_gamma">pixfmt_bgr24_gamma</A></TD></TR>
+<TR><TD><A href="../../__code/include/agg_pixfmt_rgb.h.html#pixfmt_rgb48">pixfmt_rgb48</A></TD><TD><A href="../../__code/include/agg_pixfmt_rgb.h.html#pixfmt_rgb48_pre">pixfmt_rgb48_pre</A></TD><TD><A href="../../__code/include/agg_pixfmt_rgb.h.html#pixfmt_rgb48_gamma">pixfmt_rgb48_gamma</A></TD></TR>
+<TR><TD><A href="../../__code/include/agg_pixfmt_rgb.h.html#pixfmt_bgr48">pixfmt_bgr48</A></TD><TD><A href="../../__code/include/agg_pixfmt_rgb.h.html#pixfmt_bgr48_pre">pixfmt_bgr48_pre</A></TD><TD><A href="../../__code/include/agg_pixfmt_rgb.h.html#pixfmt_bgr48_gamma">pixfmt_bgr48_gamma</A></TD></TR>
+</TABLE><FONT style="margin-left:1em"><I></I></FONT>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Color formats supported by <A href="../../__code/include/agg_pixfmt_rgba.h.html">agg_pixfmt_rgba.h</A>:
+</P></TD></TR></TABLE><TABLE class="tbl" width="640px" border="0" cellspacing="1px" cellpadding="5px">
+
+<TR><TD><A href="../../__code/include/agg_pixfmt_rgba.h.html#pixfmt_rgba32">pixfmt_rgba32</A></TD><TD><A href="../../__code/include/agg_pixfmt_rgba.h.html#pixfmt_rgba32_pre">pixfmt_rgba32_pre</A></TD><TD><A href="../../__code/include/agg_pixfmt_rgba.h.html#pixfmt_rgba32_plain">pixfmt_rgba32_plain</A></TD></TR>
+<TR><TD><A href="../../__code/include/agg_pixfmt_rgba.h.html#pixfmt_argb32">pixfmt_argb32</A></TD><TD><A href="../../__code/include/agg_pixfmt_rgba.h.html#pixfmt_argb32_pre">pixfmt_argb32_pre</A></TD><TD><A href="../../__code/include/agg_pixfmt_rgba.h.html#pixfmt_argb32_plain">pixfmt_argb32_plain</A></TD></TR>
+<TR><TD><A href="../../__code/include/agg_pixfmt_rgba.h.html#pixfmt_abgr32">pixfmt_abgr32</A></TD><TD><A href="../../__code/include/agg_pixfmt_rgba.h.html#pixfmt_abgr32_pre">pixfmt_abgr32_pre</A></TD><TD><A href="../../__code/include/agg_pixfmt_rgba.h.html#pixfmt_abgr32_plain">pixfmt_abgr32_plain</A></TD></TR>
+<TR><TD><A href="../../__code/include/agg_pixfmt_rgba.h.html#pixfmt_bgra32">pixfmt_bgra32</A></TD><TD><A href="../../__code/include/agg_pixfmt_rgba.h.html#pixfmt_bgra32_pre">pixfmt_bgra32_pre</A></TD><TD><A href="../../__code/include/agg_pixfmt_rgba.h.html#pixfmt_bgra32_plain">pixfmt_bgra32_plain</A></TD></TR>
+<TR><TD><A href="../../__code/include/agg_pixfmt_rgba.h.html#pixfmt_rgba64">pixfmt_rgba64</A></TD><TD><A href="../../__code/include/agg_pixfmt_rgba.h.html#pixfmt_rgba64_pre">pixfmt_rgba64_pre</A></TD><TD>&#160;</TD></TR>
+<TR><TD><A href="../../__code/include/agg_pixfmt_rgba.h.html#pixfmt_argb64">pixfmt_argb64</A></TD><TD><A href="../../__code/include/agg_pixfmt_rgba.h.html#pixfmt_argb64_pre">pixfmt_argb64_pre</A></TD><TD>&#160;</TD></TR>
+<TR><TD><A href="../../__code/include/agg_pixfmt_rgba.h.html#pixfmt_abgr64">pixfmt_abgr64</A></TD><TD><A href="../../__code/include/agg_pixfmt_rgba.h.html#pixfmt_abgr64_pre">pixfmt_abgr64_pre</A></TD><TD>&#160;</TD></TR>
+<TR><TD><A href="../../__code/include/agg_pixfmt_rgba.h.html#pixfmt_bgra64">pixfmt_bgra64</A></TD><TD><A href="../../__code/include/agg_pixfmt_rgba.h.html#pixfmt_bgra64_pre">pixfmt_bgra64_pre</A></TD><TD>&#160;</TD></TR>
+</TABLE><FONT style="margin-left:1em"><I></I></FONT>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>In <A href="../../__code/include/agg_pixfmt_rgb_packed.h.html">agg_pixfmt_rgb_packed.h</A> added exotic formats, 32 bits per ptixel, such as 
+<A href="../../__code/include/agg_pixfmt_rgb_packed.h.html#pixfmt_rgbAAA">pixfmt_rgbAAA</A>. Suffix &quot;AAA&quot; means &quot;10 bits per component&quot; (0xA, corresponds 
+to r10g10b10&quot;, &quot;BBA&quot; means &quot;r11g11b10&quot;.</P></TD></TR></TABLE> 
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Color formats supported by <A href="../../__code/include/agg_pixfmt_rgb_packed.h.html">agg_pixfmt_rgb_packed.h</A>:
+</P></TD></TR></TABLE><TABLE class="tbl" width="640px" border="0" cellspacing="1px" cellpadding="5px">
+
+<TR><TD><A href="../../__code/include/agg_pixfmt_rgb_packed.h.html#pixfmt_rgb555">pixfmt_rgb555</A></TD><TD><A href="../../__code/include/agg_pixfmt_rgb_packed.h.html#pixfmt_rgb555_pre">pixfmt_rgb555_pre</A></TD><TD><A href="../../__code/include/agg_pixfmt_rgb_packed.h.html#pixfmt_rgb555_gamma">pixfmt_rgb555_gamma</A></TD></TR>
+<TR><TD><A href="../../__code/include/agg_pixfmt_rgb_packed.h.html#pixfmt_rgb565">pixfmt_rgb565</A></TD><TD><A href="../../__code/include/agg_pixfmt_rgb_packed.h.html#pixfmt_rgb565_pre">pixfmt_rgb565_pre</A></TD><TD><A href="../../__code/include/agg_pixfmt_rgb_packed.h.html#pixfmt_rgb565_gamma">pixfmt_rgb565_gamma</A></TD></TR>
+<TR><TD><A href="../../__code/include/agg_pixfmt_rgb_packed.h.html#pixfmt_rgbAAA">pixfmt_rgbAAA</A></TD><TD><A href="../../__code/include/agg_pixfmt_rgb_packed.h.html#pixfmt_rgbAAA_pre">pixfmt_rgbAAA_pre</A></TD><TD><A href="../../__code/include/agg_pixfmt_rgb_packed.h.html#pixfmt_rgbAAA_gamma">pixfmt_rgbAAA_gamma</A></TD></TR>
+<TR><TD><A href="../../__code/include/agg_pixfmt_rgb_packed.h.html#pixfmt_bgrAAA">pixfmt_bgrAAA</A></TD><TD><A href="../../__code/include/agg_pixfmt_rgb_packed.h.html#pixfmt_bgrAAA_pre">pixfmt_bgrAAA_pre</A></TD><TD><A href="../../__code/include/agg_pixfmt_rgb_packed.h.html#pixfmt_bgrAAA_gamma">pixfmt_bgrAAA_gamma</A></TD></TR>
+<TR><TD><A href="../../__code/include/agg_pixfmt_rgb_packed.h.html#pixfmt_rgbBBA">pixfmt_rgbBBA</A></TD><TD><A href="../../__code/include/agg_pixfmt_rgb_packed.h.html#pixfmt_rgbBBA_pre">pixfmt_rgbBBA_pre</A></TD><TD><A href="../../__code/include/agg_pixfmt_rgb_packed.h.html#pixfmt_rgbBBA_gamma">pixfmt_rgbBBA_gamma</A></TD></TR>
+<TR><TD><A href="../../__code/include/agg_pixfmt_rgb_packed.h.html#pixfmt_bgrABB">pixfmt_bgrABB</A></TD><TD><A href="../../__code/include/agg_pixfmt_rgb_packed.h.html#pixfmt_bgrABB_pre">pixfmt_bgrABB_pre</A></TD><TD><A href="../../__code/include/agg_pixfmt_rgb_packed.h.html#pixfmt_bgrABB_gamma">pixfmt_bgrABB_gamma</A></TD></TR>
+</TABLE><FONT style="margin-left:1em"><I></I></FONT>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>File <A href="../../__code/include/agg_pixfmt_gray.h.html">agg_pixfmt_gray.h</A> supports 8- and 16-bit grayscale buffers.</P></TD></TR></TABLE>
+
+
+<BR/><H2> Colors <A name="toc0002"></A></H2>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Now <A href="../../__code/include/agg_color_rgba.h.html">agg_color_rgba.h</A> contains the following definitions:
+agg::<A href="../../__code/include/agg_color_rgba.h.html#rgba">rgba</A>, agg::<A href="../../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A>, agg::<A href="../../__code/include/agg_color_rgba.h.html#rgba16">rgba16</A>.</P></TD></TR></TABLE> 
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Former agg_gray8.h is renamed to <A href="../../__code/include/agg_color_gray.h.html">agg_color_gray.h</A>. 
+It&#039;s not very logical (gray isn&#039;t a color), 
+but it&#039;s done for the sake of consistency. It contains agg::<A href="../../__code/include/agg_color_gray.h.html#gray8">gray8</A>
+and agg::<A href="../../__code/include/agg_color_gray.h.html#gray16">gray16</A>.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The conversion policy is that any color type must have 
+constructors with agg::<A href="../../__code/include/agg_color_rgba.h.html#rgba">rgba</A> (double r,g,b,a in range 0&#133;1) and 
+agg::<A href="../../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A> (integer, in range 0&#133;255). I also removed constructors 
+from packed integer, that is, instead of former <CODE>agg::<A href="../../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A>(v, agg::rgba8::rgb)</CODE>
+use functions <A href="../../__code/include/agg_color_rgba.h.html#rgb8_packed">rgb8_packed</A>(v), <A href="../../__code/include/agg_color_rgba.h.html#bgr8_packed">bgr8_packed</A>(v), and <A href="../../__code/include/agg_color_rgba.h.html#argb8_packed">argb8_packed</A>(v).</P></TD></TR></TABLE>
+
+<BR/><H2> Component Orders <A name="toc0003"></A></H2>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>It was a mistake to call the RGB and RGBA orders like agg::order_bgr24, because 
+the order of components doesn&#039;t depend on the capacity. So, please remove the numeric 
+values from the order names where they are used, i.e., 
+agg::order_bgr24 <SPAN class="larger">&#8594;</SPAN> agg::<A href="../../__code/include/agg_color_rgba.h.html#order_bgr">order_bgr</A>, etc.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The high capacity colors introduce a problem of byte order on different platforms, 
+that is, Big-Endian/Little-Endian. But handling different byte orders on-the-fly 
+would be too expensive, so that, if you use high capacity colors, you have to take 
+care of the output byte order if it&#039;s different from what is used in your hardware.</P></TD></TR></TABLE>
+
+<BR/><H2> Gradients <A name="toc0004"></A></H2>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The main change in gradients is that now you can use arrays of colors of any size.
+Before it was hardcoded 256 colors. As the result, you now cannot just declare a 
+static color array and parametrize the gradient type with it. For example:</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Before:
+</P></TD></TR></TABLE><TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+    <SPAN class="kw1">typedef</SPAN> agg::<A href="../../__code/include/agg_span_gradient.h.html#span_gradient">span_gradient</A><SPAN class="op">&lt;</SPAN>agg::<A href="../../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">,</SPAN> 
+                               interpolator_type<SPAN class="op">,</SPAN> 
+                               gradient_func_type<SPAN class="op">,</SPAN> 
+                               <SPAN class="kw1">const</SPAN> agg::<A href="../../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">*</SPAN><SPAN class="op">,</SPAN>
+                               span_allocator_type<SPAN class="op">&gt;</SPAN> span_gradient_type<SPAN class="op">;</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Now:
+</P></TD></TR></TABLE><TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+    <SPAN class="kw1">typedef</SPAN> agg::<A href="../../__code/include/agg_array.h.html#pod_auto_array">pod_auto_array</A><SPAN class="op">&lt;</SPAN>agg::<A href="../../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">,</SPAN> <SPAN class="num">256</SPAN><SPAN class="op">&gt;</SPAN> color_array_type<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">typedef</SPAN> agg::<A href="../../__code/include/agg_span_gradient.h.html#span_gradient">span_gradient</A><SPAN class="op">&lt;</SPAN>agg::<A href="../../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">,</SPAN> 
+                               interpolator_type<SPAN class="op">,</SPAN> 
+                               gradient_func_type<SPAN class="op">,</SPAN> 
+                               color_array_type<SPAN class="op">,</SPAN>
+                               span_allocator_type<SPAN class="op">&gt;</SPAN> span_gradient_type<SPAN class="op">;</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>You can use any available container as a color array, the gradient template
+requires just two things to be defined: 
+</P></TD></TR></TABLE><TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+     <SPAN class="kw1">unsigned</SPAN> size<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+     <SPAN class="kw1">const</SPAN> value_type<SPAN class="op">&amp;</SPAN> <SPAN class="kw1">operator</SPAN> <SPAN class="op">[</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> i<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> 
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>So that, you can use any available container or adaptor, such as:
+agg::<A href="../../__code/include/agg_array.h.html#pod_array_adaptor">pod_array_adaptor</A>, agg::<A href="../../__code/include/agg_array.h.html#pod_auto_array">pod_auto_array</A>, agg::<A href="../../__code/include/agg_array.h.html#pod_array">pod_array</A>, agg::pod_deque, or 
+any standard one, such as std::vector.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The same is appicable to agg::<A href="../../__code/include/agg_span_gradient_alpha.h.html#span_gradient_alpha">span_gradient_alpha</A>.</P></TD></TR></TABLE>
+
+<BR/><H2> Gouraud Shaders <A name="toc0005"></A></H2>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The only change in Gouraud shaders is declarations. Just change<BR/></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><CODE>agg::span_gouraud_rgba8&lt;&gt;</CODE><BR/>
+to<BR/>
+<CODE>agg::<A href="../../__code/include/agg_span_gouraud_rgba.h.html#span_gouraud_rgba">span_gouraud_rgba</A>&lt;agg::<A href="../../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A>&gt;</CODE><BR/></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>You can also use agg::<A href="../../__code/include/agg_color_rgba.h.html#rgba16">rgba16</A>. Similarly change<BR/></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><CODE>agg::span_gouraud_gray8&lt;&gt;</CODE><BR/>
+to<BR/>
+<CODE>agg::<A href="../../__code/include/agg_span_gouraud_gray.h.html#span_gouraud_gray">span_gouraud_gray</A>&lt;agg::<A href="../../__code/include/agg_color_gray.h.html#gray8">gray8</A>&gt;</CODE><BR/></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Of course, agg::<A href="../../__code/include/agg_color_rgba.h.html#rgba16">rgba16</A> and agg::<A href="../../__code/include/agg_color_gray.h.html#gray16">gray16</A> can be used too.</P></TD></TR></TABLE>
+
+<BR/><H2> Image transformers <A name="toc0006"></A></H2>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>All image transformers are also generalized:</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Before:
+</P></TD></TR></TABLE><TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+    <SPAN class="kw1">typedef</SPAN> agg::span_image_filter_rgb24_bilinear<SPAN class="op">&lt;</SPAN>agg::order_bgr24<SPAN class="op">,</SPAN> 
+                                                  interpolator_type<SPAN class="op">&gt;</SPAN> span_gen_type<SPAN class="op">;</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Now:
+</P></TD></TR></TABLE><TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+    <SPAN class="kw1">typedef</SPAN> agg::<A href="../../__code/include/agg_span_image_filter_rgb.h.html#span_image_filter_rgb_bilinear">span_image_filter_rgb_bilinear</A><SPAN class="op">&lt;</SPAN>agg::<A href="../../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">,</SPAN>
+                                                agg::<A href="../../__code/include/agg_color_rgba.h.html#order_bgr">order_bgr</A><SPAN class="op">,</SPAN> 
+                                                interpolator_type<SPAN class="op">&gt;</SPAN> span_gen_type<SPAN class="op">;</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+
+<BR/><H2> Pattern fill and transformers <A name="toc0007"></A></H2>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Patterns are changed in a similar way, plus there&#039;s a new possibility to 
+have a wrap function, like in GDI+.</P></TD></TR></TABLE> 
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Before:
+</P></TD></TR></TABLE><TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+    <SPAN class="kw1">typedef</SPAN> agg::remainder_auto_pow2 remainder_type<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">typedef</SPAN> agg::span_pattern_filter_rgba32_bilinear<SPAN class="op">&lt;</SPAN>agg::order_bgra32<SPAN class="op">,</SPAN> 
+                                                     interpolator_type<SPAN class="op">,</SPAN>
+                                                     remainder_type<SPAN class="op">,</SPAN>
+                                                     remainder_type<SPAN class="op">&gt;</SPAN> span_gen_type<SPAN class="op">;</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Now:
+</P></TD></TR></TABLE><TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+    <SPAN class="kw1">typedef</SPAN> agg::<A href="../../__code/include/agg_image_accessors.h.html#wrap_mode_repeat_auto_pow2">wrap_mode_repeat_auto_pow2</A>  wrap_type_x<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">typedef</SPAN> agg::<A href="../../__code/include/agg_image_accessors.h.html#wrap_mode_reflect_auto_pow2">wrap_mode_reflect_auto_pow2</A> wrap_type_y<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">typedef</SPAN> agg::span_pattern_filter_rgba_bilinear<SPAN class="op">&lt;</SPAN>agg::<A href="../../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">,</SPAN>
+                                                   agg::<A href="../../__code/include/agg_color_rgba.h.html#order_bgra">order_bgra</A><SPAN class="op">,</SPAN> 
+                                                   interpolator_type<SPAN class="op">,</SPAN>
+                                                   wrap_type_x<SPAN class="op">,</SPAN>
+                                                   wrap_type_y<SPAN class="op">&gt;</SPAN> span_gen_type<SPAN class="op">;</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The same is about the simple pattern fill (without transformations):</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Before:
+</P></TD></TR></TABLE><TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+    <SPAN class="kw1">typedef</SPAN> agg::span_pattern_rgba32<SPAN class="op">&lt;</SPAN>agg::order_rgba32<SPAN class="op">&gt;</SPAN> span_gen_type<SPAN class="op">;</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Now:
+</P></TD></TR></TABLE><TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+    <SPAN class="kw1">typedef</SPAN> agg::<A href="../../__code/include/agg_image_accessors.h.html#wrap_mode_reflect_auto_pow2">wrap_mode_reflect_auto_pow2</A> wrap_x_type<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">typedef</SPAN> agg::<A href="../../__code/include/agg_image_accessors.h.html#wrap_mode_reflect_auto_pow2">wrap_mode_reflect_auto_pow2</A> wrap_y_type<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">typedef</SPAN> agg::<A href="../../__code/include/agg_span_pattern_rgba.h.html#span_pattern_rgba">span_pattern_rgba</A><SPAN class="op">&lt;</SPAN>agg::<A href="../../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">,</SPAN> 
+                                   agg::<A href="../../__code/include/agg_color_rgba.h.html#order_rgba">order_rgba</A><SPAN class="op">,</SPAN>
+                                   wrap_x_type<SPAN class="op">,</SPAN>
+                                   wrap_y_type<SPAN class="op">&gt;</SPAN> span_gen_type<SPAN class="op">;</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>You can use the following wrap mode adaptors:
+</P></TD></TR></TABLE><TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+agg::<A href="../../__code/include/agg_image_accessors.h.html#wrap_mode_repeat">wrap_mode_repeat</A>            <SPAN class="rem">// Arbitrary size (slow)</SPAN>
+agg::<A href="../../__code/include/agg_image_accessors.h.html#wrap_mode_repeat_pow2">wrap_mode_repeat_pow2</A>       <SPAN class="rem">// Size truncated to the nearest power of 2 (fastest)</SPAN>
+agg::<A href="../../__code/include/agg_image_accessors.h.html#wrap_mode_repeat_auto_pow2">wrap_mode_repeat_auto_pow2</A>  <SPAN class="rem">// Automatically choosen</SPAN>
+agg::<A href="../../__code/include/agg_image_accessors.h.html#wrap_mode_reflect">wrap_mode_reflect</A>
+agg::<A href="../../__code/include/agg_image_accessors.h.html#wrap_mode_reflect_pow2">wrap_mode_reflect_pow2</A>
+agg::<A href="../../__code/include/agg_image_accessors.h.html#wrap_mode_reflect_auto_pow2">wrap_mode_reflect_auto_pow2</A>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+
+
+<BR/><H2> Gray scale imeges support <A name="toc0008"></A></H2>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Added files <A href="../../__code/include/agg_span_image_filter_gray.h.html">agg_span_image_filter_gray.h</A> and agg_span_pattern_filter_gray.h to 
+transform 8- and 16-bit gray scale images. The declarations are very similar to
+the RGB version.</P></TD></TR></TABLE>
+
+<BR/><TABLE width="640px" bgcolor="#583927" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0">
+<TR><TD><CENTER><SPAN class="authors">
+Copyright <SPAN class="larger">&#169;</SPAN> 2002-2006
+<A href="../../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+<TR><TD><CENTER><SPAN class="authors">
+Web Design and Programming
+<A href="../../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+</TABLE>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+</HTML>

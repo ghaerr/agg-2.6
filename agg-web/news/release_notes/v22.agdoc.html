@@ -1,0 +1,166 @@
+<HTML><HEAD><TITLE>Anti-Grain Geometry - Version 2.2 Release Notes</TITLE>
+<META http-equiv="Content-Type" content="text/html"/>
+<LINK rel="stylesheet" type="text/css" href="../../agg.styles.css"/>
+</HEAD>
+<A name="PAGE_RELEASE_V22"><B></B></A>
+
+
+<TABLE width="640px" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR>
+<TD bgcolor="#583927"></TD>
+</TR>
+</TABLE>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR>
+<TD>
+<TABLE width="170px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR><TD><A href="../../index.html" class="mpmenu">Home/</A></TD></TR>
+<TR><TD><A href="../index.html" class="mpmenu">News/</A></TD></TR>
+<TR><TD><A href="" class="mpmenu"></A></TD></TR>
+<TR><TD><A href="" class="mpmenu"></A></TD></TR>
+<TR><TD><A href="" class="mpmenu"></A></TD></TR>
+<TR><TD><A href="" class="mpmenu"></A></TD></TR>
+</TABLE>
+</TD>
+<TD width="1px" bgcolor="#583927"></TD>
+<TD width="450px" valign="top" style="text-align:right">
+<TABLE border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR>
+<TD><IMG src="../../agg_logo.gif" border="0"/></TD>
+</TR>
+<TR>
+<TD>
+<TABLE border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR height="15px">
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../../news/index.html">News</A>&nbsp;&nbsp;</TD>
+<TD width="1px" bgcolor="#8e521d"></TD>
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../../doc/index.html">Docs</A>&nbsp;&nbsp;</TD>
+<TD width="1px" bgcolor="#8e521d"></TD>
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../../download/index.html">Download</A>&nbsp;&nbsp;</TD>
+<TD width="1px" bgcolor="#8e521d"></TD>
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../../maillist/index.html">Mailing List</A>&nbsp;&nbsp;</TD>
+<TD width="1px" bgcolor="#8e521d"></TD>
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../../cvs/index.html">CVS</A>&nbsp;&nbsp;</TD>
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+<TABLE width="640px" height="1px" bgcolor="#583927" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>
+</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD><H1>Version 2.2 Release Notes</H1></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>There are few changes and improvements in version 2.2. It was decided 
+to release the new version due to some changes in the interfaces. 
+They are not considerable, but still affect your code. 
+From now on the names of the archives will be 
+<A href="http://www.antigrain.com/agg22.zip"><IMG src="../../link.gif" border="0"/><B>agg22.zip</B></A> and
+and <A href="http://www.antigrain.com/agg22.tar.gz"><IMG src="../../link.gif" border="0"/><B>agg22.tar.gz</B></A>, 
+but inside the archives the directory name remains <CODE>agg2</CODE>.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><UL type="disc">
+<LI>The scanline renderers are cleaned up. The former <CODE>renderer_scanline_u</CODE>
+   <CODE>renderer_scanline_u_solid</CODE>, and <CODE>renderer_scanline_p_solid</CODE> were replaced 
+   with two ones: <CODE><A href="../../__code/include/agg_renderer_scanline.h.html#renderer_scanline_aa">renderer_scanline_aa</A></CODE> and <CODE><A href="../../__code/include/agg_renderer_scanline.h.html#renderer_scanline_aa_solid">renderer_scanline_aa_solid</A></CODE>.
+   Former classes were confusing, it wasn&#039;t clear, when to use <CODE>&quot;_u&quot;</CODE>, and
+   when to use <CODE>&quot;_p&quot;</CODE>. Now they are renamed to <CODE>&quot;_aa&quot;</CODE> that refers to
+   &quot;Anti-Aliased&quot;. Still, there will be <CODE>&quot;_solid&quot;</CODE> version of the renderer 
+   because it works faster and requires less number of declarations (easier to use).
+   However, the scanline containers, <CODE>scanline_u</CODE> and <CODE>scanline_p</CODE> remain. You
+   just will be able to use both with the same renderer. I&#039;d like to remind you 
+   that <CODE>scanline_u</CODE> refers to &quot;unpacked&quot;, <CODE>scanline_p</CODE> to &quot;packed&quot;. Unpacked 
+   means that the spans are stored &quot;as is&quot;, that&#039;s if you have a span with &quot;cover&quot; 
+   values of 255 (that is, a solid one), it still keeps &quot;len&quot; number of bytes. 
+   Packed keeps only one byte and length. That is, in the packed version there&#039;s 
+   a simplest RLE compression is used. But for anti-aliased shapes the packed 
+   container generates about 3 times more spans (anti-aliased beginning, solid line, 
+   and anti-aliased end). So, for rendering small glyphs is better to use 
+   <CODE>scanline_u</CODE>, for large polygons <CODE>scanline_p</CODE> is more sutable. Besides, 
+   <CODE>scanline_p</CODE> takes less memory when being serialized through the 
+   scanline storage.</LI>
+<LI>Removed methods <CODE>render()</CODE> and <CODE>render_ctrl()</CODE> from 
+   <A href="../../__code/include/agg_rasterizer_scanline_aa.h.html#rasterizer_scanline_aa">rasterizer_scanline_aa</A> and other classes. The new kind of 
+   interface is &#147;licensed&#148;, it&#039;s called &#147;<B>ScanlineSource</B>&#148; and 
+   consists of two functions, <CODE>rewind_scanlines();</CODE> and <CODE>sweep_scanline();</CODE>.
+   The scanline source classes are: <BR/>
+   <CODE><A href="../../__code/include/agg_rasterizer_scanline_aa.h.html#rasterizer_scanline_aa">rasterizer_scanline_aa</A></CODE>, <BR/>
+   <CODE><A href="../../__code/include/agg_scanline_storage_aa.h.html#scanline_storage_aa">scanline_storage_aa</A></CODE>,<BR/>
+   <CODE><A href="../../__code/include/agg_scanline_storage_aa.h.html#serialized_scanlines_adaptor_aa">serialized_scanlines_adaptor_aa</A></CODE>, <BR/>
+   <CODE><A href="../../__code/include/agg_scanline_storage_bin.h.html#scanline_storage_bin">scanline_storage_bin</A></CODE>, and <BR/>
+   <CODE><A href="../../__code/include/agg_scanline_storage_bin.h.html#serialized_scanlines_adaptor_bin">serialized_scanlines_adaptor_bin</A></CODE>.</LI>
+<LI>Removed file agg_color_rgba8_pre.h, that was a mistake to use different
+   color type for plain and premultiplied color spaces. All necessary 
+   functionality of premultiplication is now in agg_color_rgba8.h. Using
+   of plain and premultiplied colors is confusing. Below is a brief explanation.
+   Format agg::<A href="../../__code/include/agg_pixfmt_rgba.h.html#pixfmt_rgba32">pixfmt_rgba32</A> is the main and the fastest pixel format and it&#039;s
+   supposed to be used in most cases. But it always uses plain colors as 
+   input and produces pre-multiplied result on the canvas. It has even less 
+   number of calculations than agg::<A href="../../__code/include/agg_pixfmt_rgba.h.html#pixfmt_rgba32_pre">pixfmt_rgba32_pre</A>. Format agg::<A href="../../__code/include/agg_pixfmt_rgba.h.html#pixfmt_rgba32_plain">pixfmt_rgba32_plain</A> 
+   is slow because of division operations. APIs allowing for alpha-blending 
+   require premultiplied colors. Besides, if you display RGBA with RGB API 
+   (that is, without alpha, like WinAPI BitBlt), the colors still must be 
+   premultiplied. Note that the formulas in agg::<A href="../../__code/include/agg_pixfmt_rgba.h.html#pixfmt_rgba32">pixfmt_rgba32</A> and 
+   agg::<A href="../../__code/include/agg_pixfmt_rgb.h.html#pixfmt_rgb24">pixfmt_rgb24</A> are exactly the same! So, premultiplied colors are 
+   more natural and agg::<A href="../../__code/include/agg_pixfmt_rgba.h.html#pixfmt_rgba32_plain">pixfmt_rgba32_plain</A> is rather useless.<BR/>
+   Format agg::<A href="../../__code/include/agg_pixfmt_rgba.h.html#pixfmt_rgba32_pre">pixfmt_rgba32_pre</A> is a bit slower than agg::<A href="../../__code/include/agg_pixfmt_rgba.h.html#pixfmt_rgba32">pixfmt_rgba32</A> because 
+   of additional &quot;cover&quot; values, i.e. secondary alphas, that are to be mixed 
+   with the source premultiplied color. That spoils the beauty of the 
+   premultiplied colors idea. But the &quot;cover&quot; values are important because 
+   there can be other color spaces and color types that don&#039;t have any &quot;alpha&quot; 
+   at all, or the alpha is incompatible with integral types. So, the &quot;cover&quot; 
+   is a secondary, uniform alpha in range of 0&#133;255, used specifically for 
+   anti-aliasing purposes. <BR/>
+   One needs to consider this issue when transforming images. 
+   Actually, all RGBA images are supposed to be in the premultiplied 
+   color space and the result of filtering is also premultiplied. Since the 
+   resulting colors of the filtered images are the source for the renderers,
+   one should use the premultiplied renderers, that is, agg::<A href="../../__code/include/agg_pixfmt_rgba.h.html#pixfmt_rgba32_pre">pixfmt_rgba32_pre</A>,
+   or the new one, agg::<A href="../../__code/include/agg_pixfmt_rgb.h.html#pixfmt_rgb24_pre">pixfmt_rgb24_pre</A>. But it&#039;s important only if images 
+   are translucent, that is, have actual alpha channel. <BR/>
+   For example, if you generate some pattern with <B>AGG</B> (premultiplied) and
+   would like to use it for filling, you&#039;ll need to use agg::<A href="../../__code/include/agg_pixfmt_rgba.h.html#pixfmt_rgba32_pre">pixfmt_rgba32_pre</A>. 
+   If you use agg::span_image_filter_rgb24_gamma_bilinear (that is, 
+   RGB for input) and draw it on the RGBA canvas, you still need to use 
+   agg::<A href="../../__code/include/agg_pixfmt_rgba.h.html#pixfmt_rgba32_pre">pixfmt_rgba32_pre</A> as the destination canvas. The only thing you 
+   need is to premultiply the background color used out of bounds.</LI>
+<LI>Added files agg_render_scanlines.h and agg_pixfmt_rgb24_pre.h</LI>
+<LI>Please replace in your code:</LI>
+<UL type="disc">
+<LI><CODE>ras.render(sl,ren);</CODE> to <B><CODE>agg::<A href="../../__code/include/agg_renderer_scanline.h.html#render_scanlines">render_scanlines</A>(ras,sl,ren);</CODE></B></LI>
+<LI><CODE>ras.render_ctrl(sl,ren,ctrl);</CODE> to <B><CODE>agg::render_ctrl(ras,sl,ren,ctrl);</CODE></B></LI>
+<LI><CODE>agg::renderer_scanline_u</CODE> to <B><CODE>agg::<A href="../../__code/include/agg_renderer_scanline.h.html#renderer_scanline_aa">renderer_scanline_aa</A></CODE></B></LI>
+<LI><CODE>agg::renderer_scanline_u_solid</CODE> to <B><CODE>agg::<A href="../../__code/include/agg_renderer_scanline.h.html#renderer_scanline_aa_solid">renderer_scanline_aa_solid</A></CODE></B></LI>
+<LI><CODE>agg::renderer_scanline_p_solid</CODE> to <B><CODE>agg::<A href="../../__code/include/agg_renderer_scanline.h.html#renderer_scanline_aa_solid">renderer_scanline_aa_solid</A></CODE></B></LI></UL>
+<LI>Added function <CODE>const char* full_file_name(const char* fname)</CODE><BR/>
+   to agg::platform_support. It helps handle access to files in demo examples
+   in some systems like BeOS.</LI>
+<LI>Added new functions and operators to agg::<A href="../../__code/include/agg_trans_affine.h.html#trans_affine">trans_affine</A>:</LI>
+<UL type="disc">
+<LI><CODE>bool is_identity(double epsilon) const;</CODE></LI>
+<LI><CODE>bool is_equal(const <A href="../../__code/include/agg_trans_affine.h.html#trans_affine">trans_affine</A>&amp; m, double epsilon) const;</CODE></LI>
+<LI><CODE>double rotation() const;</CODE></LI>
+<LI><CODE>void translation(double* dx, double* dy) const;</CODE></LI>
+<LI><CODE>void scaling(double* sx, double* sy) const;</CODE>
+   </LI></UL></UL></P></TD></TR></TABLE><TABLE width="640px" bgcolor="#583927" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0">
+<TR><TD><CENTER><SPAN class="authors">
+Copyright <SPAN class="larger">&#169;</SPAN> 2002-2006
+<A href="../../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+<TR><TD><CENTER><SPAN class="authors">
+Web Design and Programming
+<A href="../../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+</TABLE>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+</HTML>

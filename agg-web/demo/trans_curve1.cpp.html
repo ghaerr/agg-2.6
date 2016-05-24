@@ -1,0 +1,345 @@
+<HTML><HEAD><TITLE>Anti-Grain Geometry - </TITLE>
+<META http-equiv="Content-Type" content="text/html"/>
+<LINK rel="stylesheet" type="text/css" href="../agg.styles.css"/>
+</HEAD>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE><SPAN class="kw2">#include</SPAN> <SPAN class="op">&lt;</SPAN>stdlib<SPAN class="op">.</SPAN>h<SPAN class="op">&gt;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="op">&lt;</SPAN>ctype<SPAN class="op">.</SPAN>h<SPAN class="op">&gt;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="op">&lt;</SPAN>stdio<SPAN class="op">.</SPAN>h<SPAN class="op">&gt;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_rendering_buffer.h.html">agg_rendering_buffer.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_rasterizer_scanline_aa.h.html">agg_rasterizer_scanline_aa.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_scanline_p.h.html">agg_scanline_p.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_renderer_scanline.h.html">agg_renderer_scanline.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_conv_bspline.h.html">agg_conv_bspline.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_conv_segmentator.h.html">agg_conv_segmentator.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/font_win32_tt/agg_font_win32_tt.h.html">agg_font_win32_tt.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_trans_single_path.h.html">agg_trans_single_path.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;ctrl/agg_cbox_ctrl.h&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;ctrl/agg_slider_ctrl.h&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;platform/agg_platform_support.h&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;interactive_polygon.h&quot;</SPAN>
+
+<SPAN class="kw2">#define</SPAN> AGG_BGR24 
+<SPAN class="rem">//#define AGG_RGB24</SPAN>
+<SPAN class="rem">//#define AGG_BGRA32 </SPAN>
+<SPAN class="rem">//#define AGG_RGBA32 </SPAN>
+<SPAN class="rem">//#define AGG_ARGB32 </SPAN>
+<SPAN class="rem">//#define AGG_ABGR32</SPAN>
+<SPAN class="rem">//#define AGG_RGB565</SPAN>
+<SPAN class="rem">//#define AGG_RGB555</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;pixel_formats.h&quot;</SPAN>
+
+<SPAN class="kw1">enum</SPAN> flip_y_e <SPAN class="op">{</SPAN> flip_y <SPAN class="op">=</SPAN> <SPAN class="kw1">true</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+
+
+<SPAN class="kw1">static</SPAN> <SPAN class="kw1">char</SPAN> text<SPAN class="op">[</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> 
+<SPAN class="str">&quot;Anti-Grain Geometry is designed as a set of loosely coupled &quot;</SPAN>
+<SPAN class="str">&quot;algorithms and class templates united with a common idea, &quot;</SPAN>
+<SPAN class="str">&quot;so that all the components can be easily combined. Also, &quot;</SPAN>
+<SPAN class="str">&quot;the template based design allows you to replace any part of &quot;</SPAN>
+<SPAN class="str">&quot;the library without the necessity to modify a single byte in &quot;</SPAN>
+<SPAN class="str">&quot;the existing code. &quot;</SPAN><SPAN class="op">;</SPAN>
+
+
+
+
+<SPAN class="kw1">class</SPAN> the_application : <SPAN class="kw1">public</SPAN> agg::platform_support
+<SPAN class="op">{</SPAN>
+<SPAN class="kw1">public</SPAN>:
+    <SPAN class="kw1">typedef</SPAN> agg::<A href="../doc/basic_renderers/basic_renderers.agdoc.html#renderer_base">renderer_base</A><SPAN class="op">&lt;</SPAN><A href="../doc/basic_renderers/basic_renderers.agdoc.html#pixfmt">pixfmt</A><SPAN class="op">&gt;</SPAN> <A href="../doc/basic_renderers/basic_renderers.agdoc.html#renderer_base">renderer_base</A><SPAN class="op">;</SPAN>
+    <SPAN class="kw1">typedef</SPAN> agg::<A href="../__code/include/agg_renderer_scanline.h.html#renderer_scanline_aa_solid">renderer_scanline_aa_solid</A><SPAN class="op">&lt;</SPAN><A href="../doc/basic_renderers/basic_renderers.agdoc.html#renderer_base">renderer_base</A><SPAN class="op">&gt;</SPAN> renderer_solid<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">typedef</SPAN> agg::<A href="../__code/include/agg_scanline_p.h.html#scanline_p8">scanline_p8</A> scanline_type<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">typedef</SPAN> agg::<A href="../__code/font_win32_tt/agg_font_win32_tt.h.html#font_engine_win32_tt_int16">font_engine_win32_tt_int16</A> font_engine_type<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">typedef</SPAN> agg::<A href="../__code/include/agg_font_cache_manager.h.html#font_cache_manager">font_cache_manager</A><SPAN class="op">&lt;</SPAN>font_engine_type<SPAN class="op">&gt;</SPAN> font_manager_type<SPAN class="op">;</SPAN>
+
+    font_engine_type             m_feng<SPAN class="op">;</SPAN>
+    font_manager_type            m_fman<SPAN class="op">;</SPAN>
+    agg::interactive_polygon     m_poly<SPAN class="op">;</SPAN>
+    agg::slider_ctrl<SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">&gt;</SPAN> m_num_points<SPAN class="op">;</SPAN>
+    agg::cbox_ctrl<SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">&gt;</SPAN>   m_close<SPAN class="op">;</SPAN>
+    agg::cbox_ctrl<SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">&gt;</SPAN>   m_preserve_x_scale<SPAN class="op">;</SPAN>
+    agg::cbox_ctrl<SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">&gt;</SPAN>   m_fixed_len<SPAN class="op">;</SPAN>
+    agg::cbox_ctrl<SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">&gt;</SPAN>   m_animate<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN>                       m_dx<SPAN class="op">[</SPAN><SPAN class="num">6</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN>                       m_dy<SPAN class="op">[</SPAN><SPAN class="num">6</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="kw1">bool</SPAN>                         m_prev_animate<SPAN class="op">;</SPAN>
+
+    the_application<SPAN class="op">(</SPAN>HDC dc<SPAN class="op">,</SPAN> agg::pix_format_e format<SPAN class="op">,</SPAN> <SPAN class="kw1">bool</SPAN> flip_y<SPAN class="op">)</SPAN> :
+        agg::platform_support<SPAN class="op">(</SPAN>format<SPAN class="op">,</SPAN> flip_y<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_feng<SPAN class="op">(</SPAN>dc<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_fman<SPAN class="op">(</SPAN>m_feng<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_poly<SPAN class="op">(</SPAN><SPAN class="num">6</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">5</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_num_points      <SPAN class="op">(</SPAN><SPAN class="num">5</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">5</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">340</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">12</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="op">!</SPAN>flip_y<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_close           <SPAN class="op">(</SPAN><SPAN class="num">350</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">5</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN>  <SPAN class="str">&quot;Close&quot;</SPAN><SPAN class="op">,</SPAN> <SPAN class="op">!</SPAN>flip_y<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_preserve_x_scale<SPAN class="op">(</SPAN><SPAN class="num">460</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">5</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN>  <SPAN class="str">&quot;Preserve X scale&quot;</SPAN><SPAN class="op">,</SPAN> <SPAN class="op">!</SPAN>flip_y<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_fixed_len       <SPAN class="op">(</SPAN><SPAN class="num">350</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">25</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="str">&quot;Fixed Length&quot;</SPAN><SPAN class="op">,</SPAN> <SPAN class="op">!</SPAN>flip_y<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_animate         <SPAN class="op">(</SPAN><SPAN class="num">460</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">25</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="str">&quot;Animate&quot;</SPAN><SPAN class="op">,</SPAN> <SPAN class="op">!</SPAN>flip_y<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_prev_animate<SPAN class="op">(</SPAN><SPAN class="kw1">false</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        add_ctrl<SPAN class="op">(</SPAN>m_close<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        add_ctrl<SPAN class="op">(</SPAN>m_preserve_x_scale<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        add_ctrl<SPAN class="op">(</SPAN>m_fixed_len<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        add_ctrl<SPAN class="op">(</SPAN>m_animate<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_preserve_x_scale<SPAN class="op">.</SPAN>status<SPAN class="op">(</SPAN><SPAN class="kw1">true</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_fixed_len<SPAN class="op">.</SPAN>status<SPAN class="op">(</SPAN><SPAN class="kw1">true</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_num_points<SPAN class="op">.</SPAN>range<SPAN class="op">(</SPAN><SPAN class="num">10</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">400</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_num_points<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="num">200</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_num_points<SPAN class="op">.</SPAN>label<SPAN class="op">(</SPAN><SPAN class="str">&quot;Number of intermediate Points = %.3f&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        add_ctrl<SPAN class="op">(</SPAN>m_num_points<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="kw1">virtual</SPAN> <SPAN class="kw1">void</SPAN> on_init<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        m_poly<SPAN class="op">.</SPAN>xn<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">=</SPAN> <SPAN class="num">50</SPAN><SPAN class="op">;</SPAN>
+        m_poly<SPAN class="op">.</SPAN>yn<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">=</SPAN> <SPAN class="num">50</SPAN><SPAN class="op">;</SPAN>
+        m_poly<SPAN class="op">.</SPAN>xn<SPAN class="op">(</SPAN><SPAN class="num">1</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">=</SPAN> <SPAN class="num">150</SPAN> <SPAN class="op">+</SPAN> <SPAN class="num">20</SPAN><SPAN class="op">;</SPAN>
+        m_poly<SPAN class="op">.</SPAN>yn<SPAN class="op">(</SPAN><SPAN class="num">1</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">=</SPAN> <SPAN class="num">150</SPAN> <SPAN class="op">-</SPAN> <SPAN class="num">20</SPAN><SPAN class="op">;</SPAN>
+        m_poly<SPAN class="op">.</SPAN>xn<SPAN class="op">(</SPAN><SPAN class="num">2</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">=</SPAN> <SPAN class="num">250</SPAN> <SPAN class="op">-</SPAN> <SPAN class="num">20</SPAN><SPAN class="op">;</SPAN>
+        m_poly<SPAN class="op">.</SPAN>yn<SPAN class="op">(</SPAN><SPAN class="num">2</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">=</SPAN> <SPAN class="num">250</SPAN> <SPAN class="op">+</SPAN> <SPAN class="num">20</SPAN><SPAN class="op">;</SPAN>
+        m_poly<SPAN class="op">.</SPAN>xn<SPAN class="op">(</SPAN><SPAN class="num">3</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">=</SPAN> <SPAN class="num">350</SPAN> <SPAN class="op">+</SPAN> <SPAN class="num">20</SPAN><SPAN class="op">;</SPAN>
+        m_poly<SPAN class="op">.</SPAN>yn<SPAN class="op">(</SPAN><SPAN class="num">3</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">=</SPAN> <SPAN class="num">350</SPAN> <SPAN class="op">-</SPAN> <SPAN class="num">20</SPAN><SPAN class="op">;</SPAN>
+        m_poly<SPAN class="op">.</SPAN>xn<SPAN class="op">(</SPAN><SPAN class="num">4</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">=</SPAN> <SPAN class="num">450</SPAN> <SPAN class="op">-</SPAN> <SPAN class="num">20</SPAN><SPAN class="op">;</SPAN>
+        m_poly<SPAN class="op">.</SPAN>yn<SPAN class="op">(</SPAN><SPAN class="num">4</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">=</SPAN> <SPAN class="num">450</SPAN> <SPAN class="op">+</SPAN> <SPAN class="num">20</SPAN><SPAN class="op">;</SPAN>
+        m_poly<SPAN class="op">.</SPAN>xn<SPAN class="op">(</SPAN><SPAN class="num">5</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">=</SPAN> <SPAN class="num">550</SPAN><SPAN class="op">;</SPAN>
+        m_poly<SPAN class="op">.</SPAN>yn<SPAN class="op">(</SPAN><SPAN class="num">5</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">=</SPAN> <SPAN class="num">550</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+
+
+    <SPAN class="kw1">virtual</SPAN> <SPAN class="kw1">void</SPAN> on_draw<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <A href="../doc/basic_renderers/basic_renderers.agdoc.html#pixfmt">pixfmt</A> pixf<SPAN class="op">(</SPAN>rbuf_window<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <A href="../doc/basic_renderers/basic_renderers.agdoc.html#renderer_base">renderer_base</A> rb<SPAN class="op">(</SPAN>pixf<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        renderer_solid r<SPAN class="op">(</SPAN>rb<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        rb<SPAN class="op">.</SPAN>clear<SPAN class="op">(</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba">rgba</A><SPAN class="op">(</SPAN><SPAN class="num">1</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        scanline_type sl<SPAN class="op">;</SPAN>
+        agg::<A href="../__code/include/agg_rasterizer_scanline_aa.h.html#rasterizer_scanline_aa">rasterizer_scanline_aa</A><SPAN class="op">&lt;</SPAN><SPAN class="op">&gt;</SPAN> ras<SPAN class="op">;</SPAN>
+
+        m_poly<SPAN class="op">.</SPAN>close<SPAN class="op">(</SPAN>m_close<SPAN class="op">.</SPAN>status<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        agg::simple_polygon_vertex_source path<SPAN class="op">(</SPAN>m_poly<SPAN class="op">.</SPAN>polygon<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> 
+                                               m_poly<SPAN class="op">.</SPAN>num_points<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> 
+                                               <SPAN class="kw1">false</SPAN><SPAN class="op">,</SPAN> 
+                                               m_close<SPAN class="op">.</SPAN>status<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">typedef</SPAN> agg::<A href="../__code/include/agg_conv_bspline.h.html#conv_bspline">conv_bspline</A><SPAN class="op">&lt;</SPAN>agg::simple_polygon_vertex_source<SPAN class="op">&gt;</SPAN> conv_bspline_type<SPAN class="op">;</SPAN>
+        conv_bspline_type <A href="../__code/include/agg_bspline.h.html#bspline">bspline</A><SPAN class="op">(</SPAN>path<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <A href="../__code/include/agg_bspline.h.html#bspline">bspline</A><SPAN class="op">.</SPAN>interpolation_step<SPAN class="op">(</SPAN><SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">/</SPAN> m_num_points<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        agg::<A href="../__code/include/agg_trans_single_path.h.html#trans_single_path">trans_single_path</A> tcurve<SPAN class="op">;</SPAN>
+        tcurve<SPAN class="op">.</SPAN>add_path<SPAN class="op">(</SPAN><A href="../__code/include/agg_bspline.h.html#bspline">bspline</A><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        tcurve<SPAN class="op">.</SPAN>preserve_x_scale<SPAN class="op">(</SPAN>m_preserve_x_scale<SPAN class="op">.</SPAN>status<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_fixed_len<SPAN class="op">.</SPAN>status<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> tcurve<SPAN class="op">.</SPAN>base_length<SPAN class="op">(</SPAN><SPAN class="num">1120</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">typedef</SPAN> agg::<A href="../__code/include/agg_conv_curve.h.html#conv_curve">conv_curve</A><SPAN class="op">&lt;</SPAN>font_manager_type::path_adaptor_type<SPAN class="op">&gt;</SPAN>             conv_font_curve_type<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">typedef</SPAN> agg::<A href="../__code/include/agg_conv_segmentator.h.html#conv_segmentator">conv_segmentator</A><SPAN class="op">&lt;</SPAN>conv_font_curve_type<SPAN class="op">&gt;</SPAN>                      conv_font_segm_type<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">typedef</SPAN> agg::<A href="../__code/include/agg_conv_transform.h.html#conv_transform">conv_transform</A><SPAN class="op">&lt;</SPAN>conv_font_segm_type<SPAN class="op">,</SPAN> agg::<A href="../__code/include/agg_trans_single_path.h.html#trans_single_path">trans_single_path</A><SPAN class="op">&gt;</SPAN> conv_font_trans_type<SPAN class="op">;</SPAN>
+        conv_font_curve_type fcurves<SPAN class="op">(</SPAN>m_fman<SPAN class="op">.</SPAN>path_adaptor<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        conv_font_segm_type  fsegm<SPAN class="op">(</SPAN>fcurves<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        conv_font_trans_type ftrans<SPAN class="op">(</SPAN>fsegm<SPAN class="op">,</SPAN> tcurve<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        fsegm<SPAN class="op">.</SPAN>approximation_scale<SPAN class="op">(</SPAN><SPAN class="num">3</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        fcurves<SPAN class="op">.</SPAN>approximation_scale<SPAN class="op">(</SPAN><SPAN class="num">2</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        m_feng<SPAN class="op">.</SPAN>height<SPAN class="op">(</SPAN><SPAN class="num">40</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="rem">//m_feng.italic(true);</SPAN>
+
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_feng<SPAN class="op">.</SPAN>create_font<SPAN class="op">(</SPAN><SPAN class="str">&quot;Times New Roman&quot;</SPAN><SPAN class="op">,</SPAN> agg::glyph_ren_outline<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">double</SPAN> x <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">double</SPAN> y <SPAN class="op">=</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">const</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN> p <SPAN class="op">=</SPAN> text<SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN><SPAN class="op">*</SPAN>p<SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                <SPAN class="kw1">const</SPAN> agg::<A href="../__code/include/agg_font_cache_manager.h.html#glyph_cache">glyph_cache</A><SPAN class="op">*</SPAN> glyph <SPAN class="op">=</SPAN> m_fman<SPAN class="op">.</SPAN>glyph<SPAN class="op">(</SPAN><SPAN class="op">*</SPAN>p<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>glyph<SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>x <SPAN class="op">&gt;</SPAN> tcurve<SPAN class="op">.</SPAN>total_length<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+
+                    m_fman<SPAN class="op">.</SPAN>add_kerning<SPAN class="op">(</SPAN><SPAN class="op">&amp;</SPAN>x<SPAN class="op">,</SPAN> <SPAN class="op">&amp;</SPAN>y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    m_fman<SPAN class="op">.</SPAN>init_embedded_adaptors<SPAN class="op">(</SPAN>glyph<SPAN class="op">,</SPAN> x<SPAN class="op">,</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>glyph<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>data_type <SPAN class="op">==</SPAN> agg::glyph_data_outline<SPAN class="op">)</SPAN>
+                    <SPAN class="op">{</SPAN>
+                        ras<SPAN class="op">.</SPAN>reset<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                        ras<SPAN class="op">.</SPAN>add_path<SPAN class="op">(</SPAN>ftrans<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                        r<SPAN class="op">.</SPAN>color<SPAN class="op">(</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                        agg::<A href="../__code/include/agg_renderer_scanline.h.html#render_scanlines">render_scanlines</A><SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> sl<SPAN class="op">,</SPAN> r<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="op">}</SPAN>
+
+                    <SPAN class="rem">// increment pen position</SPAN>
+                    x <SPAN class="op">+=</SPAN> glyph<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>advance_x<SPAN class="op">;</SPAN>
+                    y <SPAN class="op">+=</SPAN> glyph<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>advance_y<SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+                <SPAN class="op">++</SPAN>p<SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+
+        <SPAN class="op">}</SPAN>
+
+
+
+        <SPAN class="kw1">typedef</SPAN> agg::<A href="../__code/include/agg_conv_stroke.h.html#conv_stroke">conv_stroke</A><SPAN class="op">&lt;</SPAN>conv_bspline_type<SPAN class="op">&gt;</SPAN> conv_stroke_type<SPAN class="op">;</SPAN>
+        conv_stroke_type stroke<SPAN class="op">(</SPAN><A href="../__code/include/agg_bspline.h.html#bspline">bspline</A><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        stroke<SPAN class="op">.</SPAN>width<SPAN class="op">(</SPAN><SPAN class="num">2</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        r<SPAN class="op">.</SPAN>color<SPAN class="op">(</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">(</SPAN><SPAN class="num">170</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">50</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">20</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">100</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        ras<SPAN class="op">.</SPAN>add_path<SPAN class="op">(</SPAN>stroke<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        agg::<A href="../__code/include/agg_renderer_scanline.h.html#render_scanlines">render_scanlines</A><SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> sl<SPAN class="op">,</SPAN> r<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="rem">//--------------------------</SPAN>
+        <SPAN class="rem">// Render the &quot;poly&quot; tool and controls</SPAN>
+        r<SPAN class="op">.</SPAN>color<SPAN class="op">(</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba">rgba</A><SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">3</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">5</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">3</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        ras<SPAN class="op">.</SPAN>add_path<SPAN class="op">(</SPAN>m_poly<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        agg::<A href="../__code/include/agg_renderer_scanline.h.html#render_scanlines">render_scanlines</A><SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> sl<SPAN class="op">,</SPAN> r<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        agg::render_ctrl<SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> sl<SPAN class="op">,</SPAN> rb<SPAN class="op">,</SPAN> m_close<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        agg::render_ctrl<SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> sl<SPAN class="op">,</SPAN> rb<SPAN class="op">,</SPAN> m_preserve_x_scale<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        agg::render_ctrl<SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> sl<SPAN class="op">,</SPAN> rb<SPAN class="op">,</SPAN> m_fixed_len<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        agg::render_ctrl<SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> sl<SPAN class="op">,</SPAN> rb<SPAN class="op">,</SPAN> m_animate<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        agg::render_ctrl<SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> sl<SPAN class="op">,</SPAN> rb<SPAN class="op">,</SPAN> m_num_points<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="rem">//--------------------------</SPAN>
+
+    <SPAN class="op">}</SPAN>
+
+
+
+    <SPAN class="kw1">virtual</SPAN> <SPAN class="kw1">void</SPAN> on_mouse_button_down<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> flags<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>flags <SPAN class="op">&amp;</SPAN> agg::mouse_left<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_poly<SPAN class="op">.</SPAN>on_mouse_button_down<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                force_redraw<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="kw1">virtual</SPAN> <SPAN class="kw1">void</SPAN> on_mouse_move<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> flags<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>flags <SPAN class="op">&amp;</SPAN> agg::mouse_left<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_poly<SPAN class="op">.</SPAN>on_mouse_move<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                force_redraw<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>flags <SPAN class="op">&amp;</SPAN> agg::mouse_left<SPAN class="op">)</SPAN> <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            on_mouse_button_up<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> y<SPAN class="op">,</SPAN> flags<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="kw1">virtual</SPAN> <SPAN class="kw1">void</SPAN> on_mouse_button_up<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> flags<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_poly<SPAN class="op">.</SPAN>on_mouse_button_up<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            force_redraw<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="kw1">virtual</SPAN> <SPAN class="kw1">void</SPAN> on_key<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> key<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> flags<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="kw1">virtual</SPAN> <SPAN class="kw1">void</SPAN> on_ctrl_change<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_animate<SPAN class="op">.</SPAN>status<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">!=</SPAN> m_prev_animate<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_animate<SPAN class="op">.</SPAN>status<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                on_init<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">int</SPAN> i<SPAN class="op">;</SPAN>
+                <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;</SPAN> <SPAN class="num">6</SPAN><SPAN class="op">;</SPAN> i<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    m_dx<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>rand<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">%</SPAN> <SPAN class="num">1000</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">-</SPAN> <SPAN class="num">500</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">01</SPAN><SPAN class="op">;</SPAN>
+                    m_dy<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>rand<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">%</SPAN> <SPAN class="num">1000</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">-</SPAN> <SPAN class="num">500</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">01</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+                wait_mode<SPAN class="op">(</SPAN><SPAN class="kw1">false</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="kw1">else</SPAN>
+            <SPAN class="op">{</SPAN>
+                wait_mode<SPAN class="op">(</SPAN><SPAN class="kw1">true</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            m_prev_animate <SPAN class="op">=</SPAN> m_animate<SPAN class="op">.</SPAN>status<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="kw1">void</SPAN> move_point<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN><SPAN class="op">&amp;</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN><SPAN class="op">&amp;</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN><SPAN class="op">&amp;</SPAN> dx<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN><SPAN class="op">&amp;</SPAN> dy<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>x <SPAN class="op">&lt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>      <SPAN class="op">{</SPAN> x <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>      dx <SPAN class="op">=</SPAN> <SPAN class="op">-</SPAN>dx<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>x <SPAN class="op">&gt;</SPAN> width<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>  <SPAN class="op">{</SPAN> x <SPAN class="op">=</SPAN> width<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>  dx <SPAN class="op">=</SPAN> <SPAN class="op">-</SPAN>dx<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>y <SPAN class="op">&lt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>      <SPAN class="op">{</SPAN> y <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>      dy <SPAN class="op">=</SPAN> <SPAN class="op">-</SPAN>dy<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>y <SPAN class="op">&gt;</SPAN> height<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN> y <SPAN class="op">=</SPAN> height<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> dy <SPAN class="op">=</SPAN> <SPAN class="op">-</SPAN>dy<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        x <SPAN class="op">+=</SPAN> dx<SPAN class="op">;</SPAN>
+        y <SPAN class="op">+=</SPAN> dy<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+
+    <SPAN class="kw1">virtual</SPAN> <SPAN class="kw1">void</SPAN> on_idle<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">int</SPAN> i<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;</SPAN> <SPAN class="num">6</SPAN><SPAN class="op">;</SPAN> i<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            move_point<SPAN class="op">(</SPAN>m_poly<SPAN class="op">.</SPAN>xn<SPAN class="op">(</SPAN>i<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> m_poly<SPAN class="op">.</SPAN>yn<SPAN class="op">(</SPAN>i<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> m_dx<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> m_dy<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        force_redraw<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+<SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+
+
+
+
+<SPAN class="kw1">int</SPAN> agg_main<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> argc<SPAN class="op">,</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN> argv<SPAN class="op">[</SPAN><SPAN class="op">]</SPAN><SPAN class="op">)</SPAN>
+<SPAN class="op">{</SPAN>
+    HDC dc <SPAN class="op">=</SPAN> ::GetDC<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    the_application app<SPAN class="op">(</SPAN>dc<SPAN class="op">,</SPAN> pix_format<SPAN class="op">,</SPAN> flip_y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    app<SPAN class="op">.</SPAN>caption<SPAN class="op">(</SPAN><SPAN class="str">&quot;AGG Example. Non-linear \&quot;Along-A-Curve\&quot; Transformer&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>app<SPAN class="op">.</SPAN>init<SPAN class="op">(</SPAN><SPAN class="num">600</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">600</SPAN><SPAN class="op">,</SPAN> agg::window_resize<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">return</SPAN> app<SPAN class="op">.</SPAN>run<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+    ::ReleaseDC<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> dc<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="kw1">return</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+<SPAN class="op">}</SPAN>
+
+
+
+
+
+
+
+
+
+
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT><TABLE width="640px" bgcolor="#583927" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0">
+<TR><TD><CENTER><SPAN class="authors">
+Copyright <SPAN class="larger">&#169;</SPAN> 2002-2006
+<A href="../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+<TR><TD><CENTER><SPAN class="authors">
+Web Design and Programming
+<A href="../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+</TABLE>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+</HTML>

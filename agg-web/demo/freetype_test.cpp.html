@@ -1,0 +1,504 @@
+<HTML><HEAD><TITLE>Anti-Grain Geometry - </TITLE>
+<META http-equiv="Content-Type" content="text/html"/>
+<LINK rel="stylesheet" type="text/css" href="../agg.styles.css"/>
+</HEAD>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE><SPAN class="kw2">#include</SPAN> <SPAN class="op">&lt;</SPAN>stdio<SPAN class="op">.</SPAN>h<SPAN class="op">&gt;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_basics.h.html">agg_basics.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_rendering_buffer.h.html">agg_rendering_buffer.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_scanline_u.h.html">agg_scanline_u.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_scanline_bin.h.html">agg_scanline_bin.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_renderer_scanline.h.html">agg_renderer_scanline.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_renderer_primitives.h.html">agg_renderer_primitives.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_rasterizer_scanline_aa.h.html">agg_rasterizer_scanline_aa.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_conv_curve.h.html">agg_conv_curve.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_conv_contour.h.html">agg_conv_contour.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_pixfmt_rgb.h.html">agg_pixfmt_rgb.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/font_freetype/agg_font_freetype.h.html">agg_font_freetype.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;platform/agg_platform_support.h&quot;</SPAN>
+
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;ctrl/agg_slider_ctrl.h&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;ctrl/agg_cbox_ctrl.h&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;ctrl/agg_rbox_ctrl.h&quot;</SPAN>
+
+
+<SPAN class="kw1">enum</SPAN> flip_y_e <SPAN class="op">{</SPAN> flip_y <SPAN class="op">=</SPAN> <SPAN class="kw1">true</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+<SPAN class="kw1">bool</SPAN> font_flip_y <SPAN class="op">=</SPAN> <SPAN class="op">!</SPAN>flip_y<SPAN class="op">;</SPAN>
+
+
+<SPAN class="kw2">#define</SPAN> pix_format agg::pix_format_bgr24
+<SPAN class="kw1">typedef</SPAN> agg::<A href="../__code/include/agg_pixfmt_rgb.h.html#pixfmt_bgr24">pixfmt_bgr24</A> pixfmt_type<SPAN class="op">;</SPAN>
+
+
+<SPAN class="kw1">static</SPAN> <SPAN class="kw1">char</SPAN> text<SPAN class="op">[</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> 
+<SPAN class="str">&quot;Anti-Grain Geometry is designed as a set of loosely coupled &quot;</SPAN>
+<SPAN class="str">&quot;algorithms and class templates united with a common idea, &quot;</SPAN>
+<SPAN class="str">&quot;so that all the components can be easily combined. Also, &quot;</SPAN>
+<SPAN class="str">&quot;the template based design allows you to replace any part of &quot;</SPAN>
+<SPAN class="str">&quot;the library without the necessity to modify a single byte in &quot;</SPAN>
+<SPAN class="str">&quot;the existing code. &quot;</SPAN>
+<SPAN class="str">&quot;AGG is designed keeping in mind extensibility and flexibility. &quot;</SPAN>
+<SPAN class="str">&quot;Basically I just wanted to create a toolkit that would allow me &quot;</SPAN>
+<SPAN class="str">&quot;(and anyone else) to add new fancy algorithms very easily. &quot;</SPAN>
+<SPAN class="str">&quot;AGG does not dictate you any style of its use, you are free to &quot;</SPAN>
+<SPAN class="str">&quot;use any part of it. However, AGG is often associated with a tool &quot;</SPAN>
+<SPAN class="str">&quot;for rendering images in memory. That is not quite true, but it can &quot;</SPAN>
+<SPAN class="str">&quot;be a good starting point in studying. The tutorials describe the &quot;</SPAN>
+<SPAN class="str">&quot;use of AGG starting from the low level functionality that deals with &quot;</SPAN>
+<SPAN class="str">&quot;frame buffers and pixels. Then you will gradually understand how to &quot;</SPAN>
+<SPAN class="str">&quot;abstract different parts of the library and how to use them separately. &quot;</SPAN>
+<SPAN class="str">&quot;Remember, the raster picture is often not the only thing you want to &quot;</SPAN>
+<SPAN class="str">&quot;obtain, you will probably want to print your graphics with highest &quot;</SPAN>
+<SPAN class="str">&quot;possible quality and in this case you can easily combine the \&quot;vectorial\&quot; &quot;</SPAN>
+<SPAN class="str">&quot;part of the library with some API like Windows GDI, having a common &quot;</SPAN>
+<SPAN class="str">&quot;external interface. If that API can render multi-polygons with non-zero &quot;</SPAN>
+<SPAN class="str">&quot;and even-odd filling rules it&#039;s all you need to incorporate AGG into &quot;</SPAN>
+<SPAN class="str">&quot;your application. For example, Windows API PolyPolygon perfectly fits &quot;</SPAN>
+<SPAN class="str">&quot;these needs, except certain advanced things like gradient filling, &quot;</SPAN>
+<SPAN class="str">&quot;Gouraud shading, image transformations, and so on. Or, as an alternative, &quot;</SPAN>
+<SPAN class="str">&quot;you can use all AGG algorithms producing high resolution pixel images and &quot;</SPAN>
+<SPAN class="str">&quot;then to send the result to the printer as a pixel map.&quot;</SPAN>
+<SPAN class="str">&quot;Below is a typical brief scheme of the AGG rendering pipeline. &quot;</SPAN>
+<SPAN class="str">&quot;Please note that any component between the Vertex Source &quot;</SPAN>
+<SPAN class="str">&quot;and Screen Output is not mandatory. It all depends on your &quot;</SPAN>
+<SPAN class="str">&quot;particular needs. For example, you can use your own rasterizer, &quot;</SPAN>
+<SPAN class="str">&quot;based on Windows API. In this case you won&#039;t need the AGG rasterizer &quot;</SPAN>
+<SPAN class="str">&quot;and renderers. Or, if you need to draw only lines, you can use the &quot;</SPAN>
+<SPAN class="str">&quot;AGG outline rasterizer that has certain restrictions but works faster. &quot;</SPAN>
+<SPAN class="str">&quot;The number of possibilities is endless. &quot;</SPAN>
+<SPAN class="str">&quot;Vertex Source is some object that produces polygons or polylines as &quot;</SPAN>
+<SPAN class="str">&quot;a set of consecutive 2D vertices with commands like MoveTo, LineTo. &quot;</SPAN>
+<SPAN class="str">&quot;It can be a container or some other object that generates vertices &quot;</SPAN>
+<SPAN class="str">&quot;on demand. &quot;</SPAN>
+<SPAN class="str">&quot;Coordinate conversion pipeline consists of a number of coordinate &quot;</SPAN>
+<SPAN class="str">&quot;converters. It always works with vectorial data (X,Y) represented &quot;</SPAN>
+<SPAN class="str">&quot;as floating point numbers (double). For example, it can contain an &quot;</SPAN>
+<SPAN class="str">&quot;affine transformer, outline (stroke) generator, some marker &quot;</SPAN>
+<SPAN class="str">&quot;generator (like arrowheads/arrowtails), dashed lines generator, &quot;</SPAN>
+<SPAN class="str">&quot;and so on. The pipeline can have branches and you also can have &quot;</SPAN>
+<SPAN class="str">&quot;any number of different pipelines. You also can write your own &quot;</SPAN>
+<SPAN class="str">&quot;converter and include it into the pipeline. &quot;</SPAN>
+<SPAN class="str">&quot;Scanline Rasterizer converts vectorial data into a number of &quot;</SPAN>
+<SPAN class="str">&quot;horizontal scanlines. The scanlines usually (but not obligatory) &quot;</SPAN>
+<SPAN class="str">&quot;carry information about Anti-Aliasing as coverage values. &quot;</SPAN>
+<SPAN class="str">&quot;Renderers render scanlines, sorry for the tautology. The simplest &quot;</SPAN>
+<SPAN class="str">&quot;example is solid filling. The renderer just adds a color to the &quot;</SPAN>
+<SPAN class="str">&quot;scanline and writes the result into the rendering buffer. &quot;</SPAN>
+<SPAN class="str">&quot;More complex renderers can produce multi-color result, &quot;</SPAN>
+<SPAN class="str">&quot;like gradients, Gouraud shading, image transformations, &quot;</SPAN>
+<SPAN class="str">&quot;patterns, and so on. Rendering Buffer is a buffer in memory &quot;</SPAN>
+<SPAN class="str">&quot;that will be displayed afterwards. Usually but not obligatory &quot;</SPAN>
+<SPAN class="str">&quot;it contains pixels in format that fits your video system. &quot;</SPAN>
+<SPAN class="str">&quot;For example, 24 bits B-G-R, 32 bits B-G-R-A, or 15 &quot;</SPAN>
+<SPAN class="str">&quot;bits R-G-B-555 for Windows. But in general, there&#039;re no &quot;</SPAN>
+<SPAN class="str">&quot;restrictions on pixel formats or color space if you write &quot;</SPAN>
+<SPAN class="str">&quot;your own low level class that supports that format. &quot;</SPAN>
+<SPAN class="str">&quot;Colors in AGG appear only in renderers, that is, when you &quot;</SPAN>
+<SPAN class="str">&quot;actually put some data to the rendering buffer. In general, &quot;</SPAN>
+<SPAN class="str">&quot;there&#039;s no general purpose structure or class like color, &quot;</SPAN>
+<SPAN class="str">&quot;instead, AGG always operates with concrete color space. &quot;</SPAN>
+<SPAN class="str">&quot;There are plenty of color spaces in the world, like RGB, &quot;</SPAN>
+<SPAN class="str">&quot;HSV, CMYK, etc., and all of them have certain restrictions. &quot;</SPAN>
+<SPAN class="str">&quot;For example, the RGB color space is just a poor subset of &quot;</SPAN>
+<SPAN class="str">&quot;colors that a human eye can recognize. If you look at the full &quot;</SPAN>
+<SPAN class="str">&quot;CIE Chromaticity Diagram, you will see that the RGB triangle &quot;</SPAN>
+<SPAN class="str">&quot;is just a little part of it. &quot;</SPAN>
+<SPAN class="str">&quot;In other words there are plenty of colors in the real world &quot;</SPAN>
+<SPAN class="str">&quot;that cannot be reproduced with RGB, CMYK, HSV, etc. Any color &quot;</SPAN>
+<SPAN class="str">&quot;space except the one existing in Nature is restrictive. Thus, &quot;</SPAN>
+<SPAN class="str">&quot;it was decided not to introduce such an object like color in &quot;</SPAN>
+<SPAN class="str">&quot;order not to restrict the possibilities in advance. Instead, &quot;</SPAN>
+<SPAN class="str">&quot;there are objects that operate with concrete color spaces. &quot;</SPAN>
+<SPAN class="str">&quot;Currently there are agg::<A href="../__code/include/agg_color_rgba.h.html#rgba">rgba</A> and agg::<A href="../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A> that operate &quot;</SPAN>
+<SPAN class="str">&quot;with the most popular RGB color space (strictly speaking there&#039;s &quot;</SPAN>
+<SPAN class="str">&quot;RGB plus Alpha). The RGB color space is used with different &quot;</SPAN>
+<SPAN class="str">&quot;pixel formats, like 24-bit RGB or 32-bit RGBA with different &quot;</SPAN>
+<SPAN class="str">&quot;order of color components. But the common property of all of &quot;</SPAN>
+<SPAN class="str">&quot;them is that they are essentially RGB. Although, AGG doesn&#039;t &quot;</SPAN>
+<SPAN class="str">&quot;explicitly support any other color spaces, there is at least &quot;</SPAN>
+<SPAN class="str">&quot;a potential possibility of adding them. It means that all &quot;</SPAN>
+<SPAN class="str">&quot;class and function templates that depend on the color type &quot;</SPAN>
+<SPAN class="str">&quot;are parameterized with the ColorT argument. &quot;</SPAN>
+<SPAN class="str">&quot;Basically, AGG operates with coordinates of the output device. &quot;</SPAN>
+<SPAN class="str">&quot;On your screen there are pixels. But unlike many other libraries &quot;</SPAN>
+<SPAN class="str">&quot;and APIs AGG initially supports Subpixel Accuracy. It means &quot;</SPAN>
+<SPAN class="str">&quot;that the coordinates are represented as doubles, where fractional &quot;</SPAN>
+<SPAN class="str">&quot;values actually take effect. AGG doesn&#039;t have an embedded &quot;</SPAN>
+<SPAN class="str">&quot;conversion mechanism from world to screen coordinates in order &quot;</SPAN>
+<SPAN class="str">&quot;not to restrict your freedom. It&#039;s very important where and when &quot;</SPAN>
+<SPAN class="str">&quot;you do that conversion, so, different applications can require &quot;</SPAN>
+<SPAN class="str">&quot;different approaches. AGG just provides you a transformer of &quot;</SPAN>
+<SPAN class="str">&quot;that kind, namely, that can convert your own view port to the &quot;</SPAN>
+<SPAN class="str">&quot;device one. And it&#039;s your responsibility to include it into &quot;</SPAN>
+<SPAN class="str">&quot;the proper place of the pipeline. You can also write your &quot;</SPAN>
+<SPAN class="str">&quot;own very simple class that will allow you to operate with &quot;</SPAN>
+<SPAN class="str">&quot;millimeters, inches, or any other physical units. &quot;</SPAN>
+<SPAN class="str">&quot;Internally, the rasterizers use integer coordinates of the &quot;</SPAN>
+<SPAN class="str">&quot;format 24.8 bits, that is, 24 bits for the integer part and 8 &quot;</SPAN>
+<SPAN class="str">&quot;bits for the fractional one. In other words, all the internal &quot;</SPAN>
+<SPAN class="str">&quot;coordinates are multiplied by 256. If you intend to use AGG in &quot;</SPAN>
+<SPAN class="str">&quot;some embedded system that has inefficient floating point &quot;</SPAN>
+<SPAN class="str">&quot;processing, you still can use the rasterizers with their &quot;</SPAN>
+<SPAN class="str">&quot;integer interfaces. Although, you won&#039;t be able to use the &quot;</SPAN>
+<SPAN class="str">&quot;floating point coordinate pipelines in this case. &quot;</SPAN><SPAN class="op">;</SPAN>
+ 
+
+
+
+
+
+
+<SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> VS<SPAN class="op">&gt;</SPAN> <SPAN class="kw1">void</SPAN> dump_path<SPAN class="op">(</SPAN>VS<SPAN class="op">&amp;</SPAN> path<SPAN class="op">)</SPAN>
+<SPAN class="op">{</SPAN>
+    FILE<SPAN class="op">*</SPAN> fd <SPAN class="op">=</SPAN> fopen<SPAN class="op">(</SPAN><SPAN class="str">&quot;dump_path&quot;</SPAN><SPAN class="op">,</SPAN> <SPAN class="str">&quot;a&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    fprintf<SPAN class="op">(</SPAN>fd<SPAN class="op">,</SPAN> <SPAN class="str">&quot;-------\n&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    path<SPAN class="op">.</SPAN>rewind<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="kw1">unsigned</SPAN> cmd<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN> x<SPAN class="op">,</SPAN> y<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN><SPAN class="op">!</SPAN>agg::<A href="../__code/include/agg_basics.h.html#is_stop">is_stop</A><SPAN class="op">(</SPAN>cmd <SPAN class="op">=</SPAN> path<SPAN class="op">.</SPAN>vertex<SPAN class="op">(</SPAN><SPAN class="op">&amp;</SPAN>x<SPAN class="op">,</SPAN> <SPAN class="op">&amp;</SPAN>y<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        fprintf<SPAN class="op">(</SPAN>fd<SPAN class="op">,</SPAN> <SPAN class="str">&quot;%02X %8.2f %8.2f\n&quot;</SPAN><SPAN class="op">,</SPAN> cmd<SPAN class="op">,</SPAN> x<SPAN class="op">,</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+    fclose<SPAN class="op">(</SPAN>fd<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+<SPAN class="op">}</SPAN>
+
+
+
+
+<SPAN class="kw1">class</SPAN> the_application : <SPAN class="kw1">public</SPAN> agg::platform_support
+<SPAN class="op">{</SPAN>
+    <SPAN class="kw1">typedef</SPAN> agg::<A href="../doc/basic_renderers/basic_renderers.agdoc.html#renderer_base">renderer_base</A><SPAN class="op">&lt;</SPAN>pixfmt_type<SPAN class="op">&gt;</SPAN> base_ren_type<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">typedef</SPAN> agg::<A href="../__code/include/agg_renderer_scanline.h.html#renderer_scanline_aa_solid">renderer_scanline_aa_solid</A><SPAN class="op">&lt;</SPAN>base_ren_type<SPAN class="op">&gt;</SPAN> renderer_solid<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">typedef</SPAN> agg::<A href="../__code/include/agg_renderer_scanline.h.html#renderer_scanline_bin_solid">renderer_scanline_bin_solid</A><SPAN class="op">&lt;</SPAN>base_ren_type<SPAN class="op">&gt;</SPAN> renderer_bin<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">typedef</SPAN> agg::<A href="../__code/font_freetype/agg_font_freetype.h.html#font_engine_freetype_int32">font_engine_freetype_int32</A> font_engine_type<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">typedef</SPAN> agg::<A href="../__code/include/agg_font_cache_manager.h.html#font_cache_manager">font_cache_manager</A><SPAN class="op">&lt;</SPAN>font_engine_type<SPAN class="op">&gt;</SPAN> font_manager_type<SPAN class="op">;</SPAN>
+
+    agg::rbox_ctrl<SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">&gt;</SPAN>   m_ren_type<SPAN class="op">;</SPAN>
+    agg::slider_ctrl<SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">&gt;</SPAN> m_height<SPAN class="op">;</SPAN>
+    agg::slider_ctrl<SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">&gt;</SPAN> m_width<SPAN class="op">;</SPAN>
+    agg::slider_ctrl<SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">&gt;</SPAN> m_weight<SPAN class="op">;</SPAN>
+    agg::slider_ctrl<SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">&gt;</SPAN> m_gamma<SPAN class="op">;</SPAN>
+    agg::cbox_ctrl<SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">&gt;</SPAN>   m_hinting<SPAN class="op">;</SPAN>
+    agg::cbox_ctrl<SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">&gt;</SPAN>   m_kerning<SPAN class="op">;</SPAN>
+    agg::cbox_ctrl<SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">&gt;</SPAN>   m_performance<SPAN class="op">;</SPAN>
+    font_engine_type             m_feng<SPAN class="op">;</SPAN>
+    font_manager_type            m_fman<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN>                       m_old_height<SPAN class="op">;</SPAN>
+
+    <SPAN class="rem">// Pipeline to process the vectors glyph paths (curves + contour)</SPAN>
+    agg::<A href="../__code/include/agg_conv_curve.h.html#conv_curve">conv_curve</A><SPAN class="op">&lt;</SPAN>font_manager_type::path_adaptor_type<SPAN class="op">&gt;</SPAN> m_curves<SPAN class="op">;</SPAN>
+    agg::<A href="../__code/include/agg_conv_contour.h.html#conv_contour">conv_contour</A><SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_conv_curve.h.html#conv_curve">conv_curve</A><SPAN class="op">&lt;</SPAN>font_manager_type::path_adaptor_type<SPAN class="op">&gt;</SPAN> <SPAN class="op">&gt;</SPAN> m_contour<SPAN class="op">;</SPAN>
+
+
+
+
+<SPAN class="kw1">public</SPAN>:
+    the_application<SPAN class="op">(</SPAN>agg::pix_format_e format<SPAN class="op">,</SPAN> <SPAN class="kw1">bool</SPAN> flip_y<SPAN class="op">)</SPAN> :
+        agg::platform_support<SPAN class="op">(</SPAN>format<SPAN class="op">,</SPAN> flip_y<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_ren_type     <SPAN class="op">(</SPAN><SPAN class="num">5</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">5</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">5</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">+</SPAN><SPAN class="num">150</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN>   <SPAN class="num">110</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN>  <SPAN class="op">!</SPAN>flip_y<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_height       <SPAN class="op">(</SPAN><SPAN class="num">160</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">10</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">640</SPAN><SPAN class="op">-</SPAN><SPAN class="num">5</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN>    <SPAN class="num">18</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN>   <SPAN class="op">!</SPAN>flip_y<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_width        <SPAN class="op">(</SPAN><SPAN class="num">160</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">30</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">640</SPAN><SPAN class="op">-</SPAN><SPAN class="num">5</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN>    <SPAN class="num">38</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN>   <SPAN class="op">!</SPAN>flip_y<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_weight       <SPAN class="op">(</SPAN><SPAN class="num">160</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">50</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">640</SPAN><SPAN class="op">-</SPAN><SPAN class="num">5</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN>    <SPAN class="num">58</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN>   <SPAN class="op">!</SPAN>flip_y<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_gamma        <SPAN class="op">(</SPAN><SPAN class="num">260</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">70</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">640</SPAN><SPAN class="op">-</SPAN><SPAN class="num">5</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN>    <SPAN class="num">78</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN>   <SPAN class="op">!</SPAN>flip_y<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_hinting      <SPAN class="op">(</SPAN><SPAN class="num">160</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">65</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="str">&quot;Hinting&quot;</SPAN><SPAN class="op">,</SPAN> <SPAN class="op">!</SPAN>flip_y<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_kerning      <SPAN class="op">(</SPAN><SPAN class="num">160</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">80</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="str">&quot;Kerning&quot;</SPAN><SPAN class="op">,</SPAN> <SPAN class="op">!</SPAN>flip_y<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_performance  <SPAN class="op">(</SPAN><SPAN class="num">160</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">95</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="str">&quot;Test Performance&quot;</SPAN><SPAN class="op">,</SPAN> <SPAN class="op">!</SPAN>flip_y<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_feng<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_fman<SPAN class="op">(</SPAN>m_feng<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_old_height<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_curves<SPAN class="op">(</SPAN>m_fman<SPAN class="op">.</SPAN>path_adaptor<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_contour<SPAN class="op">(</SPAN>m_curves<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        m_ren_type<SPAN class="op">.</SPAN>add_item<SPAN class="op">(</SPAN><SPAN class="str">&quot;Native Mono&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_ren_type<SPAN class="op">.</SPAN>add_item<SPAN class="op">(</SPAN><SPAN class="str">&quot;Native Gray 8&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_ren_type<SPAN class="op">.</SPAN>add_item<SPAN class="op">(</SPAN><SPAN class="str">&quot;Outline&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_ren_type<SPAN class="op">.</SPAN>add_item<SPAN class="op">(</SPAN><SPAN class="str">&quot;AGG Mono&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_ren_type<SPAN class="op">.</SPAN>add_item<SPAN class="op">(</SPAN><SPAN class="str">&quot;AGG Gray 8&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_ren_type<SPAN class="op">.</SPAN>cur_item<SPAN class="op">(</SPAN><SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        add_ctrl<SPAN class="op">(</SPAN>m_ren_type<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_ren_type<SPAN class="op">.</SPAN>no_transform<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        m_height<SPAN class="op">.</SPAN>label<SPAN class="op">(</SPAN><SPAN class="str">&quot;Font Height=%.2f&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_height<SPAN class="op">.</SPAN>range<SPAN class="op">(</SPAN><SPAN class="num">8</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">32</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_height<SPAN class="op">.</SPAN>num_steps<SPAN class="op">(</SPAN><SPAN class="num">32</SPAN><SPAN class="op">-</SPAN><SPAN class="num">8</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_height<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="num">18</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_height<SPAN class="op">.</SPAN>text_thickness<SPAN class="op">(</SPAN><SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">5</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        add_ctrl<SPAN class="op">(</SPAN>m_height<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_height<SPAN class="op">.</SPAN>no_transform<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        m_width<SPAN class="op">.</SPAN>label<SPAN class="op">(</SPAN><SPAN class="str">&quot;Font Width=%.2f&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_width<SPAN class="op">.</SPAN>range<SPAN class="op">(</SPAN><SPAN class="num">8</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">32</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_width<SPAN class="op">.</SPAN>num_steps<SPAN class="op">(</SPAN><SPAN class="num">32</SPAN><SPAN class="op">-</SPAN><SPAN class="num">8</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_width<SPAN class="op">.</SPAN>text_thickness<SPAN class="op">(</SPAN><SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">5</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_width<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="num">18</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        add_ctrl<SPAN class="op">(</SPAN>m_width<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_width<SPAN class="op">.</SPAN>no_transform<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        m_weight<SPAN class="op">.</SPAN>label<SPAN class="op">(</SPAN><SPAN class="str">&quot;Font Weight=%.2f&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_weight<SPAN class="op">.</SPAN>range<SPAN class="op">(</SPAN><SPAN class="op">-</SPAN><SPAN class="num">1</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_weight<SPAN class="op">.</SPAN>text_thickness<SPAN class="op">(</SPAN><SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">5</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        add_ctrl<SPAN class="op">(</SPAN>m_weight<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_weight<SPAN class="op">.</SPAN>no_transform<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        m_gamma<SPAN class="op">.</SPAN>label<SPAN class="op">(</SPAN><SPAN class="str">&quot;Gamma=%.2f&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_gamma<SPAN class="op">.</SPAN>range<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">1</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_gamma<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_gamma<SPAN class="op">.</SPAN>text_thickness<SPAN class="op">(</SPAN><SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">5</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        add_ctrl<SPAN class="op">(</SPAN>m_gamma<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_gamma<SPAN class="op">.</SPAN>no_transform<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        add_ctrl<SPAN class="op">(</SPAN>m_hinting<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_hinting<SPAN class="op">.</SPAN>status<SPAN class="op">(</SPAN><SPAN class="kw1">true</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_hinting<SPAN class="op">.</SPAN>no_transform<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        add_ctrl<SPAN class="op">(</SPAN>m_kerning<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_kerning<SPAN class="op">.</SPAN>status<SPAN class="op">(</SPAN><SPAN class="kw1">true</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_kerning<SPAN class="op">.</SPAN>no_transform<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        add_ctrl<SPAN class="op">(</SPAN>m_performance<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_performance<SPAN class="op">.</SPAN>no_transform<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        m_curves<SPAN class="op">.</SPAN>approximation_scale<SPAN class="op">(</SPAN><SPAN class="num">2</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_contour<SPAN class="op">.</SPAN>auto_detect_orientation<SPAN class="op">(</SPAN><SPAN class="kw1">false</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Rasterizer<SPAN class="op">,</SPAN> <SPAN class="kw1">class</SPAN> Scanline<SPAN class="op">,</SPAN> <SPAN class="kw1">class</SPAN> RenSolid<SPAN class="op">,</SPAN> <SPAN class="kw1">class</SPAN> RenBin<SPAN class="op">&gt;</SPAN>
+    <SPAN class="kw1">unsigned</SPAN> draw_text<SPAN class="op">(</SPAN>Rasterizer<SPAN class="op">&amp;</SPAN> ras<SPAN class="op">,</SPAN> Scanline<SPAN class="op">&amp;</SPAN> sl<SPAN class="op">,</SPAN> 
+                       RenSolid<SPAN class="op">&amp;</SPAN> ren_solid<SPAN class="op">,</SPAN> RenBin<SPAN class="op">&amp;</SPAN> ren_bin<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        agg::glyph_rendering gren <SPAN class="op">=</SPAN> agg::glyph_ren_native_mono<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">switch</SPAN><SPAN class="op">(</SPAN>m_ren_type<SPAN class="op">.</SPAN>cur_item<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">case</SPAN> <SPAN class="num">0</SPAN>: gren <SPAN class="op">=</SPAN> agg::glyph_ren_native_mono<SPAN class="op">;</SPAN>  <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">case</SPAN> <SPAN class="num">1</SPAN>: gren <SPAN class="op">=</SPAN> agg::glyph_ren_native_gray8<SPAN class="op">;</SPAN> <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">case</SPAN> <SPAN class="num">2</SPAN>: gren <SPAN class="op">=</SPAN> agg::glyph_ren_outline<SPAN class="op">;</SPAN>      <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">case</SPAN> <SPAN class="num">3</SPAN>: gren <SPAN class="op">=</SPAN> agg::glyph_ren_agg_mono<SPAN class="op">;</SPAN>     <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">case</SPAN> <SPAN class="num">4</SPAN>: gren <SPAN class="op">=</SPAN> agg::glyph_ren_agg_gray8<SPAN class="op">;</SPAN>    <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">unsigned</SPAN> num_glyphs <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+
+        m_contour<SPAN class="op">.</SPAN>width<SPAN class="op">(</SPAN><SPAN class="op">-</SPAN>m_weight<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> m_height<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">05</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_feng<SPAN class="op">.</SPAN>load_font<SPAN class="op">(</SPAN>full_file_name<SPAN class="op">(</SPAN><SPAN class="str">&quot;timesi.ttf&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> gren<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            m_feng<SPAN class="op">.</SPAN>hinting<SPAN class="op">(</SPAN>m_hinting<SPAN class="op">.</SPAN>status<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            m_feng<SPAN class="op">.</SPAN>height<SPAN class="op">(</SPAN>m_height<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            m_feng<SPAN class="op">.</SPAN>width<SPAN class="op">(</SPAN>m_width<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            m_feng<SPAN class="op">.</SPAN>flip_y<SPAN class="op">(</SPAN>font_flip_y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+            agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine">trans_affine</A> mtx<SPAN class="op">;</SPAN>
+            mtx <SPAN class="op">*=</SPAN> agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine_rotation">trans_affine_rotation</A><SPAN class="op">(</SPAN>agg::<A href="../__code/include/agg_basics.h.html#deg2rad">deg2rad</A><SPAN class="op">(</SPAN><SPAN class="op">-</SPAN><SPAN class="num">4</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="rem">//mtx *= agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine_skewing">trans_affine_skewing</A>(-0.4, 0);</SPAN>
+            <SPAN class="rem">//mtx *= agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine_translation">trans_affine_translation</A>(1, 0);</SPAN>
+            m_feng<SPAN class="op">.</SPAN>transform<SPAN class="op">(</SPAN>mtx<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">double</SPAN> x  <SPAN class="op">=</SPAN> <SPAN class="num">10</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">double</SPAN> y0 <SPAN class="op">=</SPAN> height<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">-</SPAN> m_height<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">-</SPAN> <SPAN class="num">10</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">double</SPAN> y  <SPAN class="op">=</SPAN> y0<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">const</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN> p <SPAN class="op">=</SPAN> text<SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN><SPAN class="op">*</SPAN>p<SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                <SPAN class="kw1">const</SPAN> agg::<A href="../__code/include/agg_font_cache_manager.h.html#glyph_cache">glyph_cache</A><SPAN class="op">*</SPAN> glyph <SPAN class="op">=</SPAN> m_fman<SPAN class="op">.</SPAN>glyph<SPAN class="op">(</SPAN><SPAN class="op">*</SPAN>p<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>glyph<SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_kerning<SPAN class="op">.</SPAN>status<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+                    <SPAN class="op">{</SPAN>
+                        m_fman<SPAN class="op">.</SPAN>add_kerning<SPAN class="op">(</SPAN><SPAN class="op">&amp;</SPAN>x<SPAN class="op">,</SPAN> <SPAN class="op">&amp;</SPAN>y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="op">}</SPAN>
+
+                    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>x <SPAN class="op">&gt;=</SPAN> width<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">-</SPAN> m_height<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+                    <SPAN class="op">{</SPAN>
+                        x <SPAN class="op">=</SPAN> <SPAN class="num">10</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+                        y0 <SPAN class="op">-=</SPAN> m_height<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>y0 <SPAN class="op">&lt;=</SPAN> <SPAN class="num">120</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+                        y <SPAN class="op">=</SPAN> y0<SPAN class="op">;</SPAN>
+                    <SPAN class="op">}</SPAN>
+
+                    m_fman<SPAN class="op">.</SPAN>init_embedded_adaptors<SPAN class="op">(</SPAN>glyph<SPAN class="op">,</SPAN> x<SPAN class="op">,</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                    <SPAN class="kw1">switch</SPAN><SPAN class="op">(</SPAN>glyph<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>data_type<SPAN class="op">)</SPAN>
+                    <SPAN class="op">{</SPAN>
+                    <SPAN class="kw1">default</SPAN>: <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="kw1">case</SPAN> agg::glyph_data_mono:
+                        ren_bin<SPAN class="op">.</SPAN>color<SPAN class="op">(</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                        agg::<A href="../__code/include/agg_renderer_scanline.h.html#render_scanlines">render_scanlines</A><SPAN class="op">(</SPAN>m_fman<SPAN class="op">.</SPAN>mono_adaptor<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> 
+                                              m_fman<SPAN class="op">.</SPAN>mono_scanline<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> 
+                                              ren_bin<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                        <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+
+                    <SPAN class="kw1">case</SPAN> agg::glyph_data_gray8:
+                        ren_solid<SPAN class="op">.</SPAN>color<SPAN class="op">(</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                        agg::<A href="../__code/include/agg_renderer_scanline.h.html#render_scanlines">render_scanlines</A><SPAN class="op">(</SPAN>m_fman<SPAN class="op">.</SPAN>gray8_adaptor<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> 
+                                              m_fman<SPAN class="op">.</SPAN>gray8_scanline<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> 
+                                              ren_solid<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                        <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+
+                    <SPAN class="kw1">case</SPAN> agg::glyph_data_outline:
+                        ras<SPAN class="op">.</SPAN>reset<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>fabs<SPAN class="op">(</SPAN>m_weight<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">&lt;=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">01</SPAN><SPAN class="op">)</SPAN>
+                        <SPAN class="op">{</SPAN>
+                            <SPAN class="rem">// For the sake of efficiency skip the</SPAN>
+                            <SPAN class="rem">// contour converter if the weight is about zero.</SPAN>
+                            <SPAN class="rem">//-----------------------</SPAN>
+                            ras<SPAN class="op">.</SPAN>add_path<SPAN class="op">(</SPAN>m_curves<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                        <SPAN class="op">}</SPAN>
+                        <SPAN class="kw1">else</SPAN>
+                        <SPAN class="op">{</SPAN>
+                            ras<SPAN class="op">.</SPAN>add_path<SPAN class="op">(</SPAN>m_contour<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                        <SPAN class="op">}</SPAN>
+                        ren_solid<SPAN class="op">.</SPAN>color<SPAN class="op">(</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                        agg::<A href="../__code/include/agg_renderer_scanline.h.html#render_scanlines">render_scanlines</A><SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> sl<SPAN class="op">,</SPAN> ren_solid<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+<SPAN class="rem">//dump_path(m_fman.path_adaptor());</SPAN>
+                        <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="op">}</SPAN>
+
+                    <SPAN class="rem">// increment pen position</SPAN>
+                    x <SPAN class="op">+=</SPAN> glyph<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>advance_x<SPAN class="op">;</SPAN>
+                    y <SPAN class="op">+=</SPAN> glyph<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>advance_y<SPAN class="op">;</SPAN>
+                    <SPAN class="op">++</SPAN>num_glyphs<SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+                <SPAN class="op">++</SPAN>p<SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">else</SPAN>
+        <SPAN class="op">{</SPAN>
+            message<SPAN class="op">(</SPAN><SPAN class="str">&quot;Please copy file timesi.ttf to the current directory\n&quot;</SPAN>
+                    <SPAN class="str">&quot;or download it from http://www.antigrain.com/timesi.zip&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">return</SPAN> num_glyphs<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="kw1">virtual</SPAN> <SPAN class="kw1">void</SPAN> on_draw<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        pixfmt_type pf<SPAN class="op">(</SPAN>rbuf_window<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        base_ren_type ren_base<SPAN class="op">(</SPAN>pf<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        renderer_solid ren_solid<SPAN class="op">(</SPAN>ren_base<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        renderer_bin ren_bin<SPAN class="op">(</SPAN>ren_base<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        ren_base<SPAN class="op">.</SPAN>clear<SPAN class="op">(</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba">rgba</A><SPAN class="op">(</SPAN><SPAN class="num">1</SPAN><SPAN class="op">,</SPAN><SPAN class="num">1</SPAN><SPAN class="op">,</SPAN><SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        agg::<A href="../__code/include/agg_scanline_u.h.html#scanline_u8">scanline_u8</A> sl<SPAN class="op">;</SPAN>
+        agg::<A href="../__code/include/agg_rasterizer_scanline_aa.h.html#rasterizer_scanline_aa">rasterizer_scanline_aa</A><SPAN class="op">&lt;</SPAN><SPAN class="op">&gt;</SPAN> ras<SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_height<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">!=</SPAN> m_old_height<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            m_width<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN>m_old_height <SPAN class="op">=</SPAN> m_height<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_ren_type<SPAN class="op">.</SPAN>cur_item<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">==</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="rem">// When rendering in mono format, </SPAN>
+            <SPAN class="rem">// Set threshold gamma = 0.5</SPAN>
+            <SPAN class="rem">//-------------------</SPAN>
+            m_feng<SPAN class="op">.</SPAN>gamma<SPAN class="op">(</SPAN>agg::<A href="../__code/include/agg_gamma_functions.h.html#gamma_threshold">gamma_threshold</A><SPAN class="op">(</SPAN>m_gamma<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">else</SPAN>
+        <SPAN class="op">{</SPAN>
+            m_feng<SPAN class="op">.</SPAN>gamma<SPAN class="op">(</SPAN>agg::<A href="../__code/include/agg_gamma_functions.h.html#gamma_power">gamma_power</A><SPAN class="op">(</SPAN>m_gamma<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_ren_type<SPAN class="op">.</SPAN>cur_item<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">==</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="rem">// For outline cache set gamma for the rasterizer</SPAN>
+            <SPAN class="rem">//-------------------</SPAN>
+            ras<SPAN class="op">.</SPAN>gamma<SPAN class="op">(</SPAN>agg::<A href="../__code/include/agg_gamma_functions.h.html#gamma_power">gamma_power</A><SPAN class="op">(</SPAN>m_gamma<SPAN class="op">.</SPAN>value<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+<SPAN class="rem">//ren_base.copy_hline(0, int(height() - m_height.value()) - 10, 100, agg::<A href="../__code/include/agg_color_rgba.h.html#rgba">rgba</A>(0,0,0));</SPAN>
+        draw_text<SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> sl<SPAN class="op">,</SPAN> ren_solid<SPAN class="op">,</SPAN> ren_bin<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        ras<SPAN class="op">.</SPAN>gamma<SPAN class="op">(</SPAN>agg::<A href="../__code/include/agg_gamma_functions.h.html#gamma_power">gamma_power</A><SPAN class="op">(</SPAN><SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+
+        agg::render_ctrl<SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> sl<SPAN class="op">,</SPAN> ren_base<SPAN class="op">,</SPAN> m_ren_type<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        agg::render_ctrl<SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> sl<SPAN class="op">,</SPAN> ren_base<SPAN class="op">,</SPAN> m_height<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        agg::render_ctrl<SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> sl<SPAN class="op">,</SPAN> ren_base<SPAN class="op">,</SPAN> m_width<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        agg::render_ctrl<SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> sl<SPAN class="op">,</SPAN> ren_base<SPAN class="op">,</SPAN> m_weight<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        agg::render_ctrl<SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> sl<SPAN class="op">,</SPAN> ren_base<SPAN class="op">,</SPAN> m_gamma<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        agg::render_ctrl<SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> sl<SPAN class="op">,</SPAN> ren_base<SPAN class="op">,</SPAN> m_hinting<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        agg::render_ctrl<SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> sl<SPAN class="op">,</SPAN> ren_base<SPAN class="op">,</SPAN> m_kerning<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        agg::render_ctrl<SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> sl<SPAN class="op">,</SPAN> ren_base<SPAN class="op">,</SPAN> m_performance<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+
+    <SPAN class="kw1">virtual</SPAN> <SPAN class="kw1">void</SPAN> on_ctrl_change<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_performance<SPAN class="op">.</SPAN>status<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            pixfmt_type pf<SPAN class="op">(</SPAN>rbuf_window<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            base_ren_type ren_base<SPAN class="op">(</SPAN>pf<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            renderer_solid ren_solid<SPAN class="op">(</SPAN>ren_base<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            renderer_bin ren_bin<SPAN class="op">(</SPAN>ren_base<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            ren_base<SPAN class="op">.</SPAN>clear<SPAN class="op">(</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba">rgba</A><SPAN class="op">(</SPAN><SPAN class="num">1</SPAN><SPAN class="op">,</SPAN><SPAN class="num">1</SPAN><SPAN class="op">,</SPAN><SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+            agg::<A href="../__code/include/agg_scanline_u.h.html#scanline_u8">scanline_u8</A> sl<SPAN class="op">;</SPAN>
+            agg::<A href="../__code/include/agg_rasterizer_scanline_aa.h.html#rasterizer_scanline_aa">rasterizer_scanline_aa</A><SPAN class="op">&lt;</SPAN><SPAN class="op">&gt;</SPAN> ras<SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">unsigned</SPAN> num_glyphs <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+            start_timer<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> i <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;</SPAN> <SPAN class="num">50</SPAN><SPAN class="op">;</SPAN> i<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                num_glyphs <SPAN class="op">+=</SPAN> draw_text<SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> sl<SPAN class="op">,</SPAN> ren_solid<SPAN class="op">,</SPAN> ren_bin<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="kw1">double</SPAN> t <SPAN class="op">=</SPAN> elapsed_time<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">char</SPAN> buf<SPAN class="op">[</SPAN><SPAN class="num">100</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+            sprintf<SPAN class="op">(</SPAN>buf<SPAN class="op">,</SPAN> 
+                    <SPAN class="str">&quot;Glyphs=%u, Time=%.3fms, %.3f glyps/sec, %.3f microsecond/glyph&quot;</SPAN><SPAN class="op">,</SPAN> 
+                    num_glyphs<SPAN class="op">,</SPAN>
+                    t<SPAN class="op">,</SPAN> 
+                    <SPAN class="op">(</SPAN>num_glyphs <SPAN class="op">/</SPAN> t<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> <SPAN class="num">1000</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> 
+                    <SPAN class="op">(</SPAN>t <SPAN class="op">/</SPAN> num_glyphs<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> <SPAN class="num">1000</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            message<SPAN class="op">(</SPAN>buf<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+            m_performance<SPAN class="op">.</SPAN>status<SPAN class="op">(</SPAN><SPAN class="kw1">false</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            force_redraw<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="kw1">virtual</SPAN> <SPAN class="kw1">void</SPAN> on_key<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> key<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> flags<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>key <SPAN class="op">==</SPAN> <SPAN class="str">&#039; &#039;</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            font_flip_y <SPAN class="op">=</SPAN> <SPAN class="op">!</SPAN>font_flip_y<SPAN class="op">;</SPAN>
+            force_redraw<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN>
+
+<SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+
+<SPAN class="kw1">int</SPAN> agg_main<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> argc<SPAN class="op">,</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN> argv<SPAN class="op">[</SPAN><SPAN class="op">]</SPAN><SPAN class="op">)</SPAN>
+<SPAN class="op">{</SPAN>
+    the_application app<SPAN class="op">(</SPAN>pix_format<SPAN class="op">,</SPAN> flip_y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    app<SPAN class="op">.</SPAN>caption<SPAN class="op">(</SPAN><SPAN class="str">&quot;AGG Example. Rendering Fonts with FreeType&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>app<SPAN class="op">.</SPAN>init<SPAN class="op">(</SPAN><SPAN class="num">640</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">520</SPAN><SPAN class="op">,</SPAN> agg::window_resize<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">return</SPAN> app<SPAN class="op">.</SPAN>run<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+    <SPAN class="kw1">return</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+<SPAN class="op">}</SPAN>
+
+
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT><TABLE width="640px" bgcolor="#583927" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0">
+<TR><TD><CENTER><SPAN class="authors">
+Copyright <SPAN class="larger">&#169;</SPAN> 2002-2006
+<A href="../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+<TR><TD><CENTER><SPAN class="authors">
+Web Design and Programming
+<A href="../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+</TABLE>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+</HTML>

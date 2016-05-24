@@ -1,0 +1,629 @@
+<HTML><HEAD><TITLE>Anti-Grain Geometry - </TITLE>
+<META http-equiv="Content-Type" content="text/html"/>
+<LINK rel="stylesheet" type="text/css" href="../../agg.styles.css"/>
+</HEAD>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE><SPAN class="rem">//----------------------------------------------------------------------------</SPAN>
+<SPAN class="rem">// Anti-Grain Geometry (AGG) - Version 2.5</SPAN>
+<SPAN class="rem">// A high quality rendering engine for C++</SPAN>
+<SPAN class="rem">// Copyright (C) 2002-2006 Maxim Shemanarev</SPAN>
+<SPAN class="rem">// Contact: mcseem@antigrain.com</SPAN>
+<SPAN class="rem">//          mcseemagg@yahoo.com</SPAN>
+<SPAN class="rem">//          http://antigrain.com</SPAN>
+<SPAN class="rem">// </SPAN>
+<SPAN class="rem">// AGG is free software; you can redistribute it and/or</SPAN>
+<SPAN class="rem">// modify it under the terms of the GNU General Public License</SPAN>
+<SPAN class="rem">// as published by the Free Software Foundation; either version 2</SPAN>
+<SPAN class="rem">// of the License, or (at your option) any later version.</SPAN>
+<SPAN class="rem">// </SPAN>
+<SPAN class="rem">// AGG is distributed in the hope that it will be useful,</SPAN>
+<SPAN class="rem">// but WITHOUT ANY WARRANTY; without even the implied warranty of</SPAN>
+<SPAN class="rem">// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</SPAN>
+<SPAN class="rem">// GNU General Public License for more details.</SPAN>
+<SPAN class="rem">// </SPAN>
+<SPAN class="rem">// You should have received a copy of the GNU General Public License</SPAN>
+<SPAN class="rem">// along with AGG; if not, write to the Free Software</SPAN>
+<SPAN class="rem">// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, </SPAN>
+<SPAN class="rem">// MA 02110-1301, USA.</SPAN>
+<SPAN class="rem">//----------------------------------------------------------------------------</SPAN>
+
+<SPAN class="kw2">#ifndef</SPAN> AGG_RASTERIZER_OUTLINE_AA_INCLUDED
+<SPAN class="kw2">#define</SPAN> AGG_RASTERIZER_OUTLINE_AA_INCLUDED
+
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="agg_basics.h.html">agg_basics.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="agg_line_aa_basics.h.html">agg_line_aa_basics.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="agg_vertex_sequence.h.html">agg_vertex_sequence.h</A>&quot;</SPAN>
+
+<SPAN class="kw1">namespace</SPAN> agg
+<SPAN class="op">{</SPAN>
+
+    <SPAN class="rem">//-------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">inline</SPAN> <SPAN class="kw1">bool</SPAN> cmp_dist_start<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> d<SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> d <SPAN class="op">&gt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>  <SPAN class="op">}</SPAN>
+    <SPAN class="kw1">inline</SPAN> <SPAN class="kw1">bool</SPAN> cmp_dist_end<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> d<SPAN class="op">)</SPAN>   <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> d <SPAN class="op">&lt;=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+
+
+
+    <SPAN class="rem">//-----------------------------------------------------------<A name="line_aa_vertex"><B></B></A><A href="agg_rasterizer_outline_aa.h.html#line_aa_vertex">line_aa_vertex</A></SPAN>
+    <SPAN class="rem">// Vertex (x, y) with the distance to the next one. The last vertex has </SPAN>
+    <SPAN class="rem">// the distance between the last and the first points</SPAN>
+    <SPAN class="kw1">struct</SPAN> <A href="agg_rasterizer_outline_aa.h.html#line_aa_vertex">line_aa_vertex</A>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">int</SPAN> x<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN> y<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN> len<SPAN class="op">;</SPAN>
+
+        <A href="agg_rasterizer_outline_aa.h.html#line_aa_vertex">line_aa_vertex</A><SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN><SPAN class="op">}</SPAN>
+        <A href="agg_rasterizer_outline_aa.h.html#line_aa_vertex">line_aa_vertex</A><SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x_<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y_<SPAN class="op">)</SPAN> :
+            x<SPAN class="op">(</SPAN>x_<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            y<SPAN class="op">(</SPAN>y_<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            len<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">bool</SPAN> <SPAN class="kw1">operator</SPAN> <SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <A href="agg_rasterizer_outline_aa.h.html#line_aa_vertex">line_aa_vertex</A><SPAN class="op">&amp;</SPAN> val<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">double</SPAN> dx <SPAN class="op">=</SPAN> val<SPAN class="op">.</SPAN>x <SPAN class="op">-</SPAN> x<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">double</SPAN> dy <SPAN class="op">=</SPAN> val<SPAN class="op">.</SPAN>y <SPAN class="op">-</SPAN> y<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">return</SPAN> <SPAN class="op">(</SPAN>len <SPAN class="op">=</SPAN> <A href="agg_basics.h.html#uround">uround</A><SPAN class="op">(</SPAN>sqrt<SPAN class="op">(</SPAN>dx <SPAN class="op">*</SPAN> dx <SPAN class="op">+</SPAN> dy <SPAN class="op">*</SPAN> dy<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">&gt;</SPAN> 
+                   <SPAN class="op">(</SPAN><A href="agg_line_aa_basics.h.html#line_subpixel_scale">line_subpixel_scale</A> <SPAN class="op">+</SPAN> <A href="agg_line_aa_basics.h.html#line_subpixel_scale">line_subpixel_scale</A> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+    <SPAN class="rem">//----------------------------------------------------------<A name="outline_aa_join_e"><B></B></A><A href="agg_rasterizer_outline_aa.h.html#outline_aa_join_e">outline_aa_join_e</A></SPAN>
+    <SPAN class="kw1">enum</SPAN> <A href="agg_rasterizer_outline_aa.h.html#outline_aa_join_e">outline_aa_join_e</A>
+    <SPAN class="op">{</SPAN>
+        <A href="agg_rasterizer_outline_aa.h.html#outline_no_join">outline_no_join</A><SPAN class="op">,</SPAN>             <SPAN class="rem">//-----<A name="outline_no_join"><B></B></A><A href="agg_rasterizer_outline_aa.h.html#outline_no_join">outline_no_join</A></SPAN>
+        <A href="agg_rasterizer_outline_aa.h.html#outline_miter_join">outline_miter_join</A><SPAN class="op">,</SPAN>          <SPAN class="rem">//-----<A name="outline_miter_join"><B></B></A><A href="agg_rasterizer_outline_aa.h.html#outline_miter_join">outline_miter_join</A></SPAN>
+        <A href="agg_rasterizer_outline_aa.h.html#outline_round_join">outline_round_join</A><SPAN class="op">,</SPAN>          <SPAN class="rem">//-----<A name="outline_round_join"><B></B></A><A href="agg_rasterizer_outline_aa.h.html#outline_round_join">outline_round_join</A></SPAN>
+        outline_miter_accurate_join  <SPAN class="rem">//-----<A name="outline_accurate_join"><B></B></A><A href="agg_rasterizer_outline_aa.h.html#outline_accurate_join">outline_accurate_join</A></SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="rem">//=======================================================<A name="rasterizer_outline_aa"><B></B></A><A href="agg_rasterizer_outline_aa.h.html#rasterizer_outline_aa">rasterizer_outline_aa</A></SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Renderer<SPAN class="op">,</SPAN> <SPAN class="kw1">class</SPAN> Coord<SPAN class="op">=</SPAN><A href="agg_line_aa_basics.h.html#line_coord">line_coord</A><SPAN class="op">&gt;</SPAN> <SPAN class="kw1">class</SPAN> <A href="agg_rasterizer_outline_aa.h.html#rasterizer_outline_aa">rasterizer_outline_aa</A>
+    <SPAN class="op">{</SPAN>
+    <SPAN class="kw1">private</SPAN>:
+        <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">struct</SPAN> draw_vars
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">unsigned</SPAN> idx<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">int</SPAN> x1<SPAN class="op">,</SPAN> y1<SPAN class="op">,</SPAN> x2<SPAN class="op">,</SPAN> y2<SPAN class="op">;</SPAN>
+            <A href="agg_line_aa_basics.h.html#line_parameters">line_parameters</A> curr<SPAN class="op">,</SPAN> next<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">int</SPAN> lcurr<SPAN class="op">,</SPAN> lnext<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">int</SPAN> xb1<SPAN class="op">,</SPAN> yb1<SPAN class="op">,</SPAN> xb2<SPAN class="op">,</SPAN> yb2<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">unsigned</SPAN> flags<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">void</SPAN> draw<SPAN class="op">(</SPAN>draw_vars<SPAN class="op">&amp;</SPAN> dv<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> start<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> end<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">public</SPAN>:
+        <SPAN class="kw1">typedef</SPAN> <A href="agg_rasterizer_outline_aa.h.html#line_aa_vertex">line_aa_vertex</A>                  vertex_type<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">typedef</SPAN> <A href="agg_vertex_sequence.h.html#vertex_sequence">vertex_sequence</A><SPAN class="op">&lt;</SPAN>vertex_type<SPAN class="op">,</SPAN> <SPAN class="num">6</SPAN><SPAN class="op">&gt;</SPAN> vertex_storage_type<SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">explicit</SPAN> <A href="agg_rasterizer_outline_aa.h.html#rasterizer_outline_aa">rasterizer_outline_aa</A><SPAN class="op">(</SPAN>Renderer<SPAN class="op">&amp;</SPAN> ren<SPAN class="op">)</SPAN> : 
+            m_ren<SPAN class="op">(</SPAN><SPAN class="op">&amp;</SPAN>ren<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> 
+            m_line_join<SPAN class="op">(</SPAN>ren<SPAN class="op">.</SPAN>accurate_join_only<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> ? 
+                            outline_miter_accurate_join : 
+                            <A href="agg_rasterizer_outline_aa.h.html#outline_round_join">outline_round_join</A><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_round_cap<SPAN class="op">(</SPAN><SPAN class="kw1">false</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_start_x<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+            m_start_y<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN><SPAN class="op">}</SPAN>
+        <SPAN class="kw1">void</SPAN> attach<SPAN class="op">(</SPAN>Renderer<SPAN class="op">&amp;</SPAN> ren<SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN> m_ren <SPAN class="op">=</SPAN> <SPAN class="op">&amp;</SPAN>ren<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">void</SPAN> line_join<SPAN class="op">(</SPAN><A href="agg_rasterizer_outline_aa.h.html#outline_aa_join_e">outline_aa_join_e</A> join<SPAN class="op">)</SPAN> 
+        <SPAN class="op">{</SPAN> 
+            m_line_join <SPAN class="op">=</SPAN> m_ren<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>accurate_join_only<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> ? 
+                outline_miter_accurate_join : 
+                join<SPAN class="op">;</SPAN> 
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">bool</SPAN> line_join<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_line_join<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">void</SPAN> round_cap<SPAN class="op">(</SPAN><SPAN class="kw1">bool</SPAN> v<SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN> m_round_cap <SPAN class="op">=</SPAN> v<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">bool</SPAN> round_cap<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_round_cap<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">void</SPAN> move_to<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            m_src_vertices<SPAN class="op">.</SPAN>modify_last<SPAN class="op">(</SPAN>vertex_type<SPAN class="op">(</SPAN>m_start_x <SPAN class="op">=</SPAN> x<SPAN class="op">,</SPAN> m_start_y <SPAN class="op">=</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">void</SPAN> line_to<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            m_src_vertices<SPAN class="op">.</SPAN>add<SPAN class="op">(</SPAN>vertex_type<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">void</SPAN> move_to_d<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            move_to<SPAN class="op">(</SPAN>Coord::conv<SPAN class="op">(</SPAN>x<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> Coord::conv<SPAN class="op">(</SPAN>y<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">void</SPAN> line_to_d<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            line_to<SPAN class="op">(</SPAN>Coord::conv<SPAN class="op">(</SPAN>x<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> Coord::conv<SPAN class="op">(</SPAN>y<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">void</SPAN> render<SPAN class="op">(</SPAN><SPAN class="kw1">bool</SPAN> close_polygon<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">void</SPAN> add_vertex<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> cmd<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN><A href="agg_basics.h.html#is_move_to">is_move_to</A><SPAN class="op">(</SPAN>cmd<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> 
+            <SPAN class="op">{</SPAN>
+                render<SPAN class="op">(</SPAN><SPAN class="kw1">false</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                move_to_d<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="kw1">else</SPAN> 
+            <SPAN class="op">{</SPAN>
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN><A href="agg_basics.h.html#is_end_poly">is_end_poly</A><SPAN class="op">(</SPAN>cmd<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    render<SPAN class="op">(</SPAN><A href="agg_basics.h.html#is_closed">is_closed</A><SPAN class="op">(</SPAN>cmd<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN><A href="agg_basics.h.html#is_closed">is_closed</A><SPAN class="op">(</SPAN>cmd<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> 
+                    <SPAN class="op">{</SPAN>
+                        move_to<SPAN class="op">(</SPAN>m_start_x<SPAN class="op">,</SPAN> m_start_y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="op">}</SPAN>
+                <SPAN class="op">}</SPAN>
+                <SPAN class="kw1">else</SPAN>
+                <SPAN class="op">{</SPAN>
+                    line_to_d<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> VertexSource<SPAN class="op">&gt;</SPAN>
+        <SPAN class="kw1">void</SPAN> add_path<SPAN class="op">(</SPAN>VertexSource<SPAN class="op">&amp;</SPAN> vs<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> path_id<SPAN class="op">=</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">double</SPAN> x<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">double</SPAN> y<SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">unsigned</SPAN> cmd<SPAN class="op">;</SPAN>
+            vs<SPAN class="op">.</SPAN>rewind<SPAN class="op">(</SPAN>path_id<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN><SPAN class="op">!</SPAN><A href="agg_basics.h.html#is_stop">is_stop</A><SPAN class="op">(</SPAN>cmd <SPAN class="op">=</SPAN> vs<SPAN class="op">.</SPAN>vertex<SPAN class="op">(</SPAN><SPAN class="op">&amp;</SPAN>x<SPAN class="op">,</SPAN> <SPAN class="op">&amp;</SPAN>y<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                add_vertex<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> y<SPAN class="op">,</SPAN> cmd<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            render<SPAN class="op">(</SPAN><SPAN class="kw1">false</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+
+        <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> VertexSource<SPAN class="op">,</SPAN> <SPAN class="kw1">class</SPAN> ColorStorage<SPAN class="op">,</SPAN> <SPAN class="kw1">class</SPAN> PathId<SPAN class="op">&gt;</SPAN>
+        <SPAN class="kw1">void</SPAN> <A href="agg_renderer_scanline.h.html#render_all_paths">render_all_paths</A><SPAN class="op">(</SPAN>VertexSource<SPAN class="op">&amp;</SPAN> vs<SPAN class="op">,</SPAN> 
+                              <SPAN class="kw1">const</SPAN> ColorStorage<SPAN class="op">&amp;</SPAN> colors<SPAN class="op">,</SPAN> 
+                              <SPAN class="kw1">const</SPAN> PathId<SPAN class="op">&amp;</SPAN> path_id<SPAN class="op">,</SPAN>
+                              <SPAN class="kw1">unsigned</SPAN> num_paths<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> i <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;</SPAN> num_paths<SPAN class="op">;</SPAN> i<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                m_ren<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>color<SPAN class="op">(</SPAN>colors<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                add_path<SPAN class="op">(</SPAN>vs<SPAN class="op">,</SPAN> path_id<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+
+
+        <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+        <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Ctrl<SPAN class="op">&gt;</SPAN> <SPAN class="kw1">void</SPAN> render_ctrl<SPAN class="op">(</SPAN>Ctrl<SPAN class="op">&amp;</SPAN> c<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">unsigned</SPAN> i<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;</SPAN> c<SPAN class="op">.</SPAN>num_paths<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> i<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                m_ren<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>color<SPAN class="op">(</SPAN>c<SPAN class="op">.</SPAN>color<SPAN class="op">(</SPAN>i<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                add_path<SPAN class="op">(</SPAN>c<SPAN class="op">,</SPAN> i<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+
+    <SPAN class="kw1">private</SPAN>:
+        <A href="agg_rasterizer_outline_aa.h.html#rasterizer_outline_aa">rasterizer_outline_aa</A><SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <A href="agg_rasterizer_outline_aa.h.html#rasterizer_outline_aa">rasterizer_outline_aa</A><SPAN class="op">&lt;</SPAN>Renderer<SPAN class="op">,</SPAN> Coord<SPAN class="op">&gt;</SPAN><SPAN class="op">&amp;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">const</SPAN> <A href="agg_rasterizer_outline_aa.h.html#rasterizer_outline_aa">rasterizer_outline_aa</A><SPAN class="op">&lt;</SPAN>Renderer<SPAN class="op">,</SPAN> Coord<SPAN class="op">&gt;</SPAN><SPAN class="op">&amp;</SPAN> <SPAN class="kw1">operator</SPAN> <SPAN class="op">=</SPAN> 
+            <SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <A href="agg_rasterizer_outline_aa.h.html#rasterizer_outline_aa">rasterizer_outline_aa</A><SPAN class="op">&lt;</SPAN>Renderer<SPAN class="op">,</SPAN> Coord<SPAN class="op">&gt;</SPAN><SPAN class="op">&amp;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        Renderer<SPAN class="op">*</SPAN>           m_ren<SPAN class="op">;</SPAN>
+        vertex_storage_type m_src_vertices<SPAN class="op">;</SPAN>
+        <A href="agg_rasterizer_outline_aa.h.html#outline_aa_join_e">outline_aa_join_e</A>   m_line_join<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">bool</SPAN>                m_round_cap<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN>                 m_start_x<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN>                 m_start_y<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+
+
+
+
+
+
+    <SPAN class="rem">//----------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Renderer<SPAN class="op">,</SPAN> <SPAN class="kw1">class</SPAN> Coord<SPAN class="op">&gt;</SPAN> 
+    <SPAN class="kw1">void</SPAN> <A href="agg_rasterizer_outline_aa.h.html#rasterizer_outline_aa">rasterizer_outline_aa</A><SPAN class="op">&lt;</SPAN>Renderer<SPAN class="op">,</SPAN> Coord<SPAN class="op">&gt;</SPAN>::draw<SPAN class="op">(</SPAN>draw_vars<SPAN class="op">&amp;</SPAN> dv<SPAN class="op">,</SPAN> 
+                                                      <SPAN class="kw1">unsigned</SPAN> start<SPAN class="op">,</SPAN> 
+                                                      <SPAN class="kw1">unsigned</SPAN> end<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> i<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">const</SPAN> vertex_storage_type::value_type<SPAN class="op">*</SPAN> v<SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> start<SPAN class="op">;</SPAN> i <SPAN class="op">&lt;</SPAN> end<SPAN class="op">;</SPAN> i<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_line_join <SPAN class="op">==</SPAN> <A href="agg_rasterizer_outline_aa.h.html#outline_round_join">outline_round_join</A><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                dv<SPAN class="op">.</SPAN>xb1 <SPAN class="op">=</SPAN> dv<SPAN class="op">.</SPAN>curr<SPAN class="op">.</SPAN>x1 <SPAN class="op">+</SPAN> <SPAN class="op">(</SPAN>dv<SPAN class="op">.</SPAN>curr<SPAN class="op">.</SPAN>y2 <SPAN class="op">-</SPAN> dv<SPAN class="op">.</SPAN>curr<SPAN class="op">.</SPAN>y1<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> 
+                dv<SPAN class="op">.</SPAN>yb1 <SPAN class="op">=</SPAN> dv<SPAN class="op">.</SPAN>curr<SPAN class="op">.</SPAN>y1 <SPAN class="op">-</SPAN> <SPAN class="op">(</SPAN>dv<SPAN class="op">.</SPAN>curr<SPAN class="op">.</SPAN>x2 <SPAN class="op">-</SPAN> dv<SPAN class="op">.</SPAN>curr<SPAN class="op">.</SPAN>x1<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> 
+                dv<SPAN class="op">.</SPAN>xb2 <SPAN class="op">=</SPAN> dv<SPAN class="op">.</SPAN>curr<SPAN class="op">.</SPAN>x2 <SPAN class="op">+</SPAN> <SPAN class="op">(</SPAN>dv<SPAN class="op">.</SPAN>curr<SPAN class="op">.</SPAN>y2 <SPAN class="op">-</SPAN> dv<SPAN class="op">.</SPAN>curr<SPAN class="op">.</SPAN>y1<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> 
+                dv<SPAN class="op">.</SPAN>yb2 <SPAN class="op">=</SPAN> dv<SPAN class="op">.</SPAN>curr<SPAN class="op">.</SPAN>y2 <SPAN class="op">-</SPAN> <SPAN class="op">(</SPAN>dv<SPAN class="op">.</SPAN>curr<SPAN class="op">.</SPAN>x2 <SPAN class="op">-</SPAN> dv<SPAN class="op">.</SPAN>curr<SPAN class="op">.</SPAN>x1<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+
+            <SPAN class="kw1">switch</SPAN><SPAN class="op">(</SPAN>dv<SPAN class="op">.</SPAN>flags<SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">case</SPAN> <SPAN class="num">0</SPAN>: m_ren<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>line3<SPAN class="op">(</SPAN>dv<SPAN class="op">.</SPAN>curr<SPAN class="op">,</SPAN> dv<SPAN class="op">.</SPAN>xb1<SPAN class="op">,</SPAN> dv<SPAN class="op">.</SPAN>yb1<SPAN class="op">,</SPAN> dv<SPAN class="op">.</SPAN>xb2<SPAN class="op">,</SPAN> dv<SPAN class="op">.</SPAN>yb2<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">case</SPAN> <SPAN class="num">1</SPAN>: m_ren<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>line2<SPAN class="op">(</SPAN>dv<SPAN class="op">.</SPAN>curr<SPAN class="op">,</SPAN> dv<SPAN class="op">.</SPAN>xb2<SPAN class="op">,</SPAN> dv<SPAN class="op">.</SPAN>yb2<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">case</SPAN> <SPAN class="num">2</SPAN>: m_ren<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>line1<SPAN class="op">(</SPAN>dv<SPAN class="op">.</SPAN>curr<SPAN class="op">,</SPAN> dv<SPAN class="op">.</SPAN>xb1<SPAN class="op">,</SPAN> dv<SPAN class="op">.</SPAN>yb1<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">case</SPAN> <SPAN class="num">3</SPAN>: m_ren<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>line0<SPAN class="op">(</SPAN>dv<SPAN class="op">.</SPAN>curr<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_line_join <SPAN class="op">==</SPAN> <A href="agg_rasterizer_outline_aa.h.html#outline_round_join">outline_round_join</A> <SPAN class="op">&amp;&amp;</SPAN> <SPAN class="op">(</SPAN>dv<SPAN class="op">.</SPAN>flags <SPAN class="op">&amp;</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                m_ren<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>pie<SPAN class="op">(</SPAN>dv<SPAN class="op">.</SPAN>curr<SPAN class="op">.</SPAN>x2<SPAN class="op">,</SPAN> dv<SPAN class="op">.</SPAN>curr<SPAN class="op">.</SPAN>y2<SPAN class="op">,</SPAN> 
+                           dv<SPAN class="op">.</SPAN>curr<SPAN class="op">.</SPAN>x2 <SPAN class="op">+</SPAN> <SPAN class="op">(</SPAN>dv<SPAN class="op">.</SPAN>curr<SPAN class="op">.</SPAN>y2 <SPAN class="op">-</SPAN> dv<SPAN class="op">.</SPAN>curr<SPAN class="op">.</SPAN>y1<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+                           dv<SPAN class="op">.</SPAN>curr<SPAN class="op">.</SPAN>y2 <SPAN class="op">-</SPAN> <SPAN class="op">(</SPAN>dv<SPAN class="op">.</SPAN>curr<SPAN class="op">.</SPAN>x2 <SPAN class="op">-</SPAN> dv<SPAN class="op">.</SPAN>curr<SPAN class="op">.</SPAN>x1<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+                           dv<SPAN class="op">.</SPAN>curr<SPAN class="op">.</SPAN>x2 <SPAN class="op">+</SPAN> <SPAN class="op">(</SPAN>dv<SPAN class="op">.</SPAN>next<SPAN class="op">.</SPAN>y2 <SPAN class="op">-</SPAN> dv<SPAN class="op">.</SPAN>next<SPAN class="op">.</SPAN>y1<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+                           dv<SPAN class="op">.</SPAN>curr<SPAN class="op">.</SPAN>y2 <SPAN class="op">-</SPAN> <SPAN class="op">(</SPAN>dv<SPAN class="op">.</SPAN>next<SPAN class="op">.</SPAN>x2 <SPAN class="op">-</SPAN> dv<SPAN class="op">.</SPAN>next<SPAN class="op">.</SPAN>x1<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+
+            dv<SPAN class="op">.</SPAN>x1 <SPAN class="op">=</SPAN> dv<SPAN class="op">.</SPAN>x2<SPAN class="op">;</SPAN>
+            dv<SPAN class="op">.</SPAN>y1 <SPAN class="op">=</SPAN> dv<SPAN class="op">.</SPAN>y2<SPAN class="op">;</SPAN>
+            dv<SPAN class="op">.</SPAN>lcurr <SPAN class="op">=</SPAN> dv<SPAN class="op">.</SPAN>lnext<SPAN class="op">;</SPAN>
+            dv<SPAN class="op">.</SPAN>lnext <SPAN class="op">=</SPAN> m_src_vertices<SPAN class="op">[</SPAN>dv<SPAN class="op">.</SPAN>idx<SPAN class="op">]</SPAN><SPAN class="op">.</SPAN>len<SPAN class="op">;</SPAN>
+
+            <SPAN class="op">++</SPAN>dv<SPAN class="op">.</SPAN>idx<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>dv<SPAN class="op">.</SPAN>idx <SPAN class="op">&gt;=</SPAN> m_src_vertices<SPAN class="op">.</SPAN>size<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> dv<SPAN class="op">.</SPAN>idx <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> 
+
+            v <SPAN class="op">=</SPAN> <SPAN class="op">&amp;</SPAN>m_src_vertices<SPAN class="op">[</SPAN>dv<SPAN class="op">.</SPAN>idx<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+            dv<SPAN class="op">.</SPAN>x2 <SPAN class="op">=</SPAN> v<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>x<SPAN class="op">;</SPAN>
+            dv<SPAN class="op">.</SPAN>y2 <SPAN class="op">=</SPAN> v<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>y<SPAN class="op">;</SPAN>
+
+            dv<SPAN class="op">.</SPAN>curr <SPAN class="op">=</SPAN> dv<SPAN class="op">.</SPAN>next<SPAN class="op">;</SPAN>
+            dv<SPAN class="op">.</SPAN>next <SPAN class="op">=</SPAN> <A href="agg_line_aa_basics.h.html#line_parameters">line_parameters</A><SPAN class="op">(</SPAN>dv<SPAN class="op">.</SPAN>x1<SPAN class="op">,</SPAN> dv<SPAN class="op">.</SPAN>y1<SPAN class="op">,</SPAN> dv<SPAN class="op">.</SPAN>x2<SPAN class="op">,</SPAN> dv<SPAN class="op">.</SPAN>y2<SPAN class="op">,</SPAN> dv<SPAN class="op">.</SPAN>lnext<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            dv<SPAN class="op">.</SPAN>xb1 <SPAN class="op">=</SPAN> dv<SPAN class="op">.</SPAN>xb2<SPAN class="op">;</SPAN>
+            dv<SPAN class="op">.</SPAN>yb1 <SPAN class="op">=</SPAN> dv<SPAN class="op">.</SPAN>yb2<SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">switch</SPAN><SPAN class="op">(</SPAN>m_line_join<SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">case</SPAN> <A href="agg_rasterizer_outline_aa.h.html#outline_no_join">outline_no_join</A>:
+                dv<SPAN class="op">.</SPAN>flags <SPAN class="op">=</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">case</SPAN> <A href="agg_rasterizer_outline_aa.h.html#outline_miter_join">outline_miter_join</A>:
+                dv<SPAN class="op">.</SPAN>flags <SPAN class="op">&gt;&gt;=</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+                dv<SPAN class="op">.</SPAN>flags <SPAN class="op">|=</SPAN> <SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>dv<SPAN class="op">.</SPAN>curr<SPAN class="op">.</SPAN>diagonal_quadrant<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">==</SPAN> 
+                              dv<SPAN class="op">.</SPAN>next<SPAN class="op">.</SPAN>diagonal_quadrant<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">&lt;&lt;</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>dv<SPAN class="op">.</SPAN>flags <SPAN class="op">&amp;</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    <A href="agg_line_aa_basics.h.html#bisectrix">bisectrix</A><SPAN class="op">(</SPAN>dv<SPAN class="op">.</SPAN>curr<SPAN class="op">,</SPAN> dv<SPAN class="op">.</SPAN>next<SPAN class="op">,</SPAN> <SPAN class="op">&amp;</SPAN>dv<SPAN class="op">.</SPAN>xb2<SPAN class="op">,</SPAN> <SPAN class="op">&amp;</SPAN>dv<SPAN class="op">.</SPAN>yb2<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+                <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">case</SPAN> <A href="agg_rasterizer_outline_aa.h.html#outline_round_join">outline_round_join</A>:
+                dv<SPAN class="op">.</SPAN>flags <SPAN class="op">&gt;&gt;=</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+                dv<SPAN class="op">.</SPAN>flags <SPAN class="op">|=</SPAN> <SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>dv<SPAN class="op">.</SPAN>curr<SPAN class="op">.</SPAN>diagonal_quadrant<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">==</SPAN> 
+                              dv<SPAN class="op">.</SPAN>next<SPAN class="op">.</SPAN>diagonal_quadrant<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">&lt;&lt;</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">case</SPAN> outline_miter_accurate_join:
+                dv<SPAN class="op">.</SPAN>flags <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+                <A href="agg_line_aa_basics.h.html#bisectrix">bisectrix</A><SPAN class="op">(</SPAN>dv<SPAN class="op">.</SPAN>curr<SPAN class="op">,</SPAN> dv<SPAN class="op">.</SPAN>next<SPAN class="op">,</SPAN> <SPAN class="op">&amp;</SPAN>dv<SPAN class="op">.</SPAN>xb2<SPAN class="op">,</SPAN> <SPAN class="op">&amp;</SPAN>dv<SPAN class="op">.</SPAN>yb2<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+
+
+    <SPAN class="rem">//----------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Renderer<SPAN class="op">,</SPAN> <SPAN class="kw1">class</SPAN> Coord<SPAN class="op">&gt;</SPAN> 
+    <SPAN class="kw1">void</SPAN> <A href="agg_rasterizer_outline_aa.h.html#rasterizer_outline_aa">rasterizer_outline_aa</A><SPAN class="op">&lt;</SPAN>Renderer<SPAN class="op">,</SPAN> Coord<SPAN class="op">&gt;</SPAN>::render<SPAN class="op">(</SPAN><SPAN class="kw1">bool</SPAN> close_polygon<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        m_src_vertices<SPAN class="op">.</SPAN>close<SPAN class="op">(</SPAN>close_polygon<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        draw_vars dv<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">const</SPAN> vertex_storage_type::value_type<SPAN class="op">*</SPAN> v<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN> x1<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN> y1<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN> x2<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN> y2<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN> lprev<SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>close_polygon<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_src_vertices<SPAN class="op">.</SPAN>size<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">&gt;=</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                dv<SPAN class="op">.</SPAN>idx <SPAN class="op">=</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+
+                v     <SPAN class="op">=</SPAN> <SPAN class="op">&amp;</SPAN>m_src_vertices<SPAN class="op">[</SPAN>m_src_vertices<SPAN class="op">.</SPAN>size<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">-</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                x1    <SPAN class="op">=</SPAN> v<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>x<SPAN class="op">;</SPAN>
+                y1    <SPAN class="op">=</SPAN> v<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>y<SPAN class="op">;</SPAN>
+                lprev <SPAN class="op">=</SPAN> v<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>len<SPAN class="op">;</SPAN>
+
+                v  <SPAN class="op">=</SPAN> <SPAN class="op">&amp;</SPAN>m_src_vertices<SPAN class="op">[</SPAN><SPAN class="num">0</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                x2 <SPAN class="op">=</SPAN> v<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>x<SPAN class="op">;</SPAN>
+                y2 <SPAN class="op">=</SPAN> v<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>y<SPAN class="op">;</SPAN>
+                dv<SPAN class="op">.</SPAN>lcurr <SPAN class="op">=</SPAN> v<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>len<SPAN class="op">;</SPAN>
+                <A href="agg_line_aa_basics.h.html#line_parameters">line_parameters</A> prev<SPAN class="op">(</SPAN>x1<SPAN class="op">,</SPAN> y1<SPAN class="op">,</SPAN> x2<SPAN class="op">,</SPAN> y2<SPAN class="op">,</SPAN> lprev<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                v <SPAN class="op">=</SPAN> <SPAN class="op">&amp;</SPAN>m_src_vertices<SPAN class="op">[</SPAN><SPAN class="num">1</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                dv<SPAN class="op">.</SPAN>x1    <SPAN class="op">=</SPAN> v<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>x<SPAN class="op">;</SPAN>
+                dv<SPAN class="op">.</SPAN>y1    <SPAN class="op">=</SPAN> v<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>y<SPAN class="op">;</SPAN>
+                dv<SPAN class="op">.</SPAN>lnext <SPAN class="op">=</SPAN> v<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>len<SPAN class="op">;</SPAN>
+                dv<SPAN class="op">.</SPAN>curr <SPAN class="op">=</SPAN> <A href="agg_line_aa_basics.h.html#line_parameters">line_parameters</A><SPAN class="op">(</SPAN>x2<SPAN class="op">,</SPAN> y2<SPAN class="op">,</SPAN> dv<SPAN class="op">.</SPAN>x1<SPAN class="op">,</SPAN> dv<SPAN class="op">.</SPAN>y1<SPAN class="op">,</SPAN> dv<SPAN class="op">.</SPAN>lcurr<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                v <SPAN class="op">=</SPAN> <SPAN class="op">&amp;</SPAN>m_src_vertices<SPAN class="op">[</SPAN>dv<SPAN class="op">.</SPAN>idx<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                dv<SPAN class="op">.</SPAN>x2 <SPAN class="op">=</SPAN> v<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>x<SPAN class="op">;</SPAN>
+                dv<SPAN class="op">.</SPAN>y2 <SPAN class="op">=</SPAN> v<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>y<SPAN class="op">;</SPAN>
+                dv<SPAN class="op">.</SPAN>next <SPAN class="op">=</SPAN> <A href="agg_line_aa_basics.h.html#line_parameters">line_parameters</A><SPAN class="op">(</SPAN>dv<SPAN class="op">.</SPAN>x1<SPAN class="op">,</SPAN> dv<SPAN class="op">.</SPAN>y1<SPAN class="op">,</SPAN> dv<SPAN class="op">.</SPAN>x2<SPAN class="op">,</SPAN> dv<SPAN class="op">.</SPAN>y2<SPAN class="op">,</SPAN> dv<SPAN class="op">.</SPAN>lnext<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                dv<SPAN class="op">.</SPAN>xb1 <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+                dv<SPAN class="op">.</SPAN>yb1 <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+                dv<SPAN class="op">.</SPAN>xb2 <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+                dv<SPAN class="op">.</SPAN>yb2 <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+
+                <SPAN class="kw1">switch</SPAN><SPAN class="op">(</SPAN>m_line_join<SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                <SPAN class="kw1">case</SPAN> <A href="agg_rasterizer_outline_aa.h.html#outline_no_join">outline_no_join</A>:
+                    dv<SPAN class="op">.</SPAN>flags <SPAN class="op">=</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+
+                <SPAN class="kw1">case</SPAN> <A href="agg_rasterizer_outline_aa.h.html#outline_miter_join">outline_miter_join</A>:
+                <SPAN class="kw1">case</SPAN> <A href="agg_rasterizer_outline_aa.h.html#outline_round_join">outline_round_join</A>:
+                    dv<SPAN class="op">.</SPAN>flags <SPAN class="op">=</SPAN> 
+                            <SPAN class="op">(</SPAN>prev<SPAN class="op">.</SPAN>diagonal_quadrant<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">==</SPAN> dv<SPAN class="op">.</SPAN>curr<SPAN class="op">.</SPAN>diagonal_quadrant<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">|</SPAN>
+                        <SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>dv<SPAN class="op">.</SPAN>curr<SPAN class="op">.</SPAN>diagonal_quadrant<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">==</SPAN> dv<SPAN class="op">.</SPAN>next<SPAN class="op">.</SPAN>diagonal_quadrant<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">&lt;&lt;</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+
+                <SPAN class="kw1">case</SPAN> outline_miter_accurate_join:
+                    dv<SPAN class="op">.</SPAN>flags <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>dv<SPAN class="op">.</SPAN>flags <SPAN class="op">&amp;</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN> <SPAN class="op">&amp;&amp;</SPAN> m_line_join <SPAN class="op">!=</SPAN> <A href="agg_rasterizer_outline_aa.h.html#outline_round_join">outline_round_join</A><SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    <A href="agg_line_aa_basics.h.html#bisectrix">bisectrix</A><SPAN class="op">(</SPAN>prev<SPAN class="op">,</SPAN> dv<SPAN class="op">.</SPAN>curr<SPAN class="op">,</SPAN> <SPAN class="op">&amp;</SPAN>dv<SPAN class="op">.</SPAN>xb1<SPAN class="op">,</SPAN> <SPAN class="op">&amp;</SPAN>dv<SPAN class="op">.</SPAN>yb1<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>dv<SPAN class="op">.</SPAN>flags <SPAN class="op">&amp;</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN> <SPAN class="op">&amp;&amp;</SPAN> m_line_join <SPAN class="op">!=</SPAN> <A href="agg_rasterizer_outline_aa.h.html#outline_round_join">outline_round_join</A><SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    <A href="agg_line_aa_basics.h.html#bisectrix">bisectrix</A><SPAN class="op">(</SPAN>dv<SPAN class="op">.</SPAN>curr<SPAN class="op">,</SPAN> dv<SPAN class="op">.</SPAN>next<SPAN class="op">,</SPAN> <SPAN class="op">&amp;</SPAN>dv<SPAN class="op">.</SPAN>xb2<SPAN class="op">,</SPAN> <SPAN class="op">&amp;</SPAN>dv<SPAN class="op">.</SPAN>yb2<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+                draw<SPAN class="op">(</SPAN>dv<SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> m_src_vertices<SPAN class="op">.</SPAN>size<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">else</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">switch</SPAN><SPAN class="op">(</SPAN>m_src_vertices<SPAN class="op">.</SPAN>size<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                <SPAN class="kw1">case</SPAN> <SPAN class="num">0</SPAN>:
+                <SPAN class="kw1">case</SPAN> <SPAN class="num">1</SPAN>:
+                    <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+
+                <SPAN class="kw1">case</SPAN> <SPAN class="num">2</SPAN>:
+                <SPAN class="op">{</SPAN>
+                    v     <SPAN class="op">=</SPAN> <SPAN class="op">&amp;</SPAN>m_src_vertices<SPAN class="op">[</SPAN><SPAN class="num">0</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    x1    <SPAN class="op">=</SPAN> v<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>x<SPAN class="op">;</SPAN>
+                    y1    <SPAN class="op">=</SPAN> v<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>y<SPAN class="op">;</SPAN>
+                    lprev <SPAN class="op">=</SPAN> v<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>len<SPAN class="op">;</SPAN>
+                    v     <SPAN class="op">=</SPAN> <SPAN class="op">&amp;</SPAN>m_src_vertices<SPAN class="op">[</SPAN><SPAN class="num">1</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    x2    <SPAN class="op">=</SPAN> v<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>x<SPAN class="op">;</SPAN>
+                    y2    <SPAN class="op">=</SPAN> v<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>y<SPAN class="op">;</SPAN>
+                    <A href="agg_line_aa_basics.h.html#line_parameters">line_parameters</A> lp<SPAN class="op">(</SPAN>x1<SPAN class="op">,</SPAN> y1<SPAN class="op">,</SPAN> x2<SPAN class="op">,</SPAN> y2<SPAN class="op">,</SPAN> lprev<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_round_cap<SPAN class="op">)</SPAN> 
+                    <SPAN class="op">{</SPAN>
+                        m_ren<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>semidot<SPAN class="op">(</SPAN>cmp_dist_start<SPAN class="op">,</SPAN> x1<SPAN class="op">,</SPAN> y1<SPAN class="op">,</SPAN> x1 <SPAN class="op">+</SPAN> <SPAN class="op">(</SPAN>y2 <SPAN class="op">-</SPAN> y1<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> y1 <SPAN class="op">-</SPAN> <SPAN class="op">(</SPAN>x2 <SPAN class="op">-</SPAN> x1<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="op">}</SPAN>
+                    m_ren<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>line3<SPAN class="op">(</SPAN>lp<SPAN class="op">,</SPAN> 
+                                 x1 <SPAN class="op">+</SPAN> <SPAN class="op">(</SPAN>y2 <SPAN class="op">-</SPAN> y1<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> 
+                                 y1 <SPAN class="op">-</SPAN> <SPAN class="op">(</SPAN>x2 <SPAN class="op">-</SPAN> x1<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+                                 x2 <SPAN class="op">+</SPAN> <SPAN class="op">(</SPAN>y2 <SPAN class="op">-</SPAN> y1<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> 
+                                 y2 <SPAN class="op">-</SPAN> <SPAN class="op">(</SPAN>x2 <SPAN class="op">-</SPAN> x1<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_round_cap<SPAN class="op">)</SPAN> 
+                    <SPAN class="op">{</SPAN>
+                        m_ren<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>semidot<SPAN class="op">(</SPAN>cmp_dist_end<SPAN class="op">,</SPAN> x2<SPAN class="op">,</SPAN> y2<SPAN class="op">,</SPAN> x2 <SPAN class="op">+</SPAN> <SPAN class="op">(</SPAN>y2 <SPAN class="op">-</SPAN> y1<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> y2 <SPAN class="op">-</SPAN> <SPAN class="op">(</SPAN>x2 <SPAN class="op">-</SPAN> x1<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="op">}</SPAN>
+                <SPAN class="op">}</SPAN>
+                <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+
+                <SPAN class="kw1">case</SPAN> <SPAN class="num">3</SPAN>:
+                <SPAN class="op">{</SPAN>
+                    <SPAN class="kw1">int</SPAN> x3<SPAN class="op">,</SPAN> y3<SPAN class="op">;</SPAN>
+                    <SPAN class="kw1">int</SPAN> lnext<SPAN class="op">;</SPAN>
+                    v     <SPAN class="op">=</SPAN> <SPAN class="op">&amp;</SPAN>m_src_vertices<SPAN class="op">[</SPAN><SPAN class="num">0</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    x1    <SPAN class="op">=</SPAN> v<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>x<SPAN class="op">;</SPAN>
+                    y1    <SPAN class="op">=</SPAN> v<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>y<SPAN class="op">;</SPAN>
+                    lprev <SPAN class="op">=</SPAN> v<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>len<SPAN class="op">;</SPAN>
+                    v     <SPAN class="op">=</SPAN> <SPAN class="op">&amp;</SPAN>m_src_vertices<SPAN class="op">[</SPAN><SPAN class="num">1</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    x2    <SPAN class="op">=</SPAN> v<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>x<SPAN class="op">;</SPAN>
+                    y2    <SPAN class="op">=</SPAN> v<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>y<SPAN class="op">;</SPAN>
+                    lnext <SPAN class="op">=</SPAN> v<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>len<SPAN class="op">;</SPAN>
+                    v     <SPAN class="op">=</SPAN> <SPAN class="op">&amp;</SPAN>m_src_vertices<SPAN class="op">[</SPAN><SPAN class="num">2</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    x3    <SPAN class="op">=</SPAN> v<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>x<SPAN class="op">;</SPAN>
+                    y3    <SPAN class="op">=</SPAN> v<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>y<SPAN class="op">;</SPAN>
+                    <A href="agg_line_aa_basics.h.html#line_parameters">line_parameters</A> lp1<SPAN class="op">(</SPAN>x1<SPAN class="op">,</SPAN> y1<SPAN class="op">,</SPAN> x2<SPAN class="op">,</SPAN> y2<SPAN class="op">,</SPAN> lprev<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <A href="agg_line_aa_basics.h.html#line_parameters">line_parameters</A> lp2<SPAN class="op">(</SPAN>x2<SPAN class="op">,</SPAN> y2<SPAN class="op">,</SPAN> x3<SPAN class="op">,</SPAN> y3<SPAN class="op">,</SPAN> lnext<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_round_cap<SPAN class="op">)</SPAN> 
+                    <SPAN class="op">{</SPAN>
+                        m_ren<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>semidot<SPAN class="op">(</SPAN>cmp_dist_start<SPAN class="op">,</SPAN> x1<SPAN class="op">,</SPAN> y1<SPAN class="op">,</SPAN> x1 <SPAN class="op">+</SPAN> <SPAN class="op">(</SPAN>y2 <SPAN class="op">-</SPAN> y1<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> y1 <SPAN class="op">-</SPAN> <SPAN class="op">(</SPAN>x2 <SPAN class="op">-</SPAN> x1<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="op">}</SPAN>
+
+                    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_line_join <SPAN class="op">==</SPAN> <A href="agg_rasterizer_outline_aa.h.html#outline_round_join">outline_round_join</A><SPAN class="op">)</SPAN>
+                    <SPAN class="op">{</SPAN>
+                        m_ren<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>line3<SPAN class="op">(</SPAN>lp1<SPAN class="op">,</SPAN> x1 <SPAN class="op">+</SPAN> <SPAN class="op">(</SPAN>y2 <SPAN class="op">-</SPAN> y1<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> y1 <SPAN class="op">-</SPAN> <SPAN class="op">(</SPAN>x2 <SPAN class="op">-</SPAN> x1<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> 
+                                          x2 <SPAN class="op">+</SPAN> <SPAN class="op">(</SPAN>y2 <SPAN class="op">-</SPAN> y1<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> y2 <SPAN class="op">-</SPAN> <SPAN class="op">(</SPAN>x2 <SPAN class="op">-</SPAN> x1<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                        m_ren<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>pie<SPAN class="op">(</SPAN>x2<SPAN class="op">,</SPAN> y2<SPAN class="op">,</SPAN> x2 <SPAN class="op">+</SPAN> <SPAN class="op">(</SPAN>y2 <SPAN class="op">-</SPAN> y1<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> y2 <SPAN class="op">-</SPAN> <SPAN class="op">(</SPAN>x2 <SPAN class="op">-</SPAN> x1<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+                                           x2 <SPAN class="op">+</SPAN> <SPAN class="op">(</SPAN>y3 <SPAN class="op">-</SPAN> y2<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> y2 <SPAN class="op">-</SPAN> <SPAN class="op">(</SPAN>x3 <SPAN class="op">-</SPAN> x2<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                        m_ren<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>line3<SPAN class="op">(</SPAN>lp2<SPAN class="op">,</SPAN> x2 <SPAN class="op">+</SPAN> <SPAN class="op">(</SPAN>y3 <SPAN class="op">-</SPAN> y2<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> y2 <SPAN class="op">-</SPAN> <SPAN class="op">(</SPAN>x3 <SPAN class="op">-</SPAN> x2<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+                                          x3 <SPAN class="op">+</SPAN> <SPAN class="op">(</SPAN>y3 <SPAN class="op">-</SPAN> y2<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> y3 <SPAN class="op">-</SPAN> <SPAN class="op">(</SPAN>x3 <SPAN class="op">-</SPAN> x2<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="op">}</SPAN>
+                    <SPAN class="kw1">else</SPAN>
+                    <SPAN class="op">{</SPAN>
+                        <A href="agg_line_aa_basics.h.html#bisectrix">bisectrix</A><SPAN class="op">(</SPAN>lp1<SPAN class="op">,</SPAN> lp2<SPAN class="op">,</SPAN> <SPAN class="op">&amp;</SPAN>dv<SPAN class="op">.</SPAN>xb1<SPAN class="op">,</SPAN> <SPAN class="op">&amp;</SPAN>dv<SPAN class="op">.</SPAN>yb1<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                        m_ren<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>line3<SPAN class="op">(</SPAN>lp1<SPAN class="op">,</SPAN> x1 <SPAN class="op">+</SPAN> <SPAN class="op">(</SPAN>y2 <SPAN class="op">-</SPAN> y1<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> y1 <SPAN class="op">-</SPAN> <SPAN class="op">(</SPAN>x2 <SPAN class="op">-</SPAN> x1<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+                                          dv<SPAN class="op">.</SPAN>xb1<SPAN class="op">,</SPAN>         dv<SPAN class="op">.</SPAN>yb1<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                        m_ren<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>line3<SPAN class="op">(</SPAN>lp2<SPAN class="op">,</SPAN> dv<SPAN class="op">.</SPAN>xb1<SPAN class="op">,</SPAN>         dv<SPAN class="op">.</SPAN>yb1<SPAN class="op">,</SPAN>
+                                          x3 <SPAN class="op">+</SPAN> <SPAN class="op">(</SPAN>y3 <SPAN class="op">-</SPAN> y2<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> y3 <SPAN class="op">-</SPAN> <SPAN class="op">(</SPAN>x3 <SPAN class="op">-</SPAN> x2<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="op">}</SPAN>
+                    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_round_cap<SPAN class="op">)</SPAN> 
+                    <SPAN class="op">{</SPAN>
+                        m_ren<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>semidot<SPAN class="op">(</SPAN>cmp_dist_end<SPAN class="op">,</SPAN> x3<SPAN class="op">,</SPAN> y3<SPAN class="op">,</SPAN> x3 <SPAN class="op">+</SPAN> <SPAN class="op">(</SPAN>y3 <SPAN class="op">-</SPAN> y2<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> y3 <SPAN class="op">-</SPAN> <SPAN class="op">(</SPAN>x3 <SPAN class="op">-</SPAN> x2<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="op">}</SPAN>
+                <SPAN class="op">}</SPAN>
+                <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+
+                <SPAN class="kw1">default</SPAN>:
+                <SPAN class="op">{</SPAN>
+                    dv<SPAN class="op">.</SPAN>idx <SPAN class="op">=</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">;</SPAN>
+
+                    v     <SPAN class="op">=</SPAN> <SPAN class="op">&amp;</SPAN>m_src_vertices<SPAN class="op">[</SPAN><SPAN class="num">0</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    x1    <SPAN class="op">=</SPAN> v<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>x<SPAN class="op">;</SPAN>
+                    y1    <SPAN class="op">=</SPAN> v<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>y<SPAN class="op">;</SPAN>
+                    lprev <SPAN class="op">=</SPAN> v<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>len<SPAN class="op">;</SPAN>
+
+                    v  <SPAN class="op">=</SPAN> <SPAN class="op">&amp;</SPAN>m_src_vertices<SPAN class="op">[</SPAN><SPAN class="num">1</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    x2 <SPAN class="op">=</SPAN> v<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>x<SPAN class="op">;</SPAN>
+                    y2 <SPAN class="op">=</SPAN> v<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>y<SPAN class="op">;</SPAN>
+                    dv<SPAN class="op">.</SPAN>lcurr <SPAN class="op">=</SPAN> v<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>len<SPAN class="op">;</SPAN>
+                    <A href="agg_line_aa_basics.h.html#line_parameters">line_parameters</A> prev<SPAN class="op">(</SPAN>x1<SPAN class="op">,</SPAN> y1<SPAN class="op">,</SPAN> x2<SPAN class="op">,</SPAN> y2<SPAN class="op">,</SPAN> lprev<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                    v <SPAN class="op">=</SPAN> <SPAN class="op">&amp;</SPAN>m_src_vertices<SPAN class="op">[</SPAN><SPAN class="num">2</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    dv<SPAN class="op">.</SPAN>x1    <SPAN class="op">=</SPAN> v<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>x<SPAN class="op">;</SPAN>
+                    dv<SPAN class="op">.</SPAN>y1    <SPAN class="op">=</SPAN> v<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>y<SPAN class="op">;</SPAN>
+                    dv<SPAN class="op">.</SPAN>lnext <SPAN class="op">=</SPAN> v<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>len<SPAN class="op">;</SPAN>
+                    dv<SPAN class="op">.</SPAN>curr <SPAN class="op">=</SPAN> <A href="agg_line_aa_basics.h.html#line_parameters">line_parameters</A><SPAN class="op">(</SPAN>x2<SPAN class="op">,</SPAN> y2<SPAN class="op">,</SPAN> dv<SPAN class="op">.</SPAN>x1<SPAN class="op">,</SPAN> dv<SPAN class="op">.</SPAN>y1<SPAN class="op">,</SPAN> dv<SPAN class="op">.</SPAN>lcurr<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                    v <SPAN class="op">=</SPAN> <SPAN class="op">&amp;</SPAN>m_src_vertices<SPAN class="op">[</SPAN>dv<SPAN class="op">.</SPAN>idx<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    dv<SPAN class="op">.</SPAN>x2 <SPAN class="op">=</SPAN> v<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>x<SPAN class="op">;</SPAN>
+                    dv<SPAN class="op">.</SPAN>y2 <SPAN class="op">=</SPAN> v<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>y<SPAN class="op">;</SPAN>
+                    dv<SPAN class="op">.</SPAN>next <SPAN class="op">=</SPAN> <A href="agg_line_aa_basics.h.html#line_parameters">line_parameters</A><SPAN class="op">(</SPAN>dv<SPAN class="op">.</SPAN>x1<SPAN class="op">,</SPAN> dv<SPAN class="op">.</SPAN>y1<SPAN class="op">,</SPAN> dv<SPAN class="op">.</SPAN>x2<SPAN class="op">,</SPAN> dv<SPAN class="op">.</SPAN>y2<SPAN class="op">,</SPAN> dv<SPAN class="op">.</SPAN>lnext<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                    dv<SPAN class="op">.</SPAN>xb1 <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+                    dv<SPAN class="op">.</SPAN>yb1 <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+                    dv<SPAN class="op">.</SPAN>xb2 <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+                    dv<SPAN class="op">.</SPAN>yb2 <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+
+                    <SPAN class="kw1">switch</SPAN><SPAN class="op">(</SPAN>m_line_join<SPAN class="op">)</SPAN>
+                    <SPAN class="op">{</SPAN>
+                    <SPAN class="kw1">case</SPAN> <A href="agg_rasterizer_outline_aa.h.html#outline_no_join">outline_no_join</A>:
+                        dv<SPAN class="op">.</SPAN>flags <SPAN class="op">=</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">;</SPAN>
+                        <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+
+                    <SPAN class="kw1">case</SPAN> <A href="agg_rasterizer_outline_aa.h.html#outline_miter_join">outline_miter_join</A>:
+                    <SPAN class="kw1">case</SPAN> <A href="agg_rasterizer_outline_aa.h.html#outline_round_join">outline_round_join</A>:
+                        dv<SPAN class="op">.</SPAN>flags <SPAN class="op">=</SPAN> 
+                                <SPAN class="op">(</SPAN>prev<SPAN class="op">.</SPAN>diagonal_quadrant<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">==</SPAN> dv<SPAN class="op">.</SPAN>curr<SPAN class="op">.</SPAN>diagonal_quadrant<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">|</SPAN>
+                            <SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>dv<SPAN class="op">.</SPAN>curr<SPAN class="op">.</SPAN>diagonal_quadrant<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">==</SPAN> dv<SPAN class="op">.</SPAN>next<SPAN class="op">.</SPAN>diagonal_quadrant<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">&lt;&lt;</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                        <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+
+                    <SPAN class="kw1">case</SPAN> outline_miter_accurate_join:
+                        dv<SPAN class="op">.</SPAN>flags <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+                        <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="op">}</SPAN>
+
+                    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_round_cap<SPAN class="op">)</SPAN> 
+                    <SPAN class="op">{</SPAN>
+                        m_ren<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>semidot<SPAN class="op">(</SPAN>cmp_dist_start<SPAN class="op">,</SPAN> x1<SPAN class="op">,</SPAN> y1<SPAN class="op">,</SPAN> x1 <SPAN class="op">+</SPAN> <SPAN class="op">(</SPAN>y2 <SPAN class="op">-</SPAN> y1<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> y1 <SPAN class="op">-</SPAN> <SPAN class="op">(</SPAN>x2 <SPAN class="op">-</SPAN> x1<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="op">}</SPAN>
+                    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>dv<SPAN class="op">.</SPAN>flags <SPAN class="op">&amp;</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+                    <SPAN class="op">{</SPAN>
+                        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_line_join <SPAN class="op">==</SPAN> <A href="agg_rasterizer_outline_aa.h.html#outline_round_join">outline_round_join</A><SPAN class="op">)</SPAN>
+                        <SPAN class="op">{</SPAN>
+                            m_ren<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>line3<SPAN class="op">(</SPAN>prev<SPAN class="op">,</SPAN> x1 <SPAN class="op">+</SPAN> <SPAN class="op">(</SPAN>y2 <SPAN class="op">-</SPAN> y1<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> y1 <SPAN class="op">-</SPAN> <SPAN class="op">(</SPAN>x2 <SPAN class="op">-</SPAN> x1<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+                                               x2 <SPAN class="op">+</SPAN> <SPAN class="op">(</SPAN>y2 <SPAN class="op">-</SPAN> y1<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> y2 <SPAN class="op">-</SPAN> <SPAN class="op">(</SPAN>x2 <SPAN class="op">-</SPAN> x1<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                            m_ren<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>pie<SPAN class="op">(</SPAN>prev<SPAN class="op">.</SPAN>x2<SPAN class="op">,</SPAN> prev<SPAN class="op">.</SPAN>y2<SPAN class="op">,</SPAN> 
+                                       x2 <SPAN class="op">+</SPAN> <SPAN class="op">(</SPAN>y2 <SPAN class="op">-</SPAN> y1<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> y2 <SPAN class="op">-</SPAN> <SPAN class="op">(</SPAN>x2 <SPAN class="op">-</SPAN> x1<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+                                       dv<SPAN class="op">.</SPAN>curr<SPAN class="op">.</SPAN>x1 <SPAN class="op">+</SPAN> <SPAN class="op">(</SPAN>dv<SPAN class="op">.</SPAN>curr<SPAN class="op">.</SPAN>y2 <SPAN class="op">-</SPAN> dv<SPAN class="op">.</SPAN>curr<SPAN class="op">.</SPAN>y1<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> 
+                                       dv<SPAN class="op">.</SPAN>curr<SPAN class="op">.</SPAN>y1 <SPAN class="op">-</SPAN> <SPAN class="op">(</SPAN>dv<SPAN class="op">.</SPAN>curr<SPAN class="op">.</SPAN>x2 <SPAN class="op">-</SPAN> dv<SPAN class="op">.</SPAN>curr<SPAN class="op">.</SPAN>x1<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                        <SPAN class="op">}</SPAN>
+                        <SPAN class="kw1">else</SPAN>
+                        <SPAN class="op">{</SPAN>
+                            <A href="agg_line_aa_basics.h.html#bisectrix">bisectrix</A><SPAN class="op">(</SPAN>prev<SPAN class="op">,</SPAN> dv<SPAN class="op">.</SPAN>curr<SPAN class="op">,</SPAN> <SPAN class="op">&amp;</SPAN>dv<SPAN class="op">.</SPAN>xb1<SPAN class="op">,</SPAN> <SPAN class="op">&amp;</SPAN>dv<SPAN class="op">.</SPAN>yb1<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                            m_ren<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>line3<SPAN class="op">(</SPAN>prev<SPAN class="op">,</SPAN> x1 <SPAN class="op">+</SPAN> <SPAN class="op">(</SPAN>y2 <SPAN class="op">-</SPAN> y1<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> y1 <SPAN class="op">-</SPAN> <SPAN class="op">(</SPAN>x2 <SPAN class="op">-</SPAN> x1<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+                                               dv<SPAN class="op">.</SPAN>xb1<SPAN class="op">,</SPAN>         dv<SPAN class="op">.</SPAN>yb1<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                        <SPAN class="op">}</SPAN>
+                    <SPAN class="op">}</SPAN>
+                    <SPAN class="kw1">else</SPAN>
+                    <SPAN class="op">{</SPAN>
+                        m_ren<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>line1<SPAN class="op">(</SPAN>prev<SPAN class="op">,</SPAN> 
+                                     x1 <SPAN class="op">+</SPAN> <SPAN class="op">(</SPAN>y2 <SPAN class="op">-</SPAN> y1<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> 
+                                     y1 <SPAN class="op">-</SPAN> <SPAN class="op">(</SPAN>x2 <SPAN class="op">-</SPAN> x1<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="op">}</SPAN>
+                    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>dv<SPAN class="op">.</SPAN>flags <SPAN class="op">&amp;</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN> <SPAN class="op">&amp;&amp;</SPAN> m_line_join <SPAN class="op">!=</SPAN> <A href="agg_rasterizer_outline_aa.h.html#outline_round_join">outline_round_join</A><SPAN class="op">)</SPAN>
+                    <SPAN class="op">{</SPAN>
+                        <A href="agg_line_aa_basics.h.html#bisectrix">bisectrix</A><SPAN class="op">(</SPAN>dv<SPAN class="op">.</SPAN>curr<SPAN class="op">,</SPAN> dv<SPAN class="op">.</SPAN>next<SPAN class="op">,</SPAN> <SPAN class="op">&amp;</SPAN>dv<SPAN class="op">.</SPAN>xb2<SPAN class="op">,</SPAN> <SPAN class="op">&amp;</SPAN>dv<SPAN class="op">.</SPAN>yb2<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="op">}</SPAN>
+
+                    draw<SPAN class="op">(</SPAN>dv<SPAN class="op">,</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">,</SPAN> m_src_vertices<SPAN class="op">.</SPAN>size<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">-</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>dv<SPAN class="op">.</SPAN>flags <SPAN class="op">&amp;</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+                    <SPAN class="op">{</SPAN>
+                        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_line_join <SPAN class="op">==</SPAN> <A href="agg_rasterizer_outline_aa.h.html#outline_round_join">outline_round_join</A><SPAN class="op">)</SPAN>
+                        <SPAN class="op">{</SPAN>
+                            m_ren<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>line3<SPAN class="op">(</SPAN>dv<SPAN class="op">.</SPAN>curr<SPAN class="op">,</SPAN> 
+                                         dv<SPAN class="op">.</SPAN>curr<SPAN class="op">.</SPAN>x1 <SPAN class="op">+</SPAN> <SPAN class="op">(</SPAN>dv<SPAN class="op">.</SPAN>curr<SPAN class="op">.</SPAN>y2 <SPAN class="op">-</SPAN> dv<SPAN class="op">.</SPAN>curr<SPAN class="op">.</SPAN>y1<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> 
+                                         dv<SPAN class="op">.</SPAN>curr<SPAN class="op">.</SPAN>y1 <SPAN class="op">-</SPAN> <SPAN class="op">(</SPAN>dv<SPAN class="op">.</SPAN>curr<SPAN class="op">.</SPAN>x2 <SPAN class="op">-</SPAN> dv<SPAN class="op">.</SPAN>curr<SPAN class="op">.</SPAN>x1<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+                                         dv<SPAN class="op">.</SPAN>curr<SPAN class="op">.</SPAN>x2 <SPAN class="op">+</SPAN> <SPAN class="op">(</SPAN>dv<SPAN class="op">.</SPAN>curr<SPAN class="op">.</SPAN>y2 <SPAN class="op">-</SPAN> dv<SPAN class="op">.</SPAN>curr<SPAN class="op">.</SPAN>y1<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> 
+                                         dv<SPAN class="op">.</SPAN>curr<SPAN class="op">.</SPAN>y2 <SPAN class="op">-</SPAN> <SPAN class="op">(</SPAN>dv<SPAN class="op">.</SPAN>curr<SPAN class="op">.</SPAN>x2 <SPAN class="op">-</SPAN> dv<SPAN class="op">.</SPAN>curr<SPAN class="op">.</SPAN>x1<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                        <SPAN class="op">}</SPAN>
+                        <SPAN class="kw1">else</SPAN>
+                        <SPAN class="op">{</SPAN>
+                            m_ren<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>line3<SPAN class="op">(</SPAN>dv<SPAN class="op">.</SPAN>curr<SPAN class="op">,</SPAN> dv<SPAN class="op">.</SPAN>xb1<SPAN class="op">,</SPAN> dv<SPAN class="op">.</SPAN>yb1<SPAN class="op">,</SPAN>
+                                         dv<SPAN class="op">.</SPAN>curr<SPAN class="op">.</SPAN>x2 <SPAN class="op">+</SPAN> <SPAN class="op">(</SPAN>dv<SPAN class="op">.</SPAN>curr<SPAN class="op">.</SPAN>y2 <SPAN class="op">-</SPAN> dv<SPAN class="op">.</SPAN>curr<SPAN class="op">.</SPAN>y1<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> 
+                                         dv<SPAN class="op">.</SPAN>curr<SPAN class="op">.</SPAN>y2 <SPAN class="op">-</SPAN> <SPAN class="op">(</SPAN>dv<SPAN class="op">.</SPAN>curr<SPAN class="op">.</SPAN>x2 <SPAN class="op">-</SPAN> dv<SPAN class="op">.</SPAN>curr<SPAN class="op">.</SPAN>x1<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                        <SPAN class="op">}</SPAN>
+                    <SPAN class="op">}</SPAN>
+                    <SPAN class="kw1">else</SPAN>
+                    <SPAN class="op">{</SPAN>
+                        m_ren<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>line2<SPAN class="op">(</SPAN>dv<SPAN class="op">.</SPAN>curr<SPAN class="op">,</SPAN> 
+                                     dv<SPAN class="op">.</SPAN>curr<SPAN class="op">.</SPAN>x2 <SPAN class="op">+</SPAN> <SPAN class="op">(</SPAN>dv<SPAN class="op">.</SPAN>curr<SPAN class="op">.</SPAN>y2 <SPAN class="op">-</SPAN> dv<SPAN class="op">.</SPAN>curr<SPAN class="op">.</SPAN>y1<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> 
+                                     dv<SPAN class="op">.</SPAN>curr<SPAN class="op">.</SPAN>y2 <SPAN class="op">-</SPAN> <SPAN class="op">(</SPAN>dv<SPAN class="op">.</SPAN>curr<SPAN class="op">.</SPAN>x2 <SPAN class="op">-</SPAN> dv<SPAN class="op">.</SPAN>curr<SPAN class="op">.</SPAN>x1<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="op">}</SPAN>
+                    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_round_cap<SPAN class="op">)</SPAN> 
+                    <SPAN class="op">{</SPAN>
+                        m_ren<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>semidot<SPAN class="op">(</SPAN>cmp_dist_end<SPAN class="op">,</SPAN> dv<SPAN class="op">.</SPAN>curr<SPAN class="op">.</SPAN>x2<SPAN class="op">,</SPAN> dv<SPAN class="op">.</SPAN>curr<SPAN class="op">.</SPAN>y2<SPAN class="op">,</SPAN>
+                                       dv<SPAN class="op">.</SPAN>curr<SPAN class="op">.</SPAN>x2 <SPAN class="op">+</SPAN> <SPAN class="op">(</SPAN>dv<SPAN class="op">.</SPAN>curr<SPAN class="op">.</SPAN>y2 <SPAN class="op">-</SPAN> dv<SPAN class="op">.</SPAN>curr<SPAN class="op">.</SPAN>y1<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+                                       dv<SPAN class="op">.</SPAN>curr<SPAN class="op">.</SPAN>y2 <SPAN class="op">-</SPAN> <SPAN class="op">(</SPAN>dv<SPAN class="op">.</SPAN>curr<SPAN class="op">.</SPAN>x2 <SPAN class="op">-</SPAN> dv<SPAN class="op">.</SPAN>curr<SPAN class="op">.</SPAN>x1<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="op">}</SPAN>
+
+                <SPAN class="op">}</SPAN>
+                <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+        m_src_vertices<SPAN class="op">.</SPAN>remove_all<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+<SPAN class="op">}</SPAN>
+
+
+<SPAN class="kw2">#endif</SPAN>
+
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT><TABLE width="640px" bgcolor="#583927" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0">
+<TR><TD><CENTER><SPAN class="authors">
+Copyright <SPAN class="larger">&#169;</SPAN> 2002-2006
+<A href="../../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+<TR><TD><CENTER><SPAN class="authors">
+Web Design and Programming
+<A href="../../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+</TABLE>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+</HTML>

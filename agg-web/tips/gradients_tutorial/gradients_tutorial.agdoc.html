@@ -1,0 +1,452 @@
+<HTML><HEAD><TITLE>Anti-Grain Geometry - Working with Gradients</TITLE>
+<META http-equiv="Content-Type" content="text/html"/>
+<LINK rel="stylesheet" type="text/css" href="../../agg.styles.css"/>
+</HEAD>
+<A name="PAGE_GRADIENTS_TUTORIAL"><B></B></A>
+
+
+<TABLE width="640px" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR>
+<TD bgcolor="#583927"></TD>
+</TR>
+</TABLE>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR>
+<TD>
+<TABLE width="170px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR><TD><A href="../../index.html" class="mpmenu">Home/</A></TD></TR>
+<TR><TD><A href="../../tips/index.html" class="mpmenu">Tips &amp; Tricks/</A></TD></TR>
+<TR><TD><A href="" class="mpmenu"></A></TD></TR>
+<TR><TD><A href="" class="mpmenu"></A></TD></TR>
+<TR><TD><A href="" class="mpmenu"></A></TD></TR>
+<TR><TD><A href="" class="mpmenu"></A></TD></TR>
+</TABLE>
+</TD>
+<TD width="1px" bgcolor="#583927"></TD>
+<TD width="450px" valign="top" style="text-align:right">
+<TABLE border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR>
+<TD><IMG src="../../agg_logo.gif" border="0"/></TD>
+</TR>
+<TR>
+<TD>
+<TABLE border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR height="15px">
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../../news/index.html">News</A>&nbsp;&nbsp;</TD>
+<TD width="1px" bgcolor="#8e521d"></TD>
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../../doc/index.html">Docs</A>&nbsp;&nbsp;</TD>
+<TD width="1px" bgcolor="#8e521d"></TD>
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../../download/index.html">Download</A>&nbsp;&nbsp;</TD>
+<TD width="1px" bgcolor="#8e521d"></TD>
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../../maillist/index.html">Mailing List</A>&nbsp;&nbsp;</TD>
+<TD width="1px" bgcolor="#8e521d"></TD>
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../../cvs/index.html">CVS</A>&nbsp;&nbsp;</TD>
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+<TABLE width="640px" height="1px" bgcolor="#583927" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>
+</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD><H1>Working with Gradients<SPAN class="subtitle"><BR/>A Simple Step-by-Step Tutorial</SPAN></H1></TD></TR></TABLE>
+
+
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>This article will explain to you how to set up gradients and render them. 
+We will use a simple command-line example that produces the result in the
+<CODE>agg_test.ppm</CODE> file. You can use, for example 
+<A href="http://www.irfanview.com"><IMG src="../../link.gif" border="0"/>IrfanView (www.irfanview.com)</A> to see the 
+results.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>You will need to tell the compiler the <B>AGG</B> include directory and add
+three source files to the project or to the command line: 
+<CODE>agg_rasterizer_scanline_aa.cpp</CODE>, 
+<CODE><A href="../../__code/src/agg_trans_affine.cpp.html">agg_trans_affine.cpp</A></CODE>, and <CODE><A href="../../__code/src/agg_sqrt_tables.cpp.html">agg_sqrt_tables.cpp</A></CODE>. You 
+can find the source file here: <A href="gradients.cpp"><IMG src="../../download.gif" border="0"/>&#160;(gradients.cpp)</A>.</P></TD></TR></TABLE>
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+<SPAN class="kw2">#include</SPAN> <SPAN class="op">&lt;</SPAN>stdio<SPAN class="op">.</SPAN>h<SPAN class="op">&gt;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="op">&lt;</SPAN>string<SPAN class="op">.</SPAN>h<SPAN class="op">&gt;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../../__code/include/agg_pixfmt_rgb.h.html">agg_pixfmt_rgb.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../../__code/include/agg_renderer_base.h.html">agg_renderer_base.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../../__code/include/agg_renderer_scanline.h.html">agg_renderer_scanline.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../../__code/include/agg_scanline_u.h.html">agg_scanline_u.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../../__code/include/agg_rasterizer_scanline_aa.h.html">agg_rasterizer_scanline_aa.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../../__code/include/agg_ellipse.h.html">agg_ellipse.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../../__code/include/agg_span_gradient.h.html">agg_span_gradient.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../../__code/include/agg_span_interpolator_linear.h.html">agg_span_interpolator_linear.h</A>&quot;</SPAN>
+
+<SPAN class="kw1">enum</SPAN>
+<SPAN class="op">{</SPAN>
+    frame_width <SPAN class="op">=</SPAN> <SPAN class="num">320</SPAN><SPAN class="op">,</SPAN>
+    frame_height <SPAN class="op">=</SPAN> <SPAN class="num">200</SPAN>
+<SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+<SPAN class="rem">// Writing the buffer to a .PPM file, assuming it has </SPAN>
+<SPAN class="rem">// RGB-structure, one byte per color component</SPAN>
+<SPAN class="rem">//--------------------------------------------------</SPAN>
+<SPAN class="kw1">bool</SPAN> write_ppm<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <SPAN class="kw1">unsigned</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN> buf<SPAN class="op">,</SPAN> 
+               <SPAN class="kw1">unsigned</SPAN> width<SPAN class="op">,</SPAN> 
+               <SPAN class="kw1">unsigned</SPAN> height<SPAN class="op">,</SPAN> 
+               <SPAN class="kw1">const</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN> file_name<SPAN class="op">)</SPAN>
+<SPAN class="op">{</SPAN>
+    FILE<SPAN class="op">*</SPAN> fd <SPAN class="op">=</SPAN> fopen<SPAN class="op">(</SPAN>file_name<SPAN class="op">,</SPAN> <SPAN class="str">&quot;wb&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>fd<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        fprintf<SPAN class="op">(</SPAN>fd<SPAN class="op">,</SPAN> <SPAN class="str">&quot;P6 %d %d 255 &quot;</SPAN><SPAN class="op">,</SPAN> width<SPAN class="op">,</SPAN> height<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        fwrite<SPAN class="op">(</SPAN>buf<SPAN class="op">,</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">,</SPAN> width <SPAN class="op">*</SPAN> height <SPAN class="op">*</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">,</SPAN> fd<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        fclose<SPAN class="op">(</SPAN>fd<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">return</SPAN> <SPAN class="kw1">true</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+    <SPAN class="kw1">return</SPAN> <SPAN class="kw1">false</SPAN><SPAN class="op">;</SPAN>
+<SPAN class="op">}</SPAN>
+
+
+
+<SPAN class="rem">// A simple function to form the gradient color array </SPAN>
+<SPAN class="rem">// consisting of 3 colors, &quot;begin&quot;, &quot;middle&quot;, &quot;end&quot;</SPAN>
+<SPAN class="rem">//---------------------------------------------------</SPAN>
+<SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Array<SPAN class="op">&gt;</SPAN>
+<SPAN class="kw1">void</SPAN> fill_color_array<SPAN class="op">(</SPAN>Array<SPAN class="op">&amp;</SPAN> array<SPAN class="op">,</SPAN> 
+                      agg::<A href="../../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A> begin<SPAN class="op">,</SPAN> 
+                      agg::<A href="../../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A> middle<SPAN class="op">,</SPAN> 
+                      agg::<A href="../../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A> end<SPAN class="op">)</SPAN>
+<SPAN class="op">{</SPAN>
+    <SPAN class="kw1">unsigned</SPAN> i<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">unsigned</SPAN> half_size <SPAN class="op">=</SPAN> array<SPAN class="op">.</SPAN>size<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;</SPAN> half_size<SPAN class="op">;</SPAN> <SPAN class="op">++</SPAN>i<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        array<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> begin<SPAN class="op">.</SPAN>gradient<SPAN class="op">(</SPAN>middle<SPAN class="op">,</SPAN> i <SPAN class="op">/</SPAN> <SPAN class="kw1">double</SPAN><SPAN class="op">(</SPAN>half_size<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+    <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;</SPAN> array<SPAN class="op">.</SPAN>size<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">++</SPAN>i<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        array<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> middle<SPAN class="op">.</SPAN>gradient<SPAN class="op">(</SPAN>end<SPAN class="op">,</SPAN> <SPAN class="op">(</SPAN>i <SPAN class="op">-</SPAN> half_size<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="kw1">double</SPAN><SPAN class="op">(</SPAN>half_size<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+<SPAN class="op">}</SPAN>
+
+
+
+
+<SPAN class="kw1">int</SPAN> <SPAN class="kw1">main</SPAN><SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+<SPAN class="op">{</SPAN>
+    <SPAN class="kw1">unsigned</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN> buffer <SPAN class="op">=</SPAN> <SPAN class="kw1">new</SPAN> <SPAN class="kw1">unsigned</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">[</SPAN>frame_width <SPAN class="op">*</SPAN> frame_height <SPAN class="op">*</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+
+    agg::<A href="../../doc/basic_renderers/basic_renderers.agdoc.html#rendering_buffer">rendering_buffer</A> rbuf<SPAN class="op">(</SPAN>buffer<SPAN class="op">,</SPAN> 
+                               frame_width<SPAN class="op">,</SPAN> 
+                               frame_height<SPAN class="op">,</SPAN> 
+                               <SPAN class="op">-</SPAN>frame_width <SPAN class="op">*</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="rem">// Pixel format and basic renderers.</SPAN>
+    <SPAN class="rem">//-----------------</SPAN>
+    <SPAN class="kw1">typedef</SPAN> agg::<A href="../../__code/include/agg_pixfmt_rgb.h.html#pixfmt_rgb24">pixfmt_rgb24</A> pixfmt_type<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">typedef</SPAN> agg::<A href="../../doc/basic_renderers/basic_renderers.agdoc.html#renderer_base">renderer_base</A><SPAN class="op">&lt;</SPAN>pixfmt_type<SPAN class="op">&gt;</SPAN> renderer_base_type<SPAN class="op">;</SPAN>
+
+
+    <SPAN class="rem">// The gradient color array</SPAN>
+    <SPAN class="kw1">typedef</SPAN> agg::<A href="../../__code/include/agg_array.h.html#pod_auto_array">pod_auto_array</A><SPAN class="op">&lt;</SPAN>agg::<A href="../../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">,</SPAN> <SPAN class="num">256</SPAN><SPAN class="op">&gt;</SPAN> color_array_type<SPAN class="op">;</SPAN>
+
+
+    <SPAN class="rem">// Gradient shape function (linear, radial, custom, etc)</SPAN>
+    <SPAN class="rem">//-----------------</SPAN>
+    <SPAN class="kw1">typedef</SPAN> agg::<A href="../../__code/include/agg_span_gradient.h.html#gradient_x">gradient_x</A> gradient_func_type<SPAN class="op">;</SPAN>   
+
+
+    <SPAN class="rem">// Span interpolator. This object is used in all span generators </SPAN>
+    <SPAN class="rem">// that operate with transformations during iterating of the spans,</SPAN>
+    <SPAN class="rem">// for example, image transformers use the interpolator too.</SPAN>
+    <SPAN class="rem">//-----------------</SPAN>
+    <SPAN class="kw1">typedef</SPAN> agg::<A href="../../__code/include/agg_span_interpolator_linear.h.html#span_interpolator_linear">span_interpolator_linear</A><SPAN class="op">&lt;</SPAN><SPAN class="op">&gt;</SPAN> interpolator_type<SPAN class="op">;</SPAN>
+
+
+    <SPAN class="rem">// Span allocator is an object that allocates memory for </SPAN>
+    <SPAN class="rem">// the array of colors that will be used to render the </SPAN>
+    <SPAN class="rem">// color spans. One object can be shared between different </SPAN>
+    <SPAN class="rem">// span generators.</SPAN>
+    <SPAN class="rem">//-----------------</SPAN>
+    <SPAN class="kw1">typedef</SPAN> agg::<A href="../../__code/include/agg_span_allocator.h.html#span_allocator">span_allocator</A><SPAN class="op">&lt;</SPAN>agg::<A href="../../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">&gt;</SPAN> span_allocator_type<SPAN class="op">;</SPAN>
+
+
+    <SPAN class="rem">// Finally, the gradient span generator working with the agg::<A href="../../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A> </SPAN>
+    <SPAN class="rem">// color type. </SPAN>
+    <SPAN class="rem">// The 4-th argument is the color function that should have </SPAN>
+    <SPAN class="rem">// the [] operator returning the color in range of [0...255].</SPAN>
+    <SPAN class="rem">// In our case it will be a simple look-up table of 256 colors.</SPAN>
+    <SPAN class="rem">//-----------------</SPAN>
+    <SPAN class="kw1">typedef</SPAN> agg::<A href="../../__code/include/agg_span_gradient.h.html#span_gradient">span_gradient</A><SPAN class="op">&lt;</SPAN>agg::<A href="../../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">,</SPAN> 
+                               interpolator_type<SPAN class="op">,</SPAN> 
+                               gradient_func_type<SPAN class="op">,</SPAN> 
+                               color_array_type<SPAN class="op">,</SPAN>
+                               span_allocator_type<SPAN class="op">&gt;</SPAN> span_gradient_type<SPAN class="op">;</SPAN>
+
+
+    <SPAN class="rem">// The gradient scanline renderer type</SPAN>
+    <SPAN class="rem">//-----------------</SPAN>
+    <SPAN class="kw1">typedef</SPAN> agg::<A href="../../__code/include/agg_renderer_scanline.h.html#renderer_scanline_aa">renderer_scanline_aa</A><SPAN class="op">&lt;</SPAN>renderer_base_type<SPAN class="op">,</SPAN> 
+                                      span_gradient_type<SPAN class="op">&gt;</SPAN> renderer_gradient_type<SPAN class="op">;</SPAN>
+
+
+    <SPAN class="rem">// Common declarations (pixel format and basic renderer).</SPAN>
+    <SPAN class="rem">//----------------</SPAN>
+    pixfmt_type pixf<SPAN class="op">(</SPAN>rbuf<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    renderer_base_type rbase<SPAN class="op">(</SPAN>pixf<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+
+    <SPAN class="rem">// The gradient objects declarations</SPAN>
+    <SPAN class="rem">//----------------</SPAN>
+    gradient_func_type  gradient_func<SPAN class="op">;</SPAN>                   <SPAN class="rem">// The gradient function</SPAN>
+    agg::<A href="../../__code/include/agg_trans_affine.h.html#trans_affine">trans_affine</A>   gradient_mtx<SPAN class="op">;</SPAN>                    <SPAN class="rem">// Affine transformer</SPAN>
+    interpolator_type   span_interpolator<SPAN class="op">(</SPAN>gradient_mtx<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> <SPAN class="rem">// Span interpolator</SPAN>
+    span_allocator_type <A href="../../__code/include/agg_span_allocator.h.html#span_allocator">span_allocator</A><SPAN class="op">;</SPAN>                  <SPAN class="rem">// Span Allocator</SPAN>
+    color_array_type    color_array<SPAN class="op">;</SPAN>                     <SPAN class="rem">// Gradient colors</SPAN>
+
+
+    <SPAN class="rem">// Declare the gradient span itself. </SPAN>
+    <SPAN class="rem">// The last two arguments are so called &quot;d1&quot; and &quot;d2&quot; </SPAN>
+    <SPAN class="rem">// defining two distances in pixels, where the gradient starts</SPAN>
+    <SPAN class="rem">// and where it ends. The actual meaning of &quot;d1&quot; and &quot;d2&quot; depands</SPAN>
+    <SPAN class="rem">// on the gradient function.</SPAN>
+    <SPAN class="rem">//----------------</SPAN>
+    span_gradient_type <A href="../../__code/include/agg_span_gradient.h.html#span_gradient">span_gradient</A><SPAN class="op">(</SPAN><A href="../../__code/include/agg_span_allocator.h.html#span_allocator">span_allocator</A><SPAN class="op">,</SPAN> 
+                                     span_interpolator<SPAN class="op">,</SPAN> 
+                                     gradient_func<SPAN class="op">,</SPAN> 
+                                     color_array<SPAN class="op">,</SPAN> 
+                                     <SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">100</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="rem">// The gradient renderer</SPAN>
+    <SPAN class="rem">//----------------</SPAN>
+    renderer_gradient_type ren_gradient<SPAN class="op">(</SPAN>rbase<SPAN class="op">,</SPAN> <A href="../../__code/include/agg_span_gradient.h.html#span_gradient">span_gradient</A><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+
+    <SPAN class="rem">// The rasterizing/scanline stuff</SPAN>
+    <SPAN class="rem">//----------------</SPAN>
+    agg::<A href="../../__code/include/agg_rasterizer_scanline_aa.h.html#rasterizer_scanline_aa">rasterizer_scanline_aa</A><SPAN class="op">&lt;</SPAN><SPAN class="op">&gt;</SPAN> ras<SPAN class="op">;</SPAN>
+    agg::<A href="../../__code/include/agg_scanline_u.h.html#scanline_u8">scanline_u8</A> sl<SPAN class="op">;</SPAN>
+
+
+    <SPAN class="rem">// Finally we can draw a circle.</SPAN>
+    <SPAN class="rem">//----------------</SPAN>
+    rbase<SPAN class="op">.</SPAN>clear<SPAN class="op">(</SPAN>agg::<A href="../../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">(</SPAN><SPAN class="num">255</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    fill_color_array<SPAN class="op">(</SPAN>color_array<SPAN class="op">,</SPAN> 
+                     agg::<A href="../../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN><SPAN class="num">50</SPAN><SPAN class="op">,</SPAN><SPAN class="num">50</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> 
+                     agg::<A href="../../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">(</SPAN><SPAN class="num">240</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">100</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> 
+                     agg::<A href="../../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">(</SPAN><SPAN class="num">80</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    agg::<A href="../../__code/include/agg_ellipse.h.html#ellipse">ellipse</A> ell<SPAN class="op">(</SPAN><SPAN class="num">50</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">50</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">50</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">50</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">100</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    ras<SPAN class="op">.</SPAN>add_path<SPAN class="op">(</SPAN>ell<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    agg::<A href="../../__code/include/agg_renderer_scanline.h.html#render_scanlines">render_scanlines</A><SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> sl<SPAN class="op">,</SPAN> ren_gradient<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    write_ppm<SPAN class="op">(</SPAN>buffer<SPAN class="op">,</SPAN> frame_width<SPAN class="op">,</SPAN> frame_height<SPAN class="op">,</SPAN> <SPAN class="str">&quot;agg_test.ppm&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">delete</SPAN> <SPAN class="op">[</SPAN><SPAN class="op">]</SPAN> buffer<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">return</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+<SPAN class="op">}</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>It looks rather complex, especially the necessity to declare a lot
+of types and objects. But the &#147;complexity&#148; gives you freedom, for
+example, you can define your own gradient functions or even arbitrary
+distortions.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The example renders a circle with linear gradient from (0,0) to (100,0).
+In <B>AGG</B> you can define an arbitrary color function, in our case it&#039;s a 
+simple look-up table generated from three colors, <CODE>start</CODE>, <CODE>middle</CODE>, and 
+<CODE>end</CODE>.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Here is the result (the axes and text were added in <A href="http://www.xara.com"><IMG src="../../link.gif" border="0"/><B><NOBR>Xara X</NOBR></B></A>):</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD><CENTER><IMG src="gradients1.png" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>It also can seem like an overkill for this simple task, but later 
+you will see that it&#039;s not so.
+<BR/><BR/><BR/></P></TD></TR></TABLE>
+
+<TABLE width="640px" bgcolor="#583927" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The next step is one little modification. Modify the following:</P></TD></TR></TABLE>
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+    <SPAN class="rem">// Declare the gradient span itself. </SPAN>
+    <SPAN class="rem">// The last two arguments are so called &quot;d1&quot; and &quot;d2&quot; </SPAN>
+    <SPAN class="rem">// defining two distances in pixels, where the gradient starts</SPAN>
+    <SPAN class="rem">// and where it ends. The actual meaning of &quot;d1&quot; and &quot;d2&quot; depands</SPAN>
+    <SPAN class="rem">// on the gradient function.</SPAN>
+    <SPAN class="rem">//----------------</SPAN>
+    span_gradient_type <A href="../../__code/include/agg_span_gradient.h.html#span_gradient">span_gradient</A><SPAN class="op">(</SPAN><A href="../../__code/include/agg_span_allocator.h.html#span_allocator">span_allocator</A><SPAN class="op">,</SPAN> 
+                                     span_interpolator<SPAN class="op">,</SPAN> 
+                                     gradient_func<SPAN class="op">,</SPAN> 
+                                     color_array<SPAN class="op">,</SPAN> 
+                                     <SPAN class="num">50</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">100</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The result:</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD><CENTER><IMG src="gradients2.png" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>It should explain those freaky <CODE>d1</CODE> and <CODE>d2</CODE> arguments. In fact, they
+determine the geometrical <CODE>start</CODE> and <CODE>end</CODE> of the gradient and their meaning
+depends on the gradient function.
+<BR/><BR/><BR/>
+</P></TD></TR></TABLE><TABLE width="640px" bgcolor="#583927" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Now change the gradient function:</P></TD></TR></TABLE>
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+    <SPAN class="rem">// Gradient shape function (linear, radial, custom, etc)</SPAN>
+    <SPAN class="rem">//-----------------</SPAN>
+    <SPAN class="kw1">typedef</SPAN> agg::<A href="../../__code/include/agg_span_gradient.h.html#gradient_circle">gradient_circle</A> gradient_func_type<SPAN class="op">;</SPAN>   
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Set <CODE>d1</CODE> back to 0:</P></TD></TR></TABLE>
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+    <SPAN class="rem">// Declare the gradient span itself. </SPAN>
+    <SPAN class="rem">// The last two arguments are so called &quot;d1&quot; and &quot;d2&quot; </SPAN>
+    <SPAN class="rem">// defining two distances in pixels, where the gradient starts</SPAN>
+    <SPAN class="rem">// and where it ends. The actual meaning of &quot;d1&quot; and &quot;d2&quot; depands</SPAN>
+    <SPAN class="rem">// on the gradient function.</SPAN>
+    <SPAN class="rem">//----------------</SPAN>
+    span_gradient_type <A href="../../__code/include/agg_span_gradient.h.html#span_gradient">span_gradient</A><SPAN class="op">(</SPAN><A href="../../__code/include/agg_span_allocator.h.html#span_allocator">span_allocator</A><SPAN class="op">,</SPAN> 
+                                     span_interpolator<SPAN class="op">,</SPAN> 
+                                     gradient_func<SPAN class="op">,</SPAN> 
+                                     color_array<SPAN class="op">,</SPAN> 
+                                     <SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">100</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>And modify the circle:</P></TD></TR></TABLE>
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+    agg::<A href="../../__code/include/agg_ellipse.h.html#ellipse">ellipse</A> ell<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">120</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">120</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">100</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The result:</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD><CENTER><IMG src="gradients3.png" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><BR/><BR/><BR/>
+</P></TD></TR></TABLE><TABLE width="640px" bgcolor="#583927" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Modify <CODE>d1</CODE> again:
+</P></TD></TR></TABLE><TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+    <SPAN class="rem">// Declare the gradient span itself. </SPAN>
+    <SPAN class="rem">// The last two arguments are so called &quot;d1&quot; and &quot;d2&quot; </SPAN>
+    <SPAN class="rem">// defining two distances in pixels, where the gradient starts</SPAN>
+    <SPAN class="rem">// and where it ends. The actual meaning of &quot;d1&quot; and &quot;d2&quot; depands</SPAN>
+    <SPAN class="rem">// on the gradient function.</SPAN>
+    <SPAN class="rem">//----------------</SPAN>
+    span_gradient_type <A href="../../__code/include/agg_span_gradient.h.html#span_gradient">span_gradient</A><SPAN class="op">(</SPAN><A href="../../__code/include/agg_span_allocator.h.html#span_allocator">span_allocator</A><SPAN class="op">,</SPAN> 
+                                     span_interpolator<SPAN class="op">,</SPAN> 
+                                     gradient_func<SPAN class="op">,</SPAN> 
+                                     color_array<SPAN class="op">,</SPAN> 
+                                     <SPAN class="num">50</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">100</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+
+<TABLE width="640px"><TR><TD><CENTER><IMG src="gradients4.png" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>So that, in case of a radial gradient, <CODE>d1</CODE> and <CODE>d2</CODE> define the starting
+and ending radii.
+<BR/><BR/><BR/>
+</P></TD></TR></TABLE><TABLE width="640px" bgcolor="#583927" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>By default the origin point for the gradients is (0,0). How to draw a gradient
+in some other place? The answer is to use affine transformations. Strictly 
+speaking, the transformations are fully defined by the span interpolator. In our case
+we use <A href="../../__code/include/agg_span_interpolator_linear.h.html#span_interpolator_linear">span_interpolator_linear</A> with an affine matrix. The linear interpolator 
+allows you to speed up the calculations vastly, because we calculate the floating
+point coordinates only in the begin and end of the horizontal spans and then 
+use a fast, integer, Bresenham-like interpolation with <B>Subpixel Accuracy</B>.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Add the following code somewhere before calling <CODE>agg::<A href="../../__code/include/agg_renderer_scanline.h.html#render_scanlines">render_scanlines</A>(ras, sl, ren_gradient);</CODE></P></TD></TR></TABLE>
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+    gradient_mtx <SPAN class="op">*=</SPAN> agg::<A href="../../__code/include/agg_trans_affine.h.html#trans_affine_scaling">trans_affine_scaling</A><SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">75</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">2</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    gradient_mtx <SPAN class="op">*=</SPAN> agg::<A href="../../__code/include/agg_trans_affine.h.html#trans_affine_rotation">trans_affine_rotation</A><SPAN class="op">(</SPAN><SPAN class="op">-</SPAN>agg::<A href="../../__code/include/agg_basics.h.html#pi">pi</A><SPAN class="op">/</SPAN><SPAN class="num">3</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    gradient_mtx <SPAN class="op">*=</SPAN> agg::<A href="../../__code/include/agg_trans_affine.h.html#trans_affine_translation">trans_affine_translation</A><SPAN class="op">(</SPAN><SPAN class="num">100</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">100</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    gradient_mtx<SPAN class="op">.</SPAN>invert<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>And modify the circle:</P></TD></TR></TABLE>
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+    agg::<A href="../../__code/include/agg_ellipse.h.html#ellipse">ellipse</A> ell<SPAN class="op">(</SPAN><SPAN class="num">100</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">100</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">120</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">120</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">100</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+
+<TABLE width="640px"><TR><TD><CENTER><IMG src="gradients5.png" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The code of initializing of the affine matrix should be obvious except 
+for some strange <CODE>gradient_mtx.invert()</CODE>. It&#039;s necessary because 
+the gradient generator uses <B>reverse</B> transformations instead of 
+<B>direct</B> ones. In other words it takes the destination point, 
+applies the transformations and obtains the coordinates in the gradient.
+Note that the affine transformations allow you to turn a circular gradient
+into elliptical.
+<BR/><BR/><BR/>
+</P></TD></TR></TABLE><TABLE width="640px" bgcolor="#583927" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Now it should be obvious how to define a linear gradient from some 
+<CODE>Point1</CODE> to <CODE>Point2</CODE>. So, get back to the original code and 
+add the following function:</P></TD></TR></TABLE>
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+<SPAN class="rem">// Calculate the affine transformation matrix for the linear gradient </SPAN>
+<SPAN class="rem">// from (x1, y1) to (x2, y2). gradient_d2 is the &quot;base&quot; to scale the</SPAN>
+<SPAN class="rem">// gradient. Here d1 must be 0.0, and d2 must equal gradient_d2.</SPAN>
+<SPAN class="rem">//---------------------------------------------------------------</SPAN>
+<SPAN class="kw1">void</SPAN> calc_linear_gradient_transform<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x1<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y1<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> x2<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y2<SPAN class="op">,</SPAN> 
+                                    agg::<A href="../../__code/include/agg_trans_affine.h.html#trans_affine">trans_affine</A><SPAN class="op">&amp;</SPAN> mtx<SPAN class="op">,</SPAN>
+                                    <SPAN class="kw1">double</SPAN> gradient_d2 <SPAN class="op">=</SPAN> <SPAN class="num">100</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+<SPAN class="op">{</SPAN>
+    <SPAN class="kw1">double</SPAN> dx <SPAN class="op">=</SPAN> x2 <SPAN class="op">-</SPAN> x1<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN> dy <SPAN class="op">=</SPAN> y2 <SPAN class="op">-</SPAN> y1<SPAN class="op">;</SPAN>
+    mtx<SPAN class="op">.</SPAN>reset<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    mtx <SPAN class="op">*=</SPAN> agg::<A href="../../__code/include/agg_trans_affine.h.html#trans_affine_scaling">trans_affine_scaling</A><SPAN class="op">(</SPAN>sqrt<SPAN class="op">(</SPAN>dx <SPAN class="op">*</SPAN> dx <SPAN class="op">+</SPAN> dy <SPAN class="op">*</SPAN> dy<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> gradient_d2<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    mtx <SPAN class="op">*=</SPAN> agg::<A href="../../__code/include/agg_trans_affine.h.html#trans_affine_rotation">trans_affine_rotation</A><SPAN class="op">(</SPAN>atan2<SPAN class="op">(</SPAN>dy<SPAN class="op">,</SPAN> dx<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    mtx <SPAN class="op">*=</SPAN> agg::<A href="../../__code/include/agg_trans_affine.h.html#trans_affine_translation">trans_affine_translation</A><SPAN class="op">(</SPAN>x1<SPAN class="op">,</SPAN> y1<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    mtx<SPAN class="op">.</SPAN>invert<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+<SPAN class="op">}</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Then modify the circle:</P></TD></TR></TABLE>
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+    agg::<A href="../../__code/include/agg_ellipse.h.html#ellipse">ellipse</A> ell<SPAN class="op">(</SPAN><SPAN class="num">100</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">100</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">80</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">80</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">100</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>And add the transformations:</P></TD></TR></TABLE>
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+    calc_linear_gradient_transform<SPAN class="op">(</SPAN><SPAN class="num">50</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">50</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">150</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">150</SPAN><SPAN class="op">,</SPAN>  gradient_mtx<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+
+<TABLE width="640px"><TR><TD><CENTER><IMG src="gradients6.png" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Try to play with different parameters, 
+transformations, and gradient functions: <A href="../../__code/include/agg_span_gradient.h.html#gradient_circle">gradient_circle</A>, <A href="../../__code/include/agg_span_gradient.h.html#gradient_x">gradient_x</A>, 
+<A href="../../__code/include/agg_span_gradient.h.html#gradient_y">gradient_y</A>, <A href="../../__code/include/agg_span_gradient.h.html#gradient_diamond">gradient_diamond</A>, <A href="../../__code/include/agg_span_gradient.h.html#gradient_xy">gradient_xy</A>, <A href="../../__code/include/agg_span_gradient.h.html#gradient_sqrt_xy">gradient_sqrt_xy</A>, <A href="../../__code/include/agg_span_gradient.h.html#gradient_conic">gradient_conic</A>.
+Also look at the gradient functions and try to write your own. Actually, 
+the set of the gradient functions in <B>AGG</B> is rather poor, it just demonstrates
+the possibilities. For example, repeating or reflecting gradients should
+be implemented in gradient functions (or you can write adaptors that will
+use the existing functions).
+</P></TD></TR></TABLE><TABLE width="640px" bgcolor="#583927" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0">
+<TR><TD><CENTER><SPAN class="authors">
+Copyright <SPAN class="larger">&#169;</SPAN> 2002-2006
+<A href="../../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+<TR><TD><CENTER><SPAN class="authors">
+Web Design and Programming
+<A href="../../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+</TABLE>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+</HTML>

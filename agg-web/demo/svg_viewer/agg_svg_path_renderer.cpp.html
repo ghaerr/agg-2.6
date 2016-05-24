@@ -1,0 +1,379 @@
+<HTML><HEAD><TITLE>Anti-Grain Geometry - </TITLE>
+<META http-equiv="Content-Type" content="text/html"/>
+<LINK rel="stylesheet" type="text/css" href="../../agg.styles.css"/>
+</HEAD>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE><SPAN class="rem">//----------------------------------------------------------------------------</SPAN>
+<SPAN class="rem">// Anti-Grain Geometry - Version 2.3</SPAN>
+<SPAN class="rem">// Copyright (C) 2002-2005 Maxim Shemanarev (http://www.antigrain.com)</SPAN>
+<SPAN class="rem">//</SPAN>
+<SPAN class="rem">// Permission to copy, use, modify, sell and distribute this software </SPAN>
+<SPAN class="rem">// is granted provided this copyright notice appears in all copies. </SPAN>
+<SPAN class="rem">// This software is provided &quot;as is&quot; without express or implied</SPAN>
+<SPAN class="rem">// warranty, and with no claim as to its suitability for any purpose.</SPAN>
+<SPAN class="rem">//</SPAN>
+<SPAN class="rem">//----------------------------------------------------------------------------</SPAN>
+<SPAN class="rem">// Contact: mcseem@antigrain.com</SPAN>
+<SPAN class="rem">//          mcseemagg@yahoo.com</SPAN>
+<SPAN class="rem">//          http://www.antigrain.com</SPAN>
+<SPAN class="rem">//----------------------------------------------------------------------------</SPAN>
+<SPAN class="rem">//</SPAN>
+<SPAN class="rem">// SVG path renderer.</SPAN>
+<SPAN class="rem">//</SPAN>
+<SPAN class="rem">//----------------------------------------------------------------------------</SPAN>
+
+<SPAN class="kw2">#include</SPAN> <SPAN class="op">&lt;</SPAN>stdio<SPAN class="op">.</SPAN>h<SPAN class="op">&gt;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;agg_svg_path_renderer.h&quot;</SPAN>
+
+<SPAN class="kw1">namespace</SPAN> agg
+<SPAN class="op">{</SPAN>
+<SPAN class="kw1">namespace</SPAN> svg
+<SPAN class="op">{</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    path_renderer::path_renderer<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> :
+        m_curved<SPAN class="op">(</SPAN>m_storage<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_curved_count<SPAN class="op">(</SPAN>m_curved<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+
+        m_curved_stroked<SPAN class="op">(</SPAN>m_curved_count<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_curved_stroked_trans<SPAN class="op">(</SPAN>m_curved_stroked<SPAN class="op">,</SPAN> m_transform<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+
+        m_curved_trans<SPAN class="op">(</SPAN>m_curved_count<SPAN class="op">,</SPAN> m_transform<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_curved_trans_contour<SPAN class="op">(</SPAN>m_curved_trans<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        m_curved_trans_contour<SPAN class="op">.</SPAN>auto_detect_orientation<SPAN class="op">(</SPAN><SPAN class="kw1">false</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">void</SPAN> path_renderer::remove_all<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        m_storage<SPAN class="op">.</SPAN>remove_all<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_attr_storage<SPAN class="op">.</SPAN>remove_all<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_attr_stack<SPAN class="op">.</SPAN>remove_all<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_transform<SPAN class="op">.</SPAN>reset<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">void</SPAN> path_renderer::begin_path<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        push_attr<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> idx <SPAN class="op">=</SPAN> m_storage<SPAN class="op">.</SPAN>start_new_path<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_attr_storage<SPAN class="op">.</SPAN>add<SPAN class="op">(</SPAN>path_attributes<SPAN class="op">(</SPAN>cur_attr<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> idx<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">void</SPAN> path_renderer::end_path<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_attr_storage<SPAN class="op">.</SPAN>size<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> 
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">throw</SPAN> exception<SPAN class="op">(</SPAN><SPAN class="str">&quot;end_path : The path was not begun&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        path_attributes attr <SPAN class="op">=</SPAN> cur_attr<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> idx <SPAN class="op">=</SPAN> m_attr_storage<SPAN class="op">[</SPAN>m_attr_storage<SPAN class="op">.</SPAN>size<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">-</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">]</SPAN><SPAN class="op">.</SPAN>index<SPAN class="op">;</SPAN>
+        attr<SPAN class="op">.</SPAN>index <SPAN class="op">=</SPAN> idx<SPAN class="op">;</SPAN>
+        m_attr_storage<SPAN class="op">[</SPAN>m_attr_storage<SPAN class="op">.</SPAN>size<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">-</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> attr<SPAN class="op">;</SPAN>
+        pop_attr<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">void</SPAN> path_renderer::move_to<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">bool</SPAN> rel<SPAN class="op">)</SPAN>          <SPAN class="rem">// M, m</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>rel<SPAN class="op">)</SPAN> m_storage<SPAN class="op">.</SPAN>rel_to_abs<SPAN class="op">(</SPAN><SPAN class="op">&amp;</SPAN>x<SPAN class="op">,</SPAN> <SPAN class="op">&amp;</SPAN>y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_storage<SPAN class="op">.</SPAN>move_to<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">void</SPAN> path_renderer::line_to<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x<SPAN class="op">,</SPAN>  <SPAN class="kw1">double</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">bool</SPAN> rel<SPAN class="op">)</SPAN>         <SPAN class="rem">// L, l</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>rel<SPAN class="op">)</SPAN> m_storage<SPAN class="op">.</SPAN>rel_to_abs<SPAN class="op">(</SPAN><SPAN class="op">&amp;</SPAN>x<SPAN class="op">,</SPAN> <SPAN class="op">&amp;</SPAN>y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_storage<SPAN class="op">.</SPAN>line_to<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">void</SPAN> path_renderer::hline_to<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">bool</SPAN> rel<SPAN class="op">)</SPAN>                   <SPAN class="rem">// H, h</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">double</SPAN> x2 <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> y2 <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_storage<SPAN class="op">.</SPAN>total_vertices<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            m_storage<SPAN class="op">.</SPAN>vertex<SPAN class="op">(</SPAN>m_storage<SPAN class="op">.</SPAN>total_vertices<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">-</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">,</SPAN> <SPAN class="op">&amp;</SPAN>x2<SPAN class="op">,</SPAN> <SPAN class="op">&amp;</SPAN>y2<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>rel<SPAN class="op">)</SPAN> x <SPAN class="op">+=</SPAN> x2<SPAN class="op">;</SPAN>
+            m_storage<SPAN class="op">.</SPAN>line_to<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> y2<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">void</SPAN> path_renderer::vline_to<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">bool</SPAN> rel<SPAN class="op">)</SPAN>                   <SPAN class="rem">// V, v</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">double</SPAN> x2 <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> y2 <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_storage<SPAN class="op">.</SPAN>total_vertices<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            m_storage<SPAN class="op">.</SPAN>vertex<SPAN class="op">(</SPAN>m_storage<SPAN class="op">.</SPAN>total_vertices<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">-</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">,</SPAN> <SPAN class="op">&amp;</SPAN>x2<SPAN class="op">,</SPAN> <SPAN class="op">&amp;</SPAN>y2<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>rel<SPAN class="op">)</SPAN> y <SPAN class="op">+=</SPAN> y2<SPAN class="op">;</SPAN>
+            m_storage<SPAN class="op">.</SPAN>line_to<SPAN class="op">(</SPAN>x2<SPAN class="op">,</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">void</SPAN> path_renderer::<A href="../../__code/include/agg_curves.h.html#curve3">curve3</A><SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x1<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y1<SPAN class="op">,</SPAN>                   <SPAN class="rem">// Q, q</SPAN>
+                               <SPAN class="kw1">double</SPAN> x<SPAN class="op">,</SPAN>  <SPAN class="kw1">double</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">bool</SPAN> rel<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>rel<SPAN class="op">)</SPAN> 
+        <SPAN class="op">{</SPAN>
+            m_storage<SPAN class="op">.</SPAN>rel_to_abs<SPAN class="op">(</SPAN><SPAN class="op">&amp;</SPAN>x1<SPAN class="op">,</SPAN> <SPAN class="op">&amp;</SPAN>y1<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            m_storage<SPAN class="op">.</SPAN>rel_to_abs<SPAN class="op">(</SPAN><SPAN class="op">&amp;</SPAN>x<SPAN class="op">,</SPAN>  <SPAN class="op">&amp;</SPAN>y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        m_storage<SPAN class="op">.</SPAN><A href="../../__code/include/agg_curves.h.html#curve3">curve3</A><SPAN class="op">(</SPAN>x1<SPAN class="op">,</SPAN> y1<SPAN class="op">,</SPAN> x<SPAN class="op">,</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">void</SPAN> path_renderer::<A href="../../__code/include/agg_curves.h.html#curve3">curve3</A><SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">bool</SPAN> rel<SPAN class="op">)</SPAN>           <SPAN class="rem">// T, t</SPAN>
+    <SPAN class="op">{</SPAN>
+<SPAN class="rem">//        throw exception(&quot;<A href="../../__code/include/agg_curves.h.html#curve3">curve3</A>(x, y) : NOT IMPLEMENTED YET&quot;);</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>rel<SPAN class="op">)</SPAN> 
+        <SPAN class="op">{</SPAN>
+            m_storage<SPAN class="op">.</SPAN>curve3_rel<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN> <SPAN class="kw1">else</SPAN> 
+        <SPAN class="op">{</SPAN>
+            m_storage<SPAN class="op">.</SPAN><A href="../../__code/include/agg_curves.h.html#curve3">curve3</A><SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">void</SPAN> path_renderer::<A href="../../__code/include/agg_curves.h.html#curve4">curve4</A><SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x1<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y1<SPAN class="op">,</SPAN>                   <SPAN class="rem">// C, c</SPAN>
+                               <SPAN class="kw1">double</SPAN> x2<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y2<SPAN class="op">,</SPAN> 
+                               <SPAN class="kw1">double</SPAN> x<SPAN class="op">,</SPAN>  <SPAN class="kw1">double</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">bool</SPAN> rel<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>rel<SPAN class="op">)</SPAN> 
+        <SPAN class="op">{</SPAN>
+            m_storage<SPAN class="op">.</SPAN>rel_to_abs<SPAN class="op">(</SPAN><SPAN class="op">&amp;</SPAN>x1<SPAN class="op">,</SPAN> <SPAN class="op">&amp;</SPAN>y1<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            m_storage<SPAN class="op">.</SPAN>rel_to_abs<SPAN class="op">(</SPAN><SPAN class="op">&amp;</SPAN>x2<SPAN class="op">,</SPAN> <SPAN class="op">&amp;</SPAN>y2<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            m_storage<SPAN class="op">.</SPAN>rel_to_abs<SPAN class="op">(</SPAN><SPAN class="op">&amp;</SPAN>x<SPAN class="op">,</SPAN>  <SPAN class="op">&amp;</SPAN>y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        m_storage<SPAN class="op">.</SPAN><A href="../../__code/include/agg_curves.h.html#curve4">curve4</A><SPAN class="op">(</SPAN>x1<SPAN class="op">,</SPAN> y1<SPAN class="op">,</SPAN> x2<SPAN class="op">,</SPAN> y2<SPAN class="op">,</SPAN> x<SPAN class="op">,</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">void</SPAN> path_renderer::<A href="../../__code/include/agg_curves.h.html#curve4">curve4</A><SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x2<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y2<SPAN class="op">,</SPAN>                   <SPAN class="rem">// S, s</SPAN>
+                               <SPAN class="kw1">double</SPAN> x<SPAN class="op">,</SPAN>  <SPAN class="kw1">double</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">bool</SPAN> rel<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="rem">//throw exception(&quot;<A href="../../__code/include/agg_curves.h.html#curve4">curve4</A>(x2, y2, x, y) : NOT IMPLEMENTED YET&quot;);</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>rel<SPAN class="op">)</SPAN> 
+        <SPAN class="op">{</SPAN>
+            m_storage<SPAN class="op">.</SPAN>curve4_rel<SPAN class="op">(</SPAN>x2<SPAN class="op">,</SPAN> y2<SPAN class="op">,</SPAN> x<SPAN class="op">,</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN> <SPAN class="kw1">else</SPAN> 
+        <SPAN class="op">{</SPAN>
+            m_storage<SPAN class="op">.</SPAN><A href="../../__code/include/agg_curves.h.html#curve4">curve4</A><SPAN class="op">(</SPAN>x2<SPAN class="op">,</SPAN> y2<SPAN class="op">,</SPAN> x<SPAN class="op">,</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">void</SPAN> path_renderer::close_subpath<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        m_storage<SPAN class="op">.</SPAN>end_poly<SPAN class="op">(</SPAN><A href="../../__code/include/agg_basics.h.html#path_flags_close">path_flags_close</A><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    path_attributes<SPAN class="op">&amp;</SPAN> path_renderer::cur_attr<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_attr_stack<SPAN class="op">.</SPAN>size<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">throw</SPAN> exception<SPAN class="op">(</SPAN><SPAN class="str">&quot;cur_attr : Attribute stack is empty&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">return</SPAN> m_attr_stack<SPAN class="op">[</SPAN>m_attr_stack<SPAN class="op">.</SPAN>size<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">-</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">void</SPAN> path_renderer::push_attr<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        m_attr_stack<SPAN class="op">.</SPAN>add<SPAN class="op">(</SPAN>m_attr_stack<SPAN class="op">.</SPAN>size<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> ? 
+                         m_attr_stack<SPAN class="op">[</SPAN>m_attr_stack<SPAN class="op">.</SPAN>size<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">-</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">]</SPAN> :
+                         path_attributes<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">void</SPAN> path_renderer::pop_attr<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_attr_stack<SPAN class="op">.</SPAN>size<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">throw</SPAN> exception<SPAN class="op">(</SPAN><SPAN class="str">&quot;pop_attr : Attribute stack is empty&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        m_attr_stack<SPAN class="op">.</SPAN>remove_last<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">void</SPAN> path_renderer::fill<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <A href="../../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">&amp;</SPAN> f<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        path_attributes<SPAN class="op">&amp;</SPAN> attr <SPAN class="op">=</SPAN> cur_attr<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        attr<SPAN class="op">.</SPAN>fill_color <SPAN class="op">=</SPAN> f<SPAN class="op">;</SPAN>
+        attr<SPAN class="op">.</SPAN>fill_flag <SPAN class="op">=</SPAN> <SPAN class="kw1">true</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">void</SPAN> path_renderer::stroke<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <A href="../../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">&amp;</SPAN> s<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        path_attributes<SPAN class="op">&amp;</SPAN> attr <SPAN class="op">=</SPAN> cur_attr<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        attr<SPAN class="op">.</SPAN>stroke_color <SPAN class="op">=</SPAN> s<SPAN class="op">;</SPAN>
+        attr<SPAN class="op">.</SPAN>stroke_flag <SPAN class="op">=</SPAN> <SPAN class="kw1">true</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">void</SPAN> path_renderer::even_odd<SPAN class="op">(</SPAN><SPAN class="kw1">bool</SPAN> flag<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        cur_attr<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">.</SPAN>even_odd_flag <SPAN class="op">=</SPAN> flag<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+    
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">void</SPAN> path_renderer::stroke_width<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> w<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        cur_attr<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">.</SPAN>stroke_width <SPAN class="op">=</SPAN> w<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">void</SPAN> path_renderer::fill_none<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        cur_attr<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">.</SPAN>fill_flag <SPAN class="op">=</SPAN> <SPAN class="kw1">false</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">void</SPAN> path_renderer::stroke_none<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        cur_attr<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">.</SPAN>stroke_flag <SPAN class="op">=</SPAN> <SPAN class="kw1">false</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">void</SPAN> path_renderer::fill_opacity<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> op<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        cur_attr<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">.</SPAN>fill_color<SPAN class="op">.</SPAN>opacity<SPAN class="op">(</SPAN>op<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">void</SPAN> path_renderer::stroke_opacity<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> op<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        cur_attr<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">.</SPAN>stroke_color<SPAN class="op">.</SPAN>opacity<SPAN class="op">(</SPAN>op<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">void</SPAN> path_renderer::line_join<SPAN class="op">(</SPAN><A href="../../__code/include/agg_math_stroke.h.html#line_join_e">line_join_e</A> join<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        cur_attr<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">.</SPAN>line_join <SPAN class="op">=</SPAN> join<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">void</SPAN> path_renderer::line_cap<SPAN class="op">(</SPAN><A href="../../__code/include/agg_math_stroke.h.html#line_cap_e">line_cap_e</A> cap<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        cur_attr<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">.</SPAN>line_cap <SPAN class="op">=</SPAN> cap<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">void</SPAN> path_renderer::miter_limit<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> ml<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        cur_attr<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">.</SPAN>miter_limit <SPAN class="op">=</SPAN> ml<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <A href="../../__code/include/agg_trans_affine.h.html#trans_affine">trans_affine</A><SPAN class="op">&amp;</SPAN> path_renderer::transform<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">return</SPAN> cur_attr<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">.</SPAN>transform<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">void</SPAN> path_renderer::parse_path<SPAN class="op">(</SPAN>path_tokenizer<SPAN class="op">&amp;</SPAN> tok<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN>tok<SPAN class="op">.</SPAN>next<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">double</SPAN> arg<SPAN class="op">[</SPAN><SPAN class="num">10</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">char</SPAN> cmd <SPAN class="op">=</SPAN> tok<SPAN class="op">.</SPAN>last_command<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">unsigned</SPAN> i<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">switch</SPAN><SPAN class="op">(</SPAN>cmd<SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                <SPAN class="kw1">case</SPAN> <SPAN class="str">&#039;M&#039;</SPAN>: <SPAN class="kw1">case</SPAN> <SPAN class="str">&#039;m&#039;</SPAN>:
+                    arg<SPAN class="op">[</SPAN><SPAN class="num">0</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> tok<SPAN class="op">.</SPAN>last_number<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    arg<SPAN class="op">[</SPAN><SPAN class="num">1</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> tok<SPAN class="op">.</SPAN>next<SPAN class="op">(</SPAN>cmd<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    move_to<SPAN class="op">(</SPAN>arg<SPAN class="op">[</SPAN><SPAN class="num">0</SPAN><SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> arg<SPAN class="op">[</SPAN><SPAN class="num">1</SPAN><SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> cmd <SPAN class="op">==</SPAN> <SPAN class="str">&#039;m&#039;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+
+                <SPAN class="kw1">case</SPAN> <SPAN class="str">&#039;L&#039;</SPAN>: <SPAN class="kw1">case</SPAN> <SPAN class="str">&#039;l&#039;</SPAN>:
+                    arg<SPAN class="op">[</SPAN><SPAN class="num">0</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> tok<SPAN class="op">.</SPAN>last_number<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    arg<SPAN class="op">[</SPAN><SPAN class="num">1</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> tok<SPAN class="op">.</SPAN>next<SPAN class="op">(</SPAN>cmd<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    line_to<SPAN class="op">(</SPAN>arg<SPAN class="op">[</SPAN><SPAN class="num">0</SPAN><SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> arg<SPAN class="op">[</SPAN><SPAN class="num">1</SPAN><SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> cmd <SPAN class="op">==</SPAN> <SPAN class="str">&#039;l&#039;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+
+                <SPAN class="kw1">case</SPAN> <SPAN class="str">&#039;V&#039;</SPAN>: <SPAN class="kw1">case</SPAN> <SPAN class="str">&#039;v&#039;</SPAN>:
+                    vline_to<SPAN class="op">(</SPAN>tok<SPAN class="op">.</SPAN>last_number<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> cmd <SPAN class="op">==</SPAN> <SPAN class="str">&#039;v&#039;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+
+                <SPAN class="kw1">case</SPAN> <SPAN class="str">&#039;H&#039;</SPAN>: <SPAN class="kw1">case</SPAN> <SPAN class="str">&#039;h&#039;</SPAN>:
+                    hline_to<SPAN class="op">(</SPAN>tok<SPAN class="op">.</SPAN>last_number<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> cmd <SPAN class="op">==</SPAN> <SPAN class="str">&#039;h&#039;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+                
+                <SPAN class="kw1">case</SPAN> <SPAN class="str">&#039;Q&#039;</SPAN>: <SPAN class="kw1">case</SPAN> <SPAN class="str">&#039;q&#039;</SPAN>:
+                    arg<SPAN class="op">[</SPAN><SPAN class="num">0</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> tok<SPAN class="op">.</SPAN>last_number<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;</SPAN> <SPAN class="num">4</SPAN><SPAN class="op">;</SPAN> i<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+                    <SPAN class="op">{</SPAN>
+                        arg<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> tok<SPAN class="op">.</SPAN>next<SPAN class="op">(</SPAN>cmd<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="op">}</SPAN>
+                    <A href="../../__code/include/agg_curves.h.html#curve3">curve3</A><SPAN class="op">(</SPAN>arg<SPAN class="op">[</SPAN><SPAN class="num">0</SPAN><SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> arg<SPAN class="op">[</SPAN><SPAN class="num">1</SPAN><SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> arg<SPAN class="op">[</SPAN><SPAN class="num">2</SPAN><SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> arg<SPAN class="op">[</SPAN><SPAN class="num">3</SPAN><SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> cmd <SPAN class="op">==</SPAN> <SPAN class="str">&#039;q&#039;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+
+                <SPAN class="kw1">case</SPAN> <SPAN class="str">&#039;T&#039;</SPAN>: <SPAN class="kw1">case</SPAN> <SPAN class="str">&#039;t&#039;</SPAN>:
+                    arg<SPAN class="op">[</SPAN><SPAN class="num">0</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> tok<SPAN class="op">.</SPAN>last_number<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    arg<SPAN class="op">[</SPAN><SPAN class="num">1</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> tok<SPAN class="op">.</SPAN>next<SPAN class="op">(</SPAN>cmd<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <A href="../../__code/include/agg_curves.h.html#curve3">curve3</A><SPAN class="op">(</SPAN>arg<SPAN class="op">[</SPAN><SPAN class="num">0</SPAN><SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> arg<SPAN class="op">[</SPAN><SPAN class="num">1</SPAN><SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> cmd <SPAN class="op">==</SPAN> <SPAN class="str">&#039;t&#039;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+
+                <SPAN class="kw1">case</SPAN> <SPAN class="str">&#039;C&#039;</SPAN>: <SPAN class="kw1">case</SPAN> <SPAN class="str">&#039;c&#039;</SPAN>:
+                    arg<SPAN class="op">[</SPAN><SPAN class="num">0</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> tok<SPAN class="op">.</SPAN>last_number<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;</SPAN> <SPAN class="num">6</SPAN><SPAN class="op">;</SPAN> i<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+                    <SPAN class="op">{</SPAN>
+                        arg<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> tok<SPAN class="op">.</SPAN>next<SPAN class="op">(</SPAN>cmd<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="op">}</SPAN>
+                    <A href="../../__code/include/agg_curves.h.html#curve4">curve4</A><SPAN class="op">(</SPAN>arg<SPAN class="op">[</SPAN><SPAN class="num">0</SPAN><SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> arg<SPAN class="op">[</SPAN><SPAN class="num">1</SPAN><SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> arg<SPAN class="op">[</SPAN><SPAN class="num">2</SPAN><SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> arg<SPAN class="op">[</SPAN><SPAN class="num">3</SPAN><SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> arg<SPAN class="op">[</SPAN><SPAN class="num">4</SPAN><SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> arg<SPAN class="op">[</SPAN><SPAN class="num">5</SPAN><SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> cmd <SPAN class="op">==</SPAN> <SPAN class="str">&#039;c&#039;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+
+                <SPAN class="kw1">case</SPAN> <SPAN class="str">&#039;S&#039;</SPAN>: <SPAN class="kw1">case</SPAN> <SPAN class="str">&#039;s&#039;</SPAN>:
+                    arg<SPAN class="op">[</SPAN><SPAN class="num">0</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> tok<SPAN class="op">.</SPAN>last_number<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;</SPAN> <SPAN class="num">4</SPAN><SPAN class="op">;</SPAN> i<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+                    <SPAN class="op">{</SPAN>
+                        arg<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> tok<SPAN class="op">.</SPAN>next<SPAN class="op">(</SPAN>cmd<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="op">}</SPAN>
+                    <A href="../../__code/include/agg_curves.h.html#curve4">curve4</A><SPAN class="op">(</SPAN>arg<SPAN class="op">[</SPAN><SPAN class="num">0</SPAN><SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> arg<SPAN class="op">[</SPAN><SPAN class="num">1</SPAN><SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> arg<SPAN class="op">[</SPAN><SPAN class="num">2</SPAN><SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> arg<SPAN class="op">[</SPAN><SPAN class="num">3</SPAN><SPAN class="op">]</SPAN><SPAN class="op">,</SPAN> cmd <SPAN class="op">==</SPAN> <SPAN class="str">&#039;s&#039;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+
+                <SPAN class="kw1">case</SPAN> <SPAN class="str">&#039;A&#039;</SPAN>: <SPAN class="kw1">case</SPAN> <SPAN class="str">&#039;a&#039;</SPAN>:
+                    <SPAN class="kw1">throw</SPAN> exception<SPAN class="op">(</SPAN><SPAN class="str">&quot;parse_path: Command A: NOT IMPLEMENTED YET&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                <SPAN class="kw1">case</SPAN> <SPAN class="str">&#039;Z&#039;</SPAN>: <SPAN class="kw1">case</SPAN> <SPAN class="str">&#039;z&#039;</SPAN>:
+                    close_subpath<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+
+                <SPAN class="kw1">default</SPAN>:
+                <SPAN class="op">{</SPAN>
+                    <SPAN class="kw1">char</SPAN> buf<SPAN class="op">[</SPAN><SPAN class="num">100</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                    sprintf<SPAN class="op">(</SPAN>buf<SPAN class="op">,</SPAN> <SPAN class="str">&quot;parse_path: Invalid Command %c&quot;</SPAN><SPAN class="op">,</SPAN> cmd<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                    <SPAN class="kw1">throw</SPAN> exception<SPAN class="op">(</SPAN>buf<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN>
+
+<SPAN class="op">}</SPAN>
+<SPAN class="op">}</SPAN>
+
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT><TABLE width="640px" bgcolor="#583927" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0">
+<TR><TD><CENTER><SPAN class="authors">
+Copyright <SPAN class="larger">&#169;</SPAN> 2002-2006
+<A href="../../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+<TR><TD><CENTER><SPAN class="authors">
+Web Design and Programming
+<A href="../../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+</TABLE>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+</HTML>

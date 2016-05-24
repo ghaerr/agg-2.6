@@ -1,0 +1,831 @@
+<HTML><HEAD><TITLE>Anti-Grain Geometry - Anti-Grain Geometry</TITLE>
+<META http-equiv="Content-Type" content="text/html"/>
+<LINK rel="stylesheet" type="text/css" href="../agg.styles.css"/>
+</HEAD>
+
+
+
+<TABLE width="640px"><TR><TD><H1>Anti-Grain Geometry<SPAN class="subtitle"><BR/>High Fidelity 2D Graphics for C++</SPAN></H1></TD></TR></TABLE>
+
+
+<TABLE class="toc" width="640px"><TR><TD>
+    <DIV style="margin-left:2em; padding:3px; font-size:14px;"><A href="#toc0001"><B>Introduction</B></A></DIV>
+    <DIV style="margin-left:2em; padding:3px; font-size:14px;"><A href="#toc0002"><B>Brief Overview of Graphic Libraries</B></A></DIV>
+    <DIV style="margin-left:2em; padding:3px; font-size:14px;"><A href="#toc0003"><B>The power of templates in C++</B></A></DIV>
+    <DIV style="margin-left:2em; padding:3px; font-size:14px;"><A href="#toc0004"><B>The key features of AGG</B></A></DIV>
+    <DIV style="margin-left:2em; padding:3px; font-size:14px;"><A href="#toc0005"><B>Architecture</B></A>
+        <DIV style="margin-left:2em; font-size:12px;"><A href="#toc0006">Pixel Format Renderers</A></DIV>
+        <DIV style="margin-left:2em; font-size:12px;"><A href="#toc0007">Alpha-Mask Adaptor</A></DIV>
+        <DIV style="margin-left:2em; font-size:12px;"><A href="#toc0008">Basic Renderers</A></DIV>
+        <DIV style="margin-left:2em; font-size:12px;"><A href="#toc0009">Scanline Renderer</A></DIV>
+        <DIV style="margin-left:2em; font-size:12px;"><A href="#toc0010">Span Generator</A></DIV>
+        <DIV style="margin-left:2em; font-size:12px;"><A href="#toc0011">Scanline Rasterizer</A></DIV>
+        <DIV style="margin-left:2em; font-size:12px;"><A href="#toc0012">Outline Renderers</A></DIV>
+        <DIV style="margin-left:2em; font-size:12px;"><A href="#toc0013">Outline Rasterizer</A></DIV>
+        <DIV style="margin-left:2em; font-size:12px;"><A href="#toc0014">Vertex Conversion Pipeline</A></DIV></DIV>
+    <DIV style="margin-left:2em; padding:3px; font-size:14px;"><A href="#toc0015"><B>Example</B></A></DIV>
+
+</TD></TR></TABLE>
+
+<H2>Introduction<A name="toc0001"></A></H2>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>In this article I would like to introduce my work called <B><NOBR>Anti-Grain</NOBR> Geometry</B> (<B>AGG</B>).
+It is an Open Source, free of charge 2D graphic library, written in
+industrially standard C++.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Scalable 2D vector graphics is widely used in all kinds
+of applications and now the performance of modern processors
+makes it affordable to use <B>high quality</B> vector graphics.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>High quality means multilevel Anti-Aliasing and subpixel accuracy.
+Subpixel accuracy is often underestimated, but in general it&#039;s very
+important to have a possibility of subpixel positioning.
+It&#039;s especially important to be able to set fractional line width
+that can be even less than one pixel. I would say that Anti-Aliased
+rendering is practically useless without subpixel accuracy.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The first question that can arise is <I>&#147;What is this needed for?&#148;</I>
+or even <I>&#147;Is there a need of yet another reinvention of the wheel?&#148;</I></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The short answer is as follows.
+Yes, there are many graphic standards, protocols and libraries, but
+nothing that fits all my needs. It was my main motivation to start
+<B>AGG</B>, namely, my exclusive requirements. Later other people
+found it very interesting too.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>You can think of <B>AGG</B> as of a rendering library that creates raster
+images in memory from some vectorial representation. But this definition
+is just the first approximation. In general, you can use any part of the
+library, not obligatory as a rasterizer or renderer.
+<B>AGG</B> can be used in many applications where there is a need for high
+quality and fast 2D graphics. It can be GIS/cartography applications,
+fancy looking graphic user interfaces, different kinds of charts and diagrams,
+CAD/CAM, and so on. Besides, <B>AGG</B> is platform independent, lightweight,
+compact, and robust It also can be perfectly used in embedded systems
+and mobile devices.</P></TD></TR></TABLE>
+
+
+<BR/><H2>Brief Overview of Graphic Libraries<A name="toc0002"></A></H2>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>First, let me briefly describe the existing tools
+and libraries that can be used as 2D rendering engines.
+The fastest software 2D renderer that produces images of
+appropriate quality is well known Macromedia Flash viewer.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The other one is SVG standard from W3C committee,
+<A href="http://www.w3.org/Graphics/SVG"><IMG src="../link.gif" border="0"/>http://www.w3.org/Graphics/SVG</A>/ for which we can find a number of
+viewers (the most advanced one is Adobe SVG, <A href="http://www.adobe.com/svg"><IMG src="../link.gif" border="0"/>http://www.adobe.com/svg</A>/).
+But they both are &#147;end-user&#148; applications and cannot be used as
+rendering libraries available from C++. SVG would be the best 2D
+standard if there were available implementations that support the
+whole SVG specification and provide appropriate quality, performance,
+and consume reasonable amount of memory.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The most widely used industrial libraries available from many languages
+are OpenGL, Apple Quartz and GDI+.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>OpenGL is good and standard, but the quality of 2D graphics is very poor.
+It&#039;s perfectly &#147;hardware accelerated&#148;, but there are no available
+accelerators that produce any valuable quality of 2D graphics.
+Alex Eddy has performed a research that clearly shows the lack of the
+quality in most popular OpenGL accelerators.
+<A href="http://homepage.mac.com/arekkusu/bugs/invariance"><IMG src="../link.gif" border="0"/>http://homepage.mac.com/arekkusu/bugs/invariance</A>/</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>GDI+ has also very poor quality of rendering, it&#039;s slow and
+has too many bugs to be used in practice, not to mention
+that it&#039;s available only on Microsoft Windows platform.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Apple Quartz has the most advanced API and quality, but it&#039;s available
+only on Apple computers.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>There are two Open Source libraries, LibArt by Raph Levien
+<A href="http://www.levien.com/libart"><IMG src="../link.gif" border="0"/>http://www.levien.com/libart</A>/ and Cairo Graphics, <A href="http://cairographics.org"><IMG src="../link.gif" border="0"/>http://cairographics.org</A>/.
+LibArt development was abandoned some time ago, and the problems with
+numerical stability don&#039;t allow you to use it in practice.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Cairo Graphics is in active development and it is definitely worth
+considering. Still, Cairo Graphics has certain limitations, mostly
+because of its hardcoded rendering model.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Besides, LibArt and Cairo Graphics are released under LGPL license
+which is too restrictive in many cases.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Another very good library is called ImageMagick (<A href="http://www.imagemagick.org"><IMG src="../link.gif" border="0"/>http://www.imagemagick.org</A>),
+but its primary purpose is image processing.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The general problem of all existing graphic libraries and
+tools is that they are too restrictive. They all are &#147;black boxes&#148;,
+even open source ones.
+I feel I need to explain this statement. Theoretically you can modify
+an open source library in any way you want (assuming that it doesn&#039;t
+contradict the license). But as soon as you modify a single byte you
+create another branch of the library and have to take care of merging
+your modifications with new versions from the authors. After some point
+it becomes a nightmare. In my opinion the real &#147;openness&#148; of the library
+appears when you can extend its functionality without having to modify a
+single character in the distributed code. C++ allows us to do that.</P></TD></TR></TABLE>
+
+<BR/><H2>The power of templates in C++<A name="toc0003"></A></H2>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><B>AGG</B> uses C++ class and function templates very actively. The same
+functionality can be achieved using dynamic polymorphism, that is,
+classes with overridden virtual functions. But the templates allow
+you to optimize the code having very flexible and convenient design.
+Polymorphic classes work quite well until a certain level of detailization.
+A typical task in vector graphics is to have a vertex conversion pipeline.
+For example, it can be some source of vectorial commands like
+MoveTo/LineTo/CurveTo, then there is a converter that &#147;flattens&#148; curves,
+then a stroke generator, then affine transformer and so on. In most graphic
+libraries the pipelines are hardcoded.
+If we want it to be more flexible, that is, if we want to construct custom
+pipelines, you will have to use polymorphism. It&#039;s appropriate to have
+one virtual call per vertex but can be too expensive to have a virtual
+call per vertex per pipeline element. Another approach is to have
+&#147;static&#148; polymorphism, that is, to use class templates. It does not directly
+allow you to construct pipelines dynamically, at run time, but in most cases
+you don&#039;t really need it. Most probably you only want to have a possibility to
+construct pipelines at compile time, and if you really need dynamic
+polymorphism it&#039;s very easy to write polymorphic wrappers whose interfaces
+are compatible with what the templates expect. So that, in <B>AGG</B>
+it&#039;s you who has full control upon the functionality and performance.
+The very same approach is used in the raster part of the rendering
+pipeline. You can write your own low level renderers that work with
+different color spaces, your own gradient functions, your own span
+generators, and so on. An implementation based on classical
+polymorphic classes would cost you several virtual calls per each pixel,
+while templates allow you to do so for no extra overhead.</P></TD></TR></TABLE>
+
+<BR/><H2>The key features of AGG<A name="toc0004"></A></H2>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Below I just enumerate the key features of the library, so that you
+could have a general idea of where it can be useful for you.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><UL type="disc">
+<LI>Fast and high quality polygon rasterizer with 256 levels of
+   Anti-Aliasing. The non-zero and even-odd fill rules are applicable.</LI>
+<LI>Customizable vector and raster pipelines.</LI>
+<LI>Arbitrary gradients and Gouraud shading.</LI>
+<LI>Image affine transformations with different kinds of interpolation,
+   from simple bilinear to high degree Lancosz and Blackman ones.</LI>
+<LI>Pattern fill with arbitrary affine and perspective transformations
+   (can be used for texturing).</LI>
+<LI>Perspective and bilinear transformations of vector and image data.</LI>
+<LI>Stroke generator with different types of line joins and line caps.</LI>
+<LI>Dash line generator.</LI>
+<LI>Markers, such as arrowheads/arrow tails.</LI>
+<LI>Fast vectorial polygon clipper to a rectangle.</LI>
+<LI>Low-level clipping to multiple rectangular regions.</LI>
+<LI>Alpha-Masking.</LI>
+<LI>Fast Anti-Aliased line algorithm.</LI>
+<LI>Arbitrary images as line patterns.</LI>
+<LI>Rendering in separate color channels.</LI>
+<LI>Boolean polygon operations (and, or, xor, sub) based on Alan Murta&#039;s
+   General Polygon Clipper.</LI>
+<LI>Scanline Boolean Algebra. Performs boolean operations on rasterized
+   scanline shapes. Works in average 5-10 times faster than General
+   Polygon Clipper</LI>
+<LI>Text support using FreeType library (<A href="http://www.freetype.org"><IMG src="../link.gif" border="0"/>http://www.freetype.org</A>) and
+   Windows API (<CODE>GetGlyphOutline()</CODE>).</LI>
+<LI>Arbitrary non-linear transformations.</LI></UL></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The library and examples were successfully compiled and tested on the following
+platforms:</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><UL type="disc">
+<LI>Microsoft Windows (95,98,NT4,2000,XP,2003). Compilers Microsoft Visual C++
+   v5, v6, v7, Intel C++ v6, GNU C++ from v2.96 to v3.4.0</LI>
+<LI>Linux, GNU C++</LI>
+<LI>SunOS</LI>
+<LI>SGI IRIX64</LI>
+<LI>MacOS 9, MacOS X, Compilers Metrowerks CodeWarrior 8.3, GNU C++</LI>
+<LI>QNX</LI>
+<LI>BeOS</LI>
+<LI>AmigaOS</LI></UL></P></TD></TR></TABLE>
+ 
+
+<BR/><H2>Architecture<A name="toc0005"></A></H2>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><B>AGG</B> doesn&#039;t have any predefined rendering model, it&#039;s like
+&quot;a tool to create other tools&quot;. The architecture and the
+philosophy of the library is determined by the main goal
+of its creation. The goal is to have a set of 2D tools united
+with a common idea. You and only you define the resulting architecture and
+rendering model. <B>AGG</B> is open and flexible but not that
+obvious and easy to use as other &quot;conventional&quot; libraries like
+GDI+ or Quartz.
+Besides, it makes sense to mention that <B>AGG</B> has some
+restrictions too, but it&#039;s only because some algorithms and
+design solutions are not yet implemented.
+In particular, <B>AGG</B> currently supports only path-based model,
+and there is no straight way to render graphics from Macromedia
+Flash format. Flash is edge-based, so, you can render a multi-color
+scene in one pass. In some cases it&#039;s better, but in general it&#039;s
+more restrictive and more difficult in use. Currently we can say
+that <B>AGG</B> is more SVG centric rather than Flash centric.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The following picture represents a typical architecture of a
+rendering engine based on <B>AGG</B>.
+</P></TD></TR></TABLE><TABLE width="640px"><TR><TD><CENTER><IMG src="architecture.gif" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+                       
+
+<H3>Pixel Format Renderers<A name="toc0006"></A></H3>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Pixel format renderers perform basic alpha-blending operations
+in the resulting frame buffer. They do not perform any clipping,
+thus, it&#039;s unsafe to use them directly, so, if the coordinates are
+out of range it can result in undefined behaviour, most probably
+segmentation fault. It doesn&#039;t mean that the design is bad, it
+means that you can write your own color space and pixel format
+renderers, and you don&#039;t need to worry about clipping because
+it is already provided on a higher level.
+It&#039;s quite possible to write a renderer to work in another color
+space, say, XYZ or Lab, and define your own color type.
+These additions will not affect anyhow the other parts of <B>AGG</B>.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Currently <B>AGG</B> provides 15, 16, 24, and 32 bits RGB and RGBA
+pixel formats.</P></TD></TR></TABLE>
+
+<H3>Alpha-Mask Adaptor<A name="toc0007"></A></H3>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Alpha-mask adaptor allows you to use an additional
+transparency channel when rendering. Strictly speaking
+there can be any kind of an adaptor. Alpha-mask is just
+an example of it.</P></TD></TR></TABLE>
+                 
+<H3>Basic Renderers<A name="toc0008"></A></H3>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The basic renderer (<A href="../doc/basic_renderers/basic_renderers.agdoc.html#renderer_base">renderer_base</A>) accepts a pixel format
+renderer as its template argument and it&#039;s main purpose is
+level clipping. It provides essentially the same interface as
+pixel format renderers.
+Also, there is <A href="../doc/basic_renderers/basic_renderers.agdoc.html#renderer_mclip">renderer_mclip</A> which is the same in use
+but it can perform clipping to a number of arbitrary
+rectangles.</P></TD></TR></TABLE>
+
+<H3>Scanline Renderer<A name="toc0009"></A></H3>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>One of the key concepts in <B>AGG</B> is the scanline. The scanline
+is a container that consist of a number of horizontal spans that
+can carry Anti-Aliasing information. The scanline
+renderer decomposes provided scanline into a number of spans
+and in simple cases (like solid fill) calls basic renderer.
+In more complex cases it can call span generator.</P></TD></TR></TABLE>
+
+<H3>Span Generator<A name="toc0010"></A></H3>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Span Generator is used in all cases that are more difficult
+than solid fill. It&#039;s a common mechanism that can produce
+any kind of color spans, such as gradients, Gouraud shading,
+image transformations, pattern fill, and so on. Particularly
+this mechanism allows you to transform a part of the image
+bounded with an arbitrary shape with Anti-Aliased edges.
+The span generator can consist of the whole pipeline,
+for example, there can be an image transformer plus alpha
+(transparency) gradient.</P></TD></TR></TABLE>
+
+<H3>Scanline Rasterizer<A name="toc0011"></A></H3>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The scanline rasterizer accepts a number of arbitrary polygons
+as its input and produces anti-aliased scanlines. This is
+the primary rendering technique in <B>AGG</B>. It means that
+the only shape that can be rasterized is a polygon (poly-polygon
+to be exact). If you need to draw a line you need to calculate
+at least four points that define its outline. At the first sight
+it can seem like an overkill, but it isn&#039;t. The main point is
+that the algorithm uses subpixel accuracy and correctly rasterizes
+any shapes, even when a single pixel is crossed by the edges many
+times. It allows the result to remain consistent regardless
+of the scale and the algorithm guarantees that there will be
+no defects.
+</P></TD></TR></TABLE><TABLE width="640px"><TR><TD><CENTER><IMG src="subpixel_accuracy2.gif" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The initial idea was taken from the rasterizer
+of FreeType font engine by David Turner (<A href="http://www.freetype.org"><IMG src="../link.gif" border="0"/>http://www.freetype.org</A>).
+David kindly allowed me to rewrite the rasterizer in C++ and
+release the code independently.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Such kind of the design (rasterizer <SPAN class="larger">&#8594;</SPAN> scanline_renderer <SPAN class="larger">&#8594;</SPAN> base_renderer <SPAN class="larger">&#8594;</SPAN> pixel_format)
+allows us to implement very interesting algorithms, for example,
+renderers optimized for LCD color triplets (like Microsoft ClearType) and
+it will be applicable to all primitives, not only for text.</P></TD></TR></TABLE>
+
+<H3>Outline Renderers<A name="toc0012"></A></H3>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>This is yet another algorithm of drawing Anti-Aliased lines.
+The use of the algorithm is more limited than the scanline rasterizer,
+but it also has many advantages.
+<UL type="disc">
+<LI>It works about 2&#133;3 times faster than the scanline rasterizer.</LI>
+<LI>It allows you to have the Anti-Aliased area of any profile and width.</LI>
+<LI>The Anti-Aliasing algorithm is distance-based, unlike area-based
+   in the scanline rasterizer. In most cases it allows you to produce
+   better visual result.</LI>
+<LI>Most importantly, the algorithm allows you to use an arbitrary
+   image as the line pattern.
+   This is the key capability when rendering high quality
+   geographic maps.
+In general we can say that it&#039;s dedicated for fast drawing of
+relatively thin polylines.</LI></UL></P></TD></TR></TABLE>
+
+<H3>Outline Rasterizer<A name="toc0013"></A></H3>
+                       
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The outline rasterizer is just an adaptor that unifies the use of
+the solid outline rasterizer and the one with image patterns.</P></TD></TR></TABLE>
+
+<H3>Vertex Conversion Pipeline<A name="toc0014"></A></H3>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The vertex pipeline consists of a number of converters.
+Each converter accepts an abstract Vertex Source as the input
+and works as another Vertex Source. Usually graphic libraries
+have hardcoded pipelines, typically they consist of a curve
+decomposer (that converts curves to a number of short line segments),
+affine transformer, dash generator, stroke generator,
+and polygon clipper.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>In <B>AGG</B> you can construct custom pipelines and there can be as many
+pipelines as you need. Besides, the pipelines can have branches, in
+other words you can extract vertices from any point of the pipeline.
+The most important thing is you can combine the converters as
+you want and get quite different results.</P></TD></TR></TABLE>
+
+<BR/><H2>Example<A name="toc0015"></A></H2>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The example below demonstrates how to create basic types needed
+for rendering and the effect of the pipelines. To keep the things
+as simple as possible it will be a console application that
+produces a raster file (result.ppm) that has a very simple format.
+You can display this files with many kinds of viewers, for example,
+IrfanView (<A href="http://www.irfanview.com"><IMG src="../link.gif" border="0"/>http://www.irfanview.com</A>/).</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Also I&#039;d like to mention that it&#039;s not necessary for <B>AGG</B> to have
+any building environment. It has automake/autoconfig files, but you
+can do without them. Since <B>AGG</B> doesn&#039;t depend on any platform-specific
+tools you can just include all necessary source files into your
+project/makefile and they will perfectly compile and work.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><B>AGG</B> is written according to the &#147;Just Compile It&#148; principle.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Type (or take from the CD) the following code and name the file
+<CODE>example_pipeline1.cpp</CODE>:</P></TD></TR></TABLE>
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+<SPAN class="kw2">#include</SPAN> <SPAN class="op">&lt;</SPAN>stdio<SPAN class="op">.</SPAN>h<SPAN class="op">&gt;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="op">&lt;</SPAN>string<SPAN class="op">.</SPAN>h<SPAN class="op">&gt;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;agg_pixfmt_rgb24.h&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_renderer_base.h.html">agg_renderer_base.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_renderer_scanline.h.html">agg_renderer_scanline.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_scanline_u.h.html">agg_scanline_u.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_rasterizer_scanline_aa.h.html">agg_rasterizer_scanline_aa.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_path_storage.h.html">agg_path_storage.h</A>&quot;</SPAN>
+
+<SPAN class="kw1">enum</SPAN>
+<SPAN class="op">{</SPAN>
+    frame_width <SPAN class="op">=</SPAN> <SPAN class="num">200</SPAN><SPAN class="op">,</SPAN>
+    frame_height <SPAN class="op">=</SPAN> <SPAN class="num">200</SPAN>
+<SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+<SPAN class="rem">// Writing the buffer to a .PPM file, assuming it has</SPAN>
+<SPAN class="rem">// RGB-structure, one byte per color component</SPAN>
+<SPAN class="rem">//--------------------------------------------------</SPAN>
+<SPAN class="kw1">bool</SPAN> write_ppm<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <SPAN class="kw1">unsigned</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN> buf<SPAN class="op">,</SPAN>
+               <SPAN class="kw1">unsigned</SPAN> width<SPAN class="op">,</SPAN>
+               <SPAN class="kw1">unsigned</SPAN> height<SPAN class="op">,</SPAN>
+               <SPAN class="kw1">const</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN> file_name<SPAN class="op">)</SPAN>
+<SPAN class="op">{</SPAN>
+    FILE<SPAN class="op">*</SPAN> fd <SPAN class="op">=</SPAN> fopen<SPAN class="op">(</SPAN>file_name<SPAN class="op">,</SPAN> <SPAN class="str">&quot;wb&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>fd<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        fprintf<SPAN class="op">(</SPAN>fd<SPAN class="op">,</SPAN> <SPAN class="str">&quot;P6 %d %d 255 &quot;</SPAN><SPAN class="op">,</SPAN> width<SPAN class="op">,</SPAN> height<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        fwrite<SPAN class="op">(</SPAN>buf<SPAN class="op">,</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">,</SPAN> width <SPAN class="op">*</SPAN> height <SPAN class="op">*</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">,</SPAN> fd<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        fclose<SPAN class="op">(</SPAN>fd<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">return</SPAN> <SPAN class="kw1">true</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+    <SPAN class="kw1">return</SPAN> <SPAN class="kw1">false</SPAN><SPAN class="op">;</SPAN>
+<SPAN class="op">}</SPAN>
+
+
+<SPAN class="kw1">int</SPAN> <SPAN class="kw1">main</SPAN><SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+<SPAN class="op">{</SPAN>
+    <SPAN class="rem">// Allocate the frame buffer (in this case &quot;manually&quot;)</SPAN>
+    <SPAN class="rem">// and create the rendering buffer object</SPAN>
+    <SPAN class="kw1">unsigned</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN> buffer <SPAN class="op">=</SPAN> <SPAN class="kw1">new</SPAN> <SPAN class="kw1">unsigned</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">[</SPAN>frame_width <SPAN class="op">*</SPAN> frame_height <SPAN class="op">*</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+    agg::<A href="../doc/basic_renderers/basic_renderers.agdoc.html#rendering_buffer">rendering_buffer</A> rbuf<SPAN class="op">(</SPAN>buffer<SPAN class="op">,</SPAN>
+                               frame_width<SPAN class="op">,</SPAN>
+                               frame_height<SPAN class="op">,</SPAN>
+                               frame_width <SPAN class="op">*</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="rem">// Create Pixel Format and Basic renderers</SPAN>
+    <SPAN class="rem">//--------------------</SPAN>
+    agg::<A href="../__code/include/agg_pixfmt_rgb.h.html#pixfmt_rgb24">pixfmt_rgb24</A> pixf<SPAN class="op">(</SPAN>rbuf<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    agg::<A href="../doc/basic_renderers/basic_renderers.agdoc.html#renderer_base">renderer_base</A><SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_pixfmt_rgb.h.html#pixfmt_rgb24">pixfmt_rgb24</A><SPAN class="op">&gt;</SPAN> ren_base<SPAN class="op">(</SPAN>pixf<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="rem">// At last we do some very simple things, like clear</SPAN>
+    <SPAN class="rem">//--------------------</SPAN>
+    ren_base<SPAN class="op">.</SPAN>clear<SPAN class="op">(</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">(</SPAN><SPAN class="num">255</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">250</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">230</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="rem">// Create Scanline Container, Scanline Rasterizer,</SPAN>
+    <SPAN class="rem">// and Scanline Renderer for solid fill.</SPAN>
+    <SPAN class="rem">//--------------------</SPAN>
+    agg::<A href="../__code/include/agg_scanline_u.h.html#scanline_u8">scanline_u8</A> sl<SPAN class="op">;</SPAN>
+    agg::<A href="../__code/include/agg_rasterizer_scanline_aa.h.html#rasterizer_scanline_aa">rasterizer_scanline_aa</A><SPAN class="op">&lt;</SPAN><SPAN class="op">&gt;</SPAN> ras<SPAN class="op">;</SPAN>
+    agg::<A href="../__code/include/agg_renderer_scanline.h.html#renderer_scanline_aa_solid">renderer_scanline_aa_solid</A><SPAN class="op">&lt;</SPAN>
+        agg::<A href="../doc/basic_renderers/basic_renderers.agdoc.html#renderer_base">renderer_base</A><SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_pixfmt_rgb.h.html#pixfmt_rgb24">pixfmt_rgb24</A><SPAN class="op">&gt;</SPAN> <SPAN class="op">&gt;</SPAN> ren_sl<SPAN class="op">(</SPAN>ren_base<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="rem">// Create Vertex Source (path) object, in our case it&#039;s</SPAN>
+    <SPAN class="rem">// <A href="../__code/include/agg_path_storage.h.html#path_storage">path_storage</A> and form the path.</SPAN>
+    <SPAN class="rem">//--------------------</SPAN>
+    agg::<A href="../__code/include/agg_path_storage.h.html#path_storage">path_storage</A> path<SPAN class="op">;</SPAN>
+    path<SPAN class="op">.</SPAN>remove_all<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> <SPAN class="rem">// Not obligatory in this case</SPAN>
+    path<SPAN class="op">.</SPAN>move_to<SPAN class="op">(</SPAN><SPAN class="num">10</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">10</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    path<SPAN class="op">.</SPAN>line_to<SPAN class="op">(</SPAN>frame_width<SPAN class="op">-</SPAN><SPAN class="num">10</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">10</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    path<SPAN class="op">.</SPAN>line_to<SPAN class="op">(</SPAN>frame_width<SPAN class="op">-</SPAN><SPAN class="num">10</SPAN><SPAN class="op">,</SPAN> frame_height<SPAN class="op">-</SPAN><SPAN class="num">10</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    path<SPAN class="op">.</SPAN>line_to<SPAN class="op">(</SPAN><SPAN class="num">10</SPAN><SPAN class="op">,</SPAN> frame_height<SPAN class="op">-</SPAN><SPAN class="num">10</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    path<SPAN class="op">.</SPAN>line_to<SPAN class="op">(</SPAN><SPAN class="num">10</SPAN><SPAN class="op">,</SPAN> frame_height<SPAN class="op">-</SPAN><SPAN class="num">20</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    path<SPAN class="op">.</SPAN><A href="../__code/include/agg_curves.h.html#curve4">curve4</A><SPAN class="op">(</SPAN>frame_width<SPAN class="op">-</SPAN><SPAN class="num">20</SPAN><SPAN class="op">,</SPAN> frame_height<SPAN class="op">-</SPAN><SPAN class="num">20</SPAN><SPAN class="op">,</SPAN>
+                frame_width<SPAN class="op">-</SPAN><SPAN class="num">20</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">20</SPAN><SPAN class="op">,</SPAN>
+                <SPAN class="num">10</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">20</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="rem">// The vectorial pipeline</SPAN>
+    <SPAN class="rem">//-----------------------</SPAN>
+    ras<SPAN class="op">.</SPAN>add_path<SPAN class="op">(</SPAN>path<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="rem">//-----------------------</SPAN>
+
+    <SPAN class="rem">// Set the color and render the scanlines</SPAN>
+    <SPAN class="rem">//-----------------------</SPAN>
+    ren_sl<SPAN class="op">.</SPAN>color<SPAN class="op">(</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">(</SPAN><SPAN class="num">120</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">60</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    agg::<A href="../__code/include/agg_renderer_scanline.h.html#render_scanlines">render_scanlines</A><SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> sl<SPAN class="op">,</SPAN> ren_sl<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="rem">// Write the buffer to result.ppm and liberate memory.</SPAN>
+    <SPAN class="rem">//-----------------------</SPAN>
+    write_ppm<SPAN class="op">(</SPAN>buffer<SPAN class="op">,</SPAN> frame_width<SPAN class="op">,</SPAN> frame_height<SPAN class="op">,</SPAN> <SPAN class="str">&quot;result.ppm&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="kw1">delete</SPAN> <SPAN class="op">[</SPAN><SPAN class="op">]</SPAN> buffer<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">return</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+<SPAN class="op">}</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Then you can compile and link this code with <B>AGG</B>: using GNU C++:</P></TD></TR></TABLE>
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+g++ -I/agg2/include example_pipeline1.cpp
+     /agg2/src/agg_rasterizer_scanline_aa.cpp
+     /agg2/src/agg_path_storage.cpp
+     /agg2/src/<A href="../__code/src/agg_bezier_arc.cpp.html">agg_bezier_arc.cpp</A>
+     /agg2/src/<A href="../__code/src/agg_trans_affine.cpp.html">agg_trans_affine.cpp</A>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>or Microsoft C++, v6 or later:</P></TD></TR></TABLE>
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+cl -I/agg2/include example_pipeline1.cpp
+     /agg2/src/agg_rasterizer_scanline_aa.cpp
+     /agg2/src/agg_path_storage.cpp
+     /agg2/src/<A href="../__code/src/agg_bezier_arc.cpp.html">agg_bezier_arc.cpp</A>
+     /agg2/src/<A href="../__code/src/agg_trans_affine.cpp.html">agg_trans_affine.cpp</A>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Of course, you will need
+to replace <CODE>&#147;/agg2/&#148;</CODE> to the actual path to the library.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The result.ppm should be as follows:</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD><CENTER><IMG src="example_pipeline1.gif" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>You can think that this code is too complex to produce this
+simplest figure, but let us look at the following changes.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Currently we have a null-pipeline, that is an empty one. In this case
+all the points are interpreted like move-to/line-to commands. This is
+why the call of <CODE>path.<A href="../__code/include/agg_curves.h.html#curve4">curve4</A>()</CODE> does not have any effect.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The first modification is to add the curve converter
+(curve flattener in other words), that is, the one that decomposes Bezier
+curves to a number of short line segments (<CODE>example_pipeline2.cpp</CODE>):</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Add <CODE>#include &quot;<A href="../__code/include/agg_conv_curve.h.html">agg_conv_curve.h</A>&quot;</CODE> and change the following:
+</P></TD></TR></TABLE><TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+    <SPAN class="rem">// The vectorial pipeline</SPAN>
+    <SPAN class="rem">//-----------------------</SPAN>
+    agg::<A href="../__code/include/agg_conv_curve.h.html#conv_curve">conv_curve</A><SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_path_storage.h.html#path_storage">path_storage</A><SPAN class="op">&gt;</SPAN> curve<SPAN class="op">(</SPAN>path<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    ras<SPAN class="op">.</SPAN>add_path<SPAN class="op">(</SPAN>curve<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="rem">//-----------------------</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Also add /agg2/src/<A href="../__code/src/agg_curves.cpp.html">agg_curves.cpp</A> to the compile list and see the result:</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD><CENTER><IMG src="example_pipeline2.gif" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Then let as draw a stroke (<CODE>example_pipeline3.cpp</CODE>):</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Add <CODE>#include &quot;<A href="../__code/include/agg_conv_stroke.h.html">agg_conv_stroke.h</A>&quot;</CODE> and change the following:
+</P></TD></TR></TABLE><TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+    <SPAN class="rem">// The vectorial pipeline</SPAN>
+    <SPAN class="rem">//-----------------------</SPAN>
+    agg::<A href="../__code/include/agg_conv_curve.h.html#conv_curve">conv_curve</A><SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_path_storage.h.html#path_storage">path_storage</A><SPAN class="op">&gt;</SPAN> curve<SPAN class="op">(</SPAN>path<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    agg::<A href="../__code/include/agg_conv_stroke.h.html#conv_stroke">conv_stroke</A><SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_conv_curve.h.html#conv_curve">conv_curve</A><SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_path_storage.h.html#path_storage">path_storage</A><SPAN class="op">&gt;</SPAN> <SPAN class="op">&gt;</SPAN> stroke<SPAN class="op">(</SPAN>curve<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    stroke<SPAN class="op">.</SPAN>width<SPAN class="op">(</SPAN><SPAN class="num">6</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    ras<SPAN class="op">.</SPAN>add_path<SPAN class="op">(</SPAN>stroke<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="rem">//-----------------------</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Add /agg2/src/<A href="../__code/src/agg_vcgen_stroke.cpp.html">agg_vcgen_stroke.cpp</A> to the compile list. The result is:</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD><CENTER><IMG src="example_pipeline3.gif" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Of course, you can set line width, line cap, and line join. Our polygon
+is not closed, to close it just call:</P></TD></TR></TABLE>
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+    path<SPAN class="op">.</SPAN>close_polygon<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+
+<TABLE width="640px"><TR><TD><CENTER><IMG src="example_pipeline31.gif" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>I hope you get the idea of how to draw a filled polygon with a stroke.
+Just in case let us see this code:</P></TD></TR></TABLE>
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+    <SPAN class="rem">// The vectorial pipeline</SPAN>
+    <SPAN class="rem">//-----------------------</SPAN>
+    agg::<A href="../__code/include/agg_conv_curve.h.html#conv_curve">conv_curve</A><SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_path_storage.h.html#path_storage">path_storage</A><SPAN class="op">&gt;</SPAN> curve<SPAN class="op">(</SPAN>path<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    agg::<A href="../__code/include/agg_conv_stroke.h.html#conv_stroke">conv_stroke</A><SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_conv_curve.h.html#conv_curve">conv_curve</A><SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_path_storage.h.html#path_storage">path_storage</A><SPAN class="op">&gt;</SPAN> <SPAN class="op">&gt;</SPAN> stroke<SPAN class="op">(</SPAN>curve<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    stroke<SPAN class="op">.</SPAN>width<SPAN class="op">(</SPAN><SPAN class="num">6</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="rem">// Set the fill color and render the polygon:</SPAN>
+    <SPAN class="rem">//-----------------------</SPAN>
+    ras<SPAN class="op">.</SPAN>add_path<SPAN class="op">(</SPAN>curve<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    ren_sl<SPAN class="op">.</SPAN>color<SPAN class="op">(</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">(</SPAN><SPAN class="num">160</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">180</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">80</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    agg::<A href="../__code/include/agg_renderer_scanline.h.html#render_scanlines">render_scanlines</A><SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> sl<SPAN class="op">,</SPAN> ren_sl<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="rem">// Set the stroke color and render the stroke:</SPAN>
+    <SPAN class="rem">//-----------------------</SPAN>
+    ras<SPAN class="op">.</SPAN>add_path<SPAN class="op">(</SPAN>stroke<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    ren_sl<SPAN class="op">.</SPAN>color<SPAN class="op">(</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">(</SPAN><SPAN class="num">120</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">100</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    agg::<A href="../__code/include/agg_renderer_scanline.h.html#render_scanlines">render_scanlines</A><SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> sl<SPAN class="op">,</SPAN> ren_sl<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="rem">//-----------------------</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+<TABLE width="640px"><TR><TD><CENTER><IMG src="example_pipeline4.gif" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Here we can see that the pipeline consists of two consecutive
+converters (curve and stroke) and we can use both of them in the
+very same way.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The next step is adding affine transformations and the main
+question is where to add them. The answer is it depends.
+You can add the affine transformer before the curve converter,
+so that it will process very few points, but the stroke converter
+will generate a stroke as if it were the original shape.
+Let us see (<CODE>example_pipeline5.cpp</CODE>).</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The pipeline is:
+</P></TD></TR></TABLE><TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+    <SPAN class="rem">// The vectorial pipeline</SPAN>
+    <SPAN class="rem">//-----------------------</SPAN>
+    agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine">trans_affine</A> matrix<SPAN class="op">;</SPAN>
+    matrix <SPAN class="op">*=</SPAN> agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine_translation">trans_affine_translation</A><SPAN class="op">(</SPAN><SPAN class="op">-</SPAN>frame_width<SPAN class="op">/</SPAN><SPAN class="num">2</SPAN><SPAN class="op">,</SPAN> <SPAN class="op">-</SPAN>frame_height<SPAN class="op">/</SPAN><SPAN class="num">2</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    matrix <SPAN class="op">*=</SPAN> agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine_rotation">trans_affine_rotation</A><SPAN class="op">(</SPAN>agg::<A href="../__code/include/agg_basics.h.html#deg2rad">deg2rad</A><SPAN class="op">(</SPAN><SPAN class="num">35</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    matrix <SPAN class="op">*=</SPAN> agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine_scaling">trans_affine_scaling</A><SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">4</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">75</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    matrix <SPAN class="op">*=</SPAN> agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine_translation">trans_affine_translation</A><SPAN class="op">(</SPAN>frame_width<SPAN class="op">/</SPAN><SPAN class="num">2</SPAN><SPAN class="op">,</SPAN> frame_height<SPAN class="op">/</SPAN><SPAN class="num">2</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    agg::<A href="../__code/include/agg_conv_transform.h.html#conv_transform">conv_transform</A><SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_path_storage.h.html#path_storage">path_storage</A><SPAN class="op">,</SPAN> agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine">trans_affine</A><SPAN class="op">&gt;</SPAN> trans<SPAN class="op">(</SPAN>path<SPAN class="op">,</SPAN> matrix<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    agg::<A href="../__code/include/agg_conv_curve.h.html#conv_curve">conv_curve</A><SPAN class="op">&lt;</SPAN>
+        agg::<A href="../__code/include/agg_conv_transform.h.html#conv_transform">conv_transform</A><SPAN class="op">&lt;</SPAN>
+            agg::<A href="../__code/include/agg_path_storage.h.html#path_storage">path_storage</A><SPAN class="op">,</SPAN> agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine">trans_affine</A><SPAN class="op">&gt;</SPAN> <SPAN class="op">&gt;</SPAN> curve<SPAN class="op">(</SPAN>trans<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    agg::<A href="../__code/include/agg_conv_stroke.h.html#conv_stroke">conv_stroke</A><SPAN class="op">&lt;</SPAN>
+        agg::<A href="../__code/include/agg_conv_curve.h.html#conv_curve">conv_curve</A><SPAN class="op">&lt;</SPAN>
+            agg::<A href="../__code/include/agg_conv_transform.h.html#conv_transform">conv_transform</A><SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_path_storage.h.html#path_storage">path_storage</A><SPAN class="op">,</SPAN>
+                                agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine">trans_affine</A><SPAN class="op">&gt;</SPAN> <SPAN class="op">&gt;</SPAN> <SPAN class="op">&gt;</SPAN> stroke<SPAN class="op">(</SPAN>curve<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    stroke<SPAN class="op">.</SPAN>width<SPAN class="op">(</SPAN><SPAN class="num">6</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="rem">// Set the fill color and render the polygon:</SPAN>
+    <SPAN class="rem">//-----------------------</SPAN>
+    ras<SPAN class="op">.</SPAN>add_path<SPAN class="op">(</SPAN>curve<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    ren_sl<SPAN class="op">.</SPAN>color<SPAN class="op">(</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">(</SPAN><SPAN class="num">160</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">180</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">80</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    agg::<A href="../__code/include/agg_renderer_scanline.h.html#render_scanlines">render_scanlines</A><SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> sl<SPAN class="op">,</SPAN> ren_sl<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="rem">// Set the stroke color and render the stroke:</SPAN>
+    <SPAN class="rem">//-----------------------</SPAN>
+    ras<SPAN class="op">.</SPAN>add_path<SPAN class="op">(</SPAN>stroke<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    ren_sl<SPAN class="op">.</SPAN>color<SPAN class="op">(</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">(</SPAN><SPAN class="num">120</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">100</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    agg::<A href="../__code/include/agg_renderer_scanline.h.html#render_scanlines">render_scanlines</A><SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> sl<SPAN class="op">,</SPAN> ren_sl<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="rem">//-----------------------</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>And the result:</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD><CENTER><IMG src="example_pipeline5.gif" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Now let us modify the pipeline in such a way that the affine
+transformer would be after the stroke generator (<CODE>example_pipeline6.cpp</CODE>)</P></TD></TR></TABLE>
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+    <SPAN class="rem">// The vectorial pipeline</SPAN>
+    <SPAN class="rem">//-----------------------</SPAN>
+    agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine">trans_affine</A> matrix<SPAN class="op">;</SPAN>
+    matrix <SPAN class="op">*=</SPAN> agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine_translation">trans_affine_translation</A><SPAN class="op">(</SPAN><SPAN class="op">-</SPAN>frame_width<SPAN class="op">/</SPAN><SPAN class="num">2</SPAN><SPAN class="op">,</SPAN> <SPAN class="op">-</SPAN>frame_height<SPAN class="op">/</SPAN><SPAN class="num">2</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    matrix <SPAN class="op">*=</SPAN> agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine_rotation">trans_affine_rotation</A><SPAN class="op">(</SPAN>agg::<A href="../__code/include/agg_basics.h.html#deg2rad">deg2rad</A><SPAN class="op">(</SPAN><SPAN class="num">35</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    matrix <SPAN class="op">*=</SPAN> agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine_scaling">trans_affine_scaling</A><SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">4</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">75</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    matrix <SPAN class="op">*=</SPAN> agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine_translation">trans_affine_translation</A><SPAN class="op">(</SPAN>frame_width<SPAN class="op">/</SPAN><SPAN class="num">2</SPAN><SPAN class="op">,</SPAN> frame_height<SPAN class="op">/</SPAN><SPAN class="num">2</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    agg::<A href="../__code/include/agg_conv_curve.h.html#conv_curve">conv_curve</A><SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_path_storage.h.html#path_storage">path_storage</A><SPAN class="op">&gt;</SPAN> curve<SPAN class="op">(</SPAN>path<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    agg::<A href="../__code/include/agg_conv_transform.h.html#conv_transform">conv_transform</A><SPAN class="op">&lt;</SPAN>
+        agg::<A href="../__code/include/agg_conv_curve.h.html#conv_curve">conv_curve</A><SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_path_storage.h.html#path_storage">path_storage</A><SPAN class="op">&gt;</SPAN><SPAN class="op">,</SPAN>
+        agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine">trans_affine</A><SPAN class="op">&gt;</SPAN> trans_curve<SPAN class="op">(</SPAN>curve<SPAN class="op">,</SPAN> matrix<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    agg::<A href="../__code/include/agg_conv_stroke.h.html#conv_stroke">conv_stroke</A><SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_conv_curve.h.html#conv_curve">conv_curve</A><SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_path_storage.h.html#path_storage">path_storage</A><SPAN class="op">&gt;</SPAN> <SPAN class="op">&gt;</SPAN> stroke<SPAN class="op">(</SPAN>curve<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    agg::<A href="../__code/include/agg_conv_transform.h.html#conv_transform">conv_transform</A><SPAN class="op">&lt;</SPAN>
+        agg::<A href="../__code/include/agg_conv_stroke.h.html#conv_stroke">conv_stroke</A><SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_conv_curve.h.html#conv_curve">conv_curve</A><SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_path_storage.h.html#path_storage">path_storage</A><SPAN class="op">&gt;</SPAN> <SPAN class="op">&gt;</SPAN><SPAN class="op">,</SPAN>
+        agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine">trans_affine</A><SPAN class="op">&gt;</SPAN> trans_stroke<SPAN class="op">(</SPAN>stroke<SPAN class="op">,</SPAN> matrix<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    stroke<SPAN class="op">.</SPAN>width<SPAN class="op">(</SPAN><SPAN class="num">6</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="rem">// Set the fill color and render the polygon:</SPAN>
+    <SPAN class="rem">//-----------------------</SPAN>
+    ras<SPAN class="op">.</SPAN>add_path<SPAN class="op">(</SPAN>trans_curve<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    ren_sl<SPAN class="op">.</SPAN>color<SPAN class="op">(</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">(</SPAN><SPAN class="num">160</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">180</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">80</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    agg::<A href="../__code/include/agg_renderer_scanline.h.html#render_scanlines">render_scanlines</A><SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> sl<SPAN class="op">,</SPAN> ren_sl<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="rem">// Set the stroke color and render the stroke:</SPAN>
+    <SPAN class="rem">//-----------------------</SPAN>
+    ras<SPAN class="op">.</SPAN>add_path<SPAN class="op">(</SPAN>trans_stroke<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    ren_sl<SPAN class="op">.</SPAN>color<SPAN class="op">(</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">(</SPAN><SPAN class="num">120</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">100</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    agg::<A href="../__code/include/agg_renderer_scanline.h.html#render_scanlines">render_scanlines</A><SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> sl<SPAN class="op">,</SPAN> ren_sl<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="rem">//-----------------------</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+<TABLE width="640px"><TR><TD><CENTER><IMG src="example_pipeline6.gif" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Here we actually have two pipelines, path<SPAN class="larger">&#8594;</SPAN><A href="../__code/include/agg_conv_curve.h.html#conv_curve">conv_curve</A><SPAN class="larger">&#8594;</SPAN><A href="../__code/include/agg_conv_transform.h.html#conv_transform">conv_transform</A>,
+the other one is path<SPAN class="larger">&#8594;</SPAN><A href="../__code/include/agg_conv_curve.h.html#conv_curve">conv_curve</A><SPAN class="larger">&#8594;</SPAN><A href="../__code/include/agg_conv_stroke.h.html#conv_stroke">conv_stroke</A><SPAN class="larger">&#8594;</SPAN><A href="../__code/include/agg_conv_transform.h.html#conv_transform">conv_transform</A>.
+At the first sight it looks like now the stroke is thinner. But
+it&#039;s more complex than that. Note that the width of the stroke is
+not uniform. I intentionally set different scaling coefficients
+by X and Y to demonstrate that you can control the result by
+changing the order of the converters.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Note that the pipeline branches after <A href="../__code/include/agg_conv_curve.h.html#conv_curve">conv_curve</A>. For the sake
+of efficiency it would be better to keep the fill pipeline as it was
+in the previous example (path<SPAN class="larger">&#8594;</SPAN><A href="../__code/include/agg_conv_transform.h.html#conv_transform">conv_transform</A><SPAN class="larger">&#8594;</SPAN><A href="../__code/include/agg_conv_curve.h.html#conv_curve">conv_curve</A>). This code
+just demonstrates a possibility to have complex pipelines.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>In the last example let us demonstrate some non-linear transformation
+effects. It will be a circular warp magnifier. But since the
+transformation is non-linear, we can&#039;t just transform vertices, we need
+to prepare the initial path in such a way that the initial vectors
+would consist of many short line segments. Of course, we could do
+that when adding vertices to the path storage, but there is a better
+way. We use an additional intermediate converter that segments long
+vectors. It&#039;s <A href="../__code/include/agg_conv_segmentator.h.html#conv_segmentator">conv_segmentator</A>.</P></TD></TR></TABLE>
+  
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>We also need to add two include files:
+</P></TD></TR></TABLE><TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_conv_segmentator.h.html">agg_conv_segmentator.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_trans_warp_magnifier.h.html">agg_trans_warp_magnifier.h</A>&quot;</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>And the pipelines look as follows (<CODE>example_pipeline7.cpp</CODE>):</P></TD></TR></TABLE>
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+    <SPAN class="rem">// The vectorial pipeline</SPAN>
+    <SPAN class="rem">//-----------------------</SPAN>
+    agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine">trans_affine</A> matrix<SPAN class="op">;</SPAN>
+    matrix <SPAN class="op">*=</SPAN> agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine_translation">trans_affine_translation</A><SPAN class="op">(</SPAN><SPAN class="op">-</SPAN>frame_width<SPAN class="op">/</SPAN><SPAN class="num">2</SPAN><SPAN class="op">,</SPAN> <SPAN class="op">-</SPAN>frame_height<SPAN class="op">/</SPAN><SPAN class="num">2</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    matrix <SPAN class="op">*=</SPAN> agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine_rotation">trans_affine_rotation</A><SPAN class="op">(</SPAN>agg::<A href="../__code/include/agg_basics.h.html#deg2rad">deg2rad</A><SPAN class="op">(</SPAN><SPAN class="num">35</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    matrix <SPAN class="op">*=</SPAN> agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine_scaling">trans_affine_scaling</A><SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">3</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">45</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    matrix <SPAN class="op">*=</SPAN> agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine_translation">trans_affine_translation</A><SPAN class="op">(</SPAN>frame_width<SPAN class="op">/</SPAN><SPAN class="num">2</SPAN><SPAN class="op">,</SPAN> frame_height<SPAN class="op">/</SPAN><SPAN class="num">2</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    agg::<A href="../__code/include/agg_trans_warp_magnifier.h.html#trans_warp_magnifier">trans_warp_magnifier</A> lens<SPAN class="op">;</SPAN>
+    lens<SPAN class="op">.</SPAN>center<SPAN class="op">(</SPAN><SPAN class="num">120</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">100</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    lens<SPAN class="op">.</SPAN>magnification<SPAN class="op">(</SPAN><SPAN class="num">3</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    lens<SPAN class="op">.</SPAN>radius<SPAN class="op">(</SPAN><SPAN class="num">18</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    agg::<A href="../__code/include/agg_conv_curve.h.html#conv_curve">conv_curve</A><SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_path_storage.h.html#path_storage">path_storage</A><SPAN class="op">&gt;</SPAN> curve<SPAN class="op">(</SPAN>path<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    agg::<A href="../__code/include/agg_conv_segmentator.h.html#conv_segmentator">conv_segmentator</A><SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_conv_curve.h.html#conv_curve">conv_curve</A><SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_path_storage.h.html#path_storage">path_storage</A><SPAN class="op">&gt;</SPAN> <SPAN class="op">&gt;</SPAN> segm<SPAN class="op">(</SPAN>curve<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    agg::<A href="../__code/include/agg_conv_transform.h.html#conv_transform">conv_transform</A><SPAN class="op">&lt;</SPAN>
+        agg::<A href="../__code/include/agg_conv_segmentator.h.html#conv_segmentator">conv_segmentator</A><SPAN class="op">&lt;</SPAN>
+            agg::<A href="../__code/include/agg_conv_curve.h.html#conv_curve">conv_curve</A><SPAN class="op">&lt;</SPAN>
+                agg::<A href="../__code/include/agg_path_storage.h.html#path_storage">path_storage</A><SPAN class="op">&gt;</SPAN> <SPAN class="op">&gt;</SPAN><SPAN class="op">,</SPAN>
+        agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine">trans_affine</A><SPAN class="op">&gt;</SPAN> trans_curve<SPAN class="op">(</SPAN>segm<SPAN class="op">,</SPAN> matrix<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    agg::<A href="../__code/include/agg_conv_transform.h.html#conv_transform">conv_transform</A><SPAN class="op">&lt;</SPAN>
+        agg::<A href="../__code/include/agg_conv_transform.h.html#conv_transform">conv_transform</A><SPAN class="op">&lt;</SPAN>
+            agg::<A href="../__code/include/agg_conv_segmentator.h.html#conv_segmentator">conv_segmentator</A><SPAN class="op">&lt;</SPAN>
+                agg::<A href="../__code/include/agg_conv_curve.h.html#conv_curve">conv_curve</A><SPAN class="op">&lt;</SPAN>
+                    agg::<A href="../__code/include/agg_path_storage.h.html#path_storage">path_storage</A><SPAN class="op">&gt;</SPAN> <SPAN class="op">&gt;</SPAN><SPAN class="op">,</SPAN>
+            agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine">trans_affine</A><SPAN class="op">&gt;</SPAN><SPAN class="op">,</SPAN>
+        agg::<A href="../__code/include/agg_trans_warp_magnifier.h.html#trans_warp_magnifier">trans_warp_magnifier</A><SPAN class="op">&gt;</SPAN> trans_warp<SPAN class="op">(</SPAN>trans_curve<SPAN class="op">,</SPAN> lens<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        
+    agg::<A href="../__code/include/agg_conv_stroke.h.html#conv_stroke">conv_stroke</A><SPAN class="op">&lt;</SPAN>
+        agg::<A href="../__code/include/agg_conv_segmentator.h.html#conv_segmentator">conv_segmentator</A><SPAN class="op">&lt;</SPAN>
+            agg::<A href="../__code/include/agg_conv_curve.h.html#conv_curve">conv_curve</A><SPAN class="op">&lt;</SPAN>
+                agg::<A href="../__code/include/agg_path_storage.h.html#path_storage">path_storage</A><SPAN class="op">&gt;</SPAN> <SPAN class="op">&gt;</SPAN> <SPAN class="op">&gt;</SPAN> stroke<SPAN class="op">(</SPAN>segm<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    agg::<A href="../__code/include/agg_conv_transform.h.html#conv_transform">conv_transform</A><SPAN class="op">&lt;</SPAN>
+        agg::<A href="../__code/include/agg_conv_stroke.h.html#conv_stroke">conv_stroke</A><SPAN class="op">&lt;</SPAN>
+            agg::<A href="../__code/include/agg_conv_segmentator.h.html#conv_segmentator">conv_segmentator</A><SPAN class="op">&lt;</SPAN>
+                agg::<A href="../__code/include/agg_conv_curve.h.html#conv_curve">conv_curve</A><SPAN class="op">&lt;</SPAN>
+                    agg::<A href="../__code/include/agg_path_storage.h.html#path_storage">path_storage</A><SPAN class="op">&gt;</SPAN> <SPAN class="op">&gt;</SPAN> <SPAN class="op">&gt;</SPAN><SPAN class="op">,</SPAN>
+        agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine">trans_affine</A><SPAN class="op">&gt;</SPAN> trans_stroke<SPAN class="op">(</SPAN>stroke<SPAN class="op">,</SPAN> matrix<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    agg::<A href="../__code/include/agg_conv_transform.h.html#conv_transform">conv_transform</A><SPAN class="op">&lt;</SPAN>
+        agg::<A href="../__code/include/agg_conv_transform.h.html#conv_transform">conv_transform</A><SPAN class="op">&lt;</SPAN>
+            agg::<A href="../__code/include/agg_conv_stroke.h.html#conv_stroke">conv_stroke</A><SPAN class="op">&lt;</SPAN>
+                agg::<A href="../__code/include/agg_conv_segmentator.h.html#conv_segmentator">conv_segmentator</A><SPAN class="op">&lt;</SPAN>
+                    agg::<A href="../__code/include/agg_conv_curve.h.html#conv_curve">conv_curve</A><SPAN class="op">&lt;</SPAN>
+                        agg::<A href="../__code/include/agg_path_storage.h.html#path_storage">path_storage</A><SPAN class="op">&gt;</SPAN> <SPAN class="op">&gt;</SPAN> <SPAN class="op">&gt;</SPAN><SPAN class="op">,</SPAN>
+            agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine">trans_affine</A><SPAN class="op">&gt;</SPAN><SPAN class="op">,</SPAN>
+        agg::<A href="../__code/include/agg_trans_warp_magnifier.h.html#trans_warp_magnifier">trans_warp_magnifier</A><SPAN class="op">&gt;</SPAN> trans_warp_stroke<SPAN class="op">(</SPAN>trans_stroke<SPAN class="op">,</SPAN> lens<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    stroke<SPAN class="op">.</SPAN>width<SPAN class="op">(</SPAN><SPAN class="num">6</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="rem">// Set the fill color and render the polygon:</SPAN>
+    <SPAN class="rem">//-----------------------</SPAN>
+    ras<SPAN class="op">.</SPAN>add_path<SPAN class="op">(</SPAN>trans_warp<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    ren_sl<SPAN class="op">.</SPAN>color<SPAN class="op">(</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">(</SPAN><SPAN class="num">160</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">180</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">80</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    agg::<A href="../__code/include/agg_renderer_scanline.h.html#render_scanlines">render_scanlines</A><SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> sl<SPAN class="op">,</SPAN> ren_sl<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="rem">// Set the stroke color and render the stroke:</SPAN>
+    <SPAN class="rem">//-----------------------</SPAN>
+    ras<SPAN class="op">.</SPAN>add_path<SPAN class="op">(</SPAN>trans_warp_stroke<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    ren_sl<SPAN class="op">.</SPAN>color<SPAN class="op">(</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">(</SPAN><SPAN class="num">120</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">100</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    agg::<A href="../__code/include/agg_renderer_scanline.h.html#render_scanlines">render_scanlines</A><SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> sl<SPAN class="op">,</SPAN> ren_sl<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="rem">//-----------------------</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The compilation command line is:
+</P></TD></TR></TABLE><TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+g++ -I/agg2/include example_pipeline7.cpp
+    /agg2/src/agg_rasterizer_scanline_aa.cpp
+    /agg2/src/agg_path_storage.cpp
+    /agg2/src/<A href="../__code/src/agg_bezier_arc.cpp.html">agg_bezier_arc.cpp</A>
+    /agg2/src/<A href="../__code/src/agg_trans_affine.cpp.html">agg_trans_affine.cpp</A>
+    /agg2/src/<A href="../__code/src/agg_curves.cpp.html">agg_curves.cpp</A>
+    /agg2/src/<A href="../__code/src/agg_vcgen_stroke.cpp.html">agg_vcgen_stroke.cpp</A>
+    /agg2/src/<A href="../__code/src/agg_vpgen_segmentator.cpp.html">agg_vpgen_segmentator.cpp</A>
+    /agg2/src/<A href="../__code/src/agg_trans_warp_magnifier.cpp.html">agg_trans_warp_magnifier.cpp</A>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The result:
+</P></TD></TR></TABLE><TABLE width="640px"><TR><TD><CENTER><IMG src="example_pipeline7.gif" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>These examples demonstrate the main principle of <B>AGG</B> design, that is
+that you have full control upon your rendering model and required
+capabilities. The declarations can look too complex, but first,
+they can be simplified with the use of <CODE>typedef</CODE>s, and second,
+they usually are not seen outside. You just create a problem oriented
+wrapper once and use it as a conventional graphic library.
+The pipelines that support capabilities of SVG, GDI+, or say,
+PDF are very simple. The last example just demonstrates that
+it&#039;s very easy to extend the functionality. In the examples
+the pipeline is defined statically, at the compile time, which
+is suitable in most cases. But the template mechanism allows you
+to write simple polymorphic wrappers and construct the pipelines
+dynamically, at run-tume.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The raster pipelines are organized in a similar way, but they are
+usually much simpler. After the vectorial shape is rasterized you can
+do the following:</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><UL type="disc">
+<LI>Fill the shape with a solid color and possible transparency.</LI>
+<LI>Fill with an arbitrary gradient. All possible transformations
+   are applicable to the gradients as well.</LI>
+<LI>Fill the shape with a transformed image. There many different
+   Anti-Aliasing filter are available, from simple bilinear to
+   high degree Lancosz and Blackman ones.</LI>
+<LI>Fill the shape with an arbitrary pattern.</LI>
+<LI>Apply an alpha-mask.</LI>
+<LI>Apply a number of Scanline Boolean Algebra operations, such as,
+   Intersection, Union, Difference, and XOR between two or more
+   scanline shapes.</LI></UL></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The number of possibilities is practically endless, and the point
+is that you can always write your own algorithms and span
+generators and insert them into the pipeline.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><B>AGG</B> has many other interesting algorithms, in particular, using
+raster images as line patterns. This is a very powerful mechanism
+for cartography and similar applications and I haven&#039;t seen
+any valuable implementation of it so far.
+</P></TD></TR></TABLE><TABLE width="640px"><TR><TD><CENTER><IMG src="line_patterns.gif" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Currently <B>AGG</B> is in active development, but its main interfaces
+are pretty much stabilized.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>You can find many other examples, including multi-platform
+interactive ones on the Antigrain.com web site <A href="http://antigrain.com"><IMG src="../link.gif" border="0"/>http://antigrain.com</A>.
+</P></TD></TR></TABLE><BR/><TABLE width="640px" bgcolor="#583927" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0">
+<TR><TD><CENTER><SPAN class="authors">
+Copyright <SPAN class="larger">&#169;</SPAN> 2002-2006
+<A href="../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+<TR><TD><CENTER><SPAN class="authors">
+Web Design and Programming
+<A href="../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+</TABLE>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+</HTML>

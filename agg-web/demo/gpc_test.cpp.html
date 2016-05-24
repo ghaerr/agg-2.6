@@ -1,0 +1,702 @@
+<HTML><HEAD><TITLE>Anti-Grain Geometry - </TITLE>
+<META http-equiv="Content-Type" content="text/html"/>
+<LINK rel="stylesheet" type="text/css" href="../agg.styles.css"/>
+</HEAD>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE><SPAN class="kw2">#include</SPAN> <SPAN class="op">&lt;</SPAN>stdio<SPAN class="op">.</SPAN>h<SPAN class="op">&gt;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_conv_gpc.h.html">agg_conv_gpc.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_basics.h.html">agg_basics.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_rendering_buffer.h.html">agg_rendering_buffer.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_rasterizer_scanline_aa.h.html">agg_rasterizer_scanline_aa.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_scanline_u.h.html">agg_scanline_u.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_scanline_p.h.html">agg_scanline_p.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_renderer_scanline.h.html">agg_renderer_scanline.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_renderer_primitives.h.html">agg_renderer_primitives.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_conv_curve.h.html">agg_conv_curve.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_conv_stroke.h.html">agg_conv_stroke.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_conv_clip_polygon.h.html">agg_conv_clip_polygon.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_gsv_text.h.html">agg_gsv_text.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../__code/include/agg_pixfmt_rgb.h.html">agg_pixfmt_rgb.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;platform/agg_platform_support.h&quot;</SPAN>
+
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;ctrl/agg_slider_ctrl.h&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;ctrl/agg_cbox_ctrl.h&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;ctrl/agg_rbox_ctrl.h&quot;</SPAN>
+
+
+<SPAN class="kw1">enum</SPAN> flip_y_e <SPAN class="op">{</SPAN> flip_y <SPAN class="op">=</SPAN> <SPAN class="kw1">true</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+
+
+<SPAN class="kw1">class</SPAN> spiral
+<SPAN class="op">{</SPAN>
+<SPAN class="kw1">public</SPAN>:
+    spiral<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> r1<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> r2<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> step<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> start_angle<SPAN class="op">=</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> :
+        m_x<SPAN class="op">(</SPAN>x<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> 
+        m_y<SPAN class="op">(</SPAN>y<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> 
+        m_r1<SPAN class="op">(</SPAN>r1<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> 
+        m_r2<SPAN class="op">(</SPAN>r2<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> 
+        m_step<SPAN class="op">(</SPAN>step<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> 
+        m_start_angle<SPAN class="op">(</SPAN>start_angle<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_angle<SPAN class="op">(</SPAN>start_angle<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_da<SPAN class="op">(</SPAN>agg::<A href="../__code/include/agg_basics.h.html#deg2rad">deg2rad</A><SPAN class="op">(</SPAN><SPAN class="num">4</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_dr<SPAN class="op">(</SPAN>m_step <SPAN class="op">/</SPAN> <SPAN class="num">90</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="kw1">void</SPAN> rewind<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN><SPAN class="op">)</SPAN> 
+    <SPAN class="op">{</SPAN> 
+        m_angle <SPAN class="op">=</SPAN> m_start_angle<SPAN class="op">;</SPAN> 
+        m_curr_r <SPAN class="op">=</SPAN> m_r1<SPAN class="op">;</SPAN> 
+        m_start <SPAN class="op">=</SPAN> <SPAN class="kw1">true</SPAN><SPAN class="op">;</SPAN> 
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="kw1">unsigned</SPAN> vertex<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> y<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_curr_r <SPAN class="op">&gt;</SPAN> m_r2<SPAN class="op">)</SPAN> <SPAN class="kw1">return</SPAN> agg::<A href="../__code/include/agg_basics.h.html#path_cmd_stop">path_cmd_stop</A><SPAN class="op">;</SPAN>
+
+        <SPAN class="op">*</SPAN>x <SPAN class="op">=</SPAN> m_x <SPAN class="op">+</SPAN> cos<SPAN class="op">(</SPAN>m_angle<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> m_curr_r<SPAN class="op">;</SPAN>
+        <SPAN class="op">*</SPAN>y <SPAN class="op">=</SPAN> m_y <SPAN class="op">+</SPAN> sin<SPAN class="op">(</SPAN>m_angle<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> m_curr_r<SPAN class="op">;</SPAN>
+        m_curr_r <SPAN class="op">+=</SPAN> m_dr<SPAN class="op">;</SPAN>
+        m_angle <SPAN class="op">+=</SPAN> m_da<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_start<SPAN class="op">)</SPAN> 
+        <SPAN class="op">{</SPAN>
+            m_start <SPAN class="op">=</SPAN> <SPAN class="kw1">false</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">return</SPAN> agg::<A href="../__code/include/agg_basics.h.html#path_cmd_move_to">path_cmd_move_to</A><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">return</SPAN> agg::<A href="../__code/include/agg_basics.h.html#path_cmd_line_to">path_cmd_line_to</A><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+<SPAN class="kw1">private</SPAN>:
+    <SPAN class="kw1">double</SPAN> m_x<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN> m_y<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN> m_r1<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN> m_r2<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN> m_step<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN> m_start_angle<SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">double</SPAN> m_angle<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN> m_curr_r<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN> m_da<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN> m_dr<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">bool</SPAN>   m_start<SPAN class="op">;</SPAN>
+<SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+
+<SPAN class="kw1">namespace</SPAN> agg
+<SPAN class="op">{</SPAN>
+    <SPAN class="rem">// A simple counter of points and contours</SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Src<SPAN class="op">&gt;</SPAN> <SPAN class="kw1">struct</SPAN> conv_poly_counter
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> m_contours<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> m_points<SPAN class="op">;</SPAN>
+    
+        conv_poly_counter<SPAN class="op">(</SPAN>Src<SPAN class="op">&amp;</SPAN> src<SPAN class="op">)</SPAN> : m_src<SPAN class="op">(</SPAN><SPAN class="op">&amp;</SPAN>src<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> m_contours<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> m_points<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN><SPAN class="op">}</SPAN>
+    
+        <SPAN class="kw1">void</SPAN> rewind<SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> path_id<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            m_contours <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+            m_points <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+            m_src<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>rewind<SPAN class="op">(</SPAN>path_id<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">unsigned</SPAN> vertex<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> y<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">unsigned</SPAN> cmd <SPAN class="op">=</SPAN> m_src<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>vertex<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN><A href="../__code/include/agg_basics.h.html#is_vertex">is_vertex</A><SPAN class="op">(</SPAN>cmd<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>  <SPAN class="op">++</SPAN>m_points<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN><A href="../__code/include/agg_basics.h.html#is_move_to">is_move_to</A><SPAN class="op">(</SPAN>cmd<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">++</SPAN>m_contours<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">return</SPAN> cmd<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+    <SPAN class="kw1">private</SPAN>:
+        Src<SPAN class="op">*</SPAN> m_src<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+<SPAN class="op">}</SPAN>
+
+
+
+
+<SPAN class="kw1">void</SPAN> make_gb_poly<SPAN class="op">(</SPAN>agg::<A href="../__code/include/agg_path_storage.h.html#path_storage">path_storage</A><SPAN class="op">&amp;</SPAN> ps<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+<SPAN class="kw1">void</SPAN> make_arrows<SPAN class="op">(</SPAN>agg::<A href="../__code/include/agg_path_storage.h.html#path_storage">path_storage</A><SPAN class="op">&amp;</SPAN> ps<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+
+<SPAN class="kw1">class</SPAN> the_application : <SPAN class="kw1">public</SPAN> agg::platform_support
+<SPAN class="op">{</SPAN>
+    agg::rbox_ctrl<SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">&gt;</SPAN> m_polygons<SPAN class="op">;</SPAN>
+    agg::rbox_ctrl<SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">&gt;</SPAN> m_operation<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN> m_x<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">double</SPAN> m_y<SPAN class="op">;</SPAN>
+
+<SPAN class="kw1">public</SPAN>:
+    the_application<SPAN class="op">(</SPAN>agg::pix_format_e format<SPAN class="op">,</SPAN> <SPAN class="kw1">bool</SPAN> flip_y<SPAN class="op">)</SPAN> :
+        agg::platform_support<SPAN class="op">(</SPAN>format<SPAN class="op">,</SPAN> flip_y<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_polygons <SPAN class="op">(</SPAN><SPAN class="num">5</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN>     <SPAN class="num">5</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">5</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">+</SPAN><SPAN class="num">205</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN>  <SPAN class="num">110</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN>  <SPAN class="op">!</SPAN>flip_y<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+        m_operation<SPAN class="op">(</SPAN><SPAN class="num">555</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN>   <SPAN class="num">5</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">555</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">+</SPAN><SPAN class="num">80</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">130</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN>  <SPAN class="op">!</SPAN>flip_y<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        m_operation<SPAN class="op">.</SPAN>add_item<SPAN class="op">(</SPAN><SPAN class="str">&quot;None&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_operation<SPAN class="op">.</SPAN>add_item<SPAN class="op">(</SPAN><SPAN class="str">&quot;OR&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_operation<SPAN class="op">.</SPAN>add_item<SPAN class="op">(</SPAN><SPAN class="str">&quot;AND&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_operation<SPAN class="op">.</SPAN>add_item<SPAN class="op">(</SPAN><SPAN class="str">&quot;XOR&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_operation<SPAN class="op">.</SPAN>add_item<SPAN class="op">(</SPAN><SPAN class="str">&quot;A-B&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_operation<SPAN class="op">.</SPAN>add_item<SPAN class="op">(</SPAN><SPAN class="str">&quot;B-A&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_operation<SPAN class="op">.</SPAN>cur_item<SPAN class="op">(</SPAN><SPAN class="num">2</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        add_ctrl<SPAN class="op">(</SPAN>m_operation<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        m_polygons<SPAN class="op">.</SPAN>add_item<SPAN class="op">(</SPAN><SPAN class="str">&quot;Two Simple Paths&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_polygons<SPAN class="op">.</SPAN>add_item<SPAN class="op">(</SPAN><SPAN class="str">&quot;Closed Stroke&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_polygons<SPAN class="op">.</SPAN>add_item<SPAN class="op">(</SPAN><SPAN class="str">&quot;Great Britain and Arrows&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_polygons<SPAN class="op">.</SPAN>add_item<SPAN class="op">(</SPAN><SPAN class="str">&quot;Great Britain and Spiral&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_polygons<SPAN class="op">.</SPAN>add_item<SPAN class="op">(</SPAN><SPAN class="str">&quot;Spiral and Glyph&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        m_polygons<SPAN class="op">.</SPAN>cur_item<SPAN class="op">(</SPAN><SPAN class="num">3</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        add_ctrl<SPAN class="op">(</SPAN>m_polygons<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Scanline<SPAN class="op">,</SPAN> <SPAN class="kw1">class</SPAN> Ras<SPAN class="op">,</SPAN> <SPAN class="kw1">class</SPAN> Ren<SPAN class="op">,</SPAN> <SPAN class="kw1">class</SPAN> Gpc<SPAN class="op">&gt;</SPAN>
+    <SPAN class="kw1">void</SPAN> perform_rendering<SPAN class="op">(</SPAN>Scanline<SPAN class="op">&amp;</SPAN> sl<SPAN class="op">,</SPAN> Ras<SPAN class="op">&amp;</SPAN> ras<SPAN class="op">,</SPAN> Ren<SPAN class="op">&amp;</SPAN> ren<SPAN class="op">,</SPAN> Gpc<SPAN class="op">&amp;</SPAN> gpc<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_operation<SPAN class="op">.</SPAN>cur_item<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">&gt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            ras<SPAN class="op">.</SPAN>reset<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">switch</SPAN><SPAN class="op">(</SPAN>m_operation<SPAN class="op">.</SPAN>cur_item<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                <SPAN class="kw1">case</SPAN> <SPAN class="num">1</SPAN>: gpc<SPAN class="op">.</SPAN>operation<SPAN class="op">(</SPAN>agg::gpc_or<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>           <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">case</SPAN> <SPAN class="num">2</SPAN>: gpc<SPAN class="op">.</SPAN>operation<SPAN class="op">(</SPAN>agg::gpc_and<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>          <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">case</SPAN> <SPAN class="num">3</SPAN>: gpc<SPAN class="op">.</SPAN>operation<SPAN class="op">(</SPAN>agg::gpc_xor<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>          <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">case</SPAN> <SPAN class="num">4</SPAN>: gpc<SPAN class="op">.</SPAN>operation<SPAN class="op">(</SPAN>agg::gpc_a_minus_b<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>    <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">case</SPAN> <SPAN class="num">5</SPAN>: gpc<SPAN class="op">.</SPAN>operation<SPAN class="op">(</SPAN>agg::gpc_b_minus_a<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>    <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            agg::conv_poly_counter<SPAN class="op">&lt;</SPAN>Gpc<SPAN class="op">&gt;</SPAN> counter<SPAN class="op">(</SPAN>gpc<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+
+            start_timer<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            counter<SPAN class="op">.</SPAN>rewind<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">double</SPAN> t1 <SPAN class="op">=</SPAN> elapsed_time<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+            ras<SPAN class="op">.</SPAN>reset<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">double</SPAN> x<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">double</SPAN> y<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">unsigned</SPAN> cmd<SPAN class="op">;</SPAN>
+            start_timer<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN><SPAN class="op">!</SPAN>agg::<A href="../__code/include/agg_basics.h.html#is_stop">is_stop</A><SPAN class="op">(</SPAN>cmd <SPAN class="op">=</SPAN> counter<SPAN class="op">.</SPAN>vertex<SPAN class="op">(</SPAN><SPAN class="op">&amp;</SPAN>x<SPAN class="op">,</SPAN> <SPAN class="op">&amp;</SPAN>y<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                ras<SPAN class="op">.</SPAN>add_vertex<SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> y<SPAN class="op">,</SPAN> cmd<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+
+            ren<SPAN class="op">.</SPAN>color<SPAN class="op">(</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba">rgba</A><SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">5</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">5</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            agg::<A href="../__code/include/agg_renderer_scanline.h.html#render_scanlines">render_scanlines</A><SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> sl<SPAN class="op">,</SPAN> ren<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">double</SPAN> t2 <SPAN class="op">=</SPAN> elapsed_time<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">char</SPAN> buf<SPAN class="op">[</SPAN><SPAN class="num">100</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+            sprintf<SPAN class="op">(</SPAN>buf<SPAN class="op">,</SPAN> <SPAN class="str">&quot;Contours: %d   Points: %d&quot;</SPAN><SPAN class="op">,</SPAN> counter<SPAN class="op">.</SPAN>m_contours<SPAN class="op">,</SPAN> counter<SPAN class="op">.</SPAN>m_points<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            agg::<A href="../__code/include/agg_gsv_text.h.html#gsv_text">gsv_text</A> txt<SPAN class="op">;</SPAN>
+            agg::<A href="../__code/include/agg_conv_stroke.h.html#conv_stroke">conv_stroke</A><SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_gsv_text.h.html#gsv_text">gsv_text</A><SPAN class="op">&gt;</SPAN> txt_stroke<SPAN class="op">(</SPAN>txt<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            txt_stroke<SPAN class="op">.</SPAN>width<SPAN class="op">(</SPAN><SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">5</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            txt_stroke<SPAN class="op">.</SPAN>line_cap<SPAN class="op">(</SPAN>agg::round_cap<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            txt<SPAN class="op">.</SPAN>size<SPAN class="op">(</SPAN><SPAN class="num">10</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            txt<SPAN class="op">.</SPAN>start_point<SPAN class="op">(</SPAN><SPAN class="num">250</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">5</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            txt<SPAN class="op">.</SPAN>text<SPAN class="op">(</SPAN>buf<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            ras<SPAN class="op">.</SPAN>add_path<SPAN class="op">(</SPAN>txt_stroke<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            ren<SPAN class="op">.</SPAN>color<SPAN class="op">(</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba">rgba</A><SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            agg::<A href="../__code/include/agg_renderer_scanline.h.html#render_scanlines">render_scanlines</A><SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> sl<SPAN class="op">,</SPAN> ren<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+            sprintf<SPAN class="op">(</SPAN>buf<SPAN class="op">,</SPAN> <SPAN class="str">&quot;GPC=%.3fms Render=%.3fms&quot;</SPAN><SPAN class="op">,</SPAN> t1<SPAN class="op">,</SPAN> t2<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            txt<SPAN class="op">.</SPAN>start_point<SPAN class="op">(</SPAN><SPAN class="num">250</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">20</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            txt<SPAN class="op">.</SPAN>text<SPAN class="op">(</SPAN>buf<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            ras<SPAN class="op">.</SPAN>add_path<SPAN class="op">(</SPAN>txt_stroke<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            ren<SPAN class="op">.</SPAN>color<SPAN class="op">(</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba">rgba</A><SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            agg::<A href="../__code/include/agg_renderer_scanline.h.html#render_scanlines">render_scanlines</A><SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> sl<SPAN class="op">,</SPAN> ren<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Scanline<SPAN class="op">,</SPAN> <SPAN class="kw1">class</SPAN> Ras<SPAN class="op">&gt;</SPAN>
+    <SPAN class="kw1">unsigned</SPAN> render_gpc<SPAN class="op">(</SPAN>Scanline<SPAN class="op">&amp;</SPAN> sl<SPAN class="op">,</SPAN> Ras<SPAN class="op">&amp;</SPAN> ras<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        agg::<A href="../__code/include/agg_pixfmt_rgb.h.html#pixfmt_bgr24">pixfmt_bgr24</A> pf<SPAN class="op">(</SPAN>rbuf_window<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        agg::<A href="../doc/basic_renderers/basic_renderers.agdoc.html#renderer_base">renderer_base</A><SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_pixfmt_rgb.h.html#pixfmt_bgr24">pixfmt_bgr24</A><SPAN class="op">&gt;</SPAN> rb<SPAN class="op">(</SPAN>pf<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        agg::<A href="../__code/include/agg_renderer_scanline.h.html#renderer_scanline_aa_solid">renderer_scanline_aa_solid</A><SPAN class="op">&lt;</SPAN>agg::<A href="../doc/basic_renderers/basic_renderers.agdoc.html#renderer_base">renderer_base</A><SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_pixfmt_rgb.h.html#pixfmt_bgr24">pixfmt_bgr24</A><SPAN class="op">&gt;</SPAN> <SPAN class="op">&gt;</SPAN> ren<SPAN class="op">(</SPAN>rb<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+
+        <SPAN class="kw1">switch</SPAN><SPAN class="op">(</SPAN>m_polygons<SPAN class="op">.</SPAN>cur_item<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">case</SPAN> <SPAN class="num">0</SPAN>:
+            <SPAN class="op">{</SPAN>
+                <SPAN class="rem">//------------------------------------</SPAN>
+                <SPAN class="rem">// Two simple paths</SPAN>
+                <SPAN class="rem">//</SPAN>
+                agg::<A href="../__code/include/agg_path_storage.h.html#path_storage">path_storage</A> ps1<SPAN class="op">;</SPAN>
+                agg::<A href="../__code/include/agg_path_storage.h.html#path_storage">path_storage</A> ps2<SPAN class="op">;</SPAN>
+
+                agg::<A href="../__code/include/agg_conv_gpc.h.html#conv_gpc">conv_gpc</A><SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_path_storage.h.html#path_storage">path_storage</A><SPAN class="op">,</SPAN> agg::<A href="../__code/include/agg_path_storage.h.html#path_storage">path_storage</A><SPAN class="op">&gt;</SPAN> gpc<SPAN class="op">(</SPAN>ps1<SPAN class="op">,</SPAN> ps2<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                <SPAN class="kw1">double</SPAN> x <SPAN class="op">=</SPAN> m_x <SPAN class="op">-</SPAN> initial_width<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">/</SPAN><SPAN class="num">2</SPAN> <SPAN class="op">+</SPAN> <SPAN class="num">100</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">double</SPAN> y <SPAN class="op">=</SPAN> m_y <SPAN class="op">-</SPAN> initial_height<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">/</SPAN><SPAN class="num">2</SPAN> <SPAN class="op">+</SPAN> <SPAN class="num">100</SPAN><SPAN class="op">;</SPAN>
+                ps1<SPAN class="op">.</SPAN>move_to<SPAN class="op">(</SPAN>x<SPAN class="op">+</SPAN><SPAN class="num">140</SPAN><SPAN class="op">,</SPAN> y<SPAN class="op">+</SPAN><SPAN class="num">145</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                ps1<SPAN class="op">.</SPAN>line_to<SPAN class="op">(</SPAN>x<SPAN class="op">+</SPAN><SPAN class="num">225</SPAN><SPAN class="op">,</SPAN> y<SPAN class="op">+</SPAN><SPAN class="num">44</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                ps1<SPAN class="op">.</SPAN>line_to<SPAN class="op">(</SPAN>x<SPAN class="op">+</SPAN><SPAN class="num">296</SPAN><SPAN class="op">,</SPAN> y<SPAN class="op">+</SPAN><SPAN class="num">219</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                ps1<SPAN class="op">.</SPAN>close_polygon<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                ps1<SPAN class="op">.</SPAN>line_to<SPAN class="op">(</SPAN>x<SPAN class="op">+</SPAN><SPAN class="num">226</SPAN><SPAN class="op">,</SPAN> y<SPAN class="op">+</SPAN><SPAN class="num">289</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                ps1<SPAN class="op">.</SPAN>line_to<SPAN class="op">(</SPAN>x<SPAN class="op">+</SPAN><SPAN class="num">82</SPAN><SPAN class="op">,</SPAN>  y<SPAN class="op">+</SPAN><SPAN class="num">292</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                ps1<SPAN class="op">.</SPAN>move_to<SPAN class="op">(</SPAN>x<SPAN class="op">+</SPAN><SPAN class="num">220</SPAN><SPAN class="op">,</SPAN> y<SPAN class="op">+</SPAN><SPAN class="num">222</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                ps1<SPAN class="op">.</SPAN>line_to<SPAN class="op">(</SPAN>x<SPAN class="op">+</SPAN><SPAN class="num">363</SPAN><SPAN class="op">,</SPAN> y<SPAN class="op">+</SPAN><SPAN class="num">249</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                ps1<SPAN class="op">.</SPAN>line_to<SPAN class="op">(</SPAN>x<SPAN class="op">+</SPAN><SPAN class="num">265</SPAN><SPAN class="op">,</SPAN> y<SPAN class="op">+</SPAN><SPAN class="num">331</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                ps1<SPAN class="op">.</SPAN>move_to<SPAN class="op">(</SPAN>x<SPAN class="op">+</SPAN><SPAN class="num">242</SPAN><SPAN class="op">,</SPAN> y<SPAN class="op">+</SPAN><SPAN class="num">243</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                ps1<SPAN class="op">.</SPAN>line_to<SPAN class="op">(</SPAN>x<SPAN class="op">+</SPAN><SPAN class="num">268</SPAN><SPAN class="op">,</SPAN> y<SPAN class="op">+</SPAN><SPAN class="num">309</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                ps1<SPAN class="op">.</SPAN>line_to<SPAN class="op">(</SPAN>x<SPAN class="op">+</SPAN><SPAN class="num">325</SPAN><SPAN class="op">,</SPAN> y<SPAN class="op">+</SPAN><SPAN class="num">261</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                ps1<SPAN class="op">.</SPAN>move_to<SPAN class="op">(</SPAN>x<SPAN class="op">+</SPAN><SPAN class="num">259</SPAN><SPAN class="op">,</SPAN> y<SPAN class="op">+</SPAN><SPAN class="num">259</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                ps1<SPAN class="op">.</SPAN>line_to<SPAN class="op">(</SPAN>x<SPAN class="op">+</SPAN><SPAN class="num">273</SPAN><SPAN class="op">,</SPAN> y<SPAN class="op">+</SPAN><SPAN class="num">288</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                ps1<SPAN class="op">.</SPAN>line_to<SPAN class="op">(</SPAN>x<SPAN class="op">+</SPAN><SPAN class="num">298</SPAN><SPAN class="op">,</SPAN> y<SPAN class="op">+</SPAN><SPAN class="num">266</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                ps2<SPAN class="op">.</SPAN>move_to<SPAN class="op">(</SPAN><SPAN class="num">100</SPAN><SPAN class="op">+</SPAN><SPAN class="num">32</SPAN><SPAN class="op">,</SPAN>  <SPAN class="num">100</SPAN><SPAN class="op">+</SPAN><SPAN class="num">77</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                ps2<SPAN class="op">.</SPAN>line_to<SPAN class="op">(</SPAN><SPAN class="num">100</SPAN><SPAN class="op">+</SPAN><SPAN class="num">473</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">100</SPAN><SPAN class="op">+</SPAN><SPAN class="num">263</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                ps2<SPAN class="op">.</SPAN>line_to<SPAN class="op">(</SPAN><SPAN class="num">100</SPAN><SPAN class="op">+</SPAN><SPAN class="num">351</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">100</SPAN><SPAN class="op">+</SPAN><SPAN class="num">290</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                ps2<SPAN class="op">.</SPAN>line_to<SPAN class="op">(</SPAN><SPAN class="num">100</SPAN><SPAN class="op">+</SPAN><SPAN class="num">354</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">100</SPAN><SPAN class="op">+</SPAN><SPAN class="num">374</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                ras<SPAN class="op">.</SPAN>reset<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                ras<SPAN class="op">.</SPAN>add_path<SPAN class="op">(</SPAN>ps1<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                ren<SPAN class="op">.</SPAN>color<SPAN class="op">(</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba">rgba</A><SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                agg::<A href="../__code/include/agg_renderer_scanline.h.html#render_scanlines">render_scanlines</A><SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> sl<SPAN class="op">,</SPAN> ren<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                ras<SPAN class="op">.</SPAN>reset<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                ras<SPAN class="op">.</SPAN>add_path<SPAN class="op">(</SPAN>ps2<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                ren<SPAN class="op">.</SPAN>color<SPAN class="op">(</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba">rgba</A><SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">6</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                agg::<A href="../__code/include/agg_renderer_scanline.h.html#render_scanlines">render_scanlines</A><SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> sl<SPAN class="op">,</SPAN> ren<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                perform_rendering<SPAN class="op">(</SPAN>sl<SPAN class="op">,</SPAN> ras<SPAN class="op">,</SPAN> ren<SPAN class="op">,</SPAN> gpc<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+
+            <SPAN class="kw1">case</SPAN> <SPAN class="num">1</SPAN>:
+            <SPAN class="op">{</SPAN>
+                <SPAN class="rem">//------------------------------------</SPAN>
+                <SPAN class="rem">// Closed stroke</SPAN>
+                <SPAN class="rem">//</SPAN>
+                agg::<A href="../__code/include/agg_path_storage.h.html#path_storage">path_storage</A> ps1<SPAN class="op">;</SPAN>
+                agg::<A href="../__code/include/agg_path_storage.h.html#path_storage">path_storage</A> ps2<SPAN class="op">;</SPAN>
+                agg::<A href="../__code/include/agg_conv_stroke.h.html#conv_stroke">conv_stroke</A><SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_path_storage.h.html#path_storage">path_storage</A><SPAN class="op">&gt;</SPAN> stroke<SPAN class="op">(</SPAN>ps2<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                stroke<SPAN class="op">.</SPAN>width<SPAN class="op">(</SPAN><SPAN class="num">10</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                agg::<A href="../__code/include/agg_conv_gpc.h.html#conv_gpc">conv_gpc</A><SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_path_storage.h.html#path_storage">path_storage</A><SPAN class="op">,</SPAN> 
+                              agg::<A href="../__code/include/agg_conv_stroke.h.html#conv_stroke">conv_stroke</A><SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_path_storage.h.html#path_storage">path_storage</A><SPAN class="op">&gt;</SPAN> <SPAN class="op">&gt;</SPAN> gpc<SPAN class="op">(</SPAN>ps1<SPAN class="op">,</SPAN> stroke<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+
+                <SPAN class="kw1">double</SPAN> x <SPAN class="op">=</SPAN> m_x <SPAN class="op">-</SPAN> initial_width<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">/</SPAN><SPAN class="num">2</SPAN> <SPAN class="op">+</SPAN> <SPAN class="num">100</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">double</SPAN> y <SPAN class="op">=</SPAN> m_y <SPAN class="op">-</SPAN> initial_height<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">/</SPAN><SPAN class="num">2</SPAN> <SPAN class="op">+</SPAN> <SPAN class="num">100</SPAN><SPAN class="op">;</SPAN>
+                ps1<SPAN class="op">.</SPAN>move_to<SPAN class="op">(</SPAN>x<SPAN class="op">+</SPAN><SPAN class="num">140</SPAN><SPAN class="op">,</SPAN> y<SPAN class="op">+</SPAN><SPAN class="num">145</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                ps1<SPAN class="op">.</SPAN>line_to<SPAN class="op">(</SPAN>x<SPAN class="op">+</SPAN><SPAN class="num">225</SPAN><SPAN class="op">,</SPAN> y<SPAN class="op">+</SPAN><SPAN class="num">44</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                ps1<SPAN class="op">.</SPAN>line_to<SPAN class="op">(</SPAN>x<SPAN class="op">+</SPAN><SPAN class="num">296</SPAN><SPAN class="op">,</SPAN> y<SPAN class="op">+</SPAN><SPAN class="num">219</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                ps1<SPAN class="op">.</SPAN>close_polygon<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                ps1<SPAN class="op">.</SPAN>line_to<SPAN class="op">(</SPAN>x<SPAN class="op">+</SPAN><SPAN class="num">226</SPAN><SPAN class="op">,</SPAN> y<SPAN class="op">+</SPAN><SPAN class="num">289</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                ps1<SPAN class="op">.</SPAN>line_to<SPAN class="op">(</SPAN>x<SPAN class="op">+</SPAN><SPAN class="num">82</SPAN><SPAN class="op">,</SPAN>  y<SPAN class="op">+</SPAN><SPAN class="num">292</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                ps1<SPAN class="op">.</SPAN>move_to<SPAN class="op">(</SPAN>x<SPAN class="op">+</SPAN><SPAN class="num">220</SPAN><SPAN class="op">-</SPAN><SPAN class="num">50</SPAN><SPAN class="op">,</SPAN> y<SPAN class="op">+</SPAN><SPAN class="num">222</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                ps1<SPAN class="op">.</SPAN>line_to<SPAN class="op">(</SPAN>x<SPAN class="op">+</SPAN><SPAN class="num">265</SPAN><SPAN class="op">-</SPAN><SPAN class="num">50</SPAN><SPAN class="op">,</SPAN> y<SPAN class="op">+</SPAN><SPAN class="num">331</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                ps1<SPAN class="op">.</SPAN>line_to<SPAN class="op">(</SPAN>x<SPAN class="op">+</SPAN><SPAN class="num">363</SPAN><SPAN class="op">-</SPAN><SPAN class="num">50</SPAN><SPAN class="op">,</SPAN> y<SPAN class="op">+</SPAN><SPAN class="num">249</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                ps1<SPAN class="op">.</SPAN>close_polygon<SPAN class="op">(</SPAN>agg::<A href="../__code/include/agg_basics.h.html#path_flags_ccw">path_flags_ccw</A><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                ps2<SPAN class="op">.</SPAN>move_to<SPAN class="op">(</SPAN><SPAN class="num">100</SPAN><SPAN class="op">+</SPAN><SPAN class="num">32</SPAN><SPAN class="op">,</SPAN>  <SPAN class="num">100</SPAN><SPAN class="op">+</SPAN><SPAN class="num">77</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                ps2<SPAN class="op">.</SPAN>line_to<SPAN class="op">(</SPAN><SPAN class="num">100</SPAN><SPAN class="op">+</SPAN><SPAN class="num">473</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">100</SPAN><SPAN class="op">+</SPAN><SPAN class="num">263</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                ps2<SPAN class="op">.</SPAN>line_to<SPAN class="op">(</SPAN><SPAN class="num">100</SPAN><SPAN class="op">+</SPAN><SPAN class="num">351</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">100</SPAN><SPAN class="op">+</SPAN><SPAN class="num">290</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                ps2<SPAN class="op">.</SPAN>line_to<SPAN class="op">(</SPAN><SPAN class="num">100</SPAN><SPAN class="op">+</SPAN><SPAN class="num">354</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">100</SPAN><SPAN class="op">+</SPAN><SPAN class="num">374</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                ps2<SPAN class="op">.</SPAN>close_polygon<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                ras<SPAN class="op">.</SPAN>reset<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                ras<SPAN class="op">.</SPAN>add_path<SPAN class="op">(</SPAN>ps1<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                ren<SPAN class="op">.</SPAN>color<SPAN class="op">(</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba">rgba</A><SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                agg::<A href="../__code/include/agg_renderer_scanline.h.html#render_scanlines">render_scanlines</A><SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> sl<SPAN class="op">,</SPAN> ren<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                ras<SPAN class="op">.</SPAN>reset<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                ras<SPAN class="op">.</SPAN>add_path<SPAN class="op">(</SPAN>stroke<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                ren<SPAN class="op">.</SPAN>color<SPAN class="op">(</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba">rgba</A><SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">6</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                agg::<A href="../__code/include/agg_renderer_scanline.h.html#render_scanlines">render_scanlines</A><SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> sl<SPAN class="op">,</SPAN> ren<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                perform_rendering<SPAN class="op">(</SPAN>sl<SPAN class="op">,</SPAN> ras<SPAN class="op">,</SPAN> ren<SPAN class="op">,</SPAN> gpc<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+
+
+            <SPAN class="kw1">case</SPAN> <SPAN class="num">2</SPAN>:
+            <SPAN class="op">{</SPAN>
+                <SPAN class="rem">//------------------------------------</SPAN>
+                <SPAN class="rem">// Great Britain and Arrows</SPAN>
+                <SPAN class="rem">//</SPAN>
+                agg::<A href="../__code/include/agg_path_storage.h.html#path_storage">path_storage</A> gb_poly<SPAN class="op">;</SPAN>
+                agg::<A href="../__code/include/agg_path_storage.h.html#path_storage">path_storage</A> arrows<SPAN class="op">;</SPAN>
+                make_gb_poly<SPAN class="op">(</SPAN>gb_poly<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                make_arrows<SPAN class="op">(</SPAN>arrows<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine">trans_affine</A> mtx1<SPAN class="op">;</SPAN>
+                agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine">trans_affine</A> mtx2<SPAN class="op">;</SPAN>
+                mtx1 <SPAN class="op">*=</SPAN> agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine_translation">trans_affine_translation</A><SPAN class="op">(</SPAN><SPAN class="op">-</SPAN><SPAN class="num">1150</SPAN><SPAN class="op">,</SPAN> <SPAN class="op">-</SPAN><SPAN class="num">1150</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                mtx1 <SPAN class="op">*=</SPAN> agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine_scaling">trans_affine_scaling</A><SPAN class="op">(</SPAN><SPAN class="num">2</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                mtx2 <SPAN class="op">=</SPAN> mtx1<SPAN class="op">;</SPAN>
+                mtx2 <SPAN class="op">*=</SPAN> agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine_translation">trans_affine_translation</A><SPAN class="op">(</SPAN>m_x <SPAN class="op">-</SPAN> initial_width<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">/</SPAN><SPAN class="num">2</SPAN><SPAN class="op">,</SPAN> 
+                                                      m_y <SPAN class="op">-</SPAN> initial_height<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">/</SPAN><SPAN class="num">2</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                agg::<A href="../__code/include/agg_conv_transform.h.html#conv_transform">conv_transform</A><SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_path_storage.h.html#path_storage">path_storage</A><SPAN class="op">&gt;</SPAN> trans_gb_poly<SPAN class="op">(</SPAN>gb_poly<SPAN class="op">,</SPAN> mtx1<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                agg::<A href="../__code/include/agg_conv_transform.h.html#conv_transform">conv_transform</A><SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_path_storage.h.html#path_storage">path_storage</A><SPAN class="op">&gt;</SPAN> trans_arrows<SPAN class="op">(</SPAN>arrows<SPAN class="op">,</SPAN> mtx2<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                agg::<A href="../__code/include/agg_conv_gpc.h.html#conv_gpc">conv_gpc</A><SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_conv_transform.h.html#conv_transform">conv_transform</A><SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_path_storage.h.html#path_storage">path_storage</A><SPAN class="op">&gt;</SPAN><SPAN class="op">,</SPAN> 
+                              agg::<A href="../__code/include/agg_conv_transform.h.html#conv_transform">conv_transform</A><SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_path_storage.h.html#path_storage">path_storage</A><SPAN class="op">&gt;</SPAN> <SPAN class="op">&gt;</SPAN> gpc<SPAN class="op">(</SPAN>trans_gb_poly<SPAN class="op">,</SPAN> trans_arrows<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                ras<SPAN class="op">.</SPAN>add_path<SPAN class="op">(</SPAN>trans_gb_poly<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                ren<SPAN class="op">.</SPAN>color<SPAN class="op">(</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba">rgba</A><SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">5</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">5</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                agg::<A href="../__code/include/agg_renderer_scanline.h.html#render_scanlines">render_scanlines</A><SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> sl<SPAN class="op">,</SPAN> ren<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                agg::<A href="../__code/include/agg_conv_stroke.h.html#conv_stroke">conv_stroke</A><SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_conv_transform.h.html#conv_transform">conv_transform</A><SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_path_storage.h.html#path_storage">path_storage</A><SPAN class="op">&gt;</SPAN> <SPAN class="op">&gt;</SPAN> stroke_gb_poly<SPAN class="op">(</SPAN>trans_gb_poly<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                stroke_gb_poly<SPAN class="op">.</SPAN>width<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                ras<SPAN class="op">.</SPAN>add_path<SPAN class="op">(</SPAN>stroke_gb_poly<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                ren<SPAN class="op">.</SPAN>color<SPAN class="op">(</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba">rgba</A><SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                agg::<A href="../__code/include/agg_renderer_scanline.h.html#render_scanlines">render_scanlines</A><SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> sl<SPAN class="op">,</SPAN> ren<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        
+                ras<SPAN class="op">.</SPAN>add_path<SPAN class="op">(</SPAN>trans_arrows<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                ren<SPAN class="op">.</SPAN>color<SPAN class="op">(</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba">rgba</A><SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">5</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">5</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                agg::<A href="../__code/include/agg_renderer_scanline.h.html#render_scanlines">render_scanlines</A><SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> sl<SPAN class="op">,</SPAN> ren<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                perform_rendering<SPAN class="op">(</SPAN>sl<SPAN class="op">,</SPAN> ras<SPAN class="op">,</SPAN> ren<SPAN class="op">,</SPAN> gpc<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+
+
+            <SPAN class="kw1">case</SPAN> <SPAN class="num">3</SPAN>:
+            <SPAN class="op">{</SPAN>
+                <SPAN class="rem">//------------------------------------</SPAN>
+                <SPAN class="rem">// Great Britain and a Spiral</SPAN>
+                <SPAN class="rem">//</SPAN>
+                spiral sp<SPAN class="op">(</SPAN>m_x<SPAN class="op">,</SPAN> m_y<SPAN class="op">,</SPAN> <SPAN class="num">10</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">150</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">30</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                agg::<A href="../__code/include/agg_conv_stroke.h.html#conv_stroke">conv_stroke</A><SPAN class="op">&lt;</SPAN>spiral<SPAN class="op">&gt;</SPAN> stroke<SPAN class="op">(</SPAN>sp<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                stroke<SPAN class="op">.</SPAN>width<SPAN class="op">(</SPAN><SPAN class="num">15</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                agg::<A href="../__code/include/agg_path_storage.h.html#path_storage">path_storage</A> gb_poly<SPAN class="op">;</SPAN>
+                make_gb_poly<SPAN class="op">(</SPAN>gb_poly<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine">trans_affine</A> mtx<SPAN class="op">;</SPAN>
+                mtx <SPAN class="op">*=</SPAN> agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine_translation">trans_affine_translation</A><SPAN class="op">(</SPAN><SPAN class="op">-</SPAN><SPAN class="num">1150</SPAN><SPAN class="op">,</SPAN> <SPAN class="op">-</SPAN><SPAN class="num">1150</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                mtx <SPAN class="op">*=</SPAN> agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine_scaling">trans_affine_scaling</A><SPAN class="op">(</SPAN><SPAN class="num">2</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                agg::<A href="../__code/include/agg_conv_transform.h.html#conv_transform">conv_transform</A><SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_path_storage.h.html#path_storage">path_storage</A><SPAN class="op">&gt;</SPAN> trans_gb_poly<SPAN class="op">(</SPAN>gb_poly<SPAN class="op">,</SPAN> mtx<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                agg::<A href="../__code/include/agg_conv_gpc.h.html#conv_gpc">conv_gpc</A><SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_conv_transform.h.html#conv_transform">conv_transform</A><SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_path_storage.h.html#path_storage">path_storage</A><SPAN class="op">&gt;</SPAN><SPAN class="op">,</SPAN> 
+                              agg::<A href="../__code/include/agg_conv_stroke.h.html#conv_stroke">conv_stroke</A><SPAN class="op">&lt;</SPAN>spiral<SPAN class="op">&gt;</SPAN> <SPAN class="op">&gt;</SPAN> gpc<SPAN class="op">(</SPAN>trans_gb_poly<SPAN class="op">,</SPAN> stroke<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+
+<SPAN class="rem">/*
+FILE* fd = fopen(&quot;contours.txt&quot;, &quot;w&quot;);
+if(fd)
+{
+    unsigned cmd;
+    double x, y;
+    trans_gb_poly.rewind(0);
+    while(!agg::<A href="../__code/include/agg_basics.h.html#is_stop">is_stop</A>(cmd = trans_gb_poly.vertex(&amp;x, &amp;y)))
+    {
+        if(agg::<A href="../__code/include/agg_basics.h.html#is_move_to">is_move_to</A>(cmd))
+        {
+            fprintf(fd, &quot;\npoly[] = {\n&quot;);
+        }
+        fprintf(fd, &quot;   %.3f, %.3f,\n&quot;, x, y);
+    }
+
+    stroke.rewind(0);
+    while(!agg::<A href="../__code/include/agg_basics.h.html#is_stop">is_stop</A>(cmd = stroke.vertex(&amp;x, &amp;y)))
+    {
+        if(agg::<A href="../__code/include/agg_basics.h.html#is_move_to">is_move_to</A>(cmd))
+        {
+            fprintf(fd, &quot;\nspiral[] = {\n&quot;);
+        }
+        fprintf(fd, &quot;   %.3f, %.3f,\n&quot;, x, y);
+    }
+
+    fclose(fd);
+}
+*/</SPAN>
+
+                ras<SPAN class="op">.</SPAN>add_path<SPAN class="op">(</SPAN>trans_gb_poly<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                ren<SPAN class="op">.</SPAN>color<SPAN class="op">(</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba">rgba</A><SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">5</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">5</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                agg::<A href="../__code/include/agg_renderer_scanline.h.html#render_scanlines">render_scanlines</A><SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> sl<SPAN class="op">,</SPAN> ren<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                agg::<A href="../__code/include/agg_conv_stroke.h.html#conv_stroke">conv_stroke</A><SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_conv_transform.h.html#conv_transform">conv_transform</A><SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_path_storage.h.html#path_storage">path_storage</A><SPAN class="op">&gt;</SPAN> <SPAN class="op">&gt;</SPAN> stroke_gb_poly<SPAN class="op">(</SPAN>trans_gb_poly<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                stroke_gb_poly<SPAN class="op">.</SPAN>width<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                ras<SPAN class="op">.</SPAN>add_path<SPAN class="op">(</SPAN>stroke_gb_poly<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                ren<SPAN class="op">.</SPAN>color<SPAN class="op">(</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba">rgba</A><SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                agg::<A href="../__code/include/agg_renderer_scanline.h.html#render_scanlines">render_scanlines</A><SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> sl<SPAN class="op">,</SPAN> ren<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        
+                ras<SPAN class="op">.</SPAN>add_path<SPAN class="op">(</SPAN>stroke<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                ren<SPAN class="op">.</SPAN>color<SPAN class="op">(</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba">rgba</A><SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">5</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">5</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                agg::<A href="../__code/include/agg_renderer_scanline.h.html#render_scanlines">render_scanlines</A><SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> sl<SPAN class="op">,</SPAN> ren<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                perform_rendering<SPAN class="op">(</SPAN>sl<SPAN class="op">,</SPAN> ras<SPAN class="op">,</SPAN> ren<SPAN class="op">,</SPAN> gpc<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+
+
+            <SPAN class="kw1">case</SPAN> <SPAN class="num">4</SPAN>:
+            <SPAN class="op">{</SPAN>
+                <SPAN class="rem">//------------------------------------</SPAN>
+                <SPAN class="rem">// Spiral and glyph</SPAN>
+                <SPAN class="rem">//</SPAN>
+                spiral sp<SPAN class="op">(</SPAN>m_x<SPAN class="op">,</SPAN> m_y<SPAN class="op">,</SPAN> <SPAN class="num">10</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">150</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">30</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                agg::<A href="../__code/include/agg_conv_stroke.h.html#conv_stroke">conv_stroke</A><SPAN class="op">&lt;</SPAN>spiral<SPAN class="op">&gt;</SPAN> stroke<SPAN class="op">(</SPAN>sp<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                stroke<SPAN class="op">.</SPAN>width<SPAN class="op">(</SPAN><SPAN class="num">15</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                agg::<A href="../__code/include/agg_path_storage.h.html#path_storage">path_storage</A> glyph<SPAN class="op">;</SPAN>
+                glyph<SPAN class="op">.</SPAN>move_to<SPAN class="op">(</SPAN><SPAN class="num">28</SPAN><SPAN class="op">.</SPAN><SPAN class="num">47</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">6</SPAN><SPAN class="op">.</SPAN><SPAN class="num">45</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                glyph<SPAN class="op">.</SPAN><A href="../__code/include/agg_curves.h.html#curve3">curve3</A><SPAN class="op">(</SPAN><SPAN class="num">21</SPAN><SPAN class="op">.</SPAN><SPAN class="num">58</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">12</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">19</SPAN><SPAN class="op">.</SPAN><SPAN class="num">82</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">29</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                glyph<SPAN class="op">.</SPAN><A href="../__code/include/agg_curves.h.html#curve3">curve3</A><SPAN class="op">(</SPAN><SPAN class="num">17</SPAN><SPAN class="op">.</SPAN><SPAN class="num">19</SPAN><SPAN class="op">,</SPAN> <SPAN class="op">-</SPAN><SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">93</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">14</SPAN><SPAN class="op">.</SPAN><SPAN class="num">21</SPAN><SPAN class="op">,</SPAN> <SPAN class="op">-</SPAN><SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">93</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                glyph<SPAN class="op">.</SPAN><A href="../__code/include/agg_curves.h.html#curve3">curve3</A><SPAN class="op">(</SPAN><SPAN class="num">9</SPAN><SPAN class="op">.</SPAN><SPAN class="num">57</SPAN><SPAN class="op">,</SPAN> <SPAN class="op">-</SPAN><SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">93</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">6</SPAN><SPAN class="op">.</SPAN><SPAN class="num">57</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">.</SPAN><SPAN class="num">25</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                glyph<SPAN class="op">.</SPAN><A href="../__code/include/agg_curves.h.html#curve3">curve3</A><SPAN class="op">(</SPAN><SPAN class="num">3</SPAN><SPAN class="op">.</SPAN><SPAN class="num">56</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">5</SPAN><SPAN class="op">.</SPAN><SPAN class="num">42</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">.</SPAN><SPAN class="num">56</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">10</SPAN><SPAN class="op">.</SPAN><SPAN class="num">60</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                glyph<SPAN class="op">.</SPAN><A href="../__code/include/agg_curves.h.html#curve3">curve3</A><SPAN class="op">(</SPAN><SPAN class="num">3</SPAN><SPAN class="op">.</SPAN><SPAN class="num">56</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">13</SPAN><SPAN class="op">.</SPAN><SPAN class="num">87</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">5</SPAN><SPAN class="op">.</SPAN><SPAN class="num">03</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">16</SPAN><SPAN class="op">.</SPAN><SPAN class="num">26</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                glyph<SPAN class="op">.</SPAN><A href="../__code/include/agg_curves.h.html#curve3">curve3</A><SPAN class="op">(</SPAN><SPAN class="num">7</SPAN><SPAN class="op">.</SPAN><SPAN class="num">03</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">19</SPAN><SPAN class="op">.</SPAN><SPAN class="num">58</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">11</SPAN><SPAN class="op">.</SPAN><SPAN class="num">99</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">22</SPAN><SPAN class="op">.</SPAN><SPAN class="num">51</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                glyph<SPAN class="op">.</SPAN><A href="../__code/include/agg_curves.h.html#curve3">curve3</A><SPAN class="op">(</SPAN><SPAN class="num">16</SPAN><SPAN class="op">.</SPAN><SPAN class="num">94</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">25</SPAN><SPAN class="op">.</SPAN><SPAN class="num">44</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">28</SPAN><SPAN class="op">.</SPAN><SPAN class="num">47</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">29</SPAN><SPAN class="op">.</SPAN><SPAN class="num">64</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                glyph<SPAN class="op">.</SPAN>line_to<SPAN class="op">(</SPAN><SPAN class="num">28</SPAN><SPAN class="op">.</SPAN><SPAN class="num">47</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">31</SPAN><SPAN class="op">.</SPAN><SPAN class="num">40</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                glyph<SPAN class="op">.</SPAN><A href="../__code/include/agg_curves.h.html#curve3">curve3</A><SPAN class="op">(</SPAN><SPAN class="num">28</SPAN><SPAN class="op">.</SPAN><SPAN class="num">47</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">38</SPAN><SPAN class="op">.</SPAN><SPAN class="num">09</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">26</SPAN><SPAN class="op">.</SPAN><SPAN class="num">34</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">40</SPAN><SPAN class="op">.</SPAN><SPAN class="num">58</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                glyph<SPAN class="op">.</SPAN><A href="../__code/include/agg_curves.h.html#curve3">curve3</A><SPAN class="op">(</SPAN><SPAN class="num">24</SPAN><SPAN class="op">.</SPAN><SPAN class="num">22</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">43</SPAN><SPAN class="op">.</SPAN><SPAN class="num">07</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">20</SPAN><SPAN class="op">.</SPAN><SPAN class="num">17</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">43</SPAN><SPAN class="op">.</SPAN><SPAN class="num">07</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                glyph<SPAN class="op">.</SPAN><A href="../__code/include/agg_curves.h.html#curve3">curve3</A><SPAN class="op">(</SPAN><SPAN class="num">17</SPAN><SPAN class="op">.</SPAN><SPAN class="num">09</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">43</SPAN><SPAN class="op">.</SPAN><SPAN class="num">07</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">15</SPAN><SPAN class="op">.</SPAN><SPAN class="num">28</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">41</SPAN><SPAN class="op">.</SPAN><SPAN class="num">41</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                glyph<SPAN class="op">.</SPAN><A href="../__code/include/agg_curves.h.html#curve3">curve3</A><SPAN class="op">(</SPAN><SPAN class="num">13</SPAN><SPAN class="op">.</SPAN><SPAN class="num">43</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">39</SPAN><SPAN class="op">.</SPAN><SPAN class="num">75</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">13</SPAN><SPAN class="op">.</SPAN><SPAN class="num">43</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">37</SPAN><SPAN class="op">.</SPAN><SPAN class="num">60</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                glyph<SPAN class="op">.</SPAN>line_to<SPAN class="op">(</SPAN><SPAN class="num">13</SPAN><SPAN class="op">.</SPAN><SPAN class="num">53</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">34</SPAN><SPAN class="op">.</SPAN><SPAN class="num">77</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                glyph<SPAN class="op">.</SPAN><A href="../__code/include/agg_curves.h.html#curve3">curve3</A><SPAN class="op">(</SPAN><SPAN class="num">13</SPAN><SPAN class="op">.</SPAN><SPAN class="num">53</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">32</SPAN><SPAN class="op">.</SPAN><SPAN class="num">52</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">12</SPAN><SPAN class="op">.</SPAN><SPAN class="num">38</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">31</SPAN><SPAN class="op">.</SPAN><SPAN class="num">30</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                glyph<SPAN class="op">.</SPAN><A href="../__code/include/agg_curves.h.html#curve3">curve3</A><SPAN class="op">(</SPAN><SPAN class="num">11</SPAN><SPAN class="op">.</SPAN><SPAN class="num">23</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">30</SPAN><SPAN class="op">.</SPAN><SPAN class="num">08</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">9</SPAN><SPAN class="op">.</SPAN><SPAN class="num">38</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">30</SPAN><SPAN class="op">.</SPAN><SPAN class="num">08</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                glyph<SPAN class="op">.</SPAN><A href="../__code/include/agg_curves.h.html#curve3">curve3</A><SPAN class="op">(</SPAN><SPAN class="num">7</SPAN><SPAN class="op">.</SPAN><SPAN class="num">57</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">30</SPAN><SPAN class="op">.</SPAN><SPAN class="num">08</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">6</SPAN><SPAN class="op">.</SPAN><SPAN class="num">42</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">31</SPAN><SPAN class="op">.</SPAN><SPAN class="num">35</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                glyph<SPAN class="op">.</SPAN><A href="../__code/include/agg_curves.h.html#curve3">curve3</A><SPAN class="op">(</SPAN><SPAN class="num">5</SPAN><SPAN class="op">.</SPAN><SPAN class="num">27</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">32</SPAN><SPAN class="op">.</SPAN><SPAN class="num">62</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">5</SPAN><SPAN class="op">.</SPAN><SPAN class="num">27</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">34</SPAN><SPAN class="op">.</SPAN><SPAN class="num">81</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                glyph<SPAN class="op">.</SPAN><A href="../__code/include/agg_curves.h.html#curve3">curve3</A><SPAN class="op">(</SPAN><SPAN class="num">5</SPAN><SPAN class="op">.</SPAN><SPAN class="num">27</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">39</SPAN><SPAN class="op">.</SPAN><SPAN class="num">01</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">9</SPAN><SPAN class="op">.</SPAN><SPAN class="num">57</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">42</SPAN><SPAN class="op">.</SPAN><SPAN class="num">53</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                glyph<SPAN class="op">.</SPAN><A href="../__code/include/agg_curves.h.html#curve3">curve3</A><SPAN class="op">(</SPAN><SPAN class="num">13</SPAN><SPAN class="op">.</SPAN><SPAN class="num">87</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">46</SPAN><SPAN class="op">.</SPAN><SPAN class="num">04</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">21</SPAN><SPAN class="op">.</SPAN><SPAN class="num">63</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">46</SPAN><SPAN class="op">.</SPAN><SPAN class="num">04</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                glyph<SPAN class="op">.</SPAN><A href="../__code/include/agg_curves.h.html#curve3">curve3</A><SPAN class="op">(</SPAN><SPAN class="num">27</SPAN><SPAN class="op">.</SPAN><SPAN class="num">59</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">46</SPAN><SPAN class="op">.</SPAN><SPAN class="num">04</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">31</SPAN><SPAN class="op">.</SPAN><SPAN class="num">40</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">44</SPAN><SPAN class="op">.</SPAN><SPAN class="num">04</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                glyph<SPAN class="op">.</SPAN><A href="../__code/include/agg_curves.h.html#curve3">curve3</A><SPAN class="op">(</SPAN><SPAN class="num">34</SPAN><SPAN class="op">.</SPAN><SPAN class="num">28</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">42</SPAN><SPAN class="op">.</SPAN><SPAN class="num">53</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">35</SPAN><SPAN class="op">.</SPAN><SPAN class="num">64</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">39</SPAN><SPAN class="op">.</SPAN><SPAN class="num">31</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                glyph<SPAN class="op">.</SPAN><A href="../__code/include/agg_curves.h.html#curve3">curve3</A><SPAN class="op">(</SPAN><SPAN class="num">36</SPAN><SPAN class="op">.</SPAN><SPAN class="num">52</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">37</SPAN><SPAN class="op">.</SPAN><SPAN class="num">21</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">36</SPAN><SPAN class="op">.</SPAN><SPAN class="num">52</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">30</SPAN><SPAN class="op">.</SPAN><SPAN class="num">71</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                glyph<SPAN class="op">.</SPAN>line_to<SPAN class="op">(</SPAN><SPAN class="num">36</SPAN><SPAN class="op">.</SPAN><SPAN class="num">52</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">15</SPAN><SPAN class="op">.</SPAN><SPAN class="num">53</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                glyph<SPAN class="op">.</SPAN><A href="../__code/include/agg_curves.h.html#curve3">curve3</A><SPAN class="op">(</SPAN><SPAN class="num">36</SPAN><SPAN class="op">.</SPAN><SPAN class="num">52</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">9</SPAN><SPAN class="op">.</SPAN><SPAN class="num">13</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">36</SPAN><SPAN class="op">.</SPAN><SPAN class="num">77</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">7</SPAN><SPAN class="op">.</SPAN><SPAN class="num">69</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                glyph<SPAN class="op">.</SPAN><A href="../__code/include/agg_curves.h.html#curve3">curve3</A><SPAN class="op">(</SPAN><SPAN class="num">37</SPAN><SPAN class="op">.</SPAN><SPAN class="num">01</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">6</SPAN><SPAN class="op">.</SPAN><SPAN class="num">25</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">37</SPAN><SPAN class="op">.</SPAN><SPAN class="num">57</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">5</SPAN><SPAN class="op">.</SPAN><SPAN class="num">76</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                glyph<SPAN class="op">.</SPAN><A href="../__code/include/agg_curves.h.html#curve3">curve3</A><SPAN class="op">(</SPAN><SPAN class="num">38</SPAN><SPAN class="op">.</SPAN><SPAN class="num">13</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">5</SPAN><SPAN class="op">.</SPAN><SPAN class="num">27</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">38</SPAN><SPAN class="op">.</SPAN><SPAN class="num">87</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">5</SPAN><SPAN class="op">.</SPAN><SPAN class="num">27</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                glyph<SPAN class="op">.</SPAN><A href="../__code/include/agg_curves.h.html#curve3">curve3</A><SPAN class="op">(</SPAN><SPAN class="num">39</SPAN><SPAN class="op">.</SPAN><SPAN class="num">65</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">5</SPAN><SPAN class="op">.</SPAN><SPAN class="num">27</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">40</SPAN><SPAN class="op">.</SPAN><SPAN class="num">23</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">5</SPAN><SPAN class="op">.</SPAN><SPAN class="num">62</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                glyph<SPAN class="op">.</SPAN><A href="../__code/include/agg_curves.h.html#curve3">curve3</A><SPAN class="op">(</SPAN><SPAN class="num">41</SPAN><SPAN class="op">.</SPAN><SPAN class="num">26</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">6</SPAN><SPAN class="op">.</SPAN><SPAN class="num">25</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">44</SPAN><SPAN class="op">.</SPAN><SPAN class="num">19</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">9</SPAN><SPAN class="op">.</SPAN><SPAN class="num">18</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                glyph<SPAN class="op">.</SPAN>line_to<SPAN class="op">(</SPAN><SPAN class="num">44</SPAN><SPAN class="op">.</SPAN><SPAN class="num">19</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">6</SPAN><SPAN class="op">.</SPAN><SPAN class="num">45</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                glyph<SPAN class="op">.</SPAN><A href="../__code/include/agg_curves.h.html#curve3">curve3</A><SPAN class="op">(</SPAN><SPAN class="num">38</SPAN><SPAN class="op">.</SPAN><SPAN class="num">72</SPAN><SPAN class="op">,</SPAN> <SPAN class="op">-</SPAN><SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">88</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">33</SPAN><SPAN class="op">.</SPAN><SPAN class="num">74</SPAN><SPAN class="op">,</SPAN> <SPAN class="op">-</SPAN><SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">88</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                glyph<SPAN class="op">.</SPAN><A href="../__code/include/agg_curves.h.html#curve3">curve3</A><SPAN class="op">(</SPAN><SPAN class="num">31</SPAN><SPAN class="op">.</SPAN><SPAN class="num">35</SPAN><SPAN class="op">,</SPAN> <SPAN class="op">-</SPAN><SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">88</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">29</SPAN><SPAN class="op">.</SPAN><SPAN class="num">93</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">78</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                glyph<SPAN class="op">.</SPAN><A href="../__code/include/agg_curves.h.html#curve3">curve3</A><SPAN class="op">(</SPAN><SPAN class="num">28</SPAN><SPAN class="op">.</SPAN><SPAN class="num">52</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">.</SPAN><SPAN class="num">44</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">28</SPAN><SPAN class="op">.</SPAN><SPAN class="num">47</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">6</SPAN><SPAN class="op">.</SPAN><SPAN class="num">45</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                glyph<SPAN class="op">.</SPAN>close_polygon<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                glyph<SPAN class="op">.</SPAN>move_to<SPAN class="op">(</SPAN><SPAN class="num">28</SPAN><SPAN class="op">.</SPAN><SPAN class="num">47</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">9</SPAN><SPAN class="op">.</SPAN><SPAN class="num">62</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                glyph<SPAN class="op">.</SPAN>line_to<SPAN class="op">(</SPAN><SPAN class="num">28</SPAN><SPAN class="op">.</SPAN><SPAN class="num">47</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">26</SPAN><SPAN class="op">.</SPAN><SPAN class="num">66</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                glyph<SPAN class="op">.</SPAN><A href="../__code/include/agg_curves.h.html#curve3">curve3</A><SPAN class="op">(</SPAN><SPAN class="num">21</SPAN><SPAN class="op">.</SPAN><SPAN class="num">09</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">23</SPAN><SPAN class="op">.</SPAN><SPAN class="num">73</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">18</SPAN><SPAN class="op">.</SPAN><SPAN class="num">95</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">22</SPAN><SPAN class="op">.</SPAN><SPAN class="num">51</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                glyph<SPAN class="op">.</SPAN><A href="../__code/include/agg_curves.h.html#curve3">curve3</A><SPAN class="op">(</SPAN><SPAN class="num">15</SPAN><SPAN class="op">.</SPAN><SPAN class="num">09</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">20</SPAN><SPAN class="op">.</SPAN><SPAN class="num">36</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">13</SPAN><SPAN class="op">.</SPAN><SPAN class="num">43</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">18</SPAN><SPAN class="op">.</SPAN><SPAN class="num">02</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                glyph<SPAN class="op">.</SPAN><A href="../__code/include/agg_curves.h.html#curve3">curve3</A><SPAN class="op">(</SPAN><SPAN class="num">11</SPAN><SPAN class="op">.</SPAN><SPAN class="num">77</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">15</SPAN><SPAN class="op">.</SPAN><SPAN class="num">67</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">11</SPAN><SPAN class="op">.</SPAN><SPAN class="num">77</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">12</SPAN><SPAN class="op">.</SPAN><SPAN class="num">89</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                glyph<SPAN class="op">.</SPAN><A href="../__code/include/agg_curves.h.html#curve3">curve3</A><SPAN class="op">(</SPAN><SPAN class="num">11</SPAN><SPAN class="op">.</SPAN><SPAN class="num">77</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">9</SPAN><SPAN class="op">.</SPAN><SPAN class="num">38</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">13</SPAN><SPAN class="op">.</SPAN><SPAN class="num">87</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">7</SPAN><SPAN class="op">.</SPAN><SPAN class="num">06</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                glyph<SPAN class="op">.</SPAN><A href="../__code/include/agg_curves.h.html#curve3">curve3</A><SPAN class="op">(</SPAN><SPAN class="num">15</SPAN><SPAN class="op">.</SPAN><SPAN class="num">97</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">4</SPAN><SPAN class="op">.</SPAN><SPAN class="num">74</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">18</SPAN><SPAN class="op">.</SPAN><SPAN class="num">70</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">4</SPAN><SPAN class="op">.</SPAN><SPAN class="num">74</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                glyph<SPAN class="op">.</SPAN><A href="../__code/include/agg_curves.h.html#curve3">curve3</A><SPAN class="op">(</SPAN><SPAN class="num">22</SPAN><SPAN class="op">.</SPAN><SPAN class="num">41</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">4</SPAN><SPAN class="op">.</SPAN><SPAN class="num">74</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">28</SPAN><SPAN class="op">.</SPAN><SPAN class="num">47</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">9</SPAN><SPAN class="op">.</SPAN><SPAN class="num">62</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                glyph<SPAN class="op">.</SPAN>close_polygon<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine">trans_affine</A> mtx<SPAN class="op">;</SPAN>
+                mtx <SPAN class="op">*=</SPAN> agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine_scaling">trans_affine_scaling</A><SPAN class="op">(</SPAN><SPAN class="num">4</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                mtx <SPAN class="op">*=</SPAN> agg::<A href="../__code/include/agg_trans_affine.h.html#trans_affine_translation">trans_affine_translation</A><SPAN class="op">(</SPAN><SPAN class="num">220</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">200</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                agg::<A href="../__code/include/agg_conv_transform.h.html#conv_transform">conv_transform</A><SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_path_storage.h.html#path_storage">path_storage</A><SPAN class="op">&gt;</SPAN> trans<SPAN class="op">(</SPAN>glyph<SPAN class="op">,</SPAN> mtx<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                agg::<A href="../__code/include/agg_conv_curve.h.html#conv_curve">conv_curve</A><SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_conv_transform.h.html#conv_transform">conv_transform</A><SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_path_storage.h.html#path_storage">path_storage</A><SPAN class="op">&gt;</SPAN> <SPAN class="op">&gt;</SPAN> curve<SPAN class="op">(</SPAN>trans<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                agg::<A href="../__code/include/agg_conv_gpc.h.html#conv_gpc">conv_gpc</A><SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_conv_stroke.h.html#conv_stroke">conv_stroke</A><SPAN class="op">&lt;</SPAN>spiral<SPAN class="op">&gt;</SPAN><SPAN class="op">,</SPAN> 
+                                 agg::<A href="../__code/include/agg_conv_curve.h.html#conv_curve">conv_curve</A><SPAN class="op">&lt;</SPAN>
+                                     agg::<A href="../__code/include/agg_conv_transform.h.html#conv_transform">conv_transform</A><SPAN class="op">&lt;</SPAN>
+                                         agg::<A href="../__code/include/agg_path_storage.h.html#path_storage">path_storage</A><SPAN class="op">&gt;</SPAN> <SPAN class="op">&gt;</SPAN> <SPAN class="op">&gt;</SPAN> gpc<SPAN class="op">(</SPAN>stroke<SPAN class="op">,</SPAN> curve<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                ras<SPAN class="op">.</SPAN>reset<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                ras<SPAN class="op">.</SPAN>add_path<SPAN class="op">(</SPAN>stroke<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                ren<SPAN class="op">.</SPAN>color<SPAN class="op">(</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba">rgba</A><SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                agg::<A href="../__code/include/agg_renderer_scanline.h.html#render_scanlines">render_scanlines</A><SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> sl<SPAN class="op">,</SPAN> ren<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                ras<SPAN class="op">.</SPAN>reset<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                ras<SPAN class="op">.</SPAN>add_path<SPAN class="op">(</SPAN>curve<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                ren<SPAN class="op">.</SPAN>color<SPAN class="op">(</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba">rgba</A><SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">6</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                agg::<A href="../__code/include/agg_renderer_scanline.h.html#render_scanlines">render_scanlines</A><SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> sl<SPAN class="op">,</SPAN> ren<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+                perform_rendering<SPAN class="op">(</SPAN>sl<SPAN class="op">,</SPAN> ras<SPAN class="op">,</SPAN> ren<SPAN class="op">,</SPAN> gpc<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="kw1">break</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">return</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="kw1">virtual</SPAN> <SPAN class="kw1">void</SPAN> on_init<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        m_x <SPAN class="op">=</SPAN> width<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        m_y <SPAN class="op">=</SPAN> height<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="kw1">virtual</SPAN> <SPAN class="kw1">void</SPAN> on_draw<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">typedef</SPAN> agg::<A href="../doc/basic_renderers/basic_renderers.agdoc.html#renderer_base">renderer_base</A><SPAN class="op">&lt;</SPAN>agg::<A href="../__code/include/agg_pixfmt_rgb.h.html#pixfmt_bgr24">pixfmt_bgr24</A><SPAN class="op">&gt;</SPAN> base_ren_type<SPAN class="op">;</SPAN>
+
+        agg::<A href="../__code/include/agg_pixfmt_rgb.h.html#pixfmt_bgr24">pixfmt_bgr24</A> pf<SPAN class="op">(</SPAN>rbuf_window<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        base_ren_type ren_base<SPAN class="op">(</SPAN>pf<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        ren_base<SPAN class="op">.</SPAN>clear<SPAN class="op">(</SPAN>agg::<A href="../__code/include/agg_color_rgba.h.html#rgba">rgba</A><SPAN class="op">(</SPAN><SPAN class="num">1</SPAN><SPAN class="op">,</SPAN><SPAN class="num">1</SPAN><SPAN class="op">,</SPAN><SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        agg::<A href="../__code/include/agg_scanline_u.h.html#scanline_u8">scanline_u8</A> sl<SPAN class="op">;</SPAN>
+        agg::<A href="../__code/include/agg_rasterizer_scanline_aa.h.html#rasterizer_scanline_aa">rasterizer_scanline_aa</A><SPAN class="op">&lt;</SPAN><SPAN class="op">&gt;</SPAN> ras<SPAN class="op">;</SPAN>
+
+        render_gpc<SPAN class="op">(</SPAN>sl<SPAN class="op">,</SPAN> ras<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        agg::render_ctrl<SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> sl<SPAN class="op">,</SPAN> ren_base<SPAN class="op">,</SPAN> m_polygons<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        agg::render_ctrl<SPAN class="op">(</SPAN>ras<SPAN class="op">,</SPAN> sl<SPAN class="op">,</SPAN> ren_base<SPAN class="op">,</SPAN> m_operation<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+<SPAN class="rem">/*
+// Stress-test.
+// Works quite well on random polygons, no crashes, no memory leaks! 
+// Sometimes takes long to produce the result
+
+    double random(double min, double max)
+    {
+        int r = (rand() &lt;&lt; 15) | rand();
+        return ((r &amp; 0xFFFFFFF) / double(0xFFFFFFF + 1)) * (max - min) + min;
+    }
+
+
+    virtual void on_mouse_button_down(int x, int y, unsigned flags)
+    {
+        agg::<A href="../__code/include/agg_scanline_u.h.html#scanline_u8">scanline_u8</A> sl;
+        agg::<A href="../__code/include/agg_rasterizer_scanline_aa.h.html#rasterizer_scanline_aa">rasterizer_scanline_aa</A>&lt;&gt; ras;
+
+        typedef agg::<A href="../doc/basic_renderers/basic_renderers.agdoc.html#renderer_base">renderer_base</A>&lt;agg::<A href="../__code/include/agg_pixfmt_rgb.h.html#pixfmt_bgr24">pixfmt_bgr24</A>&gt; base_ren_type;
+        typedef agg::<A href="../__code/include/agg_renderer_scanline.h.html#renderer_scanline_aa_solid">renderer_scanline_aa_solid</A>&lt;base_ren_type&gt; renderer_solid;
+
+        agg::<A href="../__code/include/agg_pixfmt_rgb.h.html#pixfmt_bgr24">pixfmt_bgr24</A> pf(rbuf_window());
+        base_ren_type ren_base(pf);
+        renderer_solid ren_solid(ren_base);
+
+        agg::<A href="../__code/include/agg_path_storage.h.html#path_storage">path_storage</A> ps1;
+        agg::<A href="../__code/include/agg_path_storage.h.html#path_storage">path_storage</A> ps2;
+
+        agg::<A href="../__code/include/agg_conv_gpc.h.html#conv_gpc">conv_gpc</A>&lt;agg::<A href="../__code/include/agg_path_storage.h.html#path_storage">path_storage</A>, agg::<A href="../__code/include/agg_path_storage.h.html#path_storage">path_storage</A>&gt; gpc(ps1, ps2);
+
+        unsigned i;
+        for(i = 0; i &lt; 1000; i++)
+        {
+            ren_base.clear(agg::<A href="../__code/include/agg_color_rgba.h.html#rgba">rgba</A>(1,1,1));
+
+            unsigned num_poly1 = rand() % 10 + 1;
+            unsigned num_poly2 = rand() % 10 + 1;
+            unsigned j;
+            
+            ps1.remove_all();
+            ps2.remove_all();
+
+            for(j = 0; j &lt; num_poly1; j++)
+            {
+                ps1.move_to(random(0, width()), random(0, height()));
+                unsigned k;
+                unsigned np = rand() % 20 + 2;
+                for(k = 0; k &lt; np; k++)
+                {
+                    ps1.line_to(random(0, width()), random(0, height()));
+                }
+            }
+
+            for(j = 0; j &lt; num_poly2; j++)
+            {
+                ps2.move_to(random(0, width()), random(0, height()));
+                unsigned k;
+                unsigned np = rand() % 20 + 2;
+                for(k = 0; k &lt; np; k++)
+                {
+                    ps2.line_to(random(0, width()), random(0, height()));
+                }
+            }
+
+            unsigned op = rand() % 5;
+            switch(op)
+            {
+                case 0: gpc.operation(agg::gpc_or);           break;
+                case 1: gpc.operation(agg::gpc_and);          break;
+                case 2: gpc.operation(agg::gpc_xor);          break;
+                case 3: gpc.operation(agg::gpc_a_minus_b);    break;
+                case 4: gpc.operation(agg::gpc_b_minus_a);    break;
+            }
+
+
+            ras.add_path(gpc);
+            ren_solid.color(agg::<A href="../__code/include/agg_color_rgba.h.html#rgba">rgba</A>(0.5, 0.0, 0, 0.5));
+            agg::<A href="../__code/include/agg_renderer_scanline.h.html#render_scanlines">render_scanlines</A>(ras, sl, ren_solid);
+            update_window();
+
+        }
+
+        message(&quot;Done&quot;);
+    }
+*/</SPAN>
+
+
+
+
+
+
+
+    <SPAN class="kw1">virtual</SPAN> <SPAN class="kw1">void</SPAN> on_mouse_button_down<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> flags<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>flags <SPAN class="op">&amp;</SPAN> agg::mouse_left<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            m_x <SPAN class="op">=</SPAN> x<SPAN class="op">;</SPAN>
+            m_y <SPAN class="op">=</SPAN> y<SPAN class="op">;</SPAN>
+            force_redraw<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>flags <SPAN class="op">&amp;</SPAN> agg::mouse_right<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">char</SPAN> buf<SPAN class="op">[</SPAN><SPAN class="num">100</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+            sprintf<SPAN class="op">(</SPAN>buf<SPAN class="op">,</SPAN> <SPAN class="str">&quot;%d %d&quot;</SPAN><SPAN class="op">,</SPAN> x<SPAN class="op">,</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            message<SPAN class="op">(</SPAN>buf<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="kw1">virtual</SPAN> <SPAN class="kw1">void</SPAN> on_mouse_move<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> flags<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>flags <SPAN class="op">&amp;</SPAN> agg::mouse_left<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            m_x <SPAN class="op">=</SPAN> x<SPAN class="op">;</SPAN>
+            m_y <SPAN class="op">=</SPAN> y<SPAN class="op">;</SPAN>
+            force_redraw<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+
+<SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+
+
+<SPAN class="kw1">int</SPAN> agg_main<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> argc<SPAN class="op">,</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN> argv<SPAN class="op">[</SPAN><SPAN class="op">]</SPAN><SPAN class="op">)</SPAN>
+<SPAN class="op">{</SPAN>
+    the_application app<SPAN class="op">(</SPAN>agg::pix_format_bgr24<SPAN class="op">,</SPAN> flip_y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    app<SPAN class="op">.</SPAN>caption<SPAN class="op">(</SPAN><SPAN class="str">&quot;AGG Example. General Polygon Clipping (GPC)&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>app<SPAN class="op">.</SPAN>init<SPAN class="op">(</SPAN><SPAN class="num">640</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">520</SPAN><SPAN class="op">,</SPAN> agg::window_resize<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">return</SPAN> app<SPAN class="op">.</SPAN>run<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+    <SPAN class="kw1">return</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+<SPAN class="op">}</SPAN>
+
+
+<SPAN class="op">}</SPAN></PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT><TABLE width="640px" bgcolor="#583927" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0">
+<TR><TD><CENTER><SPAN class="authors">
+Copyright <SPAN class="larger">&#169;</SPAN> 2002-2006
+<A href="../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+<TR><TD><CENTER><SPAN class="authors">
+Web Design and Programming
+<A href="../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+</TABLE>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+</HTML>

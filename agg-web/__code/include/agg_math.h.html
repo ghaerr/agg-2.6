@@ -1,0 +1,466 @@
+<HTML><HEAD><TITLE>Anti-Grain Geometry - </TITLE>
+<META http-equiv="Content-Type" content="text/html"/>
+<LINK rel="stylesheet" type="text/css" href="../../agg.styles.css"/>
+</HEAD>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE><SPAN class="rem">//----------------------------------------------------------------------------</SPAN>
+<SPAN class="rem">// Anti-Grain Geometry (AGG) - Version 2.5</SPAN>
+<SPAN class="rem">// A high quality rendering engine for C++</SPAN>
+<SPAN class="rem">// Copyright (C) 2002-2006 Maxim Shemanarev</SPAN>
+<SPAN class="rem">// Contact: mcseem@antigrain.com</SPAN>
+<SPAN class="rem">//          mcseemagg@yahoo.com</SPAN>
+<SPAN class="rem">//          http://antigrain.com</SPAN>
+<SPAN class="rem">// </SPAN>
+<SPAN class="rem">// AGG is free software; you can redistribute it and/or</SPAN>
+<SPAN class="rem">// modify it under the terms of the GNU General Public License</SPAN>
+<SPAN class="rem">// as published by the Free Software Foundation; either version 2</SPAN>
+<SPAN class="rem">// of the License, or (at your option) any later version.</SPAN>
+<SPAN class="rem">// </SPAN>
+<SPAN class="rem">// AGG is distributed in the hope that it will be useful,</SPAN>
+<SPAN class="rem">// but WITHOUT ANY WARRANTY; without even the implied warranty of</SPAN>
+<SPAN class="rem">// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</SPAN>
+<SPAN class="rem">// GNU General Public License for more details.</SPAN>
+<SPAN class="rem">// </SPAN>
+<SPAN class="rem">// You should have received a copy of the GNU General Public License</SPAN>
+<SPAN class="rem">// along with AGG; if not, write to the Free Software</SPAN>
+<SPAN class="rem">// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, </SPAN>
+<SPAN class="rem">// MA 02110-1301, USA.</SPAN>
+<SPAN class="rem">//----------------------------------------------------------------------------</SPAN>
+<SPAN class="rem">// Bessel function (<A href="agg_math.h.html#besj">besj</A>) was adapted for use in AGG library by Andy Wilk </SPAN>
+<SPAN class="rem">// Contact: castor.vulgaris@gmail.com</SPAN>
+<SPAN class="rem">//----------------------------------------------------------------------------</SPAN>
+
+<SPAN class="kw2">#ifndef</SPAN> AGG_MATH_INCLUDED
+<SPAN class="kw2">#define</SPAN> AGG_MATH_INCLUDED
+
+<SPAN class="kw2">#include</SPAN> <SPAN class="op">&lt;</SPAN>math<SPAN class="op">.</SPAN>h<SPAN class="op">&gt;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="agg_basics.h.html">agg_basics.h</A>&quot;</SPAN>
+
+<SPAN class="kw1">namespace</SPAN> agg
+<SPAN class="op">{</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------<A name="vertex_dist_epsilon"><B></B></A><A href="agg_math.h.html#vertex_dist_epsilon">vertex_dist_epsilon</A></SPAN>
+    <SPAN class="rem">// Coinciding points maximal distance (Epsilon)</SPAN>
+    <SPAN class="kw1">const</SPAN> <SPAN class="kw1">double</SPAN> <A href="agg_math.h.html#vertex_dist_epsilon">vertex_dist_epsilon</A> <SPAN class="op">=</SPAN> <SPAN class="num">1e</SPAN><SPAN class="op">-</SPAN><SPAN class="num">14</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="rem">//-----------------------------------------------------<A name="intersection_epsilon"><B></B></A><A href="agg_math.h.html#intersection_epsilon">intersection_epsilon</A></SPAN>
+    <SPAN class="rem">// See <A href="agg_math.h.html#calc_intersection">calc_intersection</A></SPAN>
+    <SPAN class="kw1">const</SPAN> <SPAN class="kw1">double</SPAN> <A href="agg_math.h.html#intersection_epsilon">intersection_epsilon</A> <SPAN class="op">=</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0e</SPAN><SPAN class="op">-</SPAN><SPAN class="num">30</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------<A name="cross_product"><B></B></A><A href="agg_math.h.html#cross_product">cross_product</A></SPAN>
+    AGG_INLINE <SPAN class="kw1">double</SPAN> <A href="agg_math.h.html#cross_product">cross_product</A><SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x1<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y1<SPAN class="op">,</SPAN> 
+                                    <SPAN class="kw1">double</SPAN> x2<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y2<SPAN class="op">,</SPAN> 
+                                    <SPAN class="kw1">double</SPAN> x<SPAN class="op">,</SPAN>  <SPAN class="kw1">double</SPAN> y<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">return</SPAN> <SPAN class="op">(</SPAN>x <SPAN class="op">-</SPAN> x2<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>y2 <SPAN class="op">-</SPAN> y1<SPAN class="op">)</SPAN> <SPAN class="op">-</SPAN> <SPAN class="op">(</SPAN>y <SPAN class="op">-</SPAN> y2<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>x2 <SPAN class="op">-</SPAN> x1<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//--------------------------------------------------------<A name="point_in_triangle"><B></B></A><A href="agg_math.h.html#point_in_triangle">point_in_triangle</A></SPAN>
+    AGG_INLINE <SPAN class="kw1">bool</SPAN> <A href="agg_math.h.html#point_in_triangle">point_in_triangle</A><SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x1<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y1<SPAN class="op">,</SPAN> 
+                                      <SPAN class="kw1">double</SPAN> x2<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y2<SPAN class="op">,</SPAN> 
+                                      <SPAN class="kw1">double</SPAN> x3<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y3<SPAN class="op">,</SPAN> 
+                                      <SPAN class="kw1">double</SPAN> x<SPAN class="op">,</SPAN>  <SPAN class="kw1">double</SPAN> y<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">bool</SPAN> cp1 <SPAN class="op">=</SPAN> <A href="agg_math.h.html#cross_product">cross_product</A><SPAN class="op">(</SPAN>x1<SPAN class="op">,</SPAN> y1<SPAN class="op">,</SPAN> x2<SPAN class="op">,</SPAN> y2<SPAN class="op">,</SPAN> x<SPAN class="op">,</SPAN> y<SPAN class="op">)</SPAN> <SPAN class="op">&lt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">bool</SPAN> cp2 <SPAN class="op">=</SPAN> <A href="agg_math.h.html#cross_product">cross_product</A><SPAN class="op">(</SPAN>x2<SPAN class="op">,</SPAN> y2<SPAN class="op">,</SPAN> x3<SPAN class="op">,</SPAN> y3<SPAN class="op">,</SPAN> x<SPAN class="op">,</SPAN> y<SPAN class="op">)</SPAN> <SPAN class="op">&lt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">bool</SPAN> cp3 <SPAN class="op">=</SPAN> <A href="agg_math.h.html#cross_product">cross_product</A><SPAN class="op">(</SPAN>x3<SPAN class="op">,</SPAN> y3<SPAN class="op">,</SPAN> x1<SPAN class="op">,</SPAN> y1<SPAN class="op">,</SPAN> x<SPAN class="op">,</SPAN> y<SPAN class="op">)</SPAN> <SPAN class="op">&lt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">return</SPAN> cp1 <SPAN class="op">==</SPAN> cp2 <SPAN class="op">&amp;&amp;</SPAN> cp2 <SPAN class="op">==</SPAN> cp3 <SPAN class="op">&amp;&amp;</SPAN> cp3 <SPAN class="op">==</SPAN> cp1<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//-----------------------------------------------------------<A name="calc_distance"><B></B></A><A href="agg_math.h.html#calc_distance">calc_distance</A></SPAN>
+    AGG_INLINE <SPAN class="kw1">double</SPAN> <A href="agg_math.h.html#calc_distance">calc_distance</A><SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x1<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y1<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> x2<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y2<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">double</SPAN> dx <SPAN class="op">=</SPAN> x2<SPAN class="op">-</SPAN>x1<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> dy <SPAN class="op">=</SPAN> y2<SPAN class="op">-</SPAN>y1<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">return</SPAN> sqrt<SPAN class="op">(</SPAN>dx <SPAN class="op">*</SPAN> dx <SPAN class="op">+</SPAN> dy <SPAN class="op">*</SPAN> dy<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//--------------------------------------------------------<A name="calc_sq_distance"><B></B></A><A href="agg_math.h.html#calc_sq_distance">calc_sq_distance</A></SPAN>
+    AGG_INLINE <SPAN class="kw1">double</SPAN> <A href="agg_math.h.html#calc_sq_distance">calc_sq_distance</A><SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x1<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y1<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> x2<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y2<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">double</SPAN> dx <SPAN class="op">=</SPAN> x2<SPAN class="op">-</SPAN>x1<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> dy <SPAN class="op">=</SPAN> y2<SPAN class="op">-</SPAN>y1<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">return</SPAN> dx <SPAN class="op">*</SPAN> dx <SPAN class="op">+</SPAN> dy <SPAN class="op">*</SPAN> dy<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------<A name="calc_line_point_distance"><B></B></A><A href="agg_math.h.html#calc_line_point_distance">calc_line_point_distance</A></SPAN>
+    AGG_INLINE <SPAN class="kw1">double</SPAN> <A href="agg_math.h.html#calc_line_point_distance">calc_line_point_distance</A><SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x1<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y1<SPAN class="op">,</SPAN> 
+                                               <SPAN class="kw1">double</SPAN> x2<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y2<SPAN class="op">,</SPAN> 
+                                               <SPAN class="kw1">double</SPAN> x<SPAN class="op">,</SPAN>  <SPAN class="kw1">double</SPAN> y<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">double</SPAN> dx <SPAN class="op">=</SPAN> x2<SPAN class="op">-</SPAN>x1<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> dy <SPAN class="op">=</SPAN> y2<SPAN class="op">-</SPAN>y1<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> d <SPAN class="op">=</SPAN> sqrt<SPAN class="op">(</SPAN>dx <SPAN class="op">*</SPAN> dx <SPAN class="op">+</SPAN> dy <SPAN class="op">*</SPAN> dy<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>d <SPAN class="op">&lt;</SPAN> <A href="agg_math.h.html#vertex_dist_epsilon">vertex_dist_epsilon</A><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">return</SPAN> <A href="agg_math.h.html#calc_distance">calc_distance</A><SPAN class="op">(</SPAN>x1<SPAN class="op">,</SPAN> y1<SPAN class="op">,</SPAN> x<SPAN class="op">,</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">return</SPAN> <SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>x <SPAN class="op">-</SPAN> x2<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> dy <SPAN class="op">-</SPAN> <SPAN class="op">(</SPAN>y <SPAN class="op">-</SPAN> y2<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> dx<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> d<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//-------------------------------------------------------<A name="calc_line_point_u"><B></B></A><A href="agg_math.h.html#calc_line_point_u">calc_line_point_u</A></SPAN>
+    AGG_INLINE <SPAN class="kw1">double</SPAN> calc_segment_point_u<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x1<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y1<SPAN class="op">,</SPAN> 
+                                           <SPAN class="kw1">double</SPAN> x2<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y2<SPAN class="op">,</SPAN> 
+                                           <SPAN class="kw1">double</SPAN> x<SPAN class="op">,</SPAN>  <SPAN class="kw1">double</SPAN> y<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">double</SPAN> dx <SPAN class="op">=</SPAN> x2 <SPAN class="op">-</SPAN> x1<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> dy <SPAN class="op">=</SPAN> y2 <SPAN class="op">-</SPAN> y1<SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>dx <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN> <SPAN class="op">&amp;&amp;</SPAN> dy <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+	        <SPAN class="kw1">return</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">double</SPAN> pdx <SPAN class="op">=</SPAN> x <SPAN class="op">-</SPAN> x1<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> pdy <SPAN class="op">=</SPAN> y <SPAN class="op">-</SPAN> y1<SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">return</SPAN> <SPAN class="op">(</SPAN>pdx <SPAN class="op">*</SPAN> dx <SPAN class="op">+</SPAN> pdy <SPAN class="op">*</SPAN> dy<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="op">(</SPAN>dx <SPAN class="op">*</SPAN> dx <SPAN class="op">+</SPAN> dy <SPAN class="op">*</SPAN> dy<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//---------------------------------------------<A name="calc_line_point_sq_distance"><B></B></A><A href="agg_math.h.html#calc_line_point_sq_distance">calc_line_point_sq_distance</A></SPAN>
+    AGG_INLINE <SPAN class="kw1">double</SPAN> calc_segment_point_sq_distance<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x1<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y1<SPAN class="op">,</SPAN> 
+                                                     <SPAN class="kw1">double</SPAN> x2<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y2<SPAN class="op">,</SPAN> 
+                                                     <SPAN class="kw1">double</SPAN> x<SPAN class="op">,</SPAN>  <SPAN class="kw1">double</SPAN> y<SPAN class="op">,</SPAN>
+                                                     <SPAN class="kw1">double</SPAN> u<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>u <SPAN class="op">&lt;=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+	        <SPAN class="kw1">return</SPAN> <A href="agg_math.h.html#calc_sq_distance">calc_sq_distance</A><SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> y<SPAN class="op">,</SPAN> x1<SPAN class="op">,</SPAN> y1<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">else</SPAN> 
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>u <SPAN class="op">&gt;=</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+	        <SPAN class="kw1">return</SPAN> <A href="agg_math.h.html#calc_sq_distance">calc_sq_distance</A><SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> y<SPAN class="op">,</SPAN> x2<SPAN class="op">,</SPAN> y2<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">return</SPAN> <A href="agg_math.h.html#calc_sq_distance">calc_sq_distance</A><SPAN class="op">(</SPAN>x<SPAN class="op">,</SPAN> y<SPAN class="op">,</SPAN> x1 <SPAN class="op">+</SPAN> u <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>x2 <SPAN class="op">-</SPAN> x1<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> y1 <SPAN class="op">+</SPAN> u <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>y2 <SPAN class="op">-</SPAN> y1<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//---------------------------------------------<A name="calc_line_point_sq_distance"><B></B></A><A href="agg_math.h.html#calc_line_point_sq_distance">calc_line_point_sq_distance</A></SPAN>
+    AGG_INLINE <SPAN class="kw1">double</SPAN> calc_segment_point_sq_distance<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x1<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y1<SPAN class="op">,</SPAN> 
+                                                     <SPAN class="kw1">double</SPAN> x2<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y2<SPAN class="op">,</SPAN> 
+                                                     <SPAN class="kw1">double</SPAN> x<SPAN class="op">,</SPAN>  <SPAN class="kw1">double</SPAN> y<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">return</SPAN> 
+            calc_segment_point_sq_distance<SPAN class="op">(</SPAN>
+                x1<SPAN class="op">,</SPAN> y1<SPAN class="op">,</SPAN> x2<SPAN class="op">,</SPAN> y2<SPAN class="op">,</SPAN> x<SPAN class="op">,</SPAN> y<SPAN class="op">,</SPAN>
+                calc_segment_point_u<SPAN class="op">(</SPAN>x1<SPAN class="op">,</SPAN> y1<SPAN class="op">,</SPAN> x2<SPAN class="op">,</SPAN> y2<SPAN class="op">,</SPAN> x<SPAN class="op">,</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//-------------------------------------------------------<A name="calc_intersection"><B></B></A><A href="agg_math.h.html#calc_intersection">calc_intersection</A></SPAN>
+    AGG_INLINE <SPAN class="kw1">bool</SPAN> <A href="agg_math.h.html#calc_intersection">calc_intersection</A><SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> ax<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> ay<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> bx<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> by<SPAN class="op">,</SPAN>
+                                      <SPAN class="kw1">double</SPAN> cx<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> cy<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> dx<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> dy<SPAN class="op">,</SPAN>
+                                      <SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> y<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">double</SPAN> num <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>ay<SPAN class="op">-</SPAN>cy<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>dx<SPAN class="op">-</SPAN>cx<SPAN class="op">)</SPAN> <SPAN class="op">-</SPAN> <SPAN class="op">(</SPAN>ax<SPAN class="op">-</SPAN>cx<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>dy<SPAN class="op">-</SPAN>cy<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> den <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>bx<SPAN class="op">-</SPAN>ax<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>dy<SPAN class="op">-</SPAN>cy<SPAN class="op">)</SPAN> <SPAN class="op">-</SPAN> <SPAN class="op">(</SPAN>by<SPAN class="op">-</SPAN>ay<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>dx<SPAN class="op">-</SPAN>cx<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>fabs<SPAN class="op">(</SPAN>den<SPAN class="op">)</SPAN> <SPAN class="op">&lt;</SPAN> <A href="agg_math.h.html#intersection_epsilon">intersection_epsilon</A><SPAN class="op">)</SPAN> <SPAN class="kw1">return</SPAN> <SPAN class="kw1">false</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> r <SPAN class="op">=</SPAN> num <SPAN class="op">/</SPAN> den<SPAN class="op">;</SPAN>
+        <SPAN class="op">*</SPAN>x <SPAN class="op">=</SPAN> ax <SPAN class="op">+</SPAN> r <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>bx<SPAN class="op">-</SPAN>ax<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">*</SPAN>y <SPAN class="op">=</SPAN> ay <SPAN class="op">+</SPAN> r <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>by<SPAN class="op">-</SPAN>ay<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">return</SPAN> <SPAN class="kw1">true</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//-----------------------------------------------------<A name="intersection_exists"><B></B></A><A href="agg_math.h.html#intersection_exists">intersection_exists</A></SPAN>
+    AGG_INLINE <SPAN class="kw1">bool</SPAN> <A href="agg_math.h.html#intersection_exists">intersection_exists</A><SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x1<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y1<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> x2<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y2<SPAN class="op">,</SPAN>
+                                        <SPAN class="kw1">double</SPAN> x3<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y3<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> x4<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y4<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="rem">// It&#039;s less expensive but you can&#039;t control the </SPAN>
+        <SPAN class="rem">// boundary conditions: Less or LessEqual</SPAN>
+        <SPAN class="kw1">double</SPAN> dx1 <SPAN class="op">=</SPAN> x2 <SPAN class="op">-</SPAN> x1<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> dy1 <SPAN class="op">=</SPAN> y2 <SPAN class="op">-</SPAN> y1<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> dx2 <SPAN class="op">=</SPAN> x4 <SPAN class="op">-</SPAN> x3<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> dy2 <SPAN class="op">=</SPAN> y4 <SPAN class="op">-</SPAN> y3<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">return</SPAN> <SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>x3 <SPAN class="op">-</SPAN> x2<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> dy1 <SPAN class="op">-</SPAN> <SPAN class="op">(</SPAN>y3 <SPAN class="op">-</SPAN> y2<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> dx1 <SPAN class="op">&lt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">!=</SPAN> 
+               <SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>x4 <SPAN class="op">-</SPAN> x2<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> dy1 <SPAN class="op">-</SPAN> <SPAN class="op">(</SPAN>y4 <SPAN class="op">-</SPAN> y2<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> dx1 <SPAN class="op">&lt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">&amp;&amp;</SPAN>
+               <SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>x1 <SPAN class="op">-</SPAN> x4<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> dy2 <SPAN class="op">-</SPAN> <SPAN class="op">(</SPAN>y1 <SPAN class="op">-</SPAN> y4<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> dx2 <SPAN class="op">&lt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">!=</SPAN>
+               <SPAN class="op">(</SPAN><SPAN class="op">(</SPAN>x2 <SPAN class="op">-</SPAN> x4<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> dy2 <SPAN class="op">-</SPAN> <SPAN class="op">(</SPAN>y2 <SPAN class="op">-</SPAN> y4<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> dx2 <SPAN class="op">&lt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="rem">// It&#039;s is more expensive but more flexible </SPAN>
+        <SPAN class="rem">// in terms of boundary conditions.</SPAN>
+        <SPAN class="rem">//--------------------</SPAN>
+        <SPAN class="rem">//double den  = (x2-x1) * (y4-y3) - (y2-y1) * (x4-x3);</SPAN>
+        <SPAN class="rem">//if(fabs(den) &lt; <A href="agg_math.h.html#intersection_epsilon">intersection_epsilon</A>) return false;</SPAN>
+        <SPAN class="rem">//double nom1 = (x4-x3) * (y1-y3) - (y4-y3) * (x1-x3);</SPAN>
+        <SPAN class="rem">//double nom2 = (x2-x1) * (y1-y3) - (y2-y1) * (x1-x3);</SPAN>
+        <SPAN class="rem">//double ua = nom1 / den;</SPAN>
+        <SPAN class="rem">//double ub = nom2 / den;</SPAN>
+        <SPAN class="rem">//return ua &gt;= 0.0 &amp;&amp; ua &lt;= 1.0 &amp;&amp; ub &gt;= 0.0 &amp;&amp; ub &lt;= 1.0;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//--------------------------------------------------------<A name="calc_orthogonal"><B></B></A><A href="agg_math.h.html#calc_orthogonal">calc_orthogonal</A></SPAN>
+    AGG_INLINE <SPAN class="kw1">void</SPAN> <A href="agg_math.h.html#calc_orthogonal">calc_orthogonal</A><SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> thickness<SPAN class="op">,</SPAN>
+                                    <SPAN class="kw1">double</SPAN> x1<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y1<SPAN class="op">,</SPAN>
+                                    <SPAN class="kw1">double</SPAN> x2<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y2<SPAN class="op">,</SPAN>
+                                    <SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> y<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">double</SPAN> dx <SPAN class="op">=</SPAN> x2 <SPAN class="op">-</SPAN> x1<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> dy <SPAN class="op">=</SPAN> y2 <SPAN class="op">-</SPAN> y1<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> d <SPAN class="op">=</SPAN> sqrt<SPAN class="op">(</SPAN>dx<SPAN class="op">*</SPAN>dx <SPAN class="op">+</SPAN> dy<SPAN class="op">*</SPAN>dy<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> 
+        <SPAN class="op">*</SPAN>x <SPAN class="op">=</SPAN>  thickness <SPAN class="op">*</SPAN> dy <SPAN class="op">/</SPAN> d<SPAN class="op">;</SPAN>
+        <SPAN class="op">*</SPAN>y <SPAN class="op">=</SPAN> <SPAN class="op">-</SPAN>thickness <SPAN class="op">*</SPAN> dx <SPAN class="op">/</SPAN> d<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//--------------------------------------------------------<A name="dilate_triangle"><B></B></A><A href="agg_math.h.html#dilate_triangle">dilate_triangle</A></SPAN>
+    AGG_INLINE <SPAN class="kw1">void</SPAN> <A href="agg_math.h.html#dilate_triangle">dilate_triangle</A><SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x1<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y1<SPAN class="op">,</SPAN>
+                                    <SPAN class="kw1">double</SPAN> x2<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y2<SPAN class="op">,</SPAN>
+                                    <SPAN class="kw1">double</SPAN> x3<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y3<SPAN class="op">,</SPAN>
+                                    <SPAN class="kw1">double</SPAN> <SPAN class="op">*</SPAN>x<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN><SPAN class="op">*</SPAN> y<SPAN class="op">,</SPAN>
+                                    <SPAN class="kw1">double</SPAN> d<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">double</SPAN> dx1<SPAN class="op">=</SPAN><SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> dy1<SPAN class="op">=</SPAN><SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> 
+        <SPAN class="kw1">double</SPAN> dx2<SPAN class="op">=</SPAN><SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> dy2<SPAN class="op">=</SPAN><SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> 
+        <SPAN class="kw1">double</SPAN> dx3<SPAN class="op">=</SPAN><SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> dy3<SPAN class="op">=</SPAN><SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> 
+        <SPAN class="kw1">double</SPAN> loc <SPAN class="op">=</SPAN> <A href="agg_math.h.html#cross_product">cross_product</A><SPAN class="op">(</SPAN>x1<SPAN class="op">,</SPAN> y1<SPAN class="op">,</SPAN> x2<SPAN class="op">,</SPAN> y2<SPAN class="op">,</SPAN> x3<SPAN class="op">,</SPAN> y3<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>fabs<SPAN class="op">(</SPAN>loc<SPAN class="op">)</SPAN> <SPAN class="op">&gt;</SPAN> <A href="agg_math.h.html#intersection_epsilon">intersection_epsilon</A><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN><A href="agg_math.h.html#cross_product">cross_product</A><SPAN class="op">(</SPAN>x1<SPAN class="op">,</SPAN> y1<SPAN class="op">,</SPAN> x2<SPAN class="op">,</SPAN> y2<SPAN class="op">,</SPAN> x3<SPAN class="op">,</SPAN> y3<SPAN class="op">)</SPAN> <SPAN class="op">&gt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> 
+            <SPAN class="op">{</SPAN>
+                d <SPAN class="op">=</SPAN> <SPAN class="op">-</SPAN>d<SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            <A href="agg_math.h.html#calc_orthogonal">calc_orthogonal</A><SPAN class="op">(</SPAN>d<SPAN class="op">,</SPAN> x1<SPAN class="op">,</SPAN> y1<SPAN class="op">,</SPAN> x2<SPAN class="op">,</SPAN> y2<SPAN class="op">,</SPAN> <SPAN class="op">&amp;</SPAN>dx1<SPAN class="op">,</SPAN> <SPAN class="op">&amp;</SPAN>dy1<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <A href="agg_math.h.html#calc_orthogonal">calc_orthogonal</A><SPAN class="op">(</SPAN>d<SPAN class="op">,</SPAN> x2<SPAN class="op">,</SPAN> y2<SPAN class="op">,</SPAN> x3<SPAN class="op">,</SPAN> y3<SPAN class="op">,</SPAN> <SPAN class="op">&amp;</SPAN>dx2<SPAN class="op">,</SPAN> <SPAN class="op">&amp;</SPAN>dy2<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <A href="agg_math.h.html#calc_orthogonal">calc_orthogonal</A><SPAN class="op">(</SPAN>d<SPAN class="op">,</SPAN> x3<SPAN class="op">,</SPAN> y3<SPAN class="op">,</SPAN> x1<SPAN class="op">,</SPAN> y1<SPAN class="op">,</SPAN> <SPAN class="op">&amp;</SPAN>dx3<SPAN class="op">,</SPAN> <SPAN class="op">&amp;</SPAN>dy3<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="op">*</SPAN>x<SPAN class="op">++</SPAN> <SPAN class="op">=</SPAN> x1 <SPAN class="op">+</SPAN> dx1<SPAN class="op">;</SPAN>  <SPAN class="op">*</SPAN>y<SPAN class="op">++</SPAN> <SPAN class="op">=</SPAN> y1 <SPAN class="op">+</SPAN> dy1<SPAN class="op">;</SPAN>
+        <SPAN class="op">*</SPAN>x<SPAN class="op">++</SPAN> <SPAN class="op">=</SPAN> x2 <SPAN class="op">+</SPAN> dx1<SPAN class="op">;</SPAN>  <SPAN class="op">*</SPAN>y<SPAN class="op">++</SPAN> <SPAN class="op">=</SPAN> y2 <SPAN class="op">+</SPAN> dy1<SPAN class="op">;</SPAN>
+        <SPAN class="op">*</SPAN>x<SPAN class="op">++</SPAN> <SPAN class="op">=</SPAN> x2 <SPAN class="op">+</SPAN> dx2<SPAN class="op">;</SPAN>  <SPAN class="op">*</SPAN>y<SPAN class="op">++</SPAN> <SPAN class="op">=</SPAN> y2 <SPAN class="op">+</SPAN> dy2<SPAN class="op">;</SPAN>
+        <SPAN class="op">*</SPAN>x<SPAN class="op">++</SPAN> <SPAN class="op">=</SPAN> x3 <SPAN class="op">+</SPAN> dx2<SPAN class="op">;</SPAN>  <SPAN class="op">*</SPAN>y<SPAN class="op">++</SPAN> <SPAN class="op">=</SPAN> y3 <SPAN class="op">+</SPAN> dy2<SPAN class="op">;</SPAN>
+        <SPAN class="op">*</SPAN>x<SPAN class="op">++</SPAN> <SPAN class="op">=</SPAN> x3 <SPAN class="op">+</SPAN> dx3<SPAN class="op">;</SPAN>  <SPAN class="op">*</SPAN>y<SPAN class="op">++</SPAN> <SPAN class="op">=</SPAN> y3 <SPAN class="op">+</SPAN> dy3<SPAN class="op">;</SPAN>
+        <SPAN class="op">*</SPAN>x<SPAN class="op">++</SPAN> <SPAN class="op">=</SPAN> x1 <SPAN class="op">+</SPAN> dx3<SPAN class="op">;</SPAN>  <SPAN class="op">*</SPAN>y<SPAN class="op">++</SPAN> <SPAN class="op">=</SPAN> y1 <SPAN class="op">+</SPAN> dy3<SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------<A name="calc_triangle_area"><B></B></A><A href="agg_math.h.html#calc_triangle_area">calc_triangle_area</A></SPAN>
+    AGG_INLINE <SPAN class="kw1">double</SPAN> <A href="agg_math.h.html#calc_triangle_area">calc_triangle_area</A><SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x1<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y1<SPAN class="op">,</SPAN>
+                                         <SPAN class="kw1">double</SPAN> x2<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y2<SPAN class="op">,</SPAN>
+                                         <SPAN class="kw1">double</SPAN> x3<SPAN class="op">,</SPAN> <SPAN class="kw1">double</SPAN> y3<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">return</SPAN> <SPAN class="op">(</SPAN>x1<SPAN class="op">*</SPAN>y2 <SPAN class="op">-</SPAN> x2<SPAN class="op">*</SPAN>y1 <SPAN class="op">+</SPAN> x2<SPAN class="op">*</SPAN>y3 <SPAN class="op">-</SPAN> x3<SPAN class="op">*</SPAN>y2 <SPAN class="op">+</SPAN> x3<SPAN class="op">*</SPAN>y1 <SPAN class="op">-</SPAN> x1<SPAN class="op">*</SPAN>y3<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">5</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//-------------------------------------------------------<A name="calc_polygon_area"><B></B></A><A href="agg_math.h.html#calc_polygon_area">calc_polygon_area</A></SPAN>
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Storage<SPAN class="op">&gt;</SPAN> <SPAN class="kw1">double</SPAN> <A href="agg_math.h.html#calc_polygon_area">calc_polygon_area</A><SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> Storage<SPAN class="op">&amp;</SPAN> st<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> i<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> sum <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> x  <SPAN class="op">=</SPAN> st<SPAN class="op">[</SPAN><SPAN class="num">0</SPAN><SPAN class="op">]</SPAN><SPAN class="op">.</SPAN>x<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> y  <SPAN class="op">=</SPAN> st<SPAN class="op">[</SPAN><SPAN class="num">0</SPAN><SPAN class="op">]</SPAN><SPAN class="op">.</SPAN>y<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> xs <SPAN class="op">=</SPAN> x<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> ys <SPAN class="op">=</SPAN> y<SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;</SPAN> st<SPAN class="op">.</SPAN>size<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> i<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">const</SPAN> <SPAN class="kw1">typename</SPAN> Storage::value_type<SPAN class="op">&amp;</SPAN> v <SPAN class="op">=</SPAN> st<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+            sum <SPAN class="op">+=</SPAN> x <SPAN class="op">*</SPAN> v<SPAN class="op">.</SPAN>y <SPAN class="op">-</SPAN> y <SPAN class="op">*</SPAN> v<SPAN class="op">.</SPAN>x<SPAN class="op">;</SPAN>
+            x <SPAN class="op">=</SPAN> v<SPAN class="op">.</SPAN>x<SPAN class="op">;</SPAN>
+            y <SPAN class="op">=</SPAN> v<SPAN class="op">.</SPAN>y<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">return</SPAN> <SPAN class="op">(</SPAN>sum <SPAN class="op">+</SPAN> x <SPAN class="op">*</SPAN> ys <SPAN class="op">-</SPAN> y <SPAN class="op">*</SPAN> xs<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">5</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="rem">// Tables for fast sqrt</SPAN>
+    <SPAN class="kw1">extern</SPAN> <A href="agg_basics.h.html#int16u">int16u</A> <A href="../src/agg_sqrt_tables.cpp.html#g_sqrt_table">g_sqrt_table</A><SPAN class="op">[</SPAN><SPAN class="num">1024</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="kw1">extern</SPAN> <A href="agg_basics.h.html#int8">int8</A>   <A href="../src/agg_sqrt_tables.cpp.html#g_elder_bit_table">g_elder_bit_table</A><SPAN class="op">[</SPAN><SPAN class="num">256</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+
+
+    <SPAN class="rem">//---------------------------------------------------------------<A name="fast_sqrt"><B></B></A><A href="agg_math.h.html#fast_sqrt">fast_sqrt</A></SPAN>
+    <SPAN class="rem">//Fast integer Sqrt - really fast: no cycles, divisions or multiplications</SPAN>
+    <SPAN class="kw2">#if</SPAN> defined<SPAN class="op">(</SPAN>_MSC_VER<SPAN class="op">)</SPAN>
+    <SPAN class="kw2">#pragma</SPAN> warning<SPAN class="op">(</SPAN>push<SPAN class="op">)</SPAN>
+    <SPAN class="kw2">#pragma</SPAN> warning<SPAN class="op">(</SPAN>disable : <SPAN class="num">4035</SPAN><SPAN class="op">)</SPAN> <SPAN class="rem">//Disable warning &quot;no return value&quot;</SPAN>
+    <SPAN class="kw2">#endif</SPAN>
+    AGG_INLINE <SPAN class="kw1">unsigned</SPAN> <A href="agg_math.h.html#fast_sqrt">fast_sqrt</A><SPAN class="op">(</SPAN><SPAN class="kw1">unsigned</SPAN> val<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+    <SPAN class="kw2">#if</SPAN> defined<SPAN class="op">(</SPAN>_M_IX86<SPAN class="op">)</SPAN> <SPAN class="op">&amp;&amp;</SPAN> defined<SPAN class="op">(</SPAN>_MSC_VER<SPAN class="op">)</SPAN> <SPAN class="op">&amp;&amp;</SPAN> <SPAN class="op">!</SPAN>defined<SPAN class="op">(</SPAN>AGG_NO_ASM<SPAN class="op">)</SPAN>
+        <SPAN class="rem">//For Ix86 family processors this assembler code is used. </SPAN>
+        <SPAN class="rem">//The key command here is bsr - determination the number of the most </SPAN>
+        <SPAN class="rem">//significant bit of the value. For other processors</SPAN>
+        <SPAN class="rem">//(and maybe compilers) the pure C &quot;#else&quot; section is used.</SPAN>
+        <SPAN class="kw1">__asm</SPAN>
+        <SPAN class="op">{</SPAN>
+            mov ebx<SPAN class="op">,</SPAN> val
+            mov edx<SPAN class="op">,</SPAN> <SPAN class="num">11</SPAN>
+            bsr ecx<SPAN class="op">,</SPAN> ebx
+            sub ecx<SPAN class="op">,</SPAN> <SPAN class="num">9</SPAN>
+            jle less_than_9_bits
+            shr ecx<SPAN class="op">,</SPAN> <SPAN class="num">1</SPAN>
+            adc ecx<SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN>
+            sub edx<SPAN class="op">,</SPAN> ecx
+            shl ecx<SPAN class="op">,</SPAN> <SPAN class="num">1</SPAN>
+            shr ebx<SPAN class="op">,</SPAN> cl
+    less_than_9_bits:
+            xor eax<SPAN class="op">,</SPAN> eax
+            mov  ax<SPAN class="op">,</SPAN> <A href="../src/agg_sqrt_tables.cpp.html#g_sqrt_table">g_sqrt_table</A><SPAN class="op">[</SPAN>ebx<SPAN class="op">*</SPAN><SPAN class="num">2</SPAN><SPAN class="op">]</SPAN>
+            mov ecx<SPAN class="op">,</SPAN> edx
+            shr eax<SPAN class="op">,</SPAN> cl
+        <SPAN class="op">}</SPAN>
+    <SPAN class="kw2">#else</SPAN>
+
+        <SPAN class="rem">//This code is actually pure C and portable to most </SPAN>
+        <SPAN class="rem">//arcitectures including 64bit ones. </SPAN>
+        <SPAN class="kw1">unsigned</SPAN> t <SPAN class="op">=</SPAN> val<SPAN class="op">;</SPAN>
+        <SPAN class="kw1">int</SPAN> bit<SPAN class="op">=</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> shift <SPAN class="op">=</SPAN> <SPAN class="num">11</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="rem">//The following piece of code is just an emulation of the</SPAN>
+        <SPAN class="rem">//Ix86 assembler command &quot;bsr&quot; (see above). However on old</SPAN>
+        <SPAN class="rem">//Intels (like Intel MMX 233MHz) this code is about twice </SPAN>
+        <SPAN class="rem">//faster (sic!) then just one &quot;bsr&quot;. On PIII and PIV the</SPAN>
+        <SPAN class="rem">//bsr is optimized quite well.</SPAN>
+        bit <SPAN class="op">=</SPAN> t <SPAN class="op">&gt;&gt;</SPAN> <SPAN class="num">24</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>bit<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            bit <SPAN class="op">=</SPAN> <A href="../src/agg_sqrt_tables.cpp.html#g_elder_bit_table">g_elder_bit_table</A><SPAN class="op">[</SPAN>bit<SPAN class="op">]</SPAN> <SPAN class="op">+</SPAN> <SPAN class="num">24</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">else</SPAN>
+        <SPAN class="op">{</SPAN>
+            bit <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>t <SPAN class="op">&gt;&gt;</SPAN> <SPAN class="num">16</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">&amp;</SPAN> <SPAN class="num">0xFF</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>bit<SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                bit <SPAN class="op">=</SPAN> <A href="../src/agg_sqrt_tables.cpp.html#g_elder_bit_table">g_elder_bit_table</A><SPAN class="op">[</SPAN>bit<SPAN class="op">]</SPAN> <SPAN class="op">+</SPAN> <SPAN class="num">16</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="kw1">else</SPAN>
+            <SPAN class="op">{</SPAN>
+                bit <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>t <SPAN class="op">&gt;&gt;</SPAN> <SPAN class="num">8</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">&amp;</SPAN> <SPAN class="num">0xFF</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>bit<SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    bit <SPAN class="op">=</SPAN> <A href="../src/agg_sqrt_tables.cpp.html#g_elder_bit_table">g_elder_bit_table</A><SPAN class="op">[</SPAN>bit<SPAN class="op">]</SPAN> <SPAN class="op">+</SPAN> <SPAN class="num">8</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+                <SPAN class="kw1">else</SPAN>
+                <SPAN class="op">{</SPAN>
+                    bit <SPAN class="op">=</SPAN> <A href="../src/agg_sqrt_tables.cpp.html#g_elder_bit_table">g_elder_bit_table</A><SPAN class="op">[</SPAN>t<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+            <SPAN class="op">}</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">//This code calculates the sqrt.</SPAN>
+        bit <SPAN class="op">-=</SPAN> <SPAN class="num">9</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>bit <SPAN class="op">&gt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            bit <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN>bit <SPAN class="op">&gt;&gt;</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> <SPAN class="op">(</SPAN>bit <SPAN class="op">&amp;</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            shift <SPAN class="op">-=</SPAN> bit<SPAN class="op">;</SPAN>
+            val <SPAN class="op">&gt;&gt;=</SPAN> <SPAN class="op">(</SPAN>bit <SPAN class="op">&lt;&lt;</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">return</SPAN> <A href="../src/agg_sqrt_tables.cpp.html#g_sqrt_table">g_sqrt_table</A><SPAN class="op">[</SPAN>val<SPAN class="op">]</SPAN> <SPAN class="op">&gt;&gt;</SPAN> shift<SPAN class="op">;</SPAN>
+    <SPAN class="kw2">#endif</SPAN>
+    <SPAN class="op">}</SPAN>
+    <SPAN class="kw2">#if</SPAN> defined<SPAN class="op">(</SPAN>_MSC_VER<SPAN class="op">)</SPAN>
+    <SPAN class="kw2">#pragma</SPAN> warning<SPAN class="op">(</SPAN>pop<SPAN class="op">)</SPAN>
+    <SPAN class="kw2">#endif</SPAN>
+
+
+
+
+    <SPAN class="rem">//--------------------------------------------------------------------<A name="besj"><B></B></A><A href="agg_math.h.html#besj">besj</A></SPAN>
+    <SPAN class="rem">// Function BESJ calculates Bessel function of first kind of order n</SPAN>
+    <SPAN class="rem">// Arguments:</SPAN>
+    <SPAN class="rem">//     n - an integer (&gt;=0), the order</SPAN>
+    <SPAN class="rem">//     x - value at which the Bessel function is required</SPAN>
+    <SPAN class="rem">//--------------------</SPAN>
+    <SPAN class="rem">// C++ Mathematical Library</SPAN>
+    <SPAN class="rem">// Convereted from equivalent FORTRAN library</SPAN>
+    <SPAN class="rem">// Converetd by Gareth Walker for use by course 392 computational project</SPAN>
+    <SPAN class="rem">// All functions tested and yield the same results as the corresponding</SPAN>
+    <SPAN class="rem">// FORTRAN versions.</SPAN>
+    <SPAN class="rem">//</SPAN>
+    <SPAN class="rem">// If you have any problems using these functions please report them to</SPAN>
+    <SPAN class="rem">// M.Muldoon@UMIST.ac.uk</SPAN>
+    <SPAN class="rem">//</SPAN>
+    <SPAN class="rem">// Documentation available on the web</SPAN>
+    <SPAN class="rem">// http://www.ma.umist.ac.uk/mrm/Teaching/392/libs/392.html</SPAN>
+    <SPAN class="rem">// Version 1.0   8/98</SPAN>
+    <SPAN class="rem">// 29 October, 1999</SPAN>
+    <SPAN class="rem">//--------------------</SPAN>
+    <SPAN class="rem">// Adapted for use in AGG library by Andy Wilk (castor.vulgaris@gmail.com)</SPAN>
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">inline</SPAN> <SPAN class="kw1">double</SPAN> <A href="agg_math.h.html#besj">besj</A><SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> n<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>n <SPAN class="op">&lt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">return</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">double</SPAN> d <SPAN class="op">=</SPAN> <SPAN class="num">1E</SPAN><SPAN class="op">-</SPAN><SPAN class="num">6</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">double</SPAN> b <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>fabs<SPAN class="op">(</SPAN>x<SPAN class="op">)</SPAN> <SPAN class="op">&lt;=</SPAN> d<SPAN class="op">)</SPAN> 
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>n <SPAN class="op">!=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">return</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">return</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">double</SPAN> b1 <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> <SPAN class="rem">// b1 is the value from the previous iteration</SPAN>
+        <SPAN class="rem">// Set up a starting order for recurrence</SPAN>
+        <SPAN class="kw1">int</SPAN> m1 <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN><SPAN class="op">)</SPAN>fabs<SPAN class="op">(</SPAN>x<SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> <SPAN class="num">6</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>fabs<SPAN class="op">(</SPAN>x<SPAN class="op">)</SPAN> <SPAN class="op">&gt;</SPAN> <SPAN class="num">5</SPAN><SPAN class="op">)</SPAN> 
+        <SPAN class="op">{</SPAN>
+            m1 <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN><SPAN class="op">)</SPAN><SPAN class="op">(</SPAN>fabs<SPAN class="op">(</SPAN><SPAN class="num">1</SPAN><SPAN class="op">.</SPAN><SPAN class="num">4</SPAN> <SPAN class="op">*</SPAN> x <SPAN class="op">+</SPAN> <SPAN class="num">60</SPAN> <SPAN class="op">/</SPAN> x<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">int</SPAN> m2 <SPAN class="op">=</SPAN> <SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN><SPAN class="op">)</SPAN><SPAN class="op">(</SPAN>n <SPAN class="op">+</SPAN> <SPAN class="num">2</SPAN> <SPAN class="op">+</SPAN> fabs<SPAN class="op">(</SPAN>x<SPAN class="op">)</SPAN> <SPAN class="op">/</SPAN> <SPAN class="num">4</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">if</SPAN> <SPAN class="op">(</SPAN>m1 <SPAN class="op">&gt;</SPAN> m2<SPAN class="op">)</SPAN> 
+        <SPAN class="op">{</SPAN>
+            m2 <SPAN class="op">=</SPAN> m1<SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    
+        <SPAN class="rem">// Apply recurrence down from curent max order</SPAN>
+        <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN><SPAN class="op">;</SPAN><SPAN class="op">;</SPAN><SPAN class="op">)</SPAN> 
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">double</SPAN> c3 <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">double</SPAN> c2 <SPAN class="op">=</SPAN> <SPAN class="num">1E</SPAN><SPAN class="op">-</SPAN><SPAN class="num">30</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">double</SPAN> c4 <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">int</SPAN> m8 <SPAN class="op">=</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">if</SPAN> <SPAN class="op">(</SPAN>m2 <SPAN class="op">/</SPAN> <SPAN class="num">2</SPAN> <SPAN class="op">*</SPAN> <SPAN class="num">2</SPAN> <SPAN class="op">==</SPAN> m2<SPAN class="op">)</SPAN> 
+            <SPAN class="op">{</SPAN>
+                m8 <SPAN class="op">=</SPAN> <SPAN class="op">-</SPAN><SPAN class="num">1</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="kw1">int</SPAN> imax <SPAN class="op">=</SPAN> m2 <SPAN class="op">-</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">for</SPAN> <SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> i <SPAN class="op">=</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;=</SPAN> imax<SPAN class="op">;</SPAN> i<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN> 
+            <SPAN class="op">{</SPAN>
+                <SPAN class="kw1">double</SPAN> c6 <SPAN class="op">=</SPAN> <SPAN class="num">2</SPAN> <SPAN class="op">*</SPAN> <SPAN class="op">(</SPAN>m2 <SPAN class="op">-</SPAN> i<SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> c2 <SPAN class="op">/</SPAN> x <SPAN class="op">-</SPAN> c3<SPAN class="op">;</SPAN>
+                c3 <SPAN class="op">=</SPAN> c2<SPAN class="op">;</SPAN>
+                c2 <SPAN class="op">=</SPAN> c6<SPAN class="op">;</SPAN>
+                <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m2 <SPAN class="op">-</SPAN> i <SPAN class="op">-</SPAN> <SPAN class="num">1</SPAN> <SPAN class="op">==</SPAN> n<SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    b <SPAN class="op">=</SPAN> c6<SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+                m8 <SPAN class="op">=</SPAN> <SPAN class="op">-</SPAN><SPAN class="num">1</SPAN> <SPAN class="op">*</SPAN> m8<SPAN class="op">;</SPAN>
+                <SPAN class="kw1">if</SPAN> <SPAN class="op">(</SPAN>m8 <SPAN class="op">&gt;</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+                <SPAN class="op">{</SPAN>
+                    c4 <SPAN class="op">=</SPAN> c4 <SPAN class="op">+</SPAN> <SPAN class="num">2</SPAN> <SPAN class="op">*</SPAN> c6<SPAN class="op">;</SPAN>
+                <SPAN class="op">}</SPAN>
+            <SPAN class="op">}</SPAN>
+            <SPAN class="kw1">double</SPAN> c6 <SPAN class="op">=</SPAN> <SPAN class="num">2</SPAN> <SPAN class="op">*</SPAN> c2 <SPAN class="op">/</SPAN> x <SPAN class="op">-</SPAN> c3<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>n <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                b <SPAN class="op">=</SPAN> c6<SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            c4 <SPAN class="op">+=</SPAN> c6<SPAN class="op">;</SPAN>
+            b <SPAN class="op">/=</SPAN> c4<SPAN class="op">;</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>fabs<SPAN class="op">(</SPAN>b <SPAN class="op">-</SPAN> b1<SPAN class="op">)</SPAN> <SPAN class="op">&lt;</SPAN> d<SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                <SPAN class="kw1">return</SPAN> b<SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            b1 <SPAN class="op">=</SPAN> b<SPAN class="op">;</SPAN>
+            m2 <SPAN class="op">+=</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN>
+
+<SPAN class="op">}</SPAN>
+
+
+<SPAN class="kw2">#endif</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT><TABLE width="640px" bgcolor="#583927" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0">
+<TR><TD><CENTER><SPAN class="authors">
+Copyright <SPAN class="larger">&#169;</SPAN> 2002-2006
+<A href="../../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+<TR><TD><CENTER><SPAN class="authors">
+Web Design and Programming
+<A href="../../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+</TABLE>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+</HTML>

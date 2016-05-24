@@ -1,0 +1,164 @@
+<HTML><HEAD><TITLE>Anti-Grain Geometry - </TITLE>
+<META http-equiv="Content-Type" content="text/html"/>
+<LINK rel="stylesheet" type="text/css" href="../../agg.styles.css"/>
+</HEAD>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE><SPAN class="rem">//----------------------------------------------------------------------------</SPAN>
+<SPAN class="rem">// Anti-Grain Geometry - Version 2.3</SPAN>
+<SPAN class="rem">// Copyright (C) 2002-2005 Maxim Shemanarev (http://www.antigrain.com)</SPAN>
+<SPAN class="rem">//</SPAN>
+<SPAN class="rem">// Permission to copy, use, modify, sell and distribute this software </SPAN>
+<SPAN class="rem">// is granted provided this copyright notice appears in all copies. </SPAN>
+<SPAN class="rem">// This software is provided &quot;as is&quot; without express or implied</SPAN>
+<SPAN class="rem">// warranty, and with no claim as to its suitability for any purpose.</SPAN>
+<SPAN class="rem">//</SPAN>
+<SPAN class="rem">//----------------------------------------------------------------------------</SPAN>
+<SPAN class="rem">// Contact: mcseem@antigrain.com</SPAN>
+<SPAN class="rem">//          mcseemagg@yahoo.com</SPAN>
+<SPAN class="rem">//          http://www.antigrain.com</SPAN>
+<SPAN class="rem">//----------------------------------------------------------------------------</SPAN>
+<SPAN class="rem">//</SPAN>
+<SPAN class="rem">// SVG path tokenizer.</SPAN>
+<SPAN class="rem">//</SPAN>
+<SPAN class="rem">//----------------------------------------------------------------------------</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="op">&lt;</SPAN>string<SPAN class="op">.</SPAN>h<SPAN class="op">&gt;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="op">&lt;</SPAN>stdlib<SPAN class="op">.</SPAN>h<SPAN class="op">&gt;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="op">&lt;</SPAN>stdio<SPAN class="op">.</SPAN>h<SPAN class="op">&gt;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;agg_svg_exception.h&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;agg_svg_path_tokenizer.h&quot;</SPAN>
+
+
+<SPAN class="kw1">namespace</SPAN> agg 
+<SPAN class="op">{</SPAN> 
+<SPAN class="kw1">namespace</SPAN> svg
+<SPAN class="op">{</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">const</SPAN> <SPAN class="kw1">char</SPAN> path_tokenizer::s_commands<SPAN class="op">[</SPAN><SPAN class="op">]</SPAN>   <SPAN class="op">=</SPAN> <SPAN class="str">&quot;+-MmZzLlHhVvCcSsQqTtAaFfPp&quot;</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="kw1">const</SPAN> <SPAN class="kw1">char</SPAN> path_tokenizer::s_numeric<SPAN class="op">[</SPAN><SPAN class="op">]</SPAN>    <SPAN class="op">=</SPAN> <SPAN class="str">&quot;.Ee0123456789&quot;</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="kw1">const</SPAN> <SPAN class="kw1">char</SPAN> path_tokenizer::s_separators<SPAN class="op">[</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> <SPAN class="str">&quot; ,\t\n\r&quot;</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    path_tokenizer::path_tokenizer<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+        : m_path<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> m_last_command<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> m_last_number<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        init_char_mask<SPAN class="op">(</SPAN>m_commands_mask<SPAN class="op">,</SPAN>   s_commands<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        init_char_mask<SPAN class="op">(</SPAN>m_numeric_mask<SPAN class="op">,</SPAN>    s_numeric<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        init_char_mask<SPAN class="op">(</SPAN>m_separators_mask<SPAN class="op">,</SPAN> s_separators<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">void</SPAN> path_tokenizer::set_path_str<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN> str<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        m_path <SPAN class="op">=</SPAN> str<SPAN class="op">;</SPAN>
+        m_last_command <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        m_last_number <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">void</SPAN> path_tokenizer::init_char_mask<SPAN class="op">(</SPAN><SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN> mask<SPAN class="op">,</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN> char_set<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        memset<SPAN class="op">(</SPAN>mask<SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">256</SPAN><SPAN class="op">/</SPAN><SPAN class="num">8</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN><SPAN class="op">*</SPAN>char_set<SPAN class="op">)</SPAN> 
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">unsigned</SPAN> c <SPAN class="op">=</SPAN> <SPAN class="kw1">unsigned</SPAN><SPAN class="op">(</SPAN><SPAN class="op">*</SPAN>char_set<SPAN class="op">++</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">&amp;</SPAN> <SPAN class="num">0xFF</SPAN><SPAN class="op">;</SPAN>
+            mask<SPAN class="op">[</SPAN>c <SPAN class="op">&gt;&gt;</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">]</SPAN> <SPAN class="op">|=</SPAN> <SPAN class="num">1</SPAN> <SPAN class="op">&lt;&lt;</SPAN> <SPAN class="op">(</SPAN>c <SPAN class="op">&amp;</SPAN> <SPAN class="num">7</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">bool</SPAN> path_tokenizer::next<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>m_path <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">return</SPAN> <SPAN class="kw1">false</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="rem">// Skip all white spaces and other garbage</SPAN>
+        <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN><SPAN class="op">*</SPAN>m_path <SPAN class="op">&amp;&amp;</SPAN> <SPAN class="op">!</SPAN>is_command<SPAN class="op">(</SPAN><SPAN class="op">*</SPAN>m_path<SPAN class="op">)</SPAN> <SPAN class="op">&amp;&amp;</SPAN> <SPAN class="op">!</SPAN>is_numeric<SPAN class="op">(</SPAN><SPAN class="op">*</SPAN>m_path<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> 
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN><SPAN class="op">!</SPAN>is_separator<SPAN class="op">(</SPAN><SPAN class="op">*</SPAN>m_path<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                <SPAN class="kw1">char</SPAN> buf<SPAN class="op">[</SPAN><SPAN class="num">100</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+                sprintf<SPAN class="op">(</SPAN>buf<SPAN class="op">,</SPAN> <SPAN class="str">&quot;path_tokenizer::next : Invalid Character %c&quot;</SPAN><SPAN class="op">,</SPAN> <SPAN class="op">*</SPAN>m_path<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+                <SPAN class="kw1">throw</SPAN> exception<SPAN class="op">(</SPAN>buf<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            m_path<SPAN class="op">++</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN><SPAN class="op">*</SPAN>m_path <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">return</SPAN> <SPAN class="kw1">false</SPAN><SPAN class="op">;</SPAN>
+
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>is_command<SPAN class="op">(</SPAN><SPAN class="op">*</SPAN>m_path<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="rem">// Check if the command is a numeric sign character</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN><SPAN class="op">*</SPAN>m_path <SPAN class="op">==</SPAN> <SPAN class="str">&#039;-&#039;</SPAN> <SPAN class="op">||</SPAN> <SPAN class="op">*</SPAN>m_path <SPAN class="op">==</SPAN> <SPAN class="str">&#039;+&#039;</SPAN><SPAN class="op">)</SPAN>
+            <SPAN class="op">{</SPAN>
+                <SPAN class="kw1">return</SPAN> parse_number<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="op">}</SPAN>
+            m_last_command <SPAN class="op">=</SPAN> <SPAN class="op">*</SPAN>m_path<SPAN class="op">++</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN><SPAN class="op">*</SPAN>m_path <SPAN class="op">&amp;&amp;</SPAN> is_separator<SPAN class="op">(</SPAN><SPAN class="op">*</SPAN>m_path<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> m_path<SPAN class="op">++</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN><SPAN class="op">*</SPAN>m_path <SPAN class="op">==</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">return</SPAN> <SPAN class="kw1">true</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">return</SPAN> parse_number<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">double</SPAN> path_tokenizer::next<SPAN class="op">(</SPAN><SPAN class="kw1">char</SPAN> cmd<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN><SPAN class="op">!</SPAN>next<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">throw</SPAN> exception<SPAN class="op">(</SPAN><SPAN class="str">&quot;parse_path: Unexpected end of path&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>last_command<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">!=</SPAN> cmd<SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="kw1">char</SPAN> buf<SPAN class="op">[</SPAN><SPAN class="num">100</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+            sprintf<SPAN class="op">(</SPAN>buf<SPAN class="op">,</SPAN> <SPAN class="str">&quot;parse_path: Command %c: bad or missing parameters&quot;</SPAN><SPAN class="op">,</SPAN> cmd<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+            <SPAN class="kw1">throw</SPAN> exception<SPAN class="op">(</SPAN>buf<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="kw1">return</SPAN> last_number<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="rem">//------------------------------------------------------------------------</SPAN>
+    <SPAN class="kw1">bool</SPAN> path_tokenizer::parse_number<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">char</SPAN> buf<SPAN class="op">[</SPAN><SPAN class="num">256</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN> <SPAN class="rem">// Should be enough for any number</SPAN>
+        <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN> buf_ptr <SPAN class="op">=</SPAN> buf<SPAN class="op">;</SPAN>
+
+        <SPAN class="rem">// Copy all sign characters</SPAN>
+        <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN>buf_ptr <SPAN class="op">&lt;</SPAN> buf<SPAN class="op">+</SPAN><SPAN class="num">255</SPAN> <SPAN class="op">&amp;&amp;</SPAN> <SPAN class="op">*</SPAN>m_path <SPAN class="op">==</SPAN> <SPAN class="str">&#039;-&#039;</SPAN> <SPAN class="op">||</SPAN> <SPAN class="op">*</SPAN>m_path <SPAN class="op">==</SPAN> <SPAN class="str">&#039;+&#039;</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="op">*</SPAN>buf_ptr<SPAN class="op">++</SPAN> <SPAN class="op">=</SPAN> <SPAN class="op">*</SPAN>m_path<SPAN class="op">++</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+
+        <SPAN class="rem">// Copy all numeric characters</SPAN>
+        <SPAN class="kw1">while</SPAN><SPAN class="op">(</SPAN>buf_ptr <SPAN class="op">&lt;</SPAN> buf<SPAN class="op">+</SPAN><SPAN class="num">255</SPAN> <SPAN class="op">&amp;&amp;</SPAN> is_numeric<SPAN class="op">(</SPAN><SPAN class="op">*</SPAN>m_path<SPAN class="op">)</SPAN><SPAN class="op">)</SPAN>
+        <SPAN class="op">{</SPAN>
+            <SPAN class="op">*</SPAN>buf_ptr<SPAN class="op">++</SPAN> <SPAN class="op">=</SPAN> <SPAN class="op">*</SPAN>m_path<SPAN class="op">++</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">}</SPAN>
+        <SPAN class="op">*</SPAN>buf_ptr <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        m_last_number <SPAN class="op">=</SPAN> atof<SPAN class="op">(</SPAN>buf<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">return</SPAN> <SPAN class="kw1">true</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+<SPAN class="op">}</SPAN> <SPAN class="rem">//namespace svg</SPAN>
+<SPAN class="op">}</SPAN> <SPAN class="rem">//namespace agg</SPAN>
+
+
+
+
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT><TABLE width="640px" bgcolor="#583927" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0">
+<TR><TD><CENTER><SPAN class="authors">
+Copyright <SPAN class="larger">&#169;</SPAN> 2002-2006
+<A href="../../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+<TR><TD><CENTER><SPAN class="authors">
+Web Design and Programming
+<A href="../../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+</TABLE>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+</HTML>

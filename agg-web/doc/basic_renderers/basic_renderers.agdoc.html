@@ -1,0 +1,1465 @@
+<HTML><HEAD><TITLE>Anti-Grain Geometry - Basic Renderers</TITLE>
+<META http-equiv="Content-Type" content="text/html"/>
+<LINK rel="stylesheet" type="text/css" href="../../agg.styles.css"/>
+</HEAD>
+<A name="PAGE_BASIC_RENDERERS"><B></B></A>
+
+
+<TABLE width="640px" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR>
+<TD bgcolor="#583927"></TD>
+</TR>
+</TABLE>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR>
+<TD>
+<TABLE width="170px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR><TD><A href="../../index.html" class="mpmenu">Home/</A></TD></TR>
+<TR><TD><A href="../../doc/index.html" class="mpmenu">Table of Content/</A></TD></TR>
+<TR><TD><A href="" class="mpmenu"></A></TD></TR>
+<TR><TD><A href="" class="mpmenu"></A></TD></TR>
+<TR><TD><A href="" class="mpmenu"></A></TD></TR>
+<TR><TD><A href="" class="mpmenu"></A></TD></TR>
+</TABLE>
+</TD>
+<TD width="1px" bgcolor="#583927"></TD>
+<TD width="450px" valign="top" style="text-align:right">
+<TABLE border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR>
+<TD><IMG src="../../agg_logo.gif" border="0"/></TD>
+</TR>
+<TR>
+<TD>
+<TABLE border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR height="15px">
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../../news/index.html">News</A>&nbsp;&nbsp;</TD>
+<TD width="1px" bgcolor="#8e521d"></TD>
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../../doc/index.html">Docs</A>&nbsp;&nbsp;</TD>
+<TD width="1px" bgcolor="#8e521d"></TD>
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../../download/index.html">Download</A>&nbsp;&nbsp;</TD>
+<TD width="1px" bgcolor="#8e521d"></TD>
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../../maillist/index.html">Mailing List</A>&nbsp;&nbsp;</TD>
+<TD width="1px" bgcolor="#8e521d"></TD>
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../../cvs/index.html">CVS</A>&nbsp;&nbsp;</TD>
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+<TABLE width="640px" height="1px" bgcolor="#583927" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>
+</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD><H1>Basic Renderers<SPAN class="subtitle"><BR/>Getting Started with Simple Console Applications</SPAN></H1></TD></TR></TABLE>
+
+
+<TABLE class="toc" width="640px"><TR><TD>
+    <DIV style="margin-left:2em; padding:3px; font-size:14px;"><A href="#toc0001"><B>Rendering Buffer</B></A>
+        <DIV style="margin-left:2em; font-size:12px;"><A href="#toc0002">The First and the Simplest Example</A></DIV>
+        <DIV style="margin-left:2em; font-size:12px;"><A href="#toc0003">Class rendering_buffer</A></DIV>
+        <DIV style="margin-left:2em; font-size:12px;"><A href="#toc0004">Two Modifications of the Example</A></DIV></DIV>
+    <DIV style="margin-left:2em; padding:3px; font-size:14px;"><A href="#toc0005"><B>Pixel Format Renderers</B></A>
+        <DIV style="margin-left:2em; font-size:12px;"><A href="#toc0006">Creation</A></DIV>
+        <DIV style="margin-left:2em; font-size:12px;"><A href="#toc0007">Member Functions</A></DIV>
+        <DIV style="margin-left:2em; font-size:12px;"><A href="#toc0008">Alpha-Mask Adaptor</A></DIV></DIV>
+    <DIV style="margin-left:2em; padding:3px; font-size:14px;"><A href="#toc0009"><B>Basic Renderers</B></A>
+        <DIV style="margin-left:2em; font-size:12px;"><A href="#toc0010">Creation</A></DIV>
+        <DIV style="margin-left:2em; font-size:12px;"><A href="#toc0011">Member Functions</A></DIV>
+        <DIV style="margin-left:2em; font-size:12px;"><A href="#toc0012">A common example</A></DIV></DIV>
+    <DIV style="margin-left:2em; padding:3px; font-size:14px;"><A href="#toc0013"><B>Primitives and Markers Renderers</B></A>
+        <DIV style="margin-left:2em; font-size:12px;"><A href="#toc0014">Primitives Renderer</A>
+            <DIV style="margin-left:2em; font-size:12px;"><A href="#toc0015">Declaration</A></DIV>
+            <DIV style="margin-left:2em; font-size:12px;"><A href="#toc0016">Creation</A></DIV>
+            <DIV style="margin-left:2em; font-size:12px;"><A href="#toc0017">Member functions</A></DIV></DIV>
+        <DIV style="margin-left:2em; font-size:12px;"><A href="#toc0018">Marker Renderer</A>
+            <DIV style="margin-left:2em; font-size:12px;"><A href="#toc0019">Declaration</A></DIV>
+            <DIV style="margin-left:2em; font-size:12px;"><A href="#toc0020">Creation</A></DIV>
+            <DIV style="margin-left:2em; font-size:12px;"><A href="#toc0021">Member Functions</A></DIV></DIV></DIV>
+
+</TD></TR></TABLE>
+
+<H2>Rendering Buffer<A name="toc0001"></A></H2>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Here we start with creating a frame buffer in memory and writing it to a file of
+the simplest possible raster format. It&#039;s <A href="http://netpbm.sourceforge.net/doc/ppm.html"><IMG src="../../link.gif" border="0"/>PPM (Portable Pixel Map)</A>. Although, it isn&#039;t natively supported by <A href="http://www.microsoft.com"><IMG src="../../link.gif" border="0"/><B>Microsoft</B></A> Windows, 
+there are many viewers and converters that can work with it, 
+for example, <A href="http://www.irfanview.com"><IMG src="../../link.gif" border="0"/>IrfanView (www.irfanview.com)</A>.
+All <B>AGG</B> console examples use the P6 256 format, that is RGB, one byte per channel.
+We assume that we work with an RGB-buffer in memory organized as follows:</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD><CENTER><IMG src="pixfmt_rgb24.gif" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+
+<H3>The First and the Simplest Example<A name="toc0002"></A></H3>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>There is the first example, it&#039;s in <CODE>agg2/tutorial/t01_rendering_buffer.cpp</CODE></P></TD></TR></TABLE>
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+<SPAN class="kw2">#include</SPAN> <SPAN class="op">&lt;</SPAN>stdio<SPAN class="op">.</SPAN>h<SPAN class="op">&gt;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="op">&lt;</SPAN>string<SPAN class="op">.</SPAN>h<SPAN class="op">&gt;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../../__code/include/agg_rendering_buffer.h.html">agg_rendering_buffer.h</A>&quot;</SPAN>
+
+<SPAN class="kw1">enum</SPAN>
+<SPAN class="op">{</SPAN>
+    frame_width <SPAN class="op">=</SPAN> <SPAN class="num">320</SPAN><SPAN class="op">,</SPAN>
+    frame_height <SPAN class="op">=</SPAN> <SPAN class="num">200</SPAN>
+<SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+<SPAN class="rem">// Writing the buffer to a .PPM file, assuming it has </SPAN>
+<SPAN class="rem">// RGB-structure, one byte per color component</SPAN>
+<SPAN class="rem">//--------------------------------------------------</SPAN>
+<SPAN class="kw1">bool</SPAN> write_ppm<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <SPAN class="kw1">unsigned</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN> buf<SPAN class="op">,</SPAN> 
+               <SPAN class="kw1">unsigned</SPAN> width<SPAN class="op">,</SPAN> 
+               <SPAN class="kw1">unsigned</SPAN> height<SPAN class="op">,</SPAN> 
+               <SPAN class="kw1">const</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN> file_name<SPAN class="op">)</SPAN>
+<SPAN class="op">{</SPAN>
+    FILE<SPAN class="op">*</SPAN> fd <SPAN class="op">=</SPAN> fopen<SPAN class="op">(</SPAN>file_name<SPAN class="op">,</SPAN> <SPAN class="str">&quot;wb&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="kw1">if</SPAN><SPAN class="op">(</SPAN>fd<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        fprintf<SPAN class="op">(</SPAN>fd<SPAN class="op">,</SPAN> <SPAN class="str">&quot;P6 %d %d 255 &quot;</SPAN><SPAN class="op">,</SPAN> width<SPAN class="op">,</SPAN> height<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        fwrite<SPAN class="op">(</SPAN>buf<SPAN class="op">,</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">,</SPAN> width <SPAN class="op">*</SPAN> height <SPAN class="op">*</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">,</SPAN> fd<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        fclose<SPAN class="op">(</SPAN>fd<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="kw1">return</SPAN> <SPAN class="kw1">true</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+    <SPAN class="kw1">return</SPAN> <SPAN class="kw1">false</SPAN><SPAN class="op">;</SPAN>
+<SPAN class="op">}</SPAN>
+
+<SPAN class="rem">// Draw a black frame around the rendering buffer, assuming it has </SPAN>
+<SPAN class="rem">// RGB-structure, one byte per color component</SPAN>
+<SPAN class="rem">//--------------------------------------------------</SPAN>
+<SPAN class="kw1">void</SPAN> draw_black_frame<SPAN class="op">(</SPAN>agg::<A href="basic_renderers.agdoc.html#rendering_buffer">rendering_buffer</A><SPAN class="op">&amp;</SPAN> rbuf<SPAN class="op">)</SPAN>
+<SPAN class="op">{</SPAN>
+    <SPAN class="kw1">unsigned</SPAN> i<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;</SPAN> rbuf<SPAN class="op">.</SPAN>height<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">++</SPAN>i<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN> p <SPAN class="op">=</SPAN> rbuf<SPAN class="op">.</SPAN>row_ptr<SPAN class="op">(</SPAN>i<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">*</SPAN>p<SPAN class="op">++</SPAN> <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">*</SPAN>p<SPAN class="op">++</SPAN> <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">*</SPAN>p<SPAN class="op">++</SPAN> <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+        p <SPAN class="op">+=</SPAN> <SPAN class="op">(</SPAN>rbuf<SPAN class="op">.</SPAN>width<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">-</SPAN> <SPAN class="num">2</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">;</SPAN>
+        <SPAN class="op">*</SPAN>p<SPAN class="op">++</SPAN> <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">*</SPAN>p<SPAN class="op">++</SPAN> <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">*</SPAN>p<SPAN class="op">++</SPAN> <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+    memset<SPAN class="op">(</SPAN>rbuf<SPAN class="op">.</SPAN>row_ptr<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> rbuf<SPAN class="op">.</SPAN>width<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    memset<SPAN class="op">(</SPAN>rbuf<SPAN class="op">.</SPAN>row_ptr<SPAN class="op">(</SPAN>rbuf<SPAN class="op">.</SPAN>height<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">-</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> rbuf<SPAN class="op">.</SPAN>width<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">*</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+<SPAN class="op">}</SPAN>
+
+
+<SPAN class="kw1">int</SPAN> <SPAN class="kw1">main</SPAN><SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+<SPAN class="op">{</SPAN>
+    <SPAN class="rem">// In the first example we do the following:</SPAN>
+    <SPAN class="rem">//--------------------</SPAN>
+    <SPAN class="rem">// Allocate the buffer.</SPAN>
+    <SPAN class="rem">// Clear the buffer, for now &quot;manually&quot;</SPAN>
+    <SPAN class="rem">// Create the rendering buffer object</SPAN>
+    <SPAN class="rem">// Do something simple, draw a diagonal line</SPAN>
+    <SPAN class="rem">// Write the buffer to agg_test.ppm</SPAN>
+    <SPAN class="rem">// Free memory</SPAN>
+
+    <SPAN class="kw1">unsigned</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN> buffer <SPAN class="op">=</SPAN> <SPAN class="kw1">new</SPAN> <SPAN class="kw1">unsigned</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">[</SPAN>frame_width <SPAN class="op">*</SPAN> frame_height <SPAN class="op">*</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+
+    memset<SPAN class="op">(</SPAN>buffer<SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN><SPAN class="op">,</SPAN> frame_width <SPAN class="op">*</SPAN> frame_height <SPAN class="op">*</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    agg::<A href="basic_renderers.agdoc.html#rendering_buffer">rendering_buffer</A> rbuf<SPAN class="op">(</SPAN>buffer<SPAN class="op">,</SPAN> 
+                               frame_width<SPAN class="op">,</SPAN> 
+                               frame_height<SPAN class="op">,</SPAN> 
+                               frame_width <SPAN class="op">*</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">unsigned</SPAN> i<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;</SPAN> rbuf<SPAN class="op">.</SPAN>height<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">/</SPAN><SPAN class="num">2</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">++</SPAN>i<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="rem">// Get the pointer to the beginning of the i-th row (Y-coordinate)</SPAN>
+        <SPAN class="rem">// and shift it to the i-th position, that is, X-coordinate.</SPAN>
+        <SPAN class="rem">//---------------</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN> ptr <SPAN class="op">=</SPAN> rbuf<SPAN class="op">.</SPAN>row_ptr<SPAN class="op">(</SPAN>i<SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> i <SPAN class="op">*</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">;</SPAN>
+        
+        <SPAN class="rem">// PutPixel, very sophisticated, huh? :)</SPAN>
+        <SPAN class="rem">//-------------</SPAN>
+        <SPAN class="op">*</SPAN>ptr<SPAN class="op">++</SPAN> <SPAN class="op">=</SPAN> <SPAN class="num">127</SPAN><SPAN class="op">;</SPAN> <SPAN class="rem">// R</SPAN>
+        <SPAN class="op">*</SPAN>ptr<SPAN class="op">++</SPAN> <SPAN class="op">=</SPAN> <SPAN class="num">200</SPAN><SPAN class="op">;</SPAN> <SPAN class="rem">// G</SPAN>
+        <SPAN class="op">*</SPAN>ptr<SPAN class="op">++</SPAN> <SPAN class="op">=</SPAN> <SPAN class="num">98</SPAN><SPAN class="op">;</SPAN>  <SPAN class="rem">// B</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    draw_black_frame<SPAN class="op">(</SPAN>rbuf<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    write_ppm<SPAN class="op">(</SPAN>buffer<SPAN class="op">,</SPAN> frame_width<SPAN class="op">,</SPAN> frame_height<SPAN class="op">,</SPAN> <SPAN class="str">&quot;agg_test.ppm&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">delete</SPAN> <SPAN class="op">[</SPAN><SPAN class="op">]</SPAN> buffer<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">return</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+<SPAN class="op">}</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>In this example you don&#039;t even have to link it with any <B>AGG</B> files, you need only to 
+indicate the <B>AGG</B> <CODE>include</CODE> directory in the command line of your compiler.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>When you compile and run it you should see the following result.
+</P></TD></TR></TABLE><TABLE width="640px"><TR><TD><CENTER><IMG src="rendering_buffer1.gif" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Almost everything here is coded &#147;manually&#148;. The only class we use is 
+<A href="basic_renderers.agdoc.html#rendering_buffer">rendering_buffer</A>. This class doesn&#039;t know anything about 
+the pixel format in memory, it just keeps an array of pointers 
+to each row. It is your responsibility to allocate and deallocate
+actual memory for the buffer. You can use any available mechanism 
+for that, a system API function, simple memory allocation, or even 
+an array defined statically. In the above example we allocate 
+<NOBR><CODE>width * height * 3</CODE></NOBR> bytes of memory, since we use 3 bytes per pixel.
+The rows are not aligned in memory, but they can be for better performance or
+if it is required by used API.</P></TD></TR></TABLE>
+
+<H3>Class rendering_buffer<A name="toc0003"></A></H3>
+
+<A name="rendering_buffer"><B></B></A>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Include file: <A href="../../__code/include/agg_rendering_buffer.h.html">agg_rendering_buffer.h</A></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The rendering buffer class keeps pointers to each rows, and basically it&#039;s 
+all it does. It doesn&#039;t look like a great achievement, but try to keep reading.
+The interface and functionality of it is very simple. 
+It&#039;s a <CODE>typedef</CODE> of class template <A href="basic_renderers.agdoc.html#row_ptr_cache">row_ptr_cache</A>:</P></TD></TR></TABLE>
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+<SPAN class="kw1">typedef</SPAN> <A href="basic_renderers.agdoc.html#row_ptr_cache">row_ptr_cache</A><SPAN class="op">&lt;</SPAN><A href="../../__code/include/agg_basics.h.html#int8u">int8u</A><SPAN class="op">&gt;</SPAN> <A href="basic_renderers.agdoc.html#rendering_buffer">rendering_buffer</A><SPAN class="op">;</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+
+<A name="row_ptr_cache"><B></B></A>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The interface and the functionality of class <A href="basic_renderers.agdoc.html#row_ptr_cache">row_ptr_cache</A> is:</P></TD></TR></TABLE>
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+<SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> T<SPAN class="op">&gt;</SPAN> <SPAN class="kw1">class</SPAN> <A href="basic_renderers.agdoc.html#row_ptr_cache">row_ptr_cache</A>
+<SPAN class="op">{</SPAN>
+<SPAN class="kw1">public</SPAN>:
+    <A href="basic_renderers.agdoc.html#row_ptr_cache">row_ptr_cache</A><SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    <A href="basic_renderers.agdoc.html#row_ptr_cache">row_ptr_cache</A><SPAN class="op">(</SPAN>T<SPAN class="op">*</SPAN> buf<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> width<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> height<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> stride<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">void</SPAN> attach<SPAN class="op">(</SPAN>T<SPAN class="op">*</SPAN> buf<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> width<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> height<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> stride<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+          T<SPAN class="op">*</SPAN> buf<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="kw1">const</SPAN> T<SPAN class="op">*</SPAN> buf<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>    <SPAN class="kw1">const</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="kw1">unsigned</SPAN> width<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>  <SPAN class="kw1">const</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="kw1">unsigned</SPAN> height<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="kw1">int</SPAN>      stride<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="kw1">unsigned</SPAN> stride_abs<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN><SPAN class="op">;</SPAN>
+
+          T<SPAN class="op">*</SPAN> row_ptr<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN><SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN><SPAN class="op">)</SPAN> 
+          T<SPAN class="op">*</SPAN> row_ptr<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="kw1">const</SPAN> T<SPAN class="op">*</SPAN> row_ptr<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> y<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN><SPAN class="op">;</SPAN>
+    row_data row    <SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> y<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN><SPAN class="op">;</SPAN> 
+    T <SPAN class="kw1">const</SPAN><SPAN class="op">*</SPAN> <SPAN class="kw1">const</SPAN><SPAN class="op">*</SPAN> rows<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> RenBuf<SPAN class="op">&gt;</SPAN> <SPAN class="kw1">void</SPAN> copy_from<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> RenBuf<SPAN class="op">&amp;</SPAN> src<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">void</SPAN> clear<SPAN class="op">(</SPAN>T value<SPAN class="op">)</SPAN>
+<SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The source code: <A href="../../__code/include/agg_rendering_buffer.h.html#row_ptr_cache">row_ptr_cache</A>
+</P></TD></TR></TABLE><TABLE width="640px" bgcolor="#583927" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The class doesn&#039;t have any assertion or verification code, so that, your 
+responsibility is to properly attach an actual memory buffer to the object 
+before using it. It can be done in the constructor as well as with the 
+<CODE>attach()</CODE> function. The arguments of them are:</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><UL type="disc">
+<LI><B>buf</B> &#151; A pointer to the memory buffer.</LI>
+<LI><B>width</B> &#151; Width of the image in <B>pixels</B>. The rendering buffer
+   doesn&#039;t know anything about pixel format and about the size
+   of one pixel in memory. This value is simply stored in its data 
+   member <CODE>m_width</CODE> and returned by <CODE>width()</CODE> function.</LI>
+<LI><B>height</B> &#151; The height of the buffer in <B>pixels</B> (the number of rows).</LI>
+<LI><B>stride</B> &#151; The &#147;stride&#148; (big step) of the rows measured in objects of type <CODE>T</CODE>.
+   Class <A href="basic_renderers.agdoc.html#rendering_buffer">rendering_buffer</A> is &#147;<CODE>typedefed</CODE>&#148; as <CODE><A href="basic_renderers.agdoc.html#row_ptr_cache">row_ptr_cache</A>&lt;<A href="../../__code/include/agg_basics.h.html#int8u">int8u</A>&gt;</CODE>, so,
+   this value is in bytes. <B>Stride</B> determines the physical width of
+   one row in memory. If this value is negative the direction of 
+   the <B>Y</B> axis is inverted, that is, <CODE>Y==0</CODE> will point to the last
+   row of the buffer, <CODE>Y==height-1</CODE> &#151; to the first one. The absolute value 
+   of <B>stride</B> is important too, because it allows you to work with buffers 
+   whose rows are aligned in memory (like in Windows BMP, for example). 
+   Besides, this  parameter allows you to work with any rectangular area 
+   inside the buffer as with the whole buffer.</LI></UL></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Function <CODE>attach()</CODE> changes the buffer or its parameters. It takes care of
+reallocating the memory for the row-pointers buffer, so that, you can call it
+anytime. It will reallocate the memory if (and only if) new <CODE>height</CODE> is
+is larger than any previously attached.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The cost of creation is just initializing of the variables (set to 0), 
+the cost of <CODE>attach()</CODE> is allocating of <CODE>sizeof(ptr) * height</CODE> bytes
+of memory and initializing of the pointers to the rows.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The most frequently used function is <CODE>row_ptr(y)</CODE> that simply returns a pointer
+to the beginning of the <NOBR><CODE>y</CODE><SUP>th</SUP></NOBR> row, considering the direction of 
+the <NOBR><B>Y</B>-axis</NOBR>.</P></TD></TR></TABLE> 
+
+<TABLE class="warning" width="640px"><TR><TD><B>IMPORTANT!</B><BR/>
+The rendering buffer does not perform any clipping or bound checking, 
+it&#039;s the responsibility of higher level classes.
+</TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The accessors, 
+<CODE>buf()</CODE>, <CODE>width()</CODE>, <CODE>height()</CODE>, <CODE>stride()</CODE>, <CODE>stride_abs()</CODE> 
+should be obvious.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Function <CODE>copy_from()</CODE> copies the content of another buffer to &#147;this&#148;
+one. The function is safe, if the <B>width</B> or <B>height</B> is different
+it will copy the maximal possible area. Basically, it&#039;s used to copy 
+rendering buffers of equal size.</P></TD></TR></TABLE>
+
+<H3>Two Modifications of the Example<A name="toc0004"></A></H3>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>First, negate the <B>stride</B> when creating the rendering buffer object:</P></TD></TR></TABLE>
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+    agg::<A href="basic_renderers.agdoc.html#rendering_buffer">rendering_buffer</A> rbuf<SPAN class="op">(</SPAN>buffer<SPAN class="op">,</SPAN> 
+                               frame_width<SPAN class="op">,</SPAN> 
+                               frame_height<SPAN class="op">,</SPAN> 
+                               <SPAN class="op">-</SPAN>frame_width <SPAN class="op">*</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The result is:</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD><CENTER><IMG src="rendering_buffer2.gif" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+<TABLE width="640px" bgcolor="#583927" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Second, let&#039;s try to attach to some part of the allocated buffer. This modification
+actually attaches to the same buffer twice, first, to the whole frame, then to 
+its part, with 20 pixel margin.</P></TD></TR></TABLE>
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+<SPAN class="kw1">int</SPAN> <SPAN class="kw1">main</SPAN><SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+<SPAN class="op">{</SPAN>
+    <SPAN class="kw1">unsigned</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN> buffer <SPAN class="op">=</SPAN> <SPAN class="kw1">new</SPAN> <SPAN class="kw1">unsigned</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">[</SPAN>frame_width <SPAN class="op">*</SPAN> frame_height <SPAN class="op">*</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+
+    memset<SPAN class="op">(</SPAN>buffer<SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN><SPAN class="op">,</SPAN> frame_width <SPAN class="op">*</SPAN> frame_height <SPAN class="op">*</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    agg::<A href="basic_renderers.agdoc.html#rendering_buffer">rendering_buffer</A> rbuf<SPAN class="op">(</SPAN>buffer<SPAN class="op">,</SPAN> 
+                               frame_width<SPAN class="op">,</SPAN> 
+                               frame_height<SPAN class="op">,</SPAN> 
+                               frame_width <SPAN class="op">*</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="rem">// Draw the outer black frame</SPAN>
+    <SPAN class="rem">//------------------------</SPAN>
+    draw_black_frame<SPAN class="op">(</SPAN>rbuf<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="rem">// Attach to the part of the buffer, </SPAN>
+    <SPAN class="rem">// with 20 pixel margins at each side.</SPAN>
+    rbuf<SPAN class="op">.</SPAN>attach<SPAN class="op">(</SPAN>buffer <SPAN class="op">+</SPAN> 
+                  frame_width <SPAN class="op">*</SPAN> <SPAN class="num">3</SPAN> <SPAN class="op">*</SPAN> <SPAN class="num">20</SPAN> <SPAN class="op">+</SPAN>      <SPAN class="rem">// initial Y-offset</SPAN>
+                  <SPAN class="num">3</SPAN> <SPAN class="op">*</SPAN> <SPAN class="num">20</SPAN><SPAN class="op">,</SPAN>                     <SPAN class="rem">// initial X-offset</SPAN>
+                frame_width <SPAN class="op">-</SPAN> <SPAN class="num">40</SPAN><SPAN class="op">,</SPAN>
+                frame_height <SPAN class="op">-</SPAN> <SPAN class="num">40</SPAN><SPAN class="op">,</SPAN>
+                frame_width <SPAN class="op">*</SPAN> <SPAN class="num">3</SPAN>               <SPAN class="rem">// Note that the stride</SPAN>
+                                              <SPAN class="rem">// remains the same</SPAN>
+                <SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>               
+
+    <SPAN class="rem">// Draw a diagonal line</SPAN>
+    <SPAN class="rem">//------------------------</SPAN>
+    <SPAN class="kw1">unsigned</SPAN> i<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;</SPAN> rbuf<SPAN class="op">.</SPAN>height<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">/</SPAN><SPAN class="num">2</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">++</SPAN>i<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="rem">// Get the pointer to the beginning of the i-th row (Y-coordinate)</SPAN>
+        <SPAN class="rem">// and shift it to the i-th position, that is, X-coordinate.</SPAN>
+        <SPAN class="rem">//---------------</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN> ptr <SPAN class="op">=</SPAN> rbuf<SPAN class="op">.</SPAN>row_ptr<SPAN class="op">(</SPAN>i<SPAN class="op">)</SPAN> <SPAN class="op">+</SPAN> i <SPAN class="op">*</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">;</SPAN>
+        
+        <SPAN class="rem">// PutPixel, very sophisticated, huh? :)</SPAN>
+        <SPAN class="rem">//-------------</SPAN>
+        <SPAN class="op">*</SPAN>ptr<SPAN class="op">++</SPAN> <SPAN class="op">=</SPAN> <SPAN class="num">127</SPAN><SPAN class="op">;</SPAN> <SPAN class="rem">// R</SPAN>
+        <SPAN class="op">*</SPAN>ptr<SPAN class="op">++</SPAN> <SPAN class="op">=</SPAN> <SPAN class="num">200</SPAN><SPAN class="op">;</SPAN> <SPAN class="rem">// G</SPAN>
+        <SPAN class="op">*</SPAN>ptr<SPAN class="op">++</SPAN> <SPAN class="op">=</SPAN> <SPAN class="num">98</SPAN><SPAN class="op">;</SPAN>  <SPAN class="rem">// B</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="rem">// Draw the inner black frame</SPAN>
+    <SPAN class="rem">//------------------------</SPAN>
+    draw_black_frame<SPAN class="op">(</SPAN>rbuf<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="rem">// Write to a file</SPAN>
+    <SPAN class="rem">//------------------------</SPAN>
+    write_ppm<SPAN class="op">(</SPAN>buffer<SPAN class="op">,</SPAN> frame_width<SPAN class="op">,</SPAN> frame_height<SPAN class="op">,</SPAN> <SPAN class="str">&quot;agg_test.ppm&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">delete</SPAN> <SPAN class="op">[</SPAN><SPAN class="op">]</SPAN> buffer<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">return</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+<SPAN class="op">}</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The result:</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD><CENTER><IMG src="rendering_buffer3.gif" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+<TABLE width="640px" bgcolor="#583927" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>And the last modification is:
+</P></TD></TR></TABLE><TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+    <SPAN class="rem">// Attach to the part of the buffer, </SPAN>
+    <SPAN class="rem">// with 20 pixel margins at each side and negative &#039;stride&#039;</SPAN>
+    rbuf<SPAN class="op">.</SPAN>attach<SPAN class="op">(</SPAN>buffer <SPAN class="op">+</SPAN> 
+                  frame_width <SPAN class="op">*</SPAN> <SPAN class="num">3</SPAN> <SPAN class="op">*</SPAN> <SPAN class="num">20</SPAN> <SPAN class="op">+</SPAN>      <SPAN class="rem">// initial Y-offset</SPAN>
+                  <SPAN class="num">3</SPAN> <SPAN class="op">*</SPAN> <SPAN class="num">20</SPAN><SPAN class="op">,</SPAN>                     <SPAN class="rem">// initial X-offset</SPAN>
+                frame_width <SPAN class="op">-</SPAN> <SPAN class="num">40</SPAN><SPAN class="op">,</SPAN>
+                frame_height <SPAN class="op">-</SPAN> <SPAN class="num">40</SPAN><SPAN class="op">,</SPAN>
+                <SPAN class="op">-</SPAN>frame_width <SPAN class="op">*</SPAN> <SPAN class="num">3</SPAN>              <SPAN class="rem">// Negate the stride</SPAN>
+                <SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>               
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The result:</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD><CENTER><IMG src="rendering_buffer4.gif" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>In the last example we just negated the stride value, 
+keeping the pointer to the beginning of the buffer as it was in 
+the previous example.
+</P></TD></TR></TABLE><TABLE class="note" width="640px"><TR><TD><B>NOTE</B><BR/>
+Function <CODE>write_ppm()</CODE> writes the pixel map to a file. Hereafter it will
+be omited in this text, but duplicated when necessary in source code in 
+the <CODE>agg2/tutorial</CODE> directory.
+</TD></TR></TABLE>
+
+
+<BR/><H2>Pixel Format Renderers<A name="toc0005"></A></H2>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>First, we create another, more civil example, which is in 
+<CODE>agg2/tutorial/t02_pixel_formats</CODE>:
+</P></TD></TR></TABLE><TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+<SPAN class="kw2">#include</SPAN> <SPAN class="op">&lt;</SPAN>stdio<SPAN class="op">.</SPAN>h<SPAN class="op">&gt;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="op">&lt;</SPAN>string<SPAN class="op">.</SPAN>h<SPAN class="op">&gt;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;agg_pixfmt_rgb24.h&quot;</SPAN>
+
+<SPAN class="kw1">enum</SPAN>
+<SPAN class="op">{</SPAN>
+    frame_width <SPAN class="op">=</SPAN> <SPAN class="num">320</SPAN><SPAN class="op">,</SPAN>
+    frame_height <SPAN class="op">=</SPAN> <SPAN class="num">200</SPAN>
+<SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+<SPAN class="rem">// [...write_ppm is skipped...]</SPAN>
+
+<SPAN class="rem">// Draw a black frame around the rendering buffer</SPAN>
+<SPAN class="rem">//--------------------------------------------------</SPAN>
+<SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> Ren<SPAN class="op">&gt;</SPAN>
+<SPAN class="kw1">void</SPAN> draw_black_frame<SPAN class="op">(</SPAN>Ren<SPAN class="op">&amp;</SPAN> ren<SPAN class="op">)</SPAN>
+<SPAN class="op">{</SPAN>
+    <SPAN class="kw1">unsigned</SPAN> i<SPAN class="op">;</SPAN>
+    agg::<A href="../../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A> c<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;</SPAN> ren<SPAN class="op">.</SPAN>height<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">++</SPAN>i<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        ren<SPAN class="op">.</SPAN>copy_pixel<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN>               i<SPAN class="op">,</SPAN> c<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        ren<SPAN class="op">.</SPAN>copy_pixel<SPAN class="op">(</SPAN>ren<SPAN class="op">.</SPAN>width<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">-</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">,</SPAN> i<SPAN class="op">,</SPAN> c<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+    <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;</SPAN> ren<SPAN class="op">.</SPAN>width<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">++</SPAN>i<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        ren<SPAN class="op">.</SPAN>copy_pixel<SPAN class="op">(</SPAN>i<SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">,</SPAN>                c<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        ren<SPAN class="op">.</SPAN>copy_pixel<SPAN class="op">(</SPAN>i<SPAN class="op">,</SPAN> ren<SPAN class="op">.</SPAN>height<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">-</SPAN> <SPAN class="num">1</SPAN><SPAN class="op">,</SPAN> c<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+<SPAN class="op">}</SPAN>
+
+
+<SPAN class="kw1">int</SPAN> <SPAN class="kw1">main</SPAN><SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+<SPAN class="op">{</SPAN>
+    <SPAN class="rem">//--------------------</SPAN>
+    <SPAN class="rem">// Allocate the buffer.</SPAN>
+    <SPAN class="rem">// Clear the buffer, for now &quot;manually&quot;</SPAN>
+    <SPAN class="rem">// Create the rendering buffer object</SPAN>
+    <SPAN class="rem">// Create the Pixel Format renderer</SPAN>
+    <SPAN class="rem">// Do something simple, draw a diagonal line</SPAN>
+    <SPAN class="rem">// Write the buffer to agg_test.ppm</SPAN>
+    <SPAN class="rem">// Free memory</SPAN>
+
+    <SPAN class="kw1">unsigned</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN> buffer <SPAN class="op">=</SPAN> <SPAN class="kw1">new</SPAN> <SPAN class="kw1">unsigned</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">[</SPAN>frame_width <SPAN class="op">*</SPAN> frame_height <SPAN class="op">*</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+
+    memset<SPAN class="op">(</SPAN>buffer<SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN><SPAN class="op">,</SPAN> frame_width <SPAN class="op">*</SPAN> frame_height <SPAN class="op">*</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    agg::<A href="basic_renderers.agdoc.html#rendering_buffer">rendering_buffer</A> rbuf<SPAN class="op">(</SPAN>buffer<SPAN class="op">,</SPAN> 
+                               frame_width<SPAN class="op">,</SPAN> 
+                               frame_height<SPAN class="op">,</SPAN> 
+                               frame_width <SPAN class="op">*</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    agg::<A href="../../__code/include/agg_pixfmt_rgb.h.html#pixfmt_rgb24">pixfmt_rgb24</A> pixf<SPAN class="op">(</SPAN>rbuf<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">unsigned</SPAN> i<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;</SPAN> pixf<SPAN class="op">.</SPAN>height<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">/</SPAN><SPAN class="num">2</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">++</SPAN>i<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        pixf<SPAN class="op">.</SPAN>copy_pixel<SPAN class="op">(</SPAN>i<SPAN class="op">,</SPAN> i<SPAN class="op">,</SPAN> agg::<A href="../../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">(</SPAN><SPAN class="num">127</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">200</SPAN><SPAN class="op">,</SPAN> <SPAN class="num">98</SPAN><SPAN class="op">)</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    draw_black_frame<SPAN class="op">(</SPAN>pixf<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    write_ppm<SPAN class="op">(</SPAN>buffer<SPAN class="op">,</SPAN> frame_width<SPAN class="op">,</SPAN> frame_height<SPAN class="op">,</SPAN> <SPAN class="str">&quot;agg_test.ppm&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">delete</SPAN> <SPAN class="op">[</SPAN><SPAN class="op">]</SPAN> buffer<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">return</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+<SPAN class="op">}</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>This example doesn&#039;t look very different from the previous one, but the 
+difference in its essence is great. Look at the declaration:
+</P></TD></TR></TABLE><TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>agg::<A href="../../__code/include/agg_pixfmt_rgb.h.html#pixfmt_rgb24">pixfmt_rgb24</A> pixf<SPAN class="op">(</SPAN>rbuf<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN></PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Here we create a low-level pixel rendering object and attach it to the 
+rendering buffer.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>It defined as:
+</P></TD></TR></TABLE><TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE><SPAN class="kw1">typedef</SPAN> pixel_formats_rgb24<SPAN class="op">&lt;</SPAN>order_rgb24<SPAN class="op">&gt;</SPAN> <A href="../../__code/include/agg_pixfmt_rgb.h.html#pixfmt_rgb24">pixfmt_rgb24</A><SPAN class="op">;</SPAN></PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+
+<A name="pixfmt"><B></B></A>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Class template pixel_formats_rgb24 has full knowledge about this 
+particular pixel format in memory. The only template parameter
+can be order_rgb24 or order_bgr24 that determines the order of color
+channels.</P></TD></TR></TABLE> 
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Unlike <A href="basic_renderers.agdoc.html#rendering_buffer">rendering_buffer</A>, these classes operate with integer pixel 
+coordinates because they know how to calculate the offset for 
+<NOBR>particular <B>X</B></NOBR>. One can say that it would be easier to keep the 
+width of the pixel inside the <A href="basic_renderers.agdoc.html#rendering_buffer">rendering_buffer</A>, but in practice it would be 
+a restriction. Don&#039;t forget that the width of one pixel in memory can be 
+less than one byte, for example, when rendering high resolution 
+B&amp;W images for printers. Thus, there is just a separation of the 
+functionality, <A href="basic_renderers.agdoc.html#rendering_buffer">rendering_buffer</A> just accelerates access to rows, 
+pixel format renderers have knowledge of how to interpret the rows.</P></TD></TR></TABLE>
+
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Currently, in <B>AGG</B> there are the following files that implement different 
+pixel formats:</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><UL type="disc">
+<LI>agg_pixfmt_gray8.h, one byte per pixel grayscale buffer. This pixel format allows
+   you to work with one color component of the rgb24 or rgba32 pixel format.
+   It has the template parameters <CODE>Step</CODE> and <CODE>Offset</CODE> and for the convenience 
+   defines the following types:</LI>
+<UL type="disc">
+<LI><CODE>typedef pixfmt_gray8_base&lt;1, 0&gt; <A href="../../__code/include/agg_pixfmt_gray.h.html#pixfmt_gray8">pixfmt_gray8</A>;</CODE></LI>
+<LI><CODE>typedef pixfmt_gray8_base&lt;3, 0&gt; pixfmt_gray8_rgb24r;</CODE></LI>
+<LI><CODE>typedef pixfmt_gray8_base&lt;3, 1&gt; pixfmt_gray8_rgb24g;</CODE></LI>
+<LI><CODE>typedef pixfmt_gray8_base&lt;3, 2&gt; pixfmt_gray8_rgb24b;</CODE></LI>
+<LI><CODE>typedef pixfmt_gray8_base&lt;3, 2&gt; pixfmt_gray8_bgr24r;</CODE></LI>
+<LI><CODE>typedef pixfmt_gray8_base&lt;3, 1&gt; pixfmt_gray8_bgr24g;</CODE></LI>
+<LI><CODE>typedef pixfmt_gray8_base&lt;3, 0&gt; pixfmt_gray8_bgr24b;</CODE></LI>
+<LI><CODE>typedef pixfmt_gray8_base&lt;4, 0&gt; pixfmt_gray8_rgba32r;</CODE></LI>
+<LI><CODE>typedef pixfmt_gray8_base&lt;4, 1&gt; pixfmt_gray8_rgba32g;</CODE></LI>
+<LI><CODE>typedef pixfmt_gray8_base&lt;4, 2&gt; pixfmt_gray8_rgba32b;</CODE></LI>
+<LI><CODE>typedef pixfmt_gray8_base&lt;4, 3&gt; pixfmt_gray8_rgba32a;</CODE></LI>
+<LI><CODE>typedef pixfmt_gray8_base&lt;4, 1&gt; pixfmt_gray8_argb32r;</CODE></LI>
+<LI><CODE>typedef pixfmt_gray8_base&lt;4, 2&gt; pixfmt_gray8_argb32g;</CODE></LI>
+<LI><CODE>typedef pixfmt_gray8_base&lt;4, 3&gt; pixfmt_gray8_argb32b;</CODE></LI>
+<LI><CODE>typedef pixfmt_gray8_base&lt;4, 0&gt; pixfmt_gray8_argb32a;</CODE></LI>
+<LI><CODE>typedef pixfmt_gray8_base&lt;4, 2&gt; pixfmt_gray8_bgra32r;</CODE></LI>
+<LI><CODE>typedef pixfmt_gray8_base&lt;4, 1&gt; pixfmt_gray8_bgra32g;</CODE></LI>
+<LI><CODE>typedef pixfmt_gray8_base&lt;4, 0&gt; pixfmt_gray8_bgra32b;</CODE></LI>
+<LI><CODE>typedef pixfmt_gray8_base&lt;4, 3&gt; pixfmt_gray8_bgra32a;</CODE></LI>
+<LI><CODE>typedef pixfmt_gray8_base&lt;4, 3&gt; pixfmt_gray8_abgr32r;</CODE></LI>
+<LI><CODE>typedef pixfmt_gray8_base&lt;4, 2&gt; pixfmt_gray8_abgr32g;</CODE></LI>
+<LI><CODE>typedef pixfmt_gray8_base&lt;4, 1&gt; pixfmt_gray8_abgr32b;</CODE></LI>
+<LI><CODE>typedef pixfmt_gray8_base&lt;4, 0&gt; pixfmt_gray8_abgr32a;</CODE></LI></UL>
+<LI>agg_pixfmt_rgb24.h, three bytes per pixel, with RGB or BGR component orders. 
+   Defines the following pixel format types:</LI>
+<UL type="disc">
+<LI><CODE>typedef pixel_formats_rgb24&lt;order_rgb24&gt; <A href="../../__code/include/agg_pixfmt_rgb.h.html#pixfmt_rgb24">pixfmt_rgb24</A>;</CODE></LI>
+<LI><CODE>typedef pixel_formats_rgb24&lt;order_bgr24&gt; <A href="../../__code/include/agg_pixfmt_rgb.h.html#pixfmt_bgr24">pixfmt_bgr24</A>;</CODE></LI></UL>
+<LI>agg_pixfmt_rgb555.h, 15 bits per pixel, 5 bits per channel. The elder bit is unused.</LI>
+<LI>agg_pixfmt_rgb565.h, 16 bits per pixel, 5 bits for Red, 6 bits for Green, and 5 bits for Blue.</LI>
+<LI>agg_pixfmt_rgba32.h, four bytes per pixel, RGB plus Alpha with different component 
+   orders:</LI>
+<UL type="disc">
+<LI><CODE>typedef pixel_formats_rgba32&lt;order_rgba32&gt; <A href="../../__code/include/agg_pixfmt_rgba.h.html#pixfmt_rgba32">pixfmt_rgba32</A>;</CODE></LI>
+<LI><CODE>typedef pixel_formats_rgba32&lt;order_argb32&gt; <A href="../../__code/include/agg_pixfmt_rgba.h.html#pixfmt_argb32">pixfmt_argb32</A>;</CODE></LI>
+<LI><CODE>typedef pixel_formats_rgba32&lt;order_abgr32&gt; <A href="../../__code/include/agg_pixfmt_rgba.h.html#pixfmt_abgr32">pixfmt_abgr32</A>;</CODE></LI>
+<LI><CODE>typedef pixel_formats_rgba32&lt;order_bgra32&gt; <A href="../../__code/include/agg_pixfmt_rgba.h.html#pixfmt_bgra32">pixfmt_bgra32</A>;</CODE></LI></UL></UL></P></TD></TR></TABLE>
+
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The pixel format classes define their native color space and the color type, 
+for example:
+</P></TD></TR></TABLE><TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE><SPAN class="kw1">typedef</SPAN> <A href="../../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A> color_type<SPAN class="op">;</SPAN></PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>For <CODE>pixfmt_gray8_nnn</CODE> it&#039;s <A href="../../__code/include/agg_color_gray.h.html#gray8">gray8</A>. This mechanism allows you to write 
+your own pixel and color formats, for example, HSV, CMYK, and so on. 
+The rest of the library will work with new pixel formats in exactly 
+same way as with currently implemented ones. 
+</P></TD></TR></TABLE><TABLE class="note" width="640px"><TR><TD><B>NOTE</B><BR/>
+It&#039;s very important not to confuse the color type that the pixel format
+renderer works with and the <B>native</B> color space that the buffer
+represents. For example, you can pretend that you work with the CMYK color
+space using the RGB buffer (you just write a simple conversion function that 
+creates an <A href="../../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A> object from some CMYK structure). But it will be only
+an imitation and you will have color losses, because there are some 
+colors in CMYK that cannot be displayed with RGB and vice versa. 
+To use the capabilities of some color space completely one has to write
+a pixel format renderer for that particular color space and to work
+in that color space without any intermediate conversions.
+</TD></TR></TABLE>
+
+<H3>Creation<A name="toc0006"></A></H3>
+
+<TABLE class="warning" width="640px"><TR><TD><B>IMPORTANT!</B><BR/>
+The pixel format classes do not perform any clipping operations, which means that 
+working directly with these classes is generally unsafe. Clipping is the 
+functionality of higher level classes. The reason of this design is simple &#151;
+it must be as easy as possible to write your own pixel format classes. There 
+can be many of them while the clipping code remains exactly the same.
+</TD></TR></TABLE>
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>pixel_formats_rgb24<SPAN class="op">(</SPAN><A href="basic_renderers.agdoc.html#rendering_buffer">rendering_buffer</A><SPAN class="op">&amp;</SPAN> rb<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN></PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The constructor of the pixel format renderers expects a reference to the 
+created and fully initialized <A href="basic_renderers.agdoc.html#rendering_buffer">rendering_buffer</A>. The cost of creation 
+is minimal, basically it&#039;s initializing of one pointer.</P></TD></TR></TABLE>
+
+<H3>Member Functions<A name="toc0007"></A></H3>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The pixel format renderers must expose the following functionality (interface).</P></TD></TR></TABLE>
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+<SPAN class="kw1">unsigned</SPAN> width<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>  <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_rbuf<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>width<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>  <SPAN class="op">}</SPAN>
+<SPAN class="kw1">unsigned</SPAN> height<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_rbuf<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>height<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN></PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Returns width and height of the buffer in pixels.
+<BR/><BR/></P></TD></TR></TABLE>
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>color_type pixel<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN></PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Returns the color value of the pixel with coordinates <CODE>(x,y)</CODE>. 
+<BR/><BR/></P></TD></TR></TABLE>
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE><SPAN class="kw1">void</SPAN> copy_pixel<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">const</SPAN> color_type<SPAN class="op">&amp;</SPAN> c<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN></PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Copies a pixel of color <CODE>c</CODE> to the buffer as it is. In the RGB 
+pixel formats it doesn&#039;t consider the alpha channel existing in the <A href="../../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A>
+type, in RGBA &#151; it simply copies the alpha value to the buffer together 
+with R, G, and B.
+<BR/><BR/></P></TD></TR></TABLE>
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE><SPAN class="kw1">void</SPAN> blend_pixel<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">const</SPAN> color_type<SPAN class="op">&amp;</SPAN> c<SPAN class="op">,</SPAN> <A href="../../__code/include/agg_basics.h.html#int8u">int8u</A> cover<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN></PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Blends a pixel of color <CODE>c</CODE> with the one in the buffer. 
+Now it&#039;s time to explain the concept of blending. Blending is a key
+feature for <B><NOBR>Anti-Aliasing</NOBR></B>. In the RGBA color space we use the <A href="../../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A> structure to represent
+colors. The structure already has data member <CODE><A href="../../__code/include/agg_basics.h.html#int8u">int8u</A> a;</CODE> that is the alpha 
+channel. But in this function we also see argument <CODE>cover</CODE> that deterines 
+the coverage value for the pixel, i.e, the part of the pixel that is
+&#147;covered&#148; by the polygon. In fact, you can interpret it as a second &quot;Alpha&quot;
+(&quot;Beta&quot;?). There are two reasons to do so. First of all, the color type
+doesn&#039;t have to contain the alpha value. The second, even if the 
+color type has the Alpha field, its type doesn&#039;t have to be compatible
+with the ones used in <B><NOBR>Anti-Aliasing</NOBR></B> algorithms. Suppose you work with a &#147;Hi-End&#148;
+RGBA color space represented as four floats in range [0&#133;1]. Its alpha 
+value is also of type float &#151; one byte is too bad for general blending
+in this case, but quite enough for <B><NOBR>Anti-Aliasing</NOBR></B>. So that, the <CODE>cover</CODE> value is 
+just a unified secondary alpha used specifically for <B><NOBR>Anti-Aliasing</NOBR></B> purposes.
+Globally, it&#039;s defined as <A href="../../__code/include/agg_basics.h.html#cover_type">cover_type</A>, but in the described rasterizers
+there explicit <A href="../../__code/include/agg_basics.h.html#int8u">int8u</A> type is used. It&#039;s done intentionally, because
+if there&#039;s a necessity to increase the capacity of <A href="../../__code/include/agg_basics.h.html#cover_type">cover_type</A>,
+all the existing pixel format rasterizres become incompatible with
+the <A href="../../__code/include/agg_basics.h.html#cover_type">cover_type</A>. They will be <B>actually</B> incompatible, in fact, 8-bit
+coverage values plus 8-bit alpha is the maximum that fits 32-bit 
+intermediate results when blending colors. In case of 16-bit values
+we will have to use 64-bit integers, which is very expensive on 32-bit 
+platforms.
+<BR/><BR/></P></TD></TR></TABLE>
+ 
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE><SPAN class="kw1">void</SPAN> copy_hline<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> len<SPAN class="op">,</SPAN> <SPAN class="kw1">const</SPAN> color_type<SPAN class="op">&amp;</SPAN> c<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN></PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE><SPAN class="kw1">void</SPAN> copy_vline<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> len<SPAN class="op">,</SPAN> <SPAN class="kw1">const</SPAN> color_type<SPAN class="op">&amp;</SPAN> c<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN></PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Draw a horizontal or a vertical line of certain color.
+<BR/><BR/></P></TD></TR></TABLE>
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE><SPAN class="kw1">void</SPAN> blend_hline<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> len<SPAN class="op">,</SPAN> <SPAN class="kw1">const</SPAN> color_type<SPAN class="op">&amp;</SPAN> c<SPAN class="op">,</SPAN> <A href="../../__code/include/agg_basics.h.html#int8u">int8u</A> cover<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN></PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE><SPAN class="kw1">void</SPAN> blend_vline<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> len<SPAN class="op">,</SPAN> <SPAN class="kw1">const</SPAN> color_type<SPAN class="op">&amp;</SPAN> c<SPAN class="op">,</SPAN> <A href="../../__code/include/agg_basics.h.html#int8u">int8u</A> cover<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN></PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Blend a horizontal or a vertical line of certain color. The reason to separate
+&#147;copy&#148; and &#147;blend&#148; versions is the performance. Of course, there can be one
+extra <CODE>if/else</CODE> statement (and there is, in the &#147;blend&#148; versions), but still, 
+it becomes critical when using <CODE>hline/vline</CODE> to draw many of small markers, 
+like in different scatter plot applications.
+<BR/><BR/></P></TD></TR></TABLE>
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+<SPAN class="kw1">void</SPAN> blend_solid_hspan<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> len<SPAN class="op">,</SPAN> 
+                       <SPAN class="kw1">const</SPAN> color_type<SPAN class="op">&amp;</SPAN> c<SPAN class="op">,</SPAN> <SPAN class="kw1">const</SPAN> <A href="../../__code/include/agg_basics.h.html#int8u">int8u</A><SPAN class="op">*</SPAN> covers<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN></PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+<SPAN class="kw1">void</SPAN> blend_solid_vspan<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> len<SPAN class="op">,</SPAN> 
+                       <SPAN class="kw1">const</SPAN> color_type<SPAN class="op">&amp;</SPAN> c<SPAN class="op">,</SPAN> <SPAN class="kw1">const</SPAN> <A href="../../__code/include/agg_basics.h.html#int8u">int8u</A><SPAN class="op">*</SPAN> covers<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN></PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Blend a horizontal or a vertical solid-color span. Span is almost the same as 
+<CODE>hline/vline</CODE>, but there&#039;s an array of the coverage values. These
+functions are used when rendering solid Anti-Aliased polygons.
+<BR/><BR/></P></TD></TR></TABLE>
+
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+<SPAN class="kw1">void</SPAN> blend_color_hspan<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> len<SPAN class="op">,</SPAN> 
+                       <SPAN class="kw1">const</SPAN> color_type<SPAN class="op">*</SPAN> colors<SPAN class="op">,</SPAN> <SPAN class="kw1">const</SPAN> <A href="../../__code/include/agg_basics.h.html#int8u">int8u</A><SPAN class="op">*</SPAN> covers<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN></PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+<SPAN class="kw1">void</SPAN> blend_color_vspan<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">unsigned</SPAN> len<SPAN class="op">,</SPAN> 
+                       <SPAN class="kw1">const</SPAN> color_type<SPAN class="op">*</SPAN> colors<SPAN class="op">,</SPAN> <SPAN class="kw1">const</SPAN> <A href="../../__code/include/agg_basics.h.html#int8u">int8u</A><SPAN class="op">*</SPAN> covers<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN></PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Blend a horizontal or a vertical color span. The functions are used 
+with different span generators, such as gradients, images, patterns, 
+Gouraud interpolation, etc. They accept an array of colors whose type 
+must be compatible with the used pixel format. For example, all 
+existing RGB pixel formats are compatible with the <A href="../../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A> type. 
+Argument <B>covers</B> is an array of the coverage values as in the 
+<CODE>blend_solid_hspan</CODE>. It&#039;s optional and can be 0.
+<BR/><BR/></P></TD></TR></TABLE>
+
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Another example is drawing of the solar spectrum. Class <A href="../../__code/include/agg_color_rgba.h.html#rgba">rgba</A>, that keeps four 
+components as doubles, has static method <CODE>from_wavelength</CODE> and the respective 
+constructor, class <A href="../../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A> can be constructed from <A href="../../__code/include/agg_color_rgba.h.html#rgba">rgba</A> (it&#039;s a common policy
+in <B>AGG</B> that any color type can be constructed from the <A href="../../__code/include/agg_color_rgba.h.html#rgba">rgba</A> type). We will use it.</P></TD></TR></TABLE>
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+<SPAN class="kw2">#include</SPAN> <SPAN class="op">&lt;</SPAN>stdio<SPAN class="op">.</SPAN>h<SPAN class="op">&gt;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="op">&lt;</SPAN>string<SPAN class="op">.</SPAN>h<SPAN class="op">&gt;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;agg_pixfmt_rgb24.h&quot;</SPAN>
+
+<SPAN class="kw1">enum</SPAN>
+<SPAN class="op">{</SPAN>
+    frame_width <SPAN class="op">=</SPAN> <SPAN class="num">320</SPAN><SPAN class="op">,</SPAN>
+    frame_height <SPAN class="op">=</SPAN> <SPAN class="num">200</SPAN>
+<SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+<SPAN class="rem">// [...write_ppm is skipped...]</SPAN>
+
+<SPAN class="kw1">int</SPAN> <SPAN class="kw1">main</SPAN><SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+<SPAN class="op">{</SPAN>
+    <SPAN class="rem">//--------------------</SPAN>
+    <SPAN class="rem">// Allocate the buffer.</SPAN>
+    <SPAN class="rem">// Clear the buffer, for now &quot;manually&quot;</SPAN>
+    <SPAN class="rem">// Create the rendering buffer object</SPAN>
+    <SPAN class="rem">// Create the Pixel Format renderer</SPAN>
+    <SPAN class="rem">// Create one line (span) of type <A href="../../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A>.</SPAN>
+    <SPAN class="rem">// Fill the buffer using blend_color_span</SPAN>
+    <SPAN class="rem">// Write the buffer to agg_test.ppm</SPAN>
+    <SPAN class="rem">// Free memory</SPAN>
+
+    <SPAN class="kw1">unsigned</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN> buffer <SPAN class="op">=</SPAN> <SPAN class="kw1">new</SPAN> <SPAN class="kw1">unsigned</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">[</SPAN>frame_width <SPAN class="op">*</SPAN> frame_height <SPAN class="op">*</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+
+    memset<SPAN class="op">(</SPAN>buffer<SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN><SPAN class="op">,</SPAN> frame_width <SPAN class="op">*</SPAN> frame_height <SPAN class="op">*</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    agg::<A href="basic_renderers.agdoc.html#rendering_buffer">rendering_buffer</A> rbuf<SPAN class="op">(</SPAN>buffer<SPAN class="op">,</SPAN> 
+                               frame_width<SPAN class="op">,</SPAN> 
+                               frame_height<SPAN class="op">,</SPAN> 
+                               frame_width <SPAN class="op">*</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    agg::<A href="../../__code/include/agg_pixfmt_rgb.h.html#pixfmt_rgb24">pixfmt_rgb24</A> pixf<SPAN class="op">(</SPAN>rbuf<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    agg::<A href="../../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A> span<SPAN class="op">[</SPAN>frame_width<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">unsigned</SPAN> i<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;</SPAN> frame_width<SPAN class="op">;</SPAN> <SPAN class="op">++</SPAN>i<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        agg::<A href="../../__code/include/agg_color_rgba.h.html#rgba">rgba</A> c<SPAN class="op">(</SPAN><SPAN class="num">380</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">+</SPAN> <SPAN class="num">400</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">*</SPAN> i <SPAN class="op">/</SPAN> frame_width<SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">8</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        span<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> agg::<A href="../../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">(</SPAN>c<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;</SPAN> frame_height<SPAN class="op">;</SPAN> <SPAN class="op">++</SPAN>i<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        pixf<SPAN class="op">.</SPAN>blend_color_hspan<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> i<SPAN class="op">,</SPAN> frame_width<SPAN class="op">,</SPAN> span<SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    write_ppm<SPAN class="op">(</SPAN>buffer<SPAN class="op">,</SPAN> frame_width<SPAN class="op">,</SPAN> frame_height<SPAN class="op">,</SPAN> <SPAN class="str">&quot;agg_test.ppm&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">delete</SPAN> <SPAN class="op">[</SPAN><SPAN class="op">]</SPAN> buffer<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">return</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+<SPAN class="op">}</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Here is the result:</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD><CENTER><IMG src="spectrum.png" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+
+
+<H3>Alpha-Mask Adaptor<A name="toc0008"></A></H3>
+
+<A name="pixfmt_amask_adaptor"><B></B></A>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Alpha-mask is a separate buffer that is usually used to 
+perform clipping to an arbitrary shape at the low level. 
+There is a special adapter class that passes all calls to pixel format renderes
+through the alpha-mask filter. Usually alpha-mask is a gray scale buffer 
+(one byte per pixel) of the same size as the main rendering buffer. Each
+pixel in the alpha-mask deternines an additional pixel coverage value that 
+is mixed with the main one. Functions like <CODE>copy_hline()</CODE>, that do not 
+have a coverage value argument translate the calls to the respective 
+functions with this argument. For example, <CODE>copy_hline()</CODE> takes the 
+horizontal span from the alpha mask buffer and then calls 
+<CODE>blend_solid_hspan()</CODE>.</P></TD></TR></TABLE> 
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Include files:</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><CODE>#include &quot;<A href="../../__code/include/agg_pixfmt_amask_adaptor.h.html">agg_pixfmt_amask_adaptor.h</A>&quot;<BR/>
+#include &quot;<A href="../../__code/include/agg_alpha_mask_u8.h.html">agg_alpha_mask_u8.h</A>&quot;<BR/></CODE></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Below is an example of how to declare the pixel format renderer with the 
+alpha-mask adaptor.</P></TD></TR></TABLE>
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;agg_pixfmt_rgb24.h&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../../__code/include/agg_pixfmt_amask_adaptor.h.html">agg_pixfmt_amask_adaptor.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../../__code/include/agg_alpha_mask_u8.h.html">agg_alpha_mask_u8.h</A>&quot;</SPAN>
+
+<SPAN class="rem">//. . .</SPAN>
+
+    <SPAN class="rem">// Allocate the alpha-mask buffer, create the rendering buffer object</SPAN>
+    <SPAN class="rem">// and create the alpha-mask object.</SPAN>
+    <SPAN class="rem">//--------------------------------</SPAN>
+    agg::<A href="../../__code/include/agg_basics.h.html#int8u">int8u</A><SPAN class="op">*</SPAN> amask_buf <SPAN class="op">=</SPAN> <SPAN class="kw1">new</SPAN> agg::<A href="../../__code/include/agg_basics.h.html#int8u">int8u</A><SPAN class="op">[</SPAN>frame_width <SPAN class="op">*</SPAN> frame_height<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+    agg::<A href="basic_renderers.agdoc.html#rendering_buffer">rendering_buffer</A> amask_rbuf<SPAN class="op">(</SPAN>amask_buf<SPAN class="op">,</SPAN> 
+                                     frame_width<SPAN class="op">,</SPAN> 
+                                     frame_height<SPAN class="op">,</SPAN> 
+                                     frame_width<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    agg::<A href="../../__code/include/agg_alpha_mask_u8.h.html#amask_no_clip_gray8">amask_no_clip_gray8</A> amask<SPAN class="op">(</SPAN>amask_rbuf<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="rem">// Create the alpha-mask adaptor attached to the alpha-mask object</SPAN>
+    <SPAN class="rem">// and the pixel format renderer. Here pixf is a previously</SPAN>
+    <SPAN class="rem">// created pixel format renderer of type agg::<A href="../../__code/include/agg_pixfmt_rgb.h.html#pixfmt_rgb24">pixfmt_rgb24</A>.</SPAN>
+    agg::<A href="basic_renderers.agdoc.html#pixfmt_amask_adaptor">pixfmt_amask_adaptor</A><SPAN class="op">&lt;</SPAN>agg::<A href="../../__code/include/agg_pixfmt_rgb.h.html#pixfmt_rgb24">pixfmt_rgb24</A><SPAN class="op">,</SPAN> 
+                              agg::<A href="../../__code/include/agg_alpha_mask_u8.h.html#amask_no_clip_gray8">amask_no_clip_gray8</A><SPAN class="op">&gt;</SPAN> pixf_amask<SPAN class="op">(</SPAN>pixf<SPAN class="op">,</SPAN> amask<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="rem">//. . .</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Note that here we use <A href="../../__code/include/agg_alpha_mask_u8.h.html#amask_no_clip_gray8">amask_no_clip_gray8</A> that doesn&#039;t perform clipping.
+It&#039;s because we use the main and the alpha-mask buffers of exactly same size, 
+so, if there are no memory violations in the main rendering buffer, there 
+will be no memory violations in the alpha mask buffer either. Clipping
+is performed at the higher level. If your alpha-mask buffer is less than 
+the main one you will have to use <A href="../../__code/include/agg_alpha_mask_u8.h.html#alpha_mask_gray8">alpha_mask_gray8</A> instead.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Below is a complete example.</P></TD></TR></TABLE>
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+<SPAN class="kw2">#include</SPAN> <SPAN class="op">&lt;</SPAN>stdio<SPAN class="op">.</SPAN>h<SPAN class="op">&gt;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="op">&lt;</SPAN>string<SPAN class="op">.</SPAN>h<SPAN class="op">&gt;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;agg_pixfmt_rgb24.h&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../../__code/include/agg_pixfmt_amask_adaptor.h.html">agg_pixfmt_amask_adaptor.h</A>&quot;</SPAN>
+<SPAN class="kw2">#include</SPAN> <SPAN class="str">&quot;<A href="../../__code/include/agg_alpha_mask_u8.h.html">agg_alpha_mask_u8.h</A>&quot;</SPAN>
+
+<SPAN class="kw1">enum</SPAN>
+<SPAN class="op">{</SPAN>
+    frame_width <SPAN class="op">=</SPAN> <SPAN class="num">320</SPAN><SPAN class="op">,</SPAN>
+    frame_height <SPAN class="op">=</SPAN> <SPAN class="num">200</SPAN>
+<SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+<SPAN class="rem">// [...write_ppm is skipped...]</SPAN>
+
+<SPAN class="kw1">int</SPAN> <SPAN class="kw1">main</SPAN><SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>
+<SPAN class="op">{</SPAN>
+    <SPAN class="rem">// Allocate the main rendering buffer and clear it, for now &quot;manually&quot;,</SPAN>
+    <SPAN class="rem">// and create the <A href="basic_renderers.agdoc.html#rendering_buffer">rendering_buffer</A> object and the pixel format renderer</SPAN>
+    <SPAN class="rem">//--------------------------------</SPAN>
+    agg::<A href="../../__code/include/agg_basics.h.html#int8u">int8u</A><SPAN class="op">*</SPAN> buffer <SPAN class="op">=</SPAN> <SPAN class="kw1">new</SPAN> agg::<A href="../../__code/include/agg_basics.h.html#int8u">int8u</A><SPAN class="op">[</SPAN>frame_width <SPAN class="op">*</SPAN> frame_height <SPAN class="op">*</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+    memset<SPAN class="op">(</SPAN>buffer<SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN><SPAN class="op">,</SPAN> frame_width <SPAN class="op">*</SPAN> frame_height <SPAN class="op">*</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    agg::<A href="basic_renderers.agdoc.html#rendering_buffer">rendering_buffer</A> rbuf<SPAN class="op">(</SPAN>buffer<SPAN class="op">,</SPAN> 
+                               frame_width<SPAN class="op">,</SPAN> 
+                               frame_height<SPAN class="op">,</SPAN> 
+                               frame_width <SPAN class="op">*</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    agg::<A href="../../__code/include/agg_pixfmt_rgb.h.html#pixfmt_rgb24">pixfmt_rgb24</A> pixf<SPAN class="op">(</SPAN>rbuf<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+
+    <SPAN class="rem">// Allocate the alpha-mask buffer, create the rendering buffer object</SPAN>
+    <SPAN class="rem">// and create the alpha-mask object.</SPAN>
+    <SPAN class="rem">//--------------------------------</SPAN>
+    agg::<A href="../../__code/include/agg_basics.h.html#int8u">int8u</A><SPAN class="op">*</SPAN> amask_buf <SPAN class="op">=</SPAN> <SPAN class="kw1">new</SPAN> agg::<A href="../../__code/include/agg_basics.h.html#int8u">int8u</A><SPAN class="op">[</SPAN>frame_width <SPAN class="op">*</SPAN> frame_height<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+    agg::<A href="basic_renderers.agdoc.html#rendering_buffer">rendering_buffer</A> amask_rbuf<SPAN class="op">(</SPAN>amask_buf<SPAN class="op">,</SPAN> 
+                                     frame_width<SPAN class="op">,</SPAN> 
+                                     frame_height<SPAN class="op">,</SPAN> 
+                                     frame_width<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    agg::<A href="../../__code/include/agg_alpha_mask_u8.h.html#amask_no_clip_gray8">amask_no_clip_gray8</A> amask<SPAN class="op">(</SPAN>amask_rbuf<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="rem">// Create the alpha-mask adaptor attached to the alpha-mask object</SPAN>
+    <SPAN class="rem">// and the pixel format renderer</SPAN>
+    agg::<A href="basic_renderers.agdoc.html#pixfmt_amask_adaptor">pixfmt_amask_adaptor</A><SPAN class="op">&lt;</SPAN>agg::<A href="../../__code/include/agg_pixfmt_rgb.h.html#pixfmt_rgb24">pixfmt_rgb24</A><SPAN class="op">,</SPAN> 
+                              agg::<A href="../../__code/include/agg_alpha_mask_u8.h.html#amask_no_clip_gray8">amask_no_clip_gray8</A><SPAN class="op">&gt;</SPAN> pixf_amask<SPAN class="op">(</SPAN>pixf<SPAN class="op">,</SPAN> amask<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+
+    <SPAN class="rem">// Draw something in the alpha-mask buffer. </SPAN>
+    <SPAN class="rem">// In this case we fill the buffer with a simple verical gradient</SPAN>
+    <SPAN class="kw1">unsigned</SPAN> i<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;</SPAN> frame_height<SPAN class="op">;</SPAN> <SPAN class="op">++</SPAN>i<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        <SPAN class="kw1">unsigned</SPAN> val <SPAN class="op">=</SPAN> <SPAN class="num">255</SPAN> <SPAN class="op">*</SPAN> i <SPAN class="op">/</SPAN> frame_height<SPAN class="op">;</SPAN>
+        memset<SPAN class="op">(</SPAN>amask_rbuf<SPAN class="op">.</SPAN>row_ptr<SPAN class="op">(</SPAN>i<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN> val<SPAN class="op">,</SPAN> frame_width<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+
+    <SPAN class="rem">// Draw the spectrum, write a .ppm and free memory</SPAN>
+    <SPAN class="rem">//----------------------</SPAN>
+    agg::<A href="../../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A> span<SPAN class="op">[</SPAN>frame_width<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;</SPAN> frame_width<SPAN class="op">;</SPAN> <SPAN class="op">++</SPAN>i<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        agg::<A href="../../__code/include/agg_color_rgba.h.html#rgba">rgba</A> c<SPAN class="op">(</SPAN><SPAN class="num">380</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">+</SPAN> <SPAN class="num">400</SPAN><SPAN class="op">.</SPAN><SPAN class="num">0</SPAN> <SPAN class="op">*</SPAN> i <SPAN class="op">/</SPAN> frame_width<SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">.</SPAN><SPAN class="num">8</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+        span<SPAN class="op">[</SPAN>i<SPAN class="op">]</SPAN> <SPAN class="op">=</SPAN> agg::<A href="../../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A><SPAN class="op">(</SPAN>c<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    <SPAN class="kw1">for</SPAN><SPAN class="op">(</SPAN>i <SPAN class="op">=</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN> i <SPAN class="op">&lt;</SPAN> frame_height<SPAN class="op">;</SPAN> <SPAN class="op">++</SPAN>i<SPAN class="op">)</SPAN>
+    <SPAN class="op">{</SPAN>
+        pixf_amask<SPAN class="op">.</SPAN>blend_color_hspan<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> i<SPAN class="op">,</SPAN> frame_width<SPAN class="op">,</SPAN> span<SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    <SPAN class="op">}</SPAN>
+
+    write_ppm<SPAN class="op">(</SPAN>buffer<SPAN class="op">,</SPAN> frame_width<SPAN class="op">,</SPAN> frame_height<SPAN class="op">,</SPAN> <SPAN class="str">&quot;agg_test.ppm&quot;</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">delete</SPAN> <SPAN class="op">[</SPAN><SPAN class="op">]</SPAN> amask_buf<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">delete</SPAN> <SPAN class="op">[</SPAN><SPAN class="op">]</SPAN> buffer<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">return</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">;</SPAN>
+<SPAN class="op">}</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>And the result:</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD><CENTER><IMG src="spectrum_amask1.png" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Note that we cleared the main buffer with the white color. Now change 
+</P></TD></TR></TABLE><TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+    memset<SPAN class="op">(</SPAN>buffer<SPAN class="op">,</SPAN> <SPAN class="num">255</SPAN><SPAN class="op">,</SPAN> frame_width <SPAN class="op">*</SPAN> frame_height <SPAN class="op">*</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>to
+</P></TD></TR></TABLE><TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+    memset<SPAN class="op">(</SPAN>buffer<SPAN class="op">,</SPAN> <SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> frame_width <SPAN class="op">*</SPAN> frame_height <SPAN class="op">*</SPAN> <SPAN class="num">3</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The result:</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD><CENTER><IMG src="spectrum_amask2.png" title="" border="0"/><BR/><I></I></CENTER></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>In other words, the alpha-mask works as a separete alpha-channel
+mixed with rendered primitives.
+The fact that it contains 8-bit values allows you to clip 
+all drawing to arbitrary shapes with perfect <B><NOBR>Anti-Aliasing</NOBR></B>.</P></TD></TR></TABLE>
+
+
+<BR/><H2>Basic Renderers<A name="toc0009"></A></H2>
+
+<A name="renderer_base"><B></B></A> <A name="renderer_mclip"><B></B></A>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>There are two basic renderers with almost the same functionality: 
+<A href="basic_renderers.agdoc.html#renderer_base">renderer_base</A> and <A href="basic_renderers.agdoc.html#renderer_mclip">renderer_mclip</A>. The first one is used most often
+and it performs low level clipping. Clipping in general is a 
+complex task. In <B>AGG</B> there can be at least two levels of clipping, 
+the low (pixel) level, and the high (vectorial) level. These classes
+perform the pixel level clipping to protect the buffer from 
+<NOBR>out-of-bound</NOBR> memory access. Class <A href="basic_renderers.agdoc.html#renderer_mclip">renderer_mclip</A> performs
+clipping to multi-rectangle clipping areas, but its performance 
+depends on the number of clipping rectangles.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><A href="basic_renderers.agdoc.html#renderer_base">renderer_base</A> and <A href="basic_renderers.agdoc.html#renderer_mclip">renderer_mclip</A> are class templates parametrized 
+with a pixel format renderer:</P></TD></TR></TABLE>
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+<SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> PixelFormat<SPAN class="op">&gt;</SPAN> <SPAN class="kw1">class</SPAN> <A href="basic_renderers.agdoc.html#renderer_base">renderer_base</A>
+<SPAN class="op">{</SPAN>
+<SPAN class="kw1">public</SPAN>:
+    <SPAN class="kw1">typedef</SPAN> PixelFormat pixfmt_type<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">typedef</SPAN> <SPAN class="kw1">typename</SPAN> pixfmt_type::color_type color_type<SPAN class="op">;</SPAN>
+
+    <SPAN class="op">.</SPAN> <SPAN class="op">.</SPAN> <SPAN class="op">.</SPAN>
+<SPAN class="op">}</SPAN><SPAN class="op">;</SPAN></PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>See sources <A href="../../__code/include/agg_renderer_base.h.html#renderer_base">renderer_base</A> <A href="../../__code/include/agg_renderer_mclip.h.html#renderer_mclip">renderer_mclip</A></P></TD></TR></TABLE>
+
+<H3>Creation<A name="toc0010"></A></H3>
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+<A href="basic_renderers.agdoc.html#renderer_base">renderer_base</A><SPAN class="op">(</SPAN>pixfmt_type<SPAN class="op">&amp;</SPAN> ren<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+<A href="basic_renderers.agdoc.html#renderer_mclip">renderer_mclip</A><SPAN class="op">(</SPAN>pixfmt_type<SPAN class="op">&amp;</SPAN> ren<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN></PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Both classes accept a reference to the pixel format renderer. 
+<A href="basic_renderers.agdoc.html#renderer_mclip">renderer_mclip</A> uses <A href="basic_renderers.agdoc.html#renderer_base">renderer_base</A>&lt;PixelFormat&gt; inside itself to 
+perform implemented clipping to a single rectangle region.
+Note that you can use <A href="basic_renderers.agdoc.html#pixfmt_amask_adaptor">pixfmt_amask_adaptor</A> as <CODE>PixelFormat</CODE>
+template parameter.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The cost of creation is minimal, it&#039;s just initializing of the class
+member variables. But <A href="basic_renderers.agdoc.html#renderer_mclip">renderer_mclip</A> allocates memory when you 
+add new clipping rectangles and deallocates it when destroying. 
+It uses the pod_deque class that allocates blocks of memory of equal 
+size and never reallocates it. When you reset clipping, the memory 
+is not deallocated, it&#039;s reused. The <A href="basic_renderers.agdoc.html#renderer_mclip">renderer_mclip</A> deallocates 
+memory only when destroying. This technique is widely used in <B>AGG</B> 
+and prevents from deep memory fragmentation.</P></TD></TR></TABLE> 
+
+<H3>Member Functions<A name="toc0011"></A></H3>
+          
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+<SPAN class="kw1">const</SPAN> pixfmt_type<SPAN class="op">&amp;</SPAN> ren<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN><SPAN class="op">;</SPAN>
+pixfmt_type<SPAN class="op">&amp;</SPAN> ren<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN></PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Returns a reference to the pixel format renderer.          
+<BR/><BR/></P></TD></TR></TABLE>
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+<SPAN class="kw1">unsigned</SPAN> width<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>  <SPAN class="kw1">const</SPAN><SPAN class="op">;</SPAN>
+<SPAN class="kw1">unsigned</SPAN> height<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN><SPAN class="op">;</SPAN></PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Returns width and height of the rendering buffer.
+<BR/><BR/></P></TD></TR></TABLE>
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+<SPAN class="kw1">void</SPAN> reset_clipping<SPAN class="op">(</SPAN><SPAN class="kw1">bool</SPAN> visibility<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN></PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The function resets the clipping. If the <CODE>visibility</CODE> is <CODE>true</CODE> the 
+clipping box is set to <CODE>(0, 0, width()-1, height()-1)</CODE>, if <CODE>false</CODE>,
+it sets an invisible box, i.e., <CODE>(1,1,0,0)</CODE>. In <A href="basic_renderers.agdoc.html#renderer_mclip">renderer_mclip</A> this 
+function also removes all the clipping areas that were previously
+added.
+</P></TD></TR></TABLE><TABLE class="warning" width="640px"><TR><TD><B>IMPORTANT!</B><BR/>
+If you attach another memory buffer to the <A href="basic_renderers.agdoc.html#rendering_buffer">rendering_buffer</A>, connected
+with this particular basic renderer, you <B>must</B> call 
+<CODE>reset_clipping</CODE>, otherwise, the clipping box will be not valid.
+It&#039;s because there&#039;s no any &#147;feedback&#148; from
+the rendering buffer to the renderers, in other words, <A href="basic_renderers.agdoc.html#renderer_base">renderer_base</A> 
+and <A href="basic_renderers.agdoc.html#renderer_mclip">renderer_mclip</A> don&#039;t know anything if the rendering buffer is 
+changed. Having some mechanism of events or delegates would be 
+an overkill in this case.</TD></TR></TABLE>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><BR/></P></TD></TR></TABLE>
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+<SPAN class="kw1">bool</SPAN> clip_box<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x1<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y1<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> x2<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y2<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN></PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Set new clipping box. Only <A href="basic_renderers.agdoc.html#renderer_base">renderer_base</A> has this function.
+The clipping box <B>includes</B> the boundaries, so that, the maximal
+one is <CODE>(0, 0, width()-1, height()-1)</CODE>. The clipping box 
+is clipped to the maximal value before setting, so that, it&#039;s
+safe to set a box bigger than <CODE>(0, 0, width()-1, height()-1)</CODE>.
+<BR/><BR/></P></TD></TR></TABLE>
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+<SPAN class="kw1">void</SPAN> add_clip_box<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x1<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y1<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> x2<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y2<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN></PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Add new clipping box. Only <A href="basic_renderers.agdoc.html#renderer_mclip">renderer_mclip</A> has this function. 
+You can add any number of rectangular regions, but they must not
+overlap. In case of overlapping areas, some elements can be drawn
+twice or more. The clipping boxes are being clipped by the bounding 
+box <CODE>(0, 0, width()-1, height()-1)</CODE> before adding, which is done
+for the sake of efficiency. It also means that calling 
+<CODE>reset_clipping(false)</CODE> for the <A href="basic_renderers.agdoc.html#renderer_mclip">renderer_mclip</A> doesn&#039;t make
+any sense because all adding regions will be clipped by an 
+invisible area and will not be actually added. The visible areas
+also includes the boundaries of the boxes, that is, 
+<CODE>add_clip_box(100,100,100,100)</CODE> will add a clipping region
+of 1 pixel size.
+<BR/><BR/></P></TD></TR></TABLE>
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+<SPAN class="kw1">void</SPAN> clip_box_naked<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x1<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y1<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> x2<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y2<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN></PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Only <A href="basic_renderers.agdoc.html#renderer_base">renderer_base</A> has this function. Set new clipping box without 
+clipping to the rendering buffer size. This function is unsafe 
+and used in the <A href="basic_renderers.agdoc.html#renderer_mclip">renderer_mclip</A> for fast switching between
+partial regions when rendering. The purpose of this function
+is just to avoid extra overhead.
+<BR/><BR/></P></TD></TR></TABLE>
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+<SPAN class="kw1">bool</SPAN> inbox<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN><SPAN class="op">;</SPAN></PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Check if point <CODE>(x, y)</CODE> is inside of the clipping box.
+Only <A href="basic_renderers.agdoc.html#renderer_base">renderer_base</A> has this function. 
+<BR/><BR/></P></TD></TR></TABLE>
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+<SPAN class="kw1">void</SPAN> first_clip_box<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+<SPAN class="kw1">bool</SPAN> next_clip_box<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN></PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>These two functions are used to enumerate all the clipping regions
+of the renderer. In the <A href="basic_renderers.agdoc.html#renderer_base">renderer_base</A> class they are empty, 
+<CODE>next_clip_box()</CODE> always return false.
+<BR/><BR/></P></TD></TR></TABLE>
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+<SPAN class="kw1">const</SPAN> rect<SPAN class="op">&amp;</SPAN> clip_box<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN><SPAN class="op">;</SPAN>
+<SPAN class="kw1">int</SPAN>         xmin<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>     <SPAN class="kw1">const</SPAN><SPAN class="op">;</SPAN>
+<SPAN class="kw1">int</SPAN>         ymin<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>     <SPAN class="kw1">const</SPAN><SPAN class="op">;</SPAN>
+<SPAN class="kw1">int</SPAN>         xmax<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>     <SPAN class="kw1">const</SPAN><SPAN class="op">;</SPAN>
+<SPAN class="kw1">int</SPAN>         ymax<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>     <SPAN class="kw1">const</SPAN><SPAN class="op">;</SPAN></PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Returns the clipping box as a rectangle and as separate integer
+values. In <A href="basic_renderers.agdoc.html#renderer_mclip">renderer_mclip</A> the functions always return
+<CODE>(0, 0, width()-1, height()-1)</CODE>.
+<BR/><BR/></P></TD></TR></TABLE>
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+<SPAN class="kw1">const</SPAN> rect<SPAN class="op">&amp;</SPAN> bounding_clip_box<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN><SPAN class="op">;</SPAN>
+<SPAN class="kw1">int</SPAN>         bounding_xmin<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>     <SPAN class="kw1">const</SPAN><SPAN class="op">;</SPAN>
+<SPAN class="kw1">int</SPAN>         bounding_ymin<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>     <SPAN class="kw1">const</SPAN><SPAN class="op">;</SPAN>
+<SPAN class="kw1">int</SPAN>         bounding_xmax<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>     <SPAN class="kw1">const</SPAN><SPAN class="op">;</SPAN>
+<SPAN class="kw1">int</SPAN>         bounding_ymax<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN>     <SPAN class="kw1">const</SPAN><SPAN class="op">;</SPAN></PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Returns the bounding clipping box as a rectangle and as separate 
+integer values. In <A href="basic_renderers.agdoc.html#renderer_base">renderer_base</A> the functions always return
+the same values as the respective ones from the previous group.
+In <A href="basic_renderers.agdoc.html#renderer_mclip">renderer_mclip</A> they return the bounding box calculated 
+on the basis of added regions.
+<BR/><BR/></P></TD></TR></TABLE>
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+<SPAN class="kw1">void</SPAN> clear<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> color_type<SPAN class="op">&amp;</SPAN> c<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN></PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Clears the buffer with the given color without clipping.
+<BR/><BR/></P></TD></TR></TABLE>
+          
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+<SPAN class="kw1">void</SPAN> copy_pixel<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">const</SPAN> color_type<SPAN class="op">&amp;</SPAN> c<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN></PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Set a pixel with clipping.
+<BR/><BR/></P></TD></TR></TABLE>
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+<SPAN class="kw1">void</SPAN> blend_pixel<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">const</SPAN> color_type<SPAN class="op">&amp;</SPAN> c<SPAN class="op">,</SPAN> <A href="../../__code/include/agg_basics.h.html#cover_type">cover_type</A> cover<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN></PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Blend a pixel with clipping. The behavior is the same as in the pixel
+format renderers (<A href="basic_renderers.agdoc.html#pixfmt">pixfmt</A>).
+<BR/><BR/></P></TD></TR></TABLE>
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+color_type pixel<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN><SPAN class="op">;</SPAN></PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Returns the value of the pixel with coordinates <CODE>(x, y)</CODE>. If the point
+is clipped, the function returns <CODE>color_type::no_color()</CODE>. For <A href="../../__code/include/agg_color_rgba.h.html#rgba8">rgba8</A>
+it&#039;s <CODE>(0,0,0,0)</CODE>.
+<BR/><BR/></P></TD></TR></TABLE>
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+<SPAN class="kw1">void</SPAN> copy_hline<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x1<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> x2<SPAN class="op">,</SPAN> <SPAN class="kw1">const</SPAN> color_type<SPAN class="op">&amp;</SPAN> c<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+<SPAN class="kw1">void</SPAN> copy_vline<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y1<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y2<SPAN class="op">,</SPAN> <SPAN class="kw1">const</SPAN> color_type<SPAN class="op">&amp;</SPAN> c<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+<SPAN class="kw1">void</SPAN> blend_hline<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x1<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> x2<SPAN class="op">,</SPAN> 
+                 <SPAN class="kw1">const</SPAN> color_type<SPAN class="op">&amp;</SPAN> c<SPAN class="op">,</SPAN> <A href="../../__code/include/agg_basics.h.html#cover_type">cover_type</A> cover<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+<SPAN class="kw1">void</SPAN> blend_vline<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y1<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y2<SPAN class="op">,</SPAN> 
+                 <SPAN class="kw1">const</SPAN> color_type<SPAN class="op">&amp;</SPAN> c<SPAN class="op">,</SPAN> <A href="../../__code/include/agg_basics.h.html#cover_type">cover_type</A> cover<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN></PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Draw (copy) or blend horizontal or vertical line of pixels.
+The behaviour is the same as in pixel format renders
+(<A href="basic_renderers.agdoc.html#pixfmt">pixfmt</A>), but here you use coordinates of the begin and end 
+of the lines instead of <CODE>(x, y, length)</CODE>. 
+<BR/><BR/></P></TD></TR></TABLE>
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+<SPAN class="kw1">void</SPAN> copy_bar<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x1<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y1<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> x2<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y2<SPAN class="op">,</SPAN> <SPAN class="kw1">const</SPAN> color_type<SPAN class="op">&amp;</SPAN> c<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+<SPAN class="kw1">void</SPAN> blend_bar<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x1<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y1<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> x2<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y2<SPAN class="op">,</SPAN> 
+               <SPAN class="kw1">const</SPAN> color_type<SPAN class="op">&amp;</SPAN> c<SPAN class="op">,</SPAN> <A href="../../__code/include/agg_basics.h.html#cover_type">cover_type</A> cover<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN></PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Draw (copy) or blend a solid bar (rectangle). 
+<BR/><BR/></P></TD></TR></TABLE>
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+<SPAN class="kw1">void</SPAN> blend_solid_hspan<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> len<SPAN class="op">,</SPAN> 
+                       <SPAN class="kw1">const</SPAN> color_type<SPAN class="op">&amp;</SPAN> c<SPAN class="op">,</SPAN> <SPAN class="kw1">const</SPAN> <A href="../../__code/include/agg_basics.h.html#cover_type">cover_type</A><SPAN class="op">*</SPAN> covers<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+<SPAN class="kw1">void</SPAN> blend_solid_vspan<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> len<SPAN class="op">,</SPAN> 
+                       <SPAN class="kw1">const</SPAN> color_type<SPAN class="op">&amp;</SPAN> c<SPAN class="op">,</SPAN> <SPAN class="kw1">const</SPAN> <A href="../../__code/include/agg_basics.h.html#cover_type">cover_type</A><SPAN class="op">*</SPAN> covers<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN></PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Blend a horizontal or a vertical solid-color span. 
+These functions are used when rendering solid Anti-Aliased polygons. 
+<BR/><BR/></P></TD></TR></TABLE>
+
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+<SPAN class="kw1">void</SPAN> blend_color_hspan<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> len<SPAN class="op">,</SPAN> 
+                       <SPAN class="kw1">const</SPAN> color_type<SPAN class="op">*</SPAN> colors<SPAN class="op">,</SPAN> <SPAN class="kw1">const</SPAN> <A href="../../__code/include/agg_basics.h.html#cover_type">cover_type</A><SPAN class="op">*</SPAN> covers<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+<SPAN class="kw1">void</SPAN> blend_color_vspan<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> len<SPAN class="op">,</SPAN> 
+                       <SPAN class="kw1">const</SPAN> color_type<SPAN class="op">*</SPAN> colors<SPAN class="op">,</SPAN> <SPAN class="kw1">const</SPAN> <A href="../../__code/include/agg_basics.h.html#cover_type">cover_type</A><SPAN class="op">*</SPAN> covers<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN></PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Blend a horizontal or a vertical color span. The functions are used with 
+different span generators, such as gradients, images, patterns, 
+Gouraud interpolation, etc. They accept an array of colors whose 
+type must be compatible with the used pixel format.
+<BR/><BR/></P></TD></TR></TABLE>
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+<SPAN class="kw1">void</SPAN> blend_color_hspan_no_clip<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> len<SPAN class="op">,</SPAN> 
+                               <SPAN class="kw1">const</SPAN> color_type<SPAN class="op">*</SPAN> colors<SPAN class="op">,</SPAN> 
+                               <SPAN class="kw1">const</SPAN> <A href="../../__code/include/agg_basics.h.html#cover_type">cover_type</A><SPAN class="op">*</SPAN> covers<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+<SPAN class="kw1">void</SPAN> blend_color_vspan_no_clip<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> len<SPAN class="op">,</SPAN> 
+                               <SPAN class="kw1">const</SPAN> color_type<SPAN class="op">*</SPAN> colors<SPAN class="op">,</SPAN> 
+                               <SPAN class="kw1">const</SPAN> <A href="../../__code/include/agg_basics.h.html#cover_type">cover_type</A><SPAN class="op">*</SPAN> covers<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN></PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The same as above, but without clipping. These functions are
+used in the scanline renderers. The reason to do so is the performance.
+Tne scanline consists of a number of spans and it&#039;s a little bit 
+more efficient to perform clipping when we have information about
+the whole scanline rather than to clip every span, especially in 
+<A href="basic_renderers.agdoc.html#renderer_mclip">renderer_mclip</A>.
+<BR/><BR/></P></TD></TR></TABLE>
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+<SPAN class="kw1">void</SPAN> copy_from<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> <A href="basic_renderers.agdoc.html#rendering_buffer">rendering_buffer</A><SPAN class="op">&amp;</SPAN> from<SPAN class="op">,</SPAN> 
+               <SPAN class="kw1">const</SPAN> rect<SPAN class="op">*</SPAN> rc<SPAN class="op">=</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> 
+               <SPAN class="kw1">int</SPAN> x_to<SPAN class="op">=</SPAN><SPAN class="num">0</SPAN><SPAN class="op">,</SPAN> 
+               <SPAN class="kw1">int</SPAN> y_to<SPAN class="op">=</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN></PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Copy a rectangular area of the buffer <CODE>from</CODE> to <CODE>this</CODE> one
+considering clipping.
+It&#039;s assumed that the rendering buffer <CODE>from</CODE> has the same 
+pixel format as the destination <CODE>(this)</CODE> one. <CODE>rc</CODE> is an 
+optional rectangle in the <CODE>from</CODE> buffer, <CODE>x_to</CODE> and <CODE>y_to</CODE> &#151;
+the coordinates of the <CODE>rc-&gt;x1, rc-&gt;y1</CODE> mapped to the destination 
+buffer. 
+<BR/><BR/></P></TD></TR></TABLE>
+
+
+
+<H3>A common example<A name="toc0012"></A></H3>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The code below is a very common example of declaring and using 
+of the rendring buffer and low level renderers.</P></TD></TR></TABLE>
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+    <SPAN class="rem">// Typedefs of the low level renderers to simplify the declarations.</SPAN>
+    <SPAN class="rem">// Here you can use any other pixel format renderer and</SPAN>
+    <SPAN class="rem">// agg::<A href="basic_renderers.agdoc.html#renderer_mclip">renderer_mclip</A> if necessary.</SPAN>
+    <SPAN class="rem">//--------------------------</SPAN>
+    <SPAN class="kw1">typedef</SPAN> agg::<A href="../../__code/include/agg_pixfmt_rgb.h.html#pixfmt_rgb24">pixfmt_rgb24</A>                     pixfmt_type<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">typedef</SPAN> agg::<A href="basic_renderers.agdoc.html#renderer_base">renderer_base</A><SPAN class="op">&lt;</SPAN>agg::<A href="../../__code/include/agg_pixfmt_rgb.h.html#pixfmt_rgb24">pixfmt_rgb24</A><SPAN class="op">&gt;</SPAN> renbase_type<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">enum</SPAN> <SPAN class="op">{</SPAN> bytes_per_pixel <SPAN class="op">=</SPAN> <SPAN class="num">3</SPAN> <SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+
+    <SPAN class="kw1">unsigned</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">*</SPAN> buffer <SPAN class="op">=</SPAN> <SPAN class="kw1">new</SPAN> <SPAN class="kw1">unsigned</SPAN> <SPAN class="kw1">char</SPAN><SPAN class="op">[</SPAN>frame_width <SPAN class="op">*</SPAN> 
+                                              frame_height <SPAN class="op">*</SPAN> 
+                                              bytes_per_pixel<SPAN class="op">]</SPAN><SPAN class="op">;</SPAN>
+    agg::<A href="basic_renderers.agdoc.html#rendering_buffer">rendering_buffer</A> rbuf<SPAN class="op">(</SPAN>buffer<SPAN class="op">,</SPAN> 
+                               frame_width<SPAN class="op">,</SPAN> 
+                               frame_height<SPAN class="op">,</SPAN> 
+                               frame_width <SPAN class="op">*</SPAN> bytes_per_pixel<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    
+    pixfmt_type pixf<SPAN class="op">(</SPAN>rbuf<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    renbase_type rbase<SPAN class="op">(</SPAN>pixf<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+
+    rbase<SPAN class="op">.</SPAN>clear<SPAN class="op">(</SPAN>clear_color<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+    
+    <SPAN class="rem">//. . .</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>At last we can clear the buffer with certain color instead of 
+&#147;manual&#148; calling of <CODE>memset()</CODE> :-).
+Also note that unlike these examples, the <CODE>stride</CODE> value is not 
+obligatory equal to <CODE>frame_width * bytes_per_pixel</CODE>. Most often 
+there will be some alignment requiremants, for example, the width 
+of Windows bitmaps must be a multiple of 4 bytes.</P></TD></TR></TABLE> 
+
+
+
+
+
+
+
+
+<BR/><H2>Primitives and Markers Renderers<A name="toc0013"></A></H2>
+
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The primitives and marker renderers were added to <B>AGG</B> to provide you a 
+mecahnism of fast drawing regular, aliased objects, such as lines, 
+rectangles, and ellipses. The marker renderer can draw some shapes
+commonly used in different scatter plots. If you are not going to use
+it just skip this section.</P></TD></TR></TABLE>
+
+<H3>Primitives Renderer<A name="toc0014"></A></H3>
+
+<A name="renderer_primitives"><B></B></A>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The header file: <A href="../../__code/include/agg_renderer_primitives.h.html">agg_renderer_primitives.h</A></P></TD></TR></TABLE>
+
+<H4>Declaration<A name="toc0015"></A></H4>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+<SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> BaseRenderer<SPAN class="op">&gt;</SPAN> <SPAN class="kw1">class</SPAN> <A href="basic_renderers.agdoc.html#renderer_primitives">renderer_primitives</A>
+<SPAN class="op">{</SPAN>
+<SPAN class="kw1">public</SPAN>:
+    <SPAN class="kw1">typedef</SPAN> BaseRenderer base_ren_type<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">typedef</SPAN> <SPAN class="kw1">typename</SPAN> base_ren_type::color_type color_type<SPAN class="op">;</SPAN>
+    <SPAN class="rem">//. . .</SPAN>
+<SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Here class RendererBase can be of type <A href="basic_renderers.agdoc.html#renderer_base">renderer_base</A> or <A href="basic_renderers.agdoc.html#renderer_mclip">renderer_mclip</A>.</P></TD></TR></TABLE>
+
+<H4>Creation<A name="toc0016"></A></H4>
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+<A href="basic_renderers.agdoc.html#renderer_primitives">renderer_primitives</A><SPAN class="op">(</SPAN>base_ren_type<SPAN class="op">&amp;</SPAN> ren<SPAN class="op">)</SPAN> :
+    m_ren<SPAN class="op">(</SPAN><SPAN class="op">&amp;</SPAN>ren<SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+    m_fill_color<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+    m_line_color<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+    m_curr_x<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN><SPAN class="op">,</SPAN>
+    m_curr_y<SPAN class="op">(</SPAN><SPAN class="num">0</SPAN><SPAN class="op">)</SPAN>
+<SPAN class="op">{</SPAN><SPAN class="op">}</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The cost of creation is minimal, it&#039;s only initialization of the pointer
+to the base renderer object, two colors and initial coordinates that are 
+used in <CODE>move_to</CODE> and <CODE>line_to</CODE> functions.</P></TD></TR></TABLE>
+
+<H4>Member functions<A name="toc0017"></A></H4>
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE><SPAN class="kw1">static</SPAN> <SPAN class="kw1">int</SPAN> coord<SPAN class="op">(</SPAN><SPAN class="kw1">double</SPAN> c<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN></PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Converts a coordinate of the <CODE>double</CODE> type to integer one with 
+subpixel accuracy. It just multiplies the value to 256 (by default) 
+and returns the integer part.
+<BR/><BR/></P></TD></TR></TABLE>
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+<SPAN class="kw1">void</SPAN> fill_color<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> color_type<SPAN class="op">&amp;</SPAN> c<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+<SPAN class="kw1">void</SPAN> line_color<SPAN class="op">(</SPAN><SPAN class="kw1">const</SPAN> color_type<SPAN class="op">&amp;</SPAN> c<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+<SPAN class="kw1">const</SPAN> color_type<SPAN class="op">&amp;</SPAN> fill_color<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN><SPAN class="op">;</SPAN>
+<SPAN class="kw1">const</SPAN> color_type<SPAN class="op">&amp;</SPAN> line_color<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN><SPAN class="op">;</SPAN></PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Set and get the fill and line colors. The colors may have
+the alpha value that will take effect, i.e., the primitives
+will be alpha-blended.
+<BR/><BR/></P></TD></TR></TABLE>
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE><SPAN class="kw1">void</SPAN> rectangle<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x1<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y1<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> x2<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y2<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN></PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Draw a rectangle without filling with the line color. 
+There are regular, pixel coordinates are used. 
+The width of the border is always 1 pixel and cannot 
+be changed.
+<BR/><BR/></P></TD></TR></TABLE>
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE><SPAN class="kw1">void</SPAN> solid_rectangle<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x1<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y1<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> x2<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y2<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN></PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Draw a filled rectangle without border with the fill color.
+The coordinates are in pixels.
+<BR/><BR/></P></TD></TR></TABLE>
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE><SPAN class="kw1">void</SPAN> outlined_rectangle<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x1<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y1<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> x2<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y2<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN></PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Draw a filled rectangle with a border. There are both colors
+line and fill are used.
+<BR/><BR/></P></TD></TR></TABLE>
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+<SPAN class="kw1">void</SPAN> <A href="../../__code/include/agg_ellipse.h.html#ellipse">ellipse</A><SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> rx<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> ry<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+<SPAN class="kw1">void</SPAN> solid_ellipse<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> rx<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> ry<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+<SPAN class="kw1">void</SPAN> outlined_ellipse<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> rx<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> ry<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Draw ellipses, non-filled, filled and filled with a border.
+The coordinates are integer, in pixels. <CODE>rx</CODE> and <CODE>ry</CODE> &#151;
+radii in pixels. 
+<BR/><BR/></P></TD></TR></TABLE>
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE><SPAN class="kw1">void</SPAN> line<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x1<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y1<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> x2<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y2<SPAN class="op">,</SPAN> <SPAN class="kw1">bool</SPAN> last<SPAN class="op">=</SPAN><SPAN class="kw1">false</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN></PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Draw a bresenham line with <B>Subpixel Accuracy</B>. The coordinates are in 
+integer format of 24.8, that is, in the 1/256 pixel units.
+Flag <CODE>last</CODE> defines whether or not to draw the last pixel,
+which is important when drawing consecutive line segments with
+alpha-blending. There no pixels should be drawn more than once.
+<BR/><BR/></P></TD></TR></TABLE>
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+<SPAN class="kw1">void</SPAN> move_to<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+<SPAN class="kw1">void</SPAN> line_to<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">bool</SPAN> last<SPAN class="op">=</SPAN><SPAN class="kw1">false</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The version of <CODE>line()</CODE>.
+<BR/><BR/></P></TD></TR></TABLE>
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+<SPAN class="kw1">const</SPAN> base_ren_type<SPAN class="op">&amp;</SPAN> ren<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> <SPAN class="op">*</SPAN>m_ren<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>        
+base_ren_type<SPAN class="op">&amp;</SPAN> ren<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> <SPAN class="op">*</SPAN>m_ren<SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Returns a reference to the base renderer object.
+<BR/><BR/></P></TD></TR></TABLE>
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+<SPAN class="kw1">const</SPAN> <A href="basic_renderers.agdoc.html#rendering_buffer">rendering_buffer</A><SPAN class="op">&amp;</SPAN> rbuf<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="kw1">const</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_ren<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>rbuf<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+<A href="basic_renderers.agdoc.html#rendering_buffer">rendering_buffer</A><SPAN class="op">&amp;</SPAN> rbuf<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN> <SPAN class="op">{</SPAN> <SPAN class="kw1">return</SPAN> m_ren<SPAN class="op">-</SPAN><SPAN class="op">&gt;</SPAN>rbuf<SPAN class="op">(</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN> <SPAN class="op">}</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Returns a reference to the rendering buffer attached to the base renderer.</P></TD></TR></TABLE>
+
+
+
+<H3>Marker Renderer<A name="toc0018"></A></H3>
+
+<A name="renderer_markers"><B></B></A>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The header file: <A href="../../__code/include/agg_renderer_markers.h.html">agg_renderer_markers.h</A></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The marker renderer can draw or alpha-blend the following simple shapes:</P></TD></TR></TABLE>
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+<SPAN class="kw1">enum</SPAN> <A href="../../__code/include/agg_renderer_markers.h.html#marker_e">marker_e</A>
+<SPAN class="op">{</SPAN>
+    marker_square<SPAN class="op">,</SPAN>
+    marker_diamond<SPAN class="op">,</SPAN>
+    marker_circle<SPAN class="op">,</SPAN>
+    marker_crossed_circle<SPAN class="op">,</SPAN>
+    marker_semiellipse_left<SPAN class="op">,</SPAN>
+    marker_semiellipse_right<SPAN class="op">,</SPAN>
+    marker_semiellipse_up<SPAN class="op">,</SPAN>
+    marker_semiellipse_down<SPAN class="op">,</SPAN>
+    marker_triangle_left<SPAN class="op">,</SPAN>
+    marker_triangle_right<SPAN class="op">,</SPAN>
+    marker_triangle_up<SPAN class="op">,</SPAN>
+    marker_triangle_down<SPAN class="op">,</SPAN>
+    marker_four_rays<SPAN class="op">,</SPAN>
+    marker_cross<SPAN class="op">,</SPAN>
+    marker_x<SPAN class="op">,</SPAN>
+    marker_dash<SPAN class="op">,</SPAN>
+    marker_dot<SPAN class="op">,</SPAN>
+    marker_pixel
+<SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT><TABLE width="640px"><TR><TD style="text-align:justify"><P>&#160;</P></TD></TR></TABLE>
+
+<H4>Declaration<A name="toc0019"></A></H4>
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+<SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> BaseRenderer<SPAN class="op">&gt;</SPAN> <SPAN class="kw1">class</SPAN> <A href="basic_renderers.agdoc.html#renderer_markers">renderer_markers</A> :
+<SPAN class="kw1">public</SPAN> <A href="basic_renderers.agdoc.html#renderer_primitives">renderer_primitives</A><SPAN class="op">&lt;</SPAN>BaseRenderer<SPAN class="op">&gt;</SPAN>
+<SPAN class="op">{</SPAN>
+<SPAN class="kw1">public</SPAN>:
+    <SPAN class="kw1">typedef</SPAN> <A href="basic_renderers.agdoc.html#renderer_primitives">renderer_primitives</A><SPAN class="op">&lt;</SPAN>BaseRenderer<SPAN class="op">&gt;</SPAN> base_type<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">typedef</SPAN> BaseRenderer base_ren_type<SPAN class="op">;</SPAN>
+    <SPAN class="kw1">typedef</SPAN> <SPAN class="kw1">typename</SPAN> base_ren_type::color_type color_type<SPAN class="op">;</SPAN>
+<SPAN class="rem">// . . .</SPAN>
+<SPAN class="op">}</SPAN><SPAN class="op">;</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT><TABLE width="640px"><TR><TD style="text-align:justify"><P>&#160;</P></TD></TR></TABLE>
+
+<H4>Creation<A name="toc0020"></A></H4>
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+<A href="basic_renderers.agdoc.html#renderer_markers">renderer_markers</A><SPAN class="op">(</SPAN>base_ren_type<SPAN class="op">&amp;</SPAN> rbuf<SPAN class="op">)</SPAN> :
+    base_type<SPAN class="op">(</SPAN>rbuf<SPAN class="op">)</SPAN>
+<SPAN class="op">{</SPAN><SPAN class="op">}</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>As you can see, the creation is as simple as the <A href="basic_renderers.agdoc.html#renderer_primitives">renderer_primitives</A> one.</P></TD></TR></TABLE>
+
+<H4>Member Functions<A name="toc0021"></A></H4>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>All the marker functions accept <CODE>x</CODE>, <CODE>y</CODE>, and <CODE>radius</CODE> in pixels.
+The radius in the <CODE>pixel()</CODE> marker doesn&#039;t have any effect.
+The fill and line colors are taken from the base class <A href="basic_renderers.agdoc.html#renderer_primitives">renderer_primitives</A>.</P></TD></TR></TABLE>
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+<SPAN class="kw1">void</SPAN> square<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> r<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+<SPAN class="kw1">void</SPAN> diamond<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> r<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+<SPAN class="kw1">void</SPAN> circle<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> r<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+<SPAN class="kw1">void</SPAN> crossed_circle<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> r<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+<SPAN class="kw1">void</SPAN> semiellipse_left<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> r<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+<SPAN class="kw1">void</SPAN> semiellipse_right<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> r<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+<SPAN class="kw1">void</SPAN> semiellipse_up<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> r<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+<SPAN class="kw1">void</SPAN> semiellipse_down<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> r<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+<SPAN class="kw1">void</SPAN> triangle_left<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> r<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+<SPAN class="kw1">void</SPAN> triangle_right<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> r<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+<SPAN class="kw1">void</SPAN> triangle_up<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> r<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+<SPAN class="kw1">void</SPAN> triangle_down<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> r<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+<SPAN class="kw1">void</SPAN> four_rays<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> r<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+<SPAN class="kw1">void</SPAN> cross<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> r<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+<SPAN class="kw1">void</SPAN> xing<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> r<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+<SPAN class="kw1">void</SPAN> dash<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> r<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+<SPAN class="kw1">void</SPAN> dot<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> r<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+<SPAN class="kw1">void</SPAN> pixel<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN><SPAN class="op">)</SPAN><SPAN class="op">;</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Also, there are some functions for the convenience that basically just use 
+the <CODE>switch/case</CODE> construction:</P></TD></TR></TABLE>
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE><SPAN class="kw1">void</SPAN> marker<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">int</SPAN> r<SPAN class="op">,</SPAN> <A href="../../__code/include/agg_renderer_markers.h.html#marker_e">marker_e</A> type<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN></PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Draw a single marker of the given type.
+<BR/><BR/></P></TD></TR></TABLE>
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+<SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> T<SPAN class="op">&gt;</SPAN>
+<SPAN class="kw1">void</SPAN> markers<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> n<SPAN class="op">,</SPAN> <SPAN class="kw1">const</SPAN> T<SPAN class="op">*</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">const</SPAN> T<SPAN class="op">*</SPAN> y<SPAN class="op">,</SPAN> T r<SPAN class="op">,</SPAN> <A href="../../__code/include/agg_renderer_markers.h.html#marker_e">marker_e</A> type<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN></PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Draw a number of markers of the given type and radius and coordinates 
+stored in two arrays, <CODE>x</CODE> and <CODE>y</CODE>.
+<BR/><BR/></P></TD></TR></TABLE>
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+<SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> T<SPAN class="op">&gt;</SPAN>
+<SPAN class="kw1">void</SPAN> markers<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> n<SPAN class="op">,</SPAN> <SPAN class="kw1">const</SPAN> T<SPAN class="op">*</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">const</SPAN> T<SPAN class="op">*</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">const</SPAN> T<SPAN class="op">*</SPAN> r<SPAN class="op">,</SPAN> <A href="../../__code/include/agg_renderer_markers.h.html#marker_e">marker_e</A> type<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN></PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Draw a number of markers of the given type with coordinates and radii
+stored in three arrays.
+<BR/><BR/></P></TD></TR></TABLE>
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+<SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> T<SPAN class="op">&gt;</SPAN>
+<SPAN class="kw1">void</SPAN> markers<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> n<SPAN class="op">,</SPAN> <SPAN class="kw1">const</SPAN> T<SPAN class="op">*</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">const</SPAN> T<SPAN class="op">*</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">const</SPAN> T<SPAN class="op">*</SPAN> r<SPAN class="op">,</SPAN> 
+             <SPAN class="kw1">const</SPAN> color_type<SPAN class="op">*</SPAN> fill_colors<SPAN class="op">,</SPAN> 
+             <A href="../../__code/include/agg_renderer_markers.h.html#marker_e">marker_e</A> type<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN></PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Draw a number of markers of the given type with coordinates and radii
+stored in three arrays and of different fill colors.
+<BR/><BR/></P></TD></TR></TABLE>
+
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+<SPAN class="kw1">template</SPAN><SPAN class="op">&lt;</SPAN><SPAN class="kw1">class</SPAN> T<SPAN class="op">&gt;</SPAN>
+<SPAN class="kw1">void</SPAN> markers<SPAN class="op">(</SPAN><SPAN class="kw1">int</SPAN> n<SPAN class="op">,</SPAN> <SPAN class="kw1">const</SPAN> T<SPAN class="op">*</SPAN> x<SPAN class="op">,</SPAN> <SPAN class="kw1">const</SPAN> T<SPAN class="op">*</SPAN> y<SPAN class="op">,</SPAN> <SPAN class="kw1">const</SPAN> T<SPAN class="op">*</SPAN> r<SPAN class="op">,</SPAN> 
+             <SPAN class="kw1">const</SPAN> color_type<SPAN class="op">*</SPAN> fc<SPAN class="op">,</SPAN> <SPAN class="kw1">const</SPAN> color_type<SPAN class="op">*</SPAN> lc<SPAN class="op">,</SPAN> 
+             <A href="../../__code/include/agg_renderer_markers.h.html#marker_e">marker_e</A> type<SPAN class="op">)</SPAN><SPAN class="op">;</SPAN></PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Draw a number of markers of the given type with coordinates and radii
+stored in three arrays and of different fill and line colors.
+<BR/><BR/></P></TD></TR></TABLE>
+
+
+<BR/><TABLE width="640px" bgcolor="#583927" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0">
+<TR><TD><CENTER><SPAN class="authors">
+Copyright <SPAN class="larger">&#169;</SPAN> 2002-2006
+<A href="../../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+<TR><TD><CENTER><SPAN class="authors">
+Web Design and Programming
+<A href="../../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+</TABLE>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+</HTML>

@@ -1,0 +1,327 @@
+<HTML><HEAD><TITLE>Anti-Grain Geometry - AGDoc Formatter</TITLE>
+<META http-equiv="Content-Type" content="text/html"/>
+<LINK rel="stylesheet" type="text/css" href="../agg.styles.css"/>
+</HEAD>
+<A name="PAGE_AGDOC"><B></B></A>
+
+
+<TABLE width="640px" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR>
+<TD bgcolor="#583927"></TD>
+</TR>
+</TABLE>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR>
+<TD>
+<TABLE width="170px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR><TD><A href="../index.html" class="mpmenu">Home/</A></TD></TR>
+<TR><TD><A href="" class="mpmenu"></A></TD></TR>
+<TR><TD><A href="" class="mpmenu"></A></TD></TR>
+<TR><TD><A href="" class="mpmenu"></A></TD></TR>
+<TR><TD><A href="" class="mpmenu"></A></TD></TR>
+<TR><TD><A href="" class="mpmenu"></A></TD></TR>
+</TABLE>
+</TD>
+<TD width="1px" bgcolor="#583927"></TD>
+<TD width="450px" valign="top" style="text-align:right">
+<TABLE border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR>
+<TD><IMG src="../agg_logo.gif" border="0"/></TD>
+</TR>
+<TR>
+<TD>
+<TABLE border="0" cellspacing="0" cellpadding="0" style="margin:0px;">
+<TR height="15px">
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../news/index.html">News</A>&nbsp;&nbsp;</TD>
+<TD width="1px" bgcolor="#8e521d"></TD>
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../doc/index.html">Docs</A>&nbsp;&nbsp;</TD>
+<TD width="1px" bgcolor="#8e521d"></TD>
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../download/index.html">Download</A>&nbsp;&nbsp;</TD>
+<TD width="1px" bgcolor="#8e521d"></TD>
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../maillist/index.html">Mailing List</A>&nbsp;&nbsp;</TD>
+<TD width="1px" bgcolor="#8e521d"></TD>
+<TD>&nbsp;&nbsp;<A class="topmenu" href="../cvs/index.html">CVS</A>&nbsp;&nbsp;</TD>
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+</TD>
+</TR>
+</TABLE>
+<TABLE width="640px" height="1px" bgcolor="#583927" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD><H1>AGDoc Formatter<SPAN class="subtitle"><BR/>Yet Another Document Formatting Tool</SPAN></H1></TD></TR></TABLE>
+
+
+<TABLE class="toc" width="640px"><TR><TD>
+    <DIV style="margin-left:2em; padding:3px; font-size:14px;"><A href="#toc0001"><B>Introduction</B></A></DIV>
+    <DIV style="margin-left:2em; padding:3px; font-size:14px;"><A href="#toc0002"><B>Rationale</B></A></DIV>
+    <DIV style="margin-left:2em; padding:3px; font-size:14px;"><A href="#toc0003"><B>Compatibility</B></A></DIV>
+    <DIV style="margin-left:2em; padding:3px; font-size:14px;"><A href="#toc0004"><B>to be continued...</B></A></DIV>
+
+</TD></TR></TABLE>
+
+<H2>Introduction<A name="toc0001"></A></H2>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><B>AGDoc</B> is a command line utility that compiles text files and produces documents.
+This is rather an indistinct definition, but it means the following.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><UL type="disc">
+<LI>Simple and intuitive source syntax.</LI>
+<LI>Multiple output formats.</LI>
+<LI>Configurable markup elements.</LI>
+<LI>Automatic collecting and formatting of tables of contents.</LI>
+<LI>Collecting of the index and automatic cross referencing within the project.</LI>
+<LI>Automatic syntax highlighting of your source code.</LI>
+<LI>Easy adaptation for 16- and <NOBR>32-bit</NOBR> Unicode.</LI></UL></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>It also means that you will need to spend some time configuring the output formats and
+creating your own templates, but then you can put all your efforts into writing
+the text.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Generally speaking, it all looks like <A href="http://www.tug.org/"><IMG src="../link.gif" border="0"/><B>T<SUB>E</SUB>X</B></A>, but in practice it is much simpler in use,
+much more compact, and of course, much less automated. Compared to <A href="http://www.tug.org/"><IMG src="../link.gif" border="0"/><B>T<SUB>E</SUB>X</B></A> it&#039;s just a
+tiny ant crowling beside an elephant. For example, the full installation of <A href="http://www.miktex.org"><IMG src="../link.gif" border="0"/><B>MiKT<SUB>E</SUB>X</B></A>
+weighs about 250 megabytes, while <B>AGDoc</B> is only 310 kilobytes of source code in <B>C++</B>.</P></TD></TR></TABLE>
+
+
+
+<BR/><H2>Rationale<A name="toc0002"></A></H2>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>The main purpose of <B>AGDoc</B> is to provide a simple document formatting tool for
+developers of Open Source software. <B>AGDoc</B> probably doesn&#039;t fit the needs of
+writing books with many formulae, but it perfectly solves the task of formatting
+compact reference manuals for your projects. The following is a brief overview
+of the formatting systems that were considered before I decided to create <B>AGDoc</B>.
+</P></TD></TR></TABLE><TABLE class="note" width="640px"><TR><TD><B>NOTE</B><BR/>
+I do not want to say they are bad tools. They all are great. I just want
+to rationalize my personal aspirations when creating the <B>AGDoc</B> formatter.
+</TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><UL type="disc">
+<LI><A href="http://www.microsoft.com"><IMG src="../link.gif" border="0"/><B>Microsoft</B></A> <B>Word</B>. It&#039;s a nice program to compose business letters, but it&#039;s
+    hard to use it when writing large amount of text. Below is just a little aspect.
+    You can define auto replacements with custom formatting, for example, you
+    type &#147;TEX&#148; and it&#039;s being replaced to <A href="http://www.tug.org/"><IMG src="../link.gif" border="0"/><B>T<SUB>E</SUB>X</B></A> with a hyperlink. But the problem is
+    the rules of replacement don&#039;t exist in the source text, it only works when you
+    <B>type</B> the text. If you decide to change anything in your replacements you will
+    have to do a lot of routine work. Applying styles requires much more mechanical
+    movements than in any non-WISIWIG system. In other words it&#039;s easy to start, but
+    hard to work with. Besides, it&#039;s rather unstable. For me, a single crash with
+    losing of one paragraph of text is enough reason not to touch this junk anymore.
+    But most of all, there are big doubts about the &#147;liquidity&#148; of the <B>Word</B>
+    files. It is claimed that you can read <B>Word</B> files with other tools like
+    <A href="http://www.abisource.com/"><IMG src="../link.gif" border="0"/>AbiWord</A>,
+    but in practice it&#039;s very questionable it will correctly execute all your
+    macros, styles, and scripts. Without scripts <A href="http://www.microsoft.com"><IMG src="../link.gif" border="0"/><B>Microsoft</B></A> <B>Word</B> is nothing
+    but just a program to write business letters. How are you going to
+    automatically highlight the syntax of your programs, for example?</LI></UL></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><UL type="disc">
+<LI><A href="http://www.tug.org/"><IMG src="../link.gif" border="0"/><B>T<SUB>E</SUB>X</B></A>. That is cool, but it&#039;s an apparent overkill for me. As it was said, the full
+    package takes about 250 megabytes. You can easily produce perfect <B>PDF</B> documents, but
+    there&#039;s a problem with HTML. Yes, there are some tools like <B>L<SUP>A</SUP>T<SUB>E</SUB>X2<SUB>HTML</SUB></B>
+    but they produce only very primitive <B>HTML</B>, and it&#039;s not possible to configure
+    the output markup elements. Some things are possible to do with <B>CSS</B>, but not
+    all of them. For example, if you want your <B>HTML</B> pages to be justified to a
+    certain width, you will have to enclose every paragraph into a table.
+    <B>CSS</B> is not that standardized to rely on, because many advanced things work
+    differently in different browsers or don&#039;t work at all. So, the most reliable
+    way to produce high quality <B>HTML</B> documents is to insert rather complex <B>HTML</B>
+    tags directly into the text. Thus, another mainspring of creating <B>AGDoc</B>
+    was to have a formatter with absolutely customizable <B>HTML</B> output. Besides,
+    a <A href="http://www.tug.org/"><IMG src="../link.gif" border="0"/><B>T<SUB>E</SUB>X</B></A> source (if it&#039;s good enough) looks like abracadabra in an unknown
+    programming language. When you need to
+    to create a good looking table, you will eventually sink in <A href="http://www.tug.org/"><IMG src="../link.gif" border="0"/><B>T<SUB>E</SUB>X</B></A> commands.
+    Besides, there are no ready to use tools to highlight code examples, or
+    they require many hours of studying and tuning.
+    However, I like the idea of syntax of <A href="http://www.tug.org/"><IMG src="../link.gif" border="0"/><B>T<SUB>E</SUB>X</B></A> and <B>AGDoc</B> uses similar syntax,
+    for example, <CODE>\b{Bold Text}</CODE> is displayed as <B>Bold Text</B>.
+    I respect <A href="http://www.tug.org/"><IMG src="../link.gif" border="0"/><B>T<SUB>E</SUB>X</B></A>, and, in fact, it&#039;s the standard
+    to write technical articles. <B>AGDoc</B> has at least a potential possibility
+    to produce output in <A href="http://www.tug.org/"><IMG src="../link.gif" border="0"/><B>T<SUB>E</SUB>X</B></A> format. Well, you will need it if you want to have
+    nice looking <B>PDF</B> along with <B>HTML</B>.</LI></UL></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><UL type="disc">
+<LI><A href="http://www.docbook.org/"><IMG src="../link.gif" border="0"/><B>DocBook</B></A>. That is cool too, but it&#039;s <B>XML</B> and there&#039;s nothing to add about it.
+    Well, I will try to add something, though :).
+    <B>XML</B> is good as a standard for data exchange between different computer applications
+    (with incredible overhead, though), but it has absolutely inappropriate
+    syntax for manual editing by a human. In fact, it&#039;s as bad as naked <B>HTML</B>, despite
+    of all possible automated editing tools. The syntax <B>does matter!</B> In <A href="http://www.docbook.org/"><IMG src="../link.gif" border="0"/><B>DocBook</B></A>
+    you physically enclose sections into chapters, subsections into sections, and so on.
+    But look into any paper book &#151; they all have linear structure! You just read
+    the text and do not care much about its structure, in the meaning of
+    <NOBR>chapter/section/subsection&#133;etc</NOBR>. Similarly, a writer wants just to <B>mark</B>
+    a certain line as a starting point of a new subsection, but never incapsulate
+    it into the enclosing section.
+    In <A href="http://www.docbook.org/"><IMG src="../link.gif" border="0"/><B>DocBook</B></A> you have extremely long elements, that are very hard for manual handling.
+    In general, it&#039;s a bad idea to enforce using solid elements longer than
+    a couple of screen pages. However, despite of all
+    disadvantages of <B>XML</B>, it might be the only appropriate solution when strict
+    structurization is a necessity, for example, when there&#039;s a whole department
+    working on documentation.
+    <B>AGDoc</B> can produce <A href="http://www.docbook.org/"><IMG src="../link.gif" border="0"/><B>DocBook</B></A> <B>XML</B> too, because it&#039;s all configurable.
+    In fact, when debugging the <B>HTML</B> config file for this site, I achieved
+    producing well formed <B>XHTML</B>, that can be easily read by any <B>XML</B> parser.
+    <B>AGDoc</B> can perfectly structurize the sources and produce
+    well formed <A href="http://www.docbook.org/"><IMG src="../link.gif" border="0"/><B>DocBook</B></A> format, with nested chapters, sections, subsections, etc.
+    The task of automatic syntax highlighting can be probably solved, but
+    it definitely requires some efforts.</LI></UL></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><UL type="disc">
+<LI><A href="http://c2.com/cgi/wiki?WikiWikiWeb"><IMG src="../link.gif" border="0"/><B>Wiki</B></A>. It&#039;s almost what is needed because of its simple, but fair enough
+    syntax. But not quite. First of all, I couldn&#039;t find any appropriate tools
+    to work offline. Basically, they all provide some web-service that should be
+    integrated on the server side. What if you just need to produce <B>HTML</B>
+    and to upload it to your site? What if you need to have some other output format?
+    So that, the second disadvantage is the philosophy of <B>Wiki</B> &#151; it&#039;s
+    hardcoded and oriented for dummies (including me, of course).
+    And the third thing is the idea of using
+    sequences of symbols of punctuation only can be turned into absurd.
+    For mainstream texts that&#039;s good
+    enough, but as soon as you need some custom formatting, like code coloring,
+    you will have no appropriate solution, not to
+    mention that sometimes you will want to decorate paragraphs like notes,
+    tips, warnings, and so on. Using only empirical rules is very restrictive.
+    Metaphorically, one can say that <A href="http://c2.com/cgi/wiki?WikiWikiWeb"><IMG src="../link.gif" border="0"/><B>Wiki</B></A> is a
+    reciprocal of <A href="http://www.tug.org/"><IMG src="../link.gif" border="0"/><B>T<SUB>E</SUB>X</B></A>. While <A href="http://www.tug.org/"><IMG src="../link.gif" border="0"/><B>T<SUB>E</SUB>X</B></A> source consists
+    of a lot of commands, sometimes looking like program code, <A href="http://c2.com/cgi/wiki?WikiWikiWeb"><IMG src="../link.gif" border="0"/><B>Wiki</B></A>
+    source contains a lot of abracadabra that is not
+    readable either. From this point of view <B>AGDoc</B> is a compromise between
+    those two poles. It allows you to use <B>Wiki</B>-like elements in your text,
+    but doesn&#039;t restrict your freedom. You can define your own formatting
+    rules and use them in the <A href="http://c2.com/cgi/wiki?WikiWikiWeb"><IMG src="../link.gif" border="0"/><B>Wiki</B></A>-form as well as in the <A href="http://www.tug.org/"><IMG src="../link.gif" border="0"/><B>T<SUB>E</SUB>X</B></A>-form.</LI></UL></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><UL type="disc">
+<LI><A href="http://www.stack.nl/~dimitri/doxygen/"><IMG src="../link.gif" border="0"/><B>Doxygen</B></A>. Great and deservedly popular tool. Except that it&#039;s used mostly
+    for reverse engineering of the sources. Not many people actually put
+    <A href="http://www.stack.nl/~dimitri/doxygen/"><IMG src="../link.gif" border="0"/><B>Doxygen</B></A>-style comments into their source code. Neither do I. Why? Just because
+    it clutters code a lot. Code must be code, comments must be comments. It means
+    that with <A href="http://www.stack.nl/~dimitri/doxygen/"><IMG src="../link.gif" border="0"/><B>Doxygen</B></A> you most likely will write one line of comments,
+    one line of code, one line of comments, one line of code&#133; Eventually it will
+    look like reading two books at the same time, one line from the first,
+    then one line from the second, and so on. When you write a C++ class with
+    detailed description before each method, it looks even worse because you just
+    sink in the comments (remember, you will also need to read &#147;naked&#148; code,
+    without <A href="http://www.stack.nl/~dimitri/doxygen/"><IMG src="../link.gif" border="0"/><B>Doxygen</B></A>). The definition of the class must be compact and observable,
+    with comments and detailed description provided separately. Of course, you can
+    fully describe the class right before it, but you will have to use
+    formatting elements almost as in pure <B>HTML</B>. That breaks the whole idea.
+    Besides, I don&#039;t think it&#039;s good to use extensive markup directly
+    in the source files. The sources must be sources, not docs. <A href="http://www.stack.nl/~dimitri/doxygen/"><IMG src="../link.gif" border="0"/><B>Doxygen</B></A> can be
+    used to create web-sites too, but the output <B>HTML</B> is also hardcoded and cannot
+    be configured. Another aspect is psychology. When using <A href="http://www.stack.nl/~dimitri/doxygen/"><IMG src="../link.gif" border="0"/><B>Doxygen</B></A> you just
+    describe all the classes and functions calming yourself that it&#039;s good enough.
+    But it&#039;s not! When I see a <A href="http://www.stack.nl/~dimitri/doxygen/"><IMG src="../link.gif" border="0"/><B>Doxygen</B></A> generated documentation I have no idea
+    about the threads to pull at the beginning. In other words, it&#039;s a great
+    navigating tool when you are familiar with ideas of the library, but not
+    fair enough to give you a general picture. It disintegrates your
+    sources into small details, but the common view is lost.</LI></UL></P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>So that, <B>AGDoc</B> is mostly an excuse of my laziness, that however, helps
+me to write on-line and hard-copy documentation. I admit, I probably don&#039;t
+know enough about all the mentioned above documenting tools. The main rationale
+of <B>AGDoc</B> is that the time spent for the design and programming <B>AGDoc</B> is
+comparable with studying, but <B>AGDoc</B>, unlike any other tool, is always under
+my full control. I can develop and improve it as the case may require.</P></TD></TR></TABLE>
+
+
+
+<BR/><H2>Compatibility<A name="toc0003"></A></H2>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><B>AGDoc</B> is written in <B>C++</B> with using very basic functionality of the <B>C++ Standard Template Library</B>.
+It compiles and works perfectly even with <A href="http://www.microsoft.com"><IMG src="../link.gif" border="0"/><B>Microsoft</B></A> <B>Visual C++ 6.0</B>, which has
+one of the worst <B>STL</B> implementations. In general, if you
+use <B>C++ Standard Template Library</B> in your open source applications, it&#039;s a good practice to consider
+the worst available implementations of <B>STL</B>.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Another aspect of compatibility is file input/output and working with
+directories. Here <B>AGDoc</B> supports <B>POSIX</B> and <B>Win32</B>. But again,
+<B>AGDoc</B> doesn&#039;t need much. It uses <NOBR><CODE>opendir()</CODE></NOBR>, <NOBR><CODE>readdir()</CODE></NOBR>,
+<NOBR><CODE>closedir()</CODE></NOBR>, <NOBR><CODE>mkdir()</CODE></NOBR>, and <NOBR><CODE>stat()</CODE></NOBR> from <B>POSIX</B> and
+the respective <NOBR><CODE>_findfirst()</CODE></NOBR>, <NOBR><CODE>_findnext()</CODE></NOBR>, <NOBR><CODE>_findclose()</CODE></NOBR>,
+<NOBR><CODE>_mkdir()</CODE></NOBR>, and <NOBR><CODE>_stat()</CODE></NOBR> from <B>Win32</B>.
+So that, it&#039;s perfectly compatible with <B>Win32</B> and any <B>Unix</B> that
+supports very basic <B>POSIX</B>.
+Conditional compilation is the simplest possible one and looks like the following.
+</P></TD></TR></TABLE><TABLE width="640px" border="0" cellspacing="0" cellpadding="0"><TR><TD><PRE>
+<SPAN class="kw2">#if</SPAN> defined<SPAN class="op">(</SPAN>_WIN32<SPAN class="op">)</SPAN>
+   <SPAN class="op">.</SPAN> <SPAN class="op">.</SPAN> <SPAN class="op">.</SPAN>
+   <SPAN class="op">.</SPAN> <SPAN class="op">.</SPAN> <SPAN class="op">.</SPAN>   <SPAN class="rem">// Assume Win32</SPAN>
+   <SPAN class="op">.</SPAN> <SPAN class="op">.</SPAN> <SPAN class="op">.</SPAN>
+<SPAN class="kw2">#else</SPAN>
+   <SPAN class="op">.</SPAN> <SPAN class="op">.</SPAN> <SPAN class="op">.</SPAN>
+   <SPAN class="op">.</SPAN> <SPAN class="op">.</SPAN> <SPAN class="op">.</SPAN>   <SPAN class="rem">// Assume POSIX</SPAN>
+   <SPAN class="op">.</SPAN> <SPAN class="op">.</SPAN> <SPAN class="op">.</SPAN>
+<SPAN class="kw2">#endif</SPAN>
+</PRE></TD></TR></TABLE><FONT style="margin-left:1em"><I></I></FONT>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>Another compatibility issue is that <B>AGDoc</B>
+does not understand drive letters and backslashes (\) in the paths.
+That is, all paths must be of Unix-style. <A href="http://www.microsoft.com"><IMG src="../link.gif" border="0"/><B>Microsoft</B></A> Windows perfectly understands
+Unix-style slashes in paths, so, there is no reason to support both, especially
+when the backslash is a key symbol in the <B>AGDoc</B> files.</P></TD></TR></TABLE>
+
+
+<BR/><H2>to be continued...<A name="toc0004"></A></H2>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>I apologize for not providing more information, but it&#039;s in my TO DO list.
+For now you can try to play with the following example.
+First, there is an <A href="http://www.antigrain.com/agdoc/test_project/output/test.agdoc.html"><IMG src="../link.gif" border="0"/>example page</A>
+and its <A href="http://www.antigrain.com/agdoc/test.agdoc.html"><IMG src="../link.gif" border="0"/>source</A>. If it&#039;s
+interesting enough do the following.</P></TD></TR></TABLE>
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P><OL>
+<LI>Download:<BR/>
+    <A href="http://www.antigrain.com/agdoc/agdoc.zip"><IMG src="../download.gif" border="0"/>Windows-style Archive &#160;(http://www.antigrain.com/agdoc/agdoc.zip)</A> <BR/>
+    or <BR/>
+    <A href="http://www.antigrain.com/agdoc/agdoc.tar.gz"><IMG src="../download.gif" border="0"/>Unix-style Archive &#160;(http://www.antigrain.com/agdoc/agdoc.tar.gz)</A>
+    <BR/><BR/></LI>
+<LI>Unpack and compile it. There are no compilation environments provided,
+    but it&#039;s easy. In Windows Visual C++, just create a new console application,
+    add all <B>.cpp</B> files, and build them. Or use the command-line compiler:<BR/>
+    <CODE>cl -GX *.cpp</CODE><BR/>
+    On Linux or Unix with GNU C++ use <BR/>
+    <CODE>g++ -o agdoc -O3 *.cpp</CODE><BR/>
+    &#133; and so on.
+    <BR/><BR/></LI>
+<LI>When it&#039;s built, run: <BR/>
+    <CODE>agdoc test_project/doc_source/test.agproj</CODE><BR/>
+    There new directory <CODE>test_project/output</CODE> should be created with <CODE>test.agdoc.html</CODE>
+    and other necessary files.
+    <BR/><BR/></LI>
+<LI>Open <CODE>test_project/output/test.agdoc.html</CODE> and compare it with its source,
+    <CODE>test_project/doc_source/test.agdoc</CODE>
+    <BR/><BR/></LI>
+<LI>Open <CODE>test_project/formatting_example.agtempl</CODE> and try to review it. I must say,
+    I&#039;m not an experienced <B>HTML</B> and <B>CSS</B> professional. This file is just an example
+    that shows you the general idea of <B>AGDoc</B>. Instead of HTML tags you can put anything
+    else, including <A href="http://www.tug.org/"><IMG src="../link.gif" border="0"/><B>T<SUB>E</SUB>X</B></A> elements, <A href="http://www.docbook.org/"><IMG src="../link.gif" border="0"/><B>DocBook</B></A> elements, and so on.
+    <BR/><BR/></LI>
+<LI>If you like the idea and if it worth more detailed documenting, please
+    <A href="mailto:mcseem@antigrain.com"><IMG src="../link.gif" border="0"/>tell me</A>.</LI></OL></P></TD></TR></TABLE>
+
+
+<TABLE width="640px"><TR><TD style="text-align:justify"><P>to be continued&#133;</P></TD></TR></TABLE>
+ 
+<BR/><TABLE width="640px" bgcolor="#583927" height="1px" border="0" cellspacing="0" cellpadding="0" style="margin:0px;"><TR><TD></TD></TR></TABLE>
+<TABLE width="640px" border="0" cellspacing="0" cellpadding="0">
+<TR><TD><CENTER><SPAN class="authors">
+Copyright <SPAN class="larger">&#169;</SPAN> 2002-2006
+<A href="../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+<TR><TD><CENTER><SPAN class="authors">
+Web Design and Programming
+<A href="../mcseem/index.html"><B>Maxim Shemanarev</B></A>
+</SPAN></CENTER></TD></TR>
+</TABLE>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+<BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/><BR/>
+</HTML>
