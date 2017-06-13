@@ -1,6 +1,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <time.h>
+#include <limits>
 #include "agg_rendering_buffer.h"
 #include "agg_trans_viewport.h"
 #include "agg_path_storage.h"
@@ -53,8 +54,8 @@ namespace agg
             m_curve(m_path),
             m_trans(m_curve, m_affine),
             m_styles(),
-            m_min_style(0x7FFFFFFF),
-            m_max_style(-0x7FFFFFFF)
+            m_min_style(std::numeric_limits<int>::max()),
+            m_max_style(std::numeric_limits<int>::min())
         {}
 
         bool open(const char* fname)
@@ -67,8 +68,8 @@ namespace agg
         {
             m_path.remove_all();
             m_styles.remove_all();
-            m_min_style = 0x7FFFFFFF;
-            m_max_style = -0x7FFFFFFF;
+            m_min_style = std::numeric_limits<int>::max();
+            m_max_style = std::numeric_limits<int>::min();
 
             const char space[] = " \t\n\r";
             double ax, ay, cx, cy;

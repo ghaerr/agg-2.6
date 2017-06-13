@@ -29,6 +29,7 @@
 #ifndef AGG_RASTERIZER_SCANLINE_AA_NOGAMMA_INCLUDED
 #define AGG_RASTERIZER_SCANLINE_AA_NOGAMMA_INCLUDED
 
+#include <limits>
 #include "agg_rasterizer_cells_aa.h"
 #include "agg_rasterizer_sl_clip.h"
 
@@ -50,8 +51,8 @@ namespace agg
 
         void initial()
         {
-            x = 0x7FFFFFFF;
-            y = 0x7FFFFFFF;
+            x = std::numeric_limits<int>::max();
+            y = std::numeric_limits<int>::max();
             cover = 0;
             area  = 0;
         }

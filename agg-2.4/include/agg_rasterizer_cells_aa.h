@@ -31,6 +31,7 @@
 
 #include <string.h>
 #include <cstdlib>
+#include <limits>
 #include "agg_math.h"
 #include "agg_array.h"
 
@@ -150,10 +151,10 @@ namespace agg
         m_curr_cell_ptr(0),
         m_sorted_cells(),
         m_sorted_y(),
-        m_min_x(0x7FFFFFFF),
-        m_min_y(0x7FFFFFFF),
-        m_max_x(-0x7FFFFFFF),
-        m_max_y(-0x7FFFFFFF),
+        m_min_x(std::numeric_limits<int>::max()),
+        m_min_y(std::numeric_limits<int>::max()),
+        m_max_x(std::numeric_limits<int>::min()),
+        m_max_y(std::numeric_limits<int>::min()),
         m_sorted(false)
     {
         m_style_cell.initial();
@@ -169,10 +170,10 @@ namespace agg
         m_curr_cell.initial();
         m_style_cell.initial();
         m_sorted = false;
-        m_min_x =  0x7FFFFFFF;
-        m_min_y =  0x7FFFFFFF;
-        m_max_x = -0x7FFFFFFF;
-        m_max_y = -0x7FFFFFFF;
+        m_min_x = std::numeric_limits<int>::max();
+        m_min_y = std::numeric_limits<int>::max();
+        m_max_x = std::numeric_limits<int>::min();
+        m_max_y = std::numeric_limits<int>::min();
     }
 
     //------------------------------------------------------------------------
@@ -627,8 +628,8 @@ namespace agg
         if(m_sorted) return; //Perform sort only the first time.
 
         add_curr_cell();
-        m_curr_cell.x     = 0x7FFFFFFF;
-        m_curr_cell.y     = 0x7FFFFFFF;
+        m_curr_cell.x     = std::numeric_limits<int>::max();
+        m_curr_cell.y     = std::numeric_limits<int>::max();
         m_curr_cell.cover = 0;
         m_curr_cell.area  = 0;
 

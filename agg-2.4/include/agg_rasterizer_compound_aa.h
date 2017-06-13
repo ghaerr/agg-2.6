@@ -29,6 +29,7 @@
 #ifndef AGG_RASTERIZER_COMPOUND_AA_INCLUDED
 #define AGG_RASTERIZER_COMPOUND_AA_INCLUDED
 
+#include <limits>
 #include "agg_rasterizer_cells_aa.h"
 #include "agg_rasterizer_sl_clip.h"
 
@@ -49,8 +50,8 @@ namespace agg
 
         void initial()
         {
-            x     = 0x7FFFFFFF;
-            y     = 0x7FFFFFFF;
+            x     = std::numeric_limits<int>::max();
+            y     = std::numeric_limits<int>::max();
             cover = 0;
             area  = 0;
             left  = -1;
@@ -120,11 +121,11 @@ namespace agg
             m_asm(),     // Active Style Mask 
             m_cells(),
             m_cover_buf(),
-            m_min_style(0x7FFFFFFF),
-            m_max_style(-0x7FFFFFFF),
+            m_min_style(std::numeric_limits<int>::max()),
+            m_max_style(std::numeric_limits<int>::min()),
             m_start_x(0),
             m_start_y(0),
-            m_scan_y(0x7FFFFFFF),
+            m_scan_y(std::numeric_limits<int>::max()),
             m_sl_start(0),
             m_sl_len(0)
         {}
@@ -303,9 +304,9 @@ namespace agg
     void rasterizer_compound_aa<Clip>::reset() 
     { 
         m_outline.reset(); 
-        m_min_style =  0x7FFFFFFF;
-        m_max_style = -0x7FFFFFFF;
-        m_scan_y    =  0x7FFFFFFF;
+        m_min_style = std::numeric_limits<int>::max();
+        m_max_style = std::numeric_limits<int>::min();
+        m_scan_y    = std::numeric_limits<int>::max();
         m_sl_start  =  0;
         m_sl_len    = 0;
     }
@@ -478,7 +479,7 @@ namespace agg
             m_asm[nbyte] |= mask;
             style->start_cell = 0;
             style->num_cells = 0;
-            style->last_x = -0x7FFFFFFF;
+            style->last_x = std::numeric_limits<int>::min();
         }
         ++style->start_cell;
     }
@@ -513,7 +514,7 @@ namespace agg
                 style = &m_styles[0];
                 style->start_cell = 0;
                 style->num_cells = 0;
-                style->last_x = -0x7FFFFFFF;
+                style->last_x = std::numeric_limits<int>::min();
 
                 m_sl_start = cells[0]->x;
                 m_sl_len   = cells[num_cells-1]->x - m_sl_start + 1;
