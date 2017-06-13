@@ -65,7 +65,8 @@ namespace agg
 
         int not_equal(int ex, int ey, const cell_style_aa& c) const
         {
-            return (ex - x) | (ey - y) | (left - c.left) | (right - c.right);
+            return ((unsigned)ex - (unsigned)x) | ((unsigned)ey - (unsigned)y) | 
+                   ((unsigned)left - (unsigned)c.left) | ((unsigned)right - (unsigned)c.right);
         }
     };
 
