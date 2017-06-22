@@ -81,7 +81,6 @@ public:
     {
         agg::svg::parser p(m_path);
         p.parse(fname);
-        m_path.arrange_orientations();
         m_path.bounding_rect(&m_min_x, &m_min_y, &m_max_x, &m_max_y);
         caption(p.title());
     }
