@@ -34,7 +34,7 @@
 #include "agg_rasterizer_outline.h"
 #include "agg_span_gradient.h"
 
-#define infinity 1E20
+#include <float.h>
 
 namespace agg
 {
@@ -132,8 +132,8 @@ namespace agg
 		float s;
 
 		spann[0 ] = 0;
-		spang[0 ] = float(-infinity );
-		spang[1 ] = float(+infinity );
+		spang[0 ] = -FLT_MAX;
+		spang[1 ] = FLT_MAX;
 
 		for (int q = 1; q <= length - 1; q++)
 		{
@@ -148,7 +148,7 @@ namespace agg
 			k++;
 			spann[k ] = q;
 			spang[k ] = s;
-			spang[k + 1 ] = float(+infinity);
+			spang[k + 1 ] = FLT_MAX;
 
 		}
 
@@ -209,7 +209,7 @@ namespace agg
 					ras.add_path(trans );
 
 				   // II. Distance Transform
-				   // Create Float Buffer + 0 vs infinity (1e20) assignment
+				   // Create Float Buffer + 0 vs infinity assignment
 					float* image = new float[width * height];
 
 					if (image)
@@ -224,7 +224,7 @@ namespace agg
 								}
 								else
 								{
-									image[l ] = float(infinity );
+									image[l ] = FLT_MAX;
 								}
 							}
 													

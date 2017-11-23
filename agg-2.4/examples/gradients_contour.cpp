@@ -59,9 +59,9 @@
 
 enum flip_y_e { flip_y = true };
 
-#define angle 10
-#define zoom_up 1.1
-#define zoom_down 0.9
+const double angle = 10;
+const double zoom_up = 1.1;
+const double zoom_down = 0.9;
 
 //==========================================================gradient_conic
 class gradient_conic_angle
@@ -1662,7 +1662,7 @@ public:
 		m_init = true;
 	}
 
-#define bbox double x1, y1, x2, y2;\
+#define BBOX double x1, y1, x2, y2;\
 x1 = m_persp.xn(0 );\
 y1 = m_persp.yn(0 );\
 x2 = m_persp.xn(1 );\
@@ -1684,7 +1684,7 @@ if (m_persp.yn(3 ) > y2 )\
     y2 = m_persp.yn(3 );\
 }
 
-#define rotate(a) agg::trans_affine_translation tat(-(x1 + (x2 - x1 ) / 2 ) ,-(y1 + (y2 - y1 ) / 2 ) );\
+#define ROTATE(a) agg::trans_affine_translation tat(-(x1 + (x2 - x1 ) / 2 ) ,-(y1 + (y2 - y1 ) / 2 ) );\
 tat.transform(&m_persp.xn(0) ,&m_persp.yn(0) );\
 tat.transform(&m_persp.xn(1) ,&m_persp.yn(1) );\
 tat.transform(&m_persp.xn(2) ,&m_persp.yn(2) );\
@@ -1701,7 +1701,7 @@ tt2.transform(&m_persp.xn(2) ,&m_persp.yn(2) );\
 tt2.transform(&m_persp.xn(3) ,&m_persp.yn(3) );\
 force_redraw();
 
-#define zoom(z) agg::trans_affine_translation tat(-(x1 + (x2 - x1 ) / 2 ) ,-(y1 + (y2 - y1 ) / 2 ) );\
+#define ZOOM(z) agg::trans_affine_translation tat(-(x1 + (x2 - x1 ) / 2 ) ,-(y1 + (y2 - y1 ) / 2 ) );\
 tat.transform(&m_persp.xn(0) ,&m_persp.yn(0) );\
 tat.transform(&m_persp.xn(1) ,&m_persp.yn(1) );\
 tat.transform(&m_persp.xn(2) ,&m_persp.yn(2) );\
@@ -1722,26 +1722,26 @@ force_redraw();
 	{
 		if (key == agg::key_kp_plus )
 		{
-			bbox
-			rotate(-angle)
+			BBOX
+			ROTATE(-angle)
 		}
 
 		if (key == agg::key_kp_minus )
 		{
-			bbox
-			rotate(angle)
+			BBOX
+			ROTATE(angle)
 		}
 
 		if (key == agg::key_page_up )
 		{
-			bbox
-			zoom(zoom_up)
+			BBOX
+			ZOOM(zoom_up)
 		}
 
 		if (key == agg::key_page_down )
 		{
-			bbox
-			zoom(zoom_down)
+			BBOX
+			ZOOM(zoom_down)
 		}
 
 		if (key == agg::key_f1)
