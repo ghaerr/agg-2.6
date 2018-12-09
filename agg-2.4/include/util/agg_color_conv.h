@@ -20,7 +20,7 @@
 #ifndef AGG_COLOR_CONV_INCLUDED
 #define AGG_COLOR_CONV_INCLUDED
 
-#include <string.h>
+#include <cstring>
 #include "agg_basics.h"
 #include "agg_rendering_buffer.h"
 
@@ -72,7 +72,7 @@ namespace agg
                           const int8u* src,
                           unsigned width) const
         {
-            memmove(dst, src, width*BPP);
+            std::memmove(dst, src, width*BPP);
         }
     };
 
@@ -111,7 +111,7 @@ namespace agg
     {
         void operator()(void* dst, const void* src, unsigned width) const
         {
-            memmove(dst, src, width * Format::pix_width);
+            std::memmove(dst, src, width * Format::pix_width);
         }
     };
 

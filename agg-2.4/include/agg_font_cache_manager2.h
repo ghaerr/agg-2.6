@@ -18,7 +18,7 @@
 
 #include <cassert>
 #include <exception>
-#include <string.h>
+#include <cstring>
 #include "agg_array.h"
 
 namespace agg {
@@ -58,7 +58,7 @@ namespace fman {
     //--------------------------------------------------------------------
     cached_glyphs()
       : m_allocator(block_size)
-    { memset(m_glyphs, 0, sizeof(m_glyphs)); }
+    { std::memset(m_glyphs, 0, sizeof(m_glyphs)); }
 
     //--------------------------------------------------------------------
     const cached_glyph* find_glyph(unsigned glyph_code) const
@@ -88,7 +88,7 @@ namespace fman {
         m_glyphs[msb] =
           (cached_glyph**)m_allocator.allocate(sizeof(cached_glyph*) * 256,
           sizeof(cached_glyph*));
-        memset(m_glyphs[msb], 0, sizeof(cached_glyph*) * 256);
+        std::memset(m_glyphs[msb], 0, sizeof(cached_glyph*) * 256);
       }
 
       unsigned lsb = glyph_code & 0xFF;

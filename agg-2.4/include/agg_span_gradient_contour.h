@@ -34,7 +34,9 @@
 #include "agg_rasterizer_outline.h"
 #include "agg_span_gradient.h"
 
-#include <float.h>
+#include <cfloat>
+#include <cmath>
+#include <cstring>
 
 namespace agg
 {
@@ -188,7 +190,7 @@ namespace agg
 
 				if (buffer)
 				{
-					memset(buffer ,255 ,width * height );
+					std::memset(buffer ,255 ,width * height );
 
 				   // Setup VG Engine & Render
 					agg::rendering_buffer rb;
@@ -281,14 +283,14 @@ namespace agg
 							}
 
 						   // Take Square Roots, Min & Max
-							float min = sqrt(image[0] );
+							float min = std::sqrt(image[0] );
 							float max = min;
 
 							for (int y = 0, l = 0; y < height; y++ ) 
 							{
 								for (int x = 0; x < width; x++, l++ ) 
 								{
-									image[l] = sqrt(image[l]);
+									image[l] = std::sqrt(image[l]);
 
 									if (min > image[l])
 									{
@@ -306,7 +308,7 @@ namespace agg
 						   // III. Convert To Grayscale
 							if (min == max)
 							{
-								memset(buffer ,0 ,width * height );
+								std::memset(buffer ,0 ,width * height );
 							}
 							else
 							{

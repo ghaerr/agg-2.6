@@ -17,7 +17,7 @@
 #define AGG_PIXFMT_AMASK_ADAPTOR_INCLUDED
 
 
-#include <string.h>
+#include <cstring>
 #include "agg_array.h"
 #include "agg_rendering_buffer.h"
 
@@ -48,13 +48,13 @@ namespace agg
         void init_span(unsigned len)
         {
             realloc_span(len);
-            memset(&m_span[0], amask_type::cover_full, len * sizeof(cover_type));
+            std::memset(&m_span[0], amask_type::cover_full, len * sizeof(cover_type));
         }
 
         void init_span(unsigned len, const cover_type* covers)
         {
             realloc_span(len);
-            memcpy(&m_span[0], covers, len * sizeof(cover_type));
+            std::memcpy(&m_span[0], covers, len * sizeof(cover_type));
         }
 
 

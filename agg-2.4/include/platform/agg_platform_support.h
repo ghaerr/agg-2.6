@@ -18,7 +18,7 @@
 // It's not a part of the AGG library, it's just a helper class to create 
 // interactive demo examples. Since the examples should not be too complex
 // this class is provided to support some very basic interactive graphical
-// funtionality, such as putting the rendered image to the window, simple 
+// functionality, such as putting the rendered image to the window, simple 
 // keyboard and mouse input, window resizing, setting the window title,
 // and catching the "idle" events.
 // 
@@ -644,7 +644,7 @@ namespace agg
         // open it in the current directory. The demos usually expect 
         // all the supplementary files to be placed in the current 
         // directory, that is usually coincides with the directory where
-        // the the executable is. However, in some systems (BeOS) it's not so. 
+        // the executable is. However, in some systems (BeOS) it's not so. 
         // For those kinds of systems full_file_name() can help access files 
         // preserving commonly used policy.
         // So, it's a good idea to use in the demos the following:

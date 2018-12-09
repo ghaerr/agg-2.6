@@ -27,6 +27,8 @@
 #ifndef AGG_BLUR_INCLUDED
 #define AGG_BLUR_INCLUDED
 
+#include <cstring>
+#include <cmath>
 #include "agg_array.h"
 #include "agg_pixfmt_base.h"
 #include "agg_pixfmt_transposer.h"
@@ -1079,7 +1081,7 @@ namespace agg
 
             calc_type s = calc_type(radius * 0.5);
             calc_type q = calc_type((s < 2.5) ?
-                                    3.97156 - 4.14554 * sqrt(1 - 0.26891 * s) :
+                                    3.97156 - 4.14554 * std::sqrt(1 - 0.26891 * s) :
                                     0.98711 * s - 0.96330);
 
             calc_type q2 = calc_type(q * q);
@@ -1318,7 +1320,7 @@ namespace agg
                 // At 3 standard deviations, the response is < 0.005.
                 double pi = 3.14159;
                 double n = 2 / r;
-                m_g0 = 1 / sqrt(2 * pi);
+                m_g0 = 1 / std::sqrt(2 * pi);
                 m_g1 = m_g0 * exp(-n * n);
 
                 // Normalize.
@@ -1355,7 +1357,7 @@ namespace agg
 
             // Horizontally blur the first two input rows.
             calc_row(img, bounds.x1, bounds.y1, w, r0);
-            memcpy(r1, r0, w * sizeof(pixel_type));
+            std::memcpy(r1, r0, w * sizeof(pixel_type));
 
             for (int y = 0; ; )
             {
@@ -1369,7 +1371,7 @@ namespace agg
                 }
                 else
                 {
-                    memcpy(r2, r1, w * sizeof(pixel_type)); // duplicate bottom row
+                    std::memcpy(r2, r1, w * sizeof(pixel_type)); // duplicate bottom row
                 }
 
                 // Combine blurred rows into destination.

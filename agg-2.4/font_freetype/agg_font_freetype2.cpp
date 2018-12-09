@@ -13,7 +13,8 @@
 //          http://www.antigrain.com
 //----------------------------------------------------------------------------
 
-#include <stdio.h>
+#include <cstdio>
+#include <cstring>
 #include <freetype/ftmodapi.h>
 #include "agg_font_freetype2.h"
 #include "agg_bitset_iterator.h"
@@ -747,15 +748,15 @@ namespace fman {
 	{
 		if( !stricmp(m_ft_face->style_name,"Regular") )
 		{
-			size_t len=strlen(m_ft_face->family_name)+1;
+            std::size_t len=std::strlen(m_ft_face->family_name)+1;
 			m_face_name=new char[len];
-			strcpy(m_face_name, m_ft_face->family_name);
+            std::strcpy(m_face_name, m_ft_face->family_name);
 		}
 		else
 		{
-			size_t len=strlen(m_ft_face->family_name)+1+strlen(m_ft_face->style_name)+1;
+            std::size_t len=std::strlen(m_ft_face->family_name)+1+std::strlen(m_ft_face->style_name)+1;
 			m_face_name=new char[len];
-			sprintf( m_face_name, "%s %s", m_ft_face->family_name, m_ft_face->style_name );
+            std::sprintf( m_face_name, "%s %s", m_ft_face->family_name, m_ft_face->style_name );
 		}
 	}
 
@@ -810,7 +811,7 @@ namespace fman {
 
 	//------------------------------------------------------------------------
 	font_engine_freetype_base::loaded_face *font_engine_freetype_base::load_face(
-		const void* buffer, size_t bytes)
+		const void* buffer, std::size_t bytes)
 	{
 		loaded_face *face=0;
 		if(m_library_initialized)

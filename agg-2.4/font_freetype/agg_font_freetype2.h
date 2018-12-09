@@ -24,6 +24,7 @@
 #include FT_FREETYPE_H
 
 
+#include <cstddef>
 #include "agg_scanline_storage_aa.h"
 #include "agg_scanline_storage_bin.h"
 #include "agg_scanline_u.h"
@@ -31,7 +32,7 @@
 #include "agg_path_storage_integer.h"
 #include "agg_rasterizer_scanline_aa.h"
 #include "agg_conv_curve.h"
-  #include "agg_font_cache_manager.h"
+#include "agg_font_cache_manager.h"
 #include "agg_font_cache_manager2.h"
 #include "agg_trans_affine.h"
 
@@ -252,7 +253,7 @@ namespace fman {
 
 		// Load families and faces
         //--------------------------------------------------------------------
-		loaded_face *load_face(const void* buffer, size_t bytes);
+		loaded_face *load_face(const void* buffer, std::size_t bytes);
 		loaded_face *load_face_file(const char* file_name);
 		loaded_face *create_loaded_face(FT_Face ft_face); // internal
 		void unload_face(loaded_face *face);

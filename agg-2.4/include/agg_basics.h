@@ -170,19 +170,19 @@ namespace agg
     }
     AGG_INLINE int ifloor(double v)
     {
-        return int(floor(v));
+        return int(std::floor(v));
     }
     AGG_INLINE unsigned ufloor(double v)
     {
-        return unsigned(floor(v));
+        return unsigned(std::floor(v));
     }
     AGG_INLINE int iceil(double v)
     {
-        return int(ceil(v));
+        return int(std::ceil(v));
     }
     AGG_INLINE unsigned uceil(double v)
     {
-        return unsigned(ceil(v));
+        return unsigned(std::ceil(v));
     }
 #else
     AGG_INLINE int iround(double v)
@@ -204,11 +204,11 @@ namespace agg
     }
     AGG_INLINE int iceil(double v)
     {
-        return int(ceil(v));
+        return int(std::ceil(v));
     }
     AGG_INLINE unsigned uceil(double v)
     {
-        return unsigned(ceil(v));
+        return unsigned(std::ceil(v));
     }
 #endif
 

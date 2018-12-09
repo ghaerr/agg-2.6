@@ -25,9 +25,7 @@
 #ifndef AGG_SCANLINE_STORAGE_BIN_INCLUDED
 #define AGG_SCANLINE_STORAGE_BIN_INCLUDED
 
-#include <string.h>
-#include <stdlib.h>
-#include <math.h>
+#include <cstdlib>
 #include <limits>
 #include "agg_array.h"
 
@@ -166,7 +164,7 @@ namespace agg
             {
                 span_data sp;
                 sp.x   = span_iterator->x;
-                sp.len = (int32)abs((int)(span_iterator->len));
+                sp.len = (int32)std::abs((int)(span_iterator->len));
                 m_spans.add(sp);
                 int x1 = sp.x;
                 int x2 = sp.x + sp.len - 1;

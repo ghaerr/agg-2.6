@@ -24,7 +24,7 @@
 #ifndef AGG_COLOR_RGBA_INCLUDED
 #define AGG_COLOR_RGBA_INCLUDED
 
-#include <math.h>
+#include <cmath>
 #include "agg_basics.h"
 #include "agg_gamma_lut.h"
 
@@ -229,9 +229,9 @@ namespace agg
         if (wl > 700.0)       s = 0.3 + 0.7 * (780.0 - wl) / (780.0 - 700.0);
         else if (wl <  420.0) s = 0.3 + 0.7 * (wl - 380.0) / (420.0 - 380.0);
 
-        t.r = pow(t.r * s, gamma);
-        t.g = pow(t.g * s, gamma);
-        t.b = pow(t.b * s, gamma);
+        t.r = std::pow(t.r * s, gamma);
+        t.g = std::pow(t.g * s, gamma);
+        t.b = std::pow(t.b * s, gamma);
         return t;
     }
 

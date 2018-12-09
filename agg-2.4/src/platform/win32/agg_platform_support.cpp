@@ -18,7 +18,7 @@
 //----------------------------------------------------------------------------
 
 #include <windows.h>
-#include <string.h>
+#include <cstring>
 #include "platform/agg_platform_support.h"
 #include "platform/win32/agg_win32_bmp.h"
 #include "util/agg_color_conv.h"
@@ -747,7 +747,7 @@ namespace agg
         m_initial_width(10),
         m_initial_height(10)
     {
-        strcpy(m_caption, "Anti-Grain Geometry Application");
+        std::strcpy(m_caption, "Anti-Grain Geometry Application");
     }
 
 
@@ -762,7 +762,7 @@ namespace agg
     //------------------------------------------------------------------------
     void platform_support::caption(const char* cap)
     {
-        strcpy(m_caption, cap);
+        std::strcpy(m_caption, cap);
         if(m_specific->m_hwnd)
         {
             SetWindowText(m_specific->m_hwnd, m_caption);
@@ -1300,11 +1300,11 @@ namespace agg
         if(idx < max_images)
         {
             char fn[1024];
-            strcpy(fn, file);
-            int len = strlen(fn);
+            std::strcpy(fn, file);
+            int len = std::strlen(fn);
             if(len < 4 || _stricmp(fn + len - 4, ".BMP") != 0)
             {
-                strcat(fn, ".bmp");
+                std::strcat(fn, ".bmp");
             }
             return m_specific->load_pmap(fn, idx, &m_rbuf_img[idx]);
         }
@@ -1319,11 +1319,11 @@ namespace agg
         if(idx < max_images)
         {
             char fn[1024];
-            strcpy(fn, file);
-            int len = strlen(fn);
+            std::strcpy(fn, file);
+            int len = std::strlen(fn);
             if(len < 4 || _stricmp(fn + len - 4, ".BMP") != 0)
             {
-                strcat(fn, ".bmp");
+                std::strcat(fn, ".bmp");
             }
             return m_specific->save_pmap(fn, idx, &m_rbuf_img[idx]);
         }
@@ -1512,7 +1512,7 @@ namespace agg
             char c = *pstr;
             int found = 0;
 
-            //We are outside of qotation: find one of separator symbols
+            //We are outside of quotation: find one of separator symbols
             if(quote_chr == 0)
             {
                 if(sep_len == 1)
@@ -1521,7 +1521,7 @@ namespace agg
                 }
                 else
                 {
-                    found = strncmp(m_sep, pstr, m_sep_len) == 0; 
+                    found = std::strncmp(m_sep, pstr, m_sep_len) == 0; 
                 }
             }
 
@@ -1618,11 +1618,11 @@ int PASCAL WinMain(HINSTANCE hInstance,
     agg::g_windows_instance = hInstance;
     agg::g_windows_cmd_show = nCmdShow;
 
-    char* argv_str = new char [strlen(lpszCmdLine) + 3];
+    char* argv_str = new char [std::strlen(lpszCmdLine) + 3];
     char* argv_ptr = argv_str;
 
     char* argv[64];
-    memset(argv, 0, sizeof(argv));
+    std::memset(argv, 0, sizeof(argv));
 
     agg::tokenizer cmd_line(" ", "\"' ", "\"'", '\\', agg::tokenizer::multiple);
     cmd_line.set_str(lpszCmdLine);
@@ -1637,7 +1637,7 @@ int PASCAL WinMain(HINSTANCE hInstance,
         if(tok.ptr == 0) break;
         if(tok.len)
         {
-            memcpy(argv_ptr, tok.ptr, tok.len);
+            std::memcpy(argv_ptr, tok.ptr, tok.len);
             argv[argc++] = argv_ptr;
             argv_ptr += tok.len;
             *argv_ptr++ = 0;

@@ -24,9 +24,8 @@
 #ifndef AGG_SCANLINE_STORAGE_AA_INCLUDED
 #define AGG_SCANLINE_STORAGE_AA_INCLUDED
 
-#include <string.h>
-#include <stdlib.h>
-#include <math.h>
+#include <cstring>
+#include <cstdlib>
 #include <limits>
 #include "agg_array.h"
 
@@ -98,13 +97,13 @@ namespace agg
             if(idx >= 0)
             {
                 T* ptr = &m_cells[idx];
-                memcpy(ptr, cells, sizeof(T) * num_cells);
+                std::memcpy(ptr, cells, sizeof(T) * num_cells);
                 return idx;
             }
             extra_span s;
             s.len = num_cells;
             s.ptr = pod_allocator<T>::allocate(num_cells);
-            memcpy(s.ptr, cells, sizeof(T) * num_cells);
+            std::memcpy(s.ptr, cells, sizeof(T) * num_cells);
             m_extra_storage.add(s);
             return -int(m_extra_storage.size());
         }
@@ -145,7 +144,7 @@ namespace agg
                 extra_span dst;
                 dst.len = src.len;
                 dst.ptr = pod_allocator<T>::allocate(dst.len);
-                memcpy(dst.ptr, src.ptr, dst.len * sizeof(T));
+                std::memcpy(dst.ptr, src.ptr, dst.len * sizeof(T));
                 m_extra_storage.add(dst);
             }
         }
@@ -313,7 +312,7 @@ namespace agg
 
                 sp.x         = span_iterator->x;
                 sp.len       = span_iterator->len;
-                int len      = abs(int(sp.len));
+                int len      = std::abs(int(sp.len));
                 sp.covers_id = 
                     m_covers.add_cells(span_iterator->covers, 
                                        unsigned(len));
@@ -480,12 +479,12 @@ namespace agg
 
                     if(sp.len < 0)
                     {
-                        memcpy(data, covers, sizeof(T));
+                        std::memcpy(data, covers, sizeof(T));
                         data += sizeof(T);
                     }
                     else
                     {
-                        memcpy(data, covers, unsigned(sp.len) * sizeof(T));
+                        std::memcpy(data, covers, unsigned(sp.len) * sizeof(T));
                         data += sizeof(T) * unsigned(sp.len);
                     }
                 }

@@ -19,6 +19,7 @@
 #ifndef AGG_TRANS_PERSPECTIVE_INCLUDED
 #define AGG_TRANS_PERSPECTIVE_INCLUDED
 
+#include <cmath>
 #include "agg_trans_affine.h"
 
 namespace agg
@@ -643,7 +644,7 @@ namespace agg
     //------------------------------------------------------------------------
     inline bool trans_perspective::is_valid(double epsilon) const
     {
-        return fabs(sx) > epsilon && fabs(sy) > epsilon && fabs(w2) > epsilon;
+        return std::fabs(sx) > epsilon && std::fabs(sy) > epsilon && std::fabs(w2) > epsilon;
     }
 
     //------------------------------------------------------------------------
@@ -680,7 +681,7 @@ namespace agg
     {
         double x = 0.707106781 * sx  + 0.707106781 * shx;
         double y = 0.707106781 * shy + 0.707106781 * sy;
-        return sqrt(x*x + y*y);
+        return std::sqrt(x*x + y*y);
     }
 
     //------------------------------------------------------------------------
@@ -692,7 +693,7 @@ namespace agg
         double y2 = 0.0;
         transform(&x1, &y1);
         transform(&x2, &y2);
-        return atan2(y2-y1, x2-x1);
+        return std::atan2(y2-y1, x2-x1);
     }
 
     //------------------------------------------------------------------------
@@ -720,8 +721,8 @@ namespace agg
     //------------------------------------------------------------------------
     void trans_perspective::scaling_abs(double* x, double* y) const
     {
-        *x = sqrt(sx  * sx  + shx * shx);
-        *y = sqrt(shy * shy + sy  * sy);
+        *x = std::sqrt(sx  * sx  + shx * shx);
+        *y = std::sqrt(shy * shy + sy  * sy);
     }
 
 

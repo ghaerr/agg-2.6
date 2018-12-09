@@ -22,6 +22,7 @@
 #ifndef AGG_SPAN_GRADIENT_IMAGE_INCLUDED
 #define AGG_SPAN_GRADIENT_IMAGE_INCLUDED
 
+#include <cstring>
 #include "agg_basics.h"
 #include "agg_span_gradient.h"
 #include "agg_color_rgba.h"
@@ -124,7 +125,7 @@ namespace agg
 				for (int rows = 0; rows < height; rows++)
 				{
 					agg::rgba8* row = &m_buffer[rows * m_alocdx ];
-					memset(row ,0 ,m_width * 4 );
+					std::memset(row ,0 ,m_width * 4 );
 				};
 
 				result = m_buffer;

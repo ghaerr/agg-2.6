@@ -24,7 +24,7 @@
 #ifndef AGG_PIXFMT_RGB_PACKED_INCLUDED
 #define AGG_PIXFMT_RGB_PACKED_INCLUDED
 
-#include <string.h>
+#include <cstring>
 #include "agg_basics.h"
 #include "agg_color_rgba.h"
 #include "agg_rendering_buffer.h"
@@ -1084,7 +1084,7 @@ namespace agg
             const int8u* p = from.row_ptr(ysrc);
             if(p)
             {
-                memmove(m_rbuf->row_ptr(xdst, ydst, len) + xdst * pix_width, 
+                std::memmove(m_rbuf->row_ptr(xdst, ydst, len) + xdst * pix_width, 
                         p + xsrc * pix_width, 
                         len * pix_width);
             }
@@ -1144,6 +1144,7 @@ namespace agg
                               int8u cover)
         {
             typedef typename SrcPixelFormatRenderer::value_type src_value_type;
+            typedef typename SrcPixelFormatRenderer::color_type src_color_type;
             const src_value_type* psrc = (src_value_type*)from.row_ptr(ysrc);
             if(psrc)
             {
