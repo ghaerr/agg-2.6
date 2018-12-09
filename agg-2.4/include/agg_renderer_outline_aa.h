@@ -15,6 +15,7 @@
 #ifndef AGG_RENDERER_OUTLINE_AA_INCLUDED
 #define AGG_RENDERER_OUTLINE_AA_INCLUDED
 
+#include <cstdlib>
 #include "agg_array.h"
 #include "agg_math.h"
 #include "agg_line_aa_basics.h"
@@ -478,16 +479,16 @@ namespace agg
             m_lp(&lp),
             m_li(lp.vertical ? line_dbl_hr(lp.x2 - lp.x1) :
                                line_dbl_hr(lp.y2 - lp.y1),
-                 lp.vertical ? abs(lp.y2 - lp.y1) : 
-                               abs(lp.x2 - lp.x1) + 1),
+                 lp.vertical ? std::abs(lp.y2 - lp.y1) : 
+                               std::abs(lp.x2 - lp.x1) + 1),
             m_ren(ren),
             m_len((lp.vertical == (lp.inc > 0)) ? -lp.len : lp.len),
             m_x(lp.x1 >> line_subpixel_shift),
             m_y(lp.y1 >> line_subpixel_shift),
             m_old_x(m_x),
             m_old_y(m_y),
-            m_count((lp.vertical ? abs((lp.y2 >> line_subpixel_shift) - m_y) :
-                                   abs((lp.x2 >> line_subpixel_shift) - m_x))),
+            m_count((lp.vertical ? std::abs((lp.y2 >> line_subpixel_shift) - m_y) :
+                                   std::abs((lp.x2 >> line_subpixel_shift) - m_x))),
             m_width(ren.subpixel_width()),
             //m_max_extent(m_width >> (line_subpixel_shift - 2)),
             m_max_extent((m_width + line_subpixel_mask) >> line_subpixel_shift),
@@ -1364,7 +1365,8 @@ namespace agg
 
         //---------------------------------------------------------------------
         void profile(line_profile_aa& prof) { m_profile = &prof; }
-        line_profile_aa& profile() const { return *m_profile; }
+        const line_profile_aa& profile() const { return *m_profile; }
+        line_profile_aa& profile() { return *m_profile; }
 
         //---------------------------------------------------------------------
         int subpixel_width() const { return m_profile->subpixel_width(); }
@@ -1648,7 +1650,7 @@ namespace agg
                         }
                         else
                         {
-                            while(abs(sx - lp.x1) + abs(sy - lp.y1) > lp2.len)
+                            while(std::abs(sx - lp.x1) + std::abs(sy - lp.y1) > lp2.len)
                             {
                                 sx = (lp.x1 + sx) >> 1;
                                 sy = (lp.y1 + sy) >> 1;
@@ -1715,7 +1717,7 @@ namespace agg
                         }
                         else
                         {
-                            while(abs(ex - lp.x2) + abs(ey - lp.y2) > lp2.len)
+                            while(std::abs(ex - lp.x2) + std::abs(ey - lp.y2) > lp2.len)
                             {
                                 ex = (lp.x2 + ex) >> 1;
                                 ey = (lp.y2 + ey) >> 1;
@@ -1787,7 +1789,7 @@ namespace agg
                         }
                         else
                         {
-                            while(abs(sx - lp.x1) + abs(sy - lp.y1) > lp2.len)
+                            while(std::abs(sx - lp.x1) + std::abs(sy - lp.y1) > lp2.len)
                             {
                                 sx = (lp.x1 + sx) >> 1;
                                 sy = (lp.y1 + sy) >> 1;
@@ -1800,7 +1802,7 @@ namespace agg
                         }
                         else
                         {
-                            while(abs(ex - lp.x2) + abs(ey - lp.y2) > lp2.len)
+                            while(std::abs(ex - lp.x2) + std::abs(ey - lp.y2) > lp2.len)
                             {
                                 ex = (lp.x2 + ex) >> 1;
                                 ey = (lp.y2 + ey) >> 1;
