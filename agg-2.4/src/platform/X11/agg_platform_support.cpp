@@ -17,11 +17,11 @@
 //
 //----------------------------------------------------------------------------
 
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <ctype.h>
-#include <time.h>
+#include <cstdio>
+#include <cstring>
+#include <cstdlib>
+#include <cctype>
+#include <ctime>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
@@ -69,7 +69,7 @@ namespace agg
         bool m_resize_flag;
         bool m_initialized;
         //bool m_wait_mode;
-        clock_t m_sw_start;
+        std::clock_t m_sw_start;
     };
 
 
@@ -98,7 +98,7 @@ namespace agg
         m_initialized(false)
         //m_wait_mode(true)
     {
-        memset(m_buf_img, 0, sizeof(m_buf_img));
+        std::memset(m_buf_img, 0, sizeof(m_buf_img));
 
         unsigned i;
         for(i = 0; i < 256; i++)
@@ -232,7 +232,7 @@ namespace agg
             m_bpp = 128;
             break;
         }
-        m_sw_start = clock();
+        m_sw_start = std::clock();
     }
 
     //------------------------------------------------------------------------
@@ -247,7 +247,7 @@ namespace agg
         tp.value = (unsigned char *)capt;
         tp.encoding = XA_WM_NAME;
         tp.format = 8;
-        tp.nitems = strlen(capt);
+        tp.nitems = std::strlen(capt);
         XSetWMName(m_display, m_window, &tp);
         XStoreName(m_display, m_window, capt);
         XSetIconName(m_display, m_window, capt);
@@ -490,7 +490,7 @@ namespace agg
         m_initial_width(10),
         m_initial_height(10)
     {
-        strcpy(m_caption, "AGG Application");
+        std::strcpy(m_caption, "AGG Application");
     }
 
     //------------------------------------------------------------------------
@@ -504,7 +504,7 @@ namespace agg
     //------------------------------------------------------------------------
     void platform_support::caption(const char* cap)
     {
-        strcpy(m_caption, cap);
+        std::strcpy(m_caption, cap);
         if(m_specific->m_initialized)
         {
             m_specific->caption(cap);
@@ -533,7 +533,7 @@ namespace agg
         m_specific->m_display = XOpenDisplay(NULL);
         if(m_specific->m_display == 0) 
         {
-            fprintf(stderr, "Unable to open DISPLAY!\n");
+            std::fprintf(stderr, "Unable to open DISPLAY!\n");
             return false;
         }
         
@@ -546,7 +546,7 @@ namespace agg
         unsigned long g_mask = m_specific->m_visual->green_mask;
         unsigned long b_mask = m_specific->m_visual->blue_mask;
                 
-//printf("depth=%d, red=%08x, green=%08x, blue=%08x\n",
+//std::printf("depth=%d, red=%08x, green=%08x, blue=%08x\n",
 //       m_specific->m_depth,
 //       m_specific->m_visual->red_mask,
 //       m_specific->m_visual->green_mask,
@@ -572,7 +572,7 @@ namespace agg
 //                                     TrueColor, 
 //                                     &vi)) 
 //                 {
-// //                     printf("TrueColor  depth=%d, red=%08x, green=%08x, blue=%08x, bits=%d\n",
+// //                     std::printf("TrueColor  depth=%d, red=%08x, green=%08x, blue=%08x, bits=%d\n",
 // //                         vi.depth,
 // //                         vi.visual->red_mask,
 // //                         vi.visual->green_mask,
@@ -591,7 +591,7 @@ namespace agg
 //                                     DirectColor, 
 //                                     &vi)) 
 //                 {
-// //                     printf("DirectColor depth=%d, red=%08x, green=%08x, blue=%08x, bits=%d\n",
+// //                     std::printf("DirectColor depth=%d, red=%08x, green=%08x, blue=%08x, bits=%d\n",
 // //                         vi.depth,
 // //                         vi.visual->red_mask,
 // //                         vi.visual->green_mask,
@@ -610,7 +610,7 @@ namespace agg
         if(m_specific->m_depth < 15 ||
            r_mask == 0 || g_mask == 0 || b_mask == 0)
         {
-            fprintf(stderr,
+            std::fprintf(stderr,
                    "There's no Visual compatible with minimal AGG requirements:\n"
                    "At least 15-bit color depth and True- or DirectColor class.\n\n");
             XCloseDisplay(m_specific->m_display);
@@ -700,7 +700,7 @@ namespace agg
         
         if(m_specific->m_sys_format == pix_format_undefined)
         {
-            fprintf(stderr,
+            std::fprintf(stderr,
                    "RGB masks are not compatible with AGG pixel formats:\n"
                    "R=%08lx, R=%08lx, B=%08lx\n", r_mask, g_mask, b_mask);
             XCloseDisplay(m_specific->m_display);
@@ -709,7 +709,7 @@ namespace agg
                 
         
         
-        memset(&m_specific->m_window_attributes, 
+        std::memset(&m_specific->m_window_attributes, 
                0, 
                sizeof(m_specific->m_window_attributes)); 
         
@@ -743,7 +743,7 @@ namespace agg
         m_specific->m_buf_window = 
             new unsigned char[width * height * (m_bpp / 8)];
 
-        memset(m_specific->m_buf_window, 255, width * height * (m_bpp / 8));
+        std::memset(m_specific->m_buf_window, 255, width * height * (m_bpp / 8));
         
         m_rbuf_window.attach(m_specific->m_buf_window,
                              width,
@@ -1139,17 +1139,17 @@ namespace agg
         if(idx < max_images)
         {
             char buf[1024];
-            strcpy(buf, file);
-            int len = strlen(buf);
+            std::strcpy(buf, file);
+            int len = std::strlen(buf);
             if(len < 4 || strcasecmp(buf + len - 4, ".ppm") != 0)
             {
-                strcat(buf, ".ppm");
+                std::strcat(buf, ".ppm");
             }
             
-            FILE* fd = fopen(buf, "rb");
+            FILE* fd = std::fopen(buf, "rb");
             if(fd == 0) return false;
 
-            if((len = fread(buf, 1, 1022, fd)) == 0)
+            if((len = std::fread(buf, 1, 1022, fd)) == 0)
             {
                 fclose(fd);
                 return false;
@@ -1158,60 +1158,62 @@ namespace agg
             
             if(buf[0] != 'P' && buf[1] != '6')
             {
-                fclose(fd);
+                std::fclose(fd);
                 return false;
             }
             
             char* ptr = buf + 2;
             
-            while(*ptr && !isdigit(*ptr)) ptr++;
+            while(*ptr && !std::isdigit((unsigned char)(*ptr))) ptr++;
             if(*ptr == 0)
             {
-                fclose(fd);
+                std::fclose(fd);
                 return false;
             }
             
-            unsigned width = atoi(ptr);
+            unsigned width = std::atoi(ptr);
             if(width == 0 || width > 4096)
             {
-                fclose(fd);
+                std::fclose(fd);
                 return false;
             }
-            while(*ptr && isdigit(*ptr)) ptr++;
-            while(*ptr && !isdigit(*ptr)) ptr++;
+            while(*ptr && isdigit((unsigned char)(*ptr))) ptr++;
+            while(*ptr && !isdigit((unsigned char)(*ptr))) ptr++;
             if(*ptr == 0)
             {
-                fclose(fd);
+                std::fclose(fd);
                 return false;
             }
-            unsigned height = atoi(ptr);
+            unsigned height = std::atoi(ptr);
             if(height == 0 || height > 4096)
             {
-                fclose(fd);
+                std::fclose(fd);
                 return false;
             }
-            while(*ptr && isdigit(*ptr)) ptr++;
-            while(*ptr && !isdigit(*ptr)) ptr++;
-            if(atoi(ptr) != 255)
+            while(*ptr && isdigit((unsigned char)(*ptr))) ptr++;
+            while(*ptr && !isdigit((unsigned char)(*ptr))) ptr++;
+            if(std::atoi(ptr) != 255)
             {
-                fclose(fd);
+                std::fclose(fd);
                 return false;
             }
-            while(*ptr && isdigit(*ptr)) ptr++;
+            while(*ptr && isdigit((unsigned char)(*ptr))) ptr++;
             if(*ptr == 0)
             {
-                fclose(fd);
+                std::fclose(fd);
                 return false;
             }
             ptr++;
-            fseek(fd, long(ptr - buf), SEEK_SET);
+            std::fseek(fd, long(ptr - buf), SEEK_SET);
             
             create_img(idx, width, height);
             bool ret = true;
             
             if(m_format == pix_format_rgb24)
             {
-                fread(m_specific->m_buf_img[idx], 1, width * height * 3, fd);
+                std::size_t sz = std::fread(m_specific->m_buf_img[idx], 1, width * height * 3, fd);
+                if (sz != width * height * 3)
+                    ret = false;
             }
             else
             {
@@ -1224,7 +1226,9 @@ namespace agg
                                   -width * 3 :
                                    width * 3);
                 
-                fread(buf_img, 1, width * height * 3, fd);
+                std::size_t sz = std::fread(buf_img, 1, width * height * 3, fd);
+                if (sz != width * height * 3)
+                    ret = false;
                 
                 switch(m_format)
                 {
@@ -1350,7 +1354,7 @@ namespace agg
                 delete [] buf_img;
             }
                         
-            fclose(fd);
+            std::fclose(fd);
             return ret;
         }
         return false;
@@ -1365,20 +1369,20 @@ namespace agg
         if(idx < max_images &&  rbuf_img(idx).buf())
         {
             char buf[1024];
-            strcpy(buf, file);
-            int len = strlen(buf);
+            std::strcpy(buf, file);
+            int len = std::strlen(buf);
             if(len < 4 || strcasecmp(buf + len - 4, ".ppm") != 0)
             {
-                strcat(buf, ".ppm");
+                std::strcat(buf, ".ppm");
             }
             
-            FILE* fd = fopen(buf, "wb");
+            FILE* fd = std::fopen(buf, "wb");
             if(fd == 0) return false;
             
             unsigned w = rbuf_img(idx).width();
             unsigned h = rbuf_img(idx).height();
             
-            fprintf(fd, "P6\n%d %d\n255\n", w, h);
+            std::fprintf(fd, "P6\n%d %d\n255\n", w, h);
                 
             unsigned y; 
             unsigned char* tmp_buf = new unsigned char [w * 3];
@@ -1508,10 +1512,10 @@ namespace agg
                         color_conv_row(tmp_buf, src, w, conv_row<pixfmt_srgb24, pixfmt_abgr128>());
                         break;
                 }
-                fwrite(tmp_buf, 1, w * 3, fd);
+                std::fwrite(tmp_buf, 1, w * 3, fd);
             }
             delete [] tmp_buf;
-            fclose(fd);
+            std::fclose(fd);
             return true;
         }
         return false;
@@ -1552,7 +1556,7 @@ namespace agg
     //------------------------------------------------------------------------
     void platform_support::message(const char* msg)
     {
-        fprintf(stderr, "%s\n", msg);
+        std::fprintf(stderr, "%s\n", msg);
     }
 
     //------------------------------------------------------------------------
@@ -1564,7 +1568,7 @@ namespace agg
     //------------------------------------------------------------------------
     double platform_support::elapsed_time() const
     {
-        clock_t stop = clock();
+        std::clock_t stop = std::clock();
         return double(stop - m_specific->m_sw_start) * 1000.0 / CLOCKS_PER_SEC;
     }
 
