@@ -1,5 +1,5 @@
 AGGLIBS= -lagg
-AGGCXXFLAGS = -O3 -I/usr/X11R6/include -L/usr/X11R6/lib
+AGGCXXFLAGS = -O3 -I/usr/X11/include -L/usr/X11/lib
 CXX = g++
 C = gcc
 #CXX = icc

@@ -281,50 +281,20 @@ clean:
 	rm -f ../*.o
 	rm -f ../svg_viewer/*.o
 	rm -f ../../src/platform/$(PLATFORM)/agg_platform_support.o
+	rm -f ../../font_freetype/*.o
+	rm -f ../../src/*.o
+	rm -f ../../src/ctrl/*.o
+	rm -f ../../gpc/*.o
+	rm -f ../../src/libagg.a
+	rm -f svg_test gpc_test trans_curve2_ft trans_curve1_ft freetype_test blend_color rasterizer_compound \
+		blur mol_view line_patterns_clip line_patterns compositing2 compositing pattern_perspective distortions \
+		image1 image_transforms image_resample image_perspective image_fltr_graph image_filters2 image_filters \
+		image_alpha simple_blur trans_polar scanline_boolean2 scanline_boolean rounded_rect rasterizers2 \
+		rasterizers polymorphic_renderer raster_text pattern_fill perspective multi_clip lion_outline lion \
+		lion_lens graph_test idea gradients gradient_focal gouraud_mesh gamma_tuner gouraud gamma_correction \
+		gamma_ctrl flash_rasterizer2 flash_rasterizer conv_stroke conv_dash_marker component_rendering conv_contour \
+		bspline circles bezier_div alpha_mask3 alpha_mask2 alpha_mask alpha_gradient aa_test aa_demo
 
-agg.ppm:
-	@echo "Please download http://www.antigrain.com/agg.ppm"
-	@echo "Attempting to retrieve via wget: (will fail if wget is not installed)"
-	wget http://www.antigrain.com/agg.ppm
-
-compositing.ppm:
-	@echo "Please download http://www.antigrain.com/compositing.ppm"
-	@echo "Attempting to retrieve via wget: (will fail if wget is not installed)"
-	wget http://www.antigrain.com/compositing.ppm
-
-spheres.ppm:
-	@echo "Please download http://www.antigrain.com/spheres.ppm"
-	@echo "Attempting to retrieve file: (will fail if wget is not installed)"
-	wget http://www.antigrain.com/spheres.ppm
-
-shapes.txt:
-	@echo "Please download http://www.antigrain.com/shapes.txt"
-	@echo "Attempting to retrieve file: (will fail if wget is not installed)"
-	wget http://www.antigrain.com/shapes.txt
-
-1.sdf:
-	@echo "Please download http://www.antigrain.com/1.sdf"
-	@echo "Attempting to retrieve file: (will fail if wget is not installed)"
-	wget http://www.antigrain.com/1.sdf
-
-1.ppm:
-	@echo "Please download http://www.antigrain.com/line_patterns.tar.gz and decompress it"
-	@echo "Attempting to retrieve file: (will fail if wget is not installed)"
-	wget http://www.antigrain.com/line_patterns.tar.gz
-	gunzip line_patterns.tar.gz
-	tar -xvf line_patterns.tar
-	
-timesi.ttf:
-	@echo "Please download http://www.antigrain.com/timesi.zip and decompress it"
-	@echo "Attempting to retrieve file: (will fail if wget is not installed)"
-	wget http://www.antigrain.com/timesi.zip
-	unzip -o timesi.zip
-
-tiger.svg:
-	@echo "Please download http://www.antigrain.com/svg/tiger.svg"
-	@echo "Attempting to retrieve file: (will fail if wget is not installed)"
-	wget http://www.antigrain.com/svg/tiger.svg
-	
 ../freetype_test.o:	../freetype_test.cpp
 	@echo \< $*.cpp \>
 	$(CXX) -c $(CXXFREETYPEFLAGS) $*.cpp -o $@

@@ -35,4 +35,34 @@ and use a simple platform_support class currently implemented for Win32, X11, SD
 One of the examples is an SVG Viewer.
 
 ###
-Cloned on May 6, 2019 (rev r132) from Sourceforge AGG project at https://svn.code.sf.net/p/agg/svn.
+Cloned with history on May 6, 2019 (rev r132) from the official Sourceforge AGG project at
+https://svn.code.sf.net/p/agg/svn.
+
+## Building
+
+The library examples show the amazing capabilities of the AGG C++ template library. There are scripts
+for autogen and configure in the source directory, but haven't found these to work well, and
+they're not needed to build the demos anyways. X11, SDL1 and Win32 are supported
+for the demo builds, which visually show various complex rendering pipelines in the library.
+These should build on OSX and Linux (OSX is currently tested).
+There is additional untested platform support for MacOS Carbon, BeOS and AmigaOS.
+
+To build the demos for X11, first check the Makefile in `agg-2.6/agg-src/Makefile.in.$(uname)`
+corresponding to your system's `uname` and set the location of the X11 -Iinclude and -Llib paths.
+Then:
+
+```
+cd agg-2.6/agg-src/examples/X11
+make
+```
+
+## Roadmap
+
+The official AGG site remains on Sourceforge, but doesn't see much activity. With www.antigrain.com recently
+disappeared, I thought a GitHub repo was in order, as the project demos stopped building with the site down.
+
+Plans are to add support for SDL2 and Nano-X into AGG, and then build a modern user interface into Microwindows
+using Nuklear immediate mode GUI with AGG as the drawing backend.
+
+I have created PDFs of all of Maxim's articles from the previous website and may put those up as well,
+as they greatly aid in understanding the library.
