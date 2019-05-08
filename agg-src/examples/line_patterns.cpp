@@ -18,7 +18,8 @@
 #include "ctrl/agg_bezier_ctrl.h"
 #include "platform/agg_platform_support.h"
 
-#define AGG_BGRA32
+//#define AGG_BGRA32
+#define AGG_BGR24
 //#define AGG_RGBA32
 //#define AGG_BGRA128
 #include "pixel_formats.h"

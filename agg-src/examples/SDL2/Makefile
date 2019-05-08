@@ -1,6 +1,6 @@
-include ../../Makefile.in.$(shell uname).SDL
+include ../../Makefile.in.$(shell uname).SDL2
 
-PLATFORM=sdl
+PLATFORM=sdl2
 
 PLATFORMSOURCES=../../src/platform/$(PLATFORM)/agg_platform_support.o
 

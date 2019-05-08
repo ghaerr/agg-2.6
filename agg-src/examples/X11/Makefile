@@ -277,24 +277,6 @@ gpc_test: ../gpc_test.o ../make_arrows.o ../make_gb_poly.o $(PLATFORMSOURCES)
 svg_test: ../svg_viewer/agg_svg_parser.o ../svg_viewer/agg_svg_path_renderer.o ../svg_viewer/agg_svg_path_tokenizer.o ../svg_viewer/svg_test.o $(PLATFORMSOURCES) tiger.svg
 	$(CXX) $(CXXFLAGS) ../svg_viewer/agg_svg_parser.o ../svg_viewer/agg_svg_path_renderer.o ../svg_viewer/agg_svg_path_tokenizer.o ../svg_viewer/svg_test.o $(PLATFORMSOURCES) -o svg_test $(LIBS) -lfreetype -lexpat
 
-clean:
-	rm -f ../*.o
-	rm -f ../svg_viewer/*.o
-	rm -f ../../src/platform/$(PLATFORM)/agg_platform_support.o
-	rm -f ../../font_freetype/*.o
-	rm -f ../../src/*.o
-	rm -f ../../src/ctrl/*.o
-	rm -f ../../gpc/*.o
-	rm -f ../../src/libagg.a
-	rm -f svg_test gpc_test trans_curve2_ft trans_curve1_ft freetype_test blend_color rasterizer_compound \
-		blur mol_view line_patterns_clip line_patterns compositing2 compositing pattern_perspective distortions \
-		image1 image_transforms image_resample image_perspective image_fltr_graph image_filters2 image_filters \
-		image_alpha simple_blur trans_polar scanline_boolean2 scanline_boolean rounded_rect rasterizers2 \
-		rasterizers polymorphic_renderer raster_text pattern_fill perspective multi_clip lion_outline lion \
-		lion_lens graph_test idea gradients gradient_focal gouraud_mesh gamma_tuner gouraud gamma_correction \
-		gamma_ctrl flash_rasterizer2 flash_rasterizer conv_stroke conv_dash_marker component_rendering conv_contour \
-		bspline circles bezier_div alpha_mask3 alpha_mask2 alpha_mask alpha_gradient aa_test aa_demo
-
 ../freetype_test.o:	../freetype_test.cpp
 	@echo \< $*.cpp \>
 	$(CXX) -c $(CXXFREETYPEFLAGS) $*.cpp -o $@
@@ -318,8 +300,21 @@ clean:
 %.o:	%.cpp
 	@echo \< $*.cpp \>
 	$(CXX) -c $(CXXFLAGS) $*.cpp -o $@
-	
 
-.PHONY : clean
-
-
+clean:
+	rm -f ../*.o
+	rm -f ../svg_viewer/*.o
+	rm -f ../../src/platform/$(PLATFORM)/agg_platform_support.o
+	rm -f ../../font_freetype/*.o
+	rm -f ../../src/*.o
+	rm -f ../../src/ctrl/*.o
+	rm -f ../../gpc/*.o
+	rm -f ../../src/libagg.a
+	rm -f svg_test gpc_test trans_curve2_ft trans_curve1_ft freetype_test blend_color rasterizer_compound \
+		blur mol_view line_patterns_clip line_patterns compositing2 compositing pattern_perspective distortions \
+		image1 image_transforms image_resample image_perspective image_fltr_graph image_filters2 image_filters \
+		image_alpha simple_blur trans_polar scanline_boolean2 scanline_boolean rounded_rect rasterizers2 \
+		rasterizers polymorphic_renderer raster_text pattern_fill perspective multi_clip lion_outline lion \
+		lion_lens graph_test idea gradients gradient_focal gouraud_mesh gamma_tuner gouraud gamma_correction \
+		gamma_ctrl flash_rasterizer2 flash_rasterizer conv_stroke conv_dash_marker component_rendering conv_contour \
+		bspline circles bezier_div alpha_mask3 alpha_mask2 alpha_mask alpha_gradient aa_test aa_demo

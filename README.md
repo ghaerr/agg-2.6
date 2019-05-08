@@ -42,7 +42,7 @@ https://svn.code.sf.net/p/agg/svn.
 
 The library examples show the amazing capabilities of the AGG C++ template library. There are scripts
 for autogen and configure in the source directory, but haven't found these to work well, and
-they're not needed to build the demos anyways. X11, SDL1 and Win32 are supported
+they're not needed to build the demos anyways. X11, SDL2 and Win32 are supported
 for the demo builds, which visually show various complex rendering pipelines in the library.
 These should build on OSX and Linux (OSX is currently tested).
 There is additional untested platform support for MacOS Carbon, BeOS and AmigaOS.
@@ -53,6 +53,16 @@ Then:
 
 ```
 cd agg-2.6/agg-src/examples/X11
+make
+(if have Freetype2 installed, 'make all' will build further examples)
+```
+
+Likewise, to build the demos for SDL2, first check the Makefile in `agg-2.6/agg-src/Makefile.in.$(uname).SDL2`
+corresponding to your system's `uname` and set the location of the SDL2 -Iinclude and -Llib paths.
+Then:
+
+```
+cd agg-2.6/agg-src/examples/SDL2
 make
 ```
 
