@@ -816,8 +816,8 @@ printf("hwframebuffer %d\n", m_specific->m_hwframebuffer);
             case GR_EVENT_TYPE_BUTTON_UP:
                 {
                     flags = 0;
-                    if(nx_event.button.buttons & GR_BUTTON_L) flags |= mouse_left;
-                    if(nx_event.button.buttons & GR_BUTTON_R) flags |= mouse_right;
+                    if(nx_event.button.changebuttons & GR_BUTTON_L) flags |= mouse_left;
+                    if(nx_event.button.changebuttons & GR_BUTTON_R) flags |= mouse_right;
                     if(nx_event.button.modifiers & MWKMOD_SHIFT)   flags |= kbd_shift;
                     if(nx_event.button.modifiers & MWKMOD_CTRL) flags |= kbd_ctrl;
 
