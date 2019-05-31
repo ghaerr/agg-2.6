@@ -1,6 +1,8 @@
 include ../../Makefile.in.$(shell uname).nano-X
 
 PLATFORM=nano-X
+# PIXFMT=AGG_BGRA32 corresponds to Microwindows config SCREEN_PIXTYPE=MWPF_TRUECOLORARGB
+PIXFMT=-DAGG_BGRA32
 
 PLATFORMSOURCES=../../src/platform/$(PLATFORM)/agg_platform_support.o
 

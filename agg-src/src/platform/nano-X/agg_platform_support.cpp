@@ -54,7 +54,6 @@ namespace agg
 	unsigned             m_window_flags;	// FIXME
         unsigned char*       m_buf_window;
         unsigned char*       m_buf_img[platform_support::max_images];
-	bool                 m_hwframebuffer;
 	unsigned char *      m_winpixels;
 	unsigned int         m_pitch;
         unsigned             m_keymap[256];
@@ -81,7 +80,6 @@ namespace agg
         m_gc(0),
 
         m_buf_window(0),
-	m_hwframebuffer(false),
 	m_winpixels(0),
 	m_pitch(0),
         
@@ -195,24 +193,26 @@ namespace agg
     //------------------------------------------------------------------------
     void platform_specific::put_image(const rendering_buffer* src)
     {    
-printf("Format %d sys format %d\n", m_format, m_sys_format);
+//printf("Format %d sys format %d\n", m_format, m_sys_format);
 	if(m_winpixels != 0 && m_format == m_sys_format)
 	{
+		/* no conversion direct framebuffer memcpy*/
 		int y;
 		unsigned char *s = m_buf_window;
 		unsigned char *d = m_winpixels;
             	int slen = src->width() * m_sys_bpp / 8;
 
-
-		for (y=src->height(); y>0; --y) {
+		for (y=src->height(); y>0; --y)
+		{
 			memcpy(d, s, slen);
 			s += slen;
 			d += m_pitch;
 		}
-		printf("NO CONVERSION memcpy\n");
+		//printf("NO CONVERSION memcpy\n");
         }
 	else if(m_format == m_sys_format)
         {
+	    /* no conversion pass image through GrArea*/
             GrArea(m_window, 
                       m_gc, 
                       0, 0,
@@ -220,9 +220,11 @@ printf("Format %d sys format %d\n", m_format, m_sys_format);
                       src->height(),
 		      m_buf_window,
 		      MWPF_HWPIXELVAL);
+	    printf("NO CONVERSION GRAREA\n");
         }
         else
         {
+	    /* color conversion required*/
             int row_len = src->width() * m_sys_bpp / 8;
             unsigned char* buf_tmp = 
                 new unsigned char[row_len * src->height()];
@@ -233,6 +235,7 @@ printf("Format %d sys format %d\n", m_format, m_sys_format);
                             src->height(), 
                             m_flip_y ? -row_len : row_len);
 
+//printf("converting from %d to %d\n", m_format, m_sys_format);
             switch(m_sys_format)            
             {
                 default: break;
@@ -329,6 +332,7 @@ printf("Format %d sys format %d\n", m_format, m_sys_format);
             
 	    if (m_winpixels)
 	    {
+		/* color converted direct framebuffer memcpy*/
 		int y;
 		unsigned char *s = buf_tmp;
 		unsigned char *d = m_winpixels;
@@ -339,8 +343,9 @@ printf("Format %d sys format %d\n", m_format, m_sys_format);
 			s += slen;
 			d += m_pitch;
 		}
-		printf("CONVERSION memcpy\n");
+		//printf("CONVERSION memcpy\n");
 	    } else {
+		/* color converted pass image through GrArea*/
 	    	GrArea(m_window, 
                       m_gc, 
                       0, 0,
@@ -348,10 +353,11 @@ printf("Format %d sys format %d\n", m_format, m_sys_format);
                       src->height(),
 		      buf_tmp,
 		      MWPF_HWPIXELVAL);
-		printf("GRAREA\n");
+		printf("CONVERSION GRAREA\n");
             }
             delete [] buf_tmp;
         }
+	GrFlushWindow(m_window);
     }
     
 
@@ -422,8 +428,7 @@ printf("Format %d sys format %d\n", m_format, m_sys_format);
 		m_specific->m_depth = 15;
         else m_specific->m_depth  = si.bpp;
                 
-        if(m_specific->m_depth < 15 ||
-           r_mask == 0 || g_mask == 0 || b_mask == 0)
+        if(m_specific->m_depth < 15 || r_mask == 0 || g_mask == 0 || b_mask == 0)
         {
             fprintf(stderr,
                    "Screen not compatible with minimal AGG requirements:\n"
@@ -521,28 +526,18 @@ printf("Format %d sys format %d\n", m_format, m_sys_format);
             GrClose();
             return false;
         }
-                
-        m_specific->m_window = 
-            GrNewWindow(GR_ROOT_WINDOW_ID,
-                          0, 0,
-                          width,
-                          height,
-                          0, 
-                          GR_RGB(255,255,255),
-                          GR_RGB(0,0,0));
 
+        m_specific->m_window = GrNewBufferedWindow(GR_WM_PROPS_BUFFER_MMAP|GR_WM_PROPS_BUFFER_MWPF,
+                          NULL, GR_ROOT_WINDOW_ID, 0, 0, width, height, GR_RGB(255,255,255));
 
         m_specific->m_gc = GrNewGC();
 	GrSetGCUseBackground(m_specific->m_gc, GR_TRUE);
 
-printf("format %d sys format %d\n", m_format, m_specific->m_sys_format);
-        if (/*m_format == m_specific->m_sys_format &&*/ GrOpenClientFramebuffer())
-	    m_specific->m_hwframebuffer = true;
-printf("hwframebuffer %d\n", m_specific->m_hwframebuffer);
+//printf("format %d sys format %d\n", m_format, m_specific->m_sys_format);
+        m_specific->m_winpixels = GrOpenClientFramebuffer(m_specific->m_window);
+	m_specific->m_pitch = width * m_specific->m_sys_bpp / 8;
         
-        m_specific->m_buf_window = 
-            new unsigned char[width * height * (m_bpp / 8)];
-
+        m_specific->m_buf_window = new unsigned char[width * height * (m_bpp / 8)];
         memset(m_specific->m_buf_window, 255, width * height * (m_bpp / 8));
         
         m_rbuf_window.attach(m_specific->m_buf_window,
@@ -566,8 +561,7 @@ printf("hwframebuffer %d\n", m_specific->m_hwframebuffer);
 
         GrMapWindow(m_specific->m_window);
 
-        GrSelectEvents(m_specific->m_window, 
-                     xevent_mask);
+        GrSelectEvents(m_specific->m_window, xevent_mask);
 
         return true;
     }
@@ -591,8 +585,6 @@ printf("hwframebuffer %d\n", m_specific->m_hwframebuffer);
     //------------------------------------------------------------------------
     int platform_support::run()
     {
-        GrFlush();
-        
         bool quit = false;
         unsigned flags;
         int cur_x;
@@ -637,16 +629,19 @@ printf("hwframebuffer %d\n", m_specific->m_hwframebuffer);
             case GR_EVENT_TYPE_UPDATE: 
                 {
                     if(nx_event.update.utype == GR_UPDATE_SIZE &&
-		       (nx_event.update.width  != int(m_rbuf_window.width()) ||
+		       (nx_event.update.width != int(m_rbuf_window.width()) ||
                        nx_event.update.height != int(m_rbuf_window.height())))
                     {
                         int width  = nx_event.update.width;
                         int height = nx_event.update.height;
 
+			GrCloseClientFramebuffer(m_specific->m_window);
+			m_specific->m_winpixels = GrOpenClientFramebuffer(m_specific->m_window);
+			m_specific->m_pitch = width * m_specific->m_sys_bpp / 8;
+
                         delete [] m_specific->m_buf_window;
 
-                        m_specific->m_buf_window = 
-                            new unsigned char[width * height * (m_bpp / 8)];
+                        m_specific->m_buf_window = new unsigned char[width * height * (m_bpp / 8)];
 
                         m_rbuf_window.attach(m_specific->m_buf_window,
                                              width,
@@ -660,22 +655,6 @@ printf("hwframebuffer %d\n", m_specific->m_hwframebuffer);
                         on_draw();
                         update_window();
                     }
-		    else if(nx_event.update.utype == GR_UPDATE_MOVE ||
-		    	nx_event.update.utype == GR_UPDATE_MAP)
-		    {
-			if (m_specific->m_hwframebuffer) {
-				GR_WINDOW_FB_INFO info;
-				GrGetWindowFBInfo(m_specific->m_window, &info);
-				m_specific->m_winpixels = info.winpixels;
-				m_specific->m_pitch = info.pitch;
-				printf("UPDATE MOVE/MAP\n");
-			}
-		    }
-		    else if(nx_event.update.utype == GR_UPDATE_UNMAP)
-		    {
-			if (m_specific->m_hwframebuffer)
-				m_specific->m_winpixels = 0;	// stop output
-		    }
                 }
                 break;
 
@@ -745,12 +724,11 @@ printf("hwframebuffer %d\n", m_specific->m_hwframebuffer);
                     flags = 0;
                     if(nx_event.button.buttons & GR_BUTTON_L) flags |= mouse_left;
                     if(nx_event.button.buttons & GR_BUTTON_R) flags |= mouse_right;
-                    if(nx_event.button.modifiers & MWKMOD_SHIFT)   flags |= kbd_shift;
+                    if(nx_event.button.modifiers & MWKMOD_SHIFT) flags |= kbd_shift;
                     if(nx_event.button.modifiers & MWKMOD_CTRL) flags |= kbd_ctrl;
 
                     cur_x = nx_event.button.x;
-                    cur_y = m_flip_y ? m_rbuf_window.height() - nx_event.button.y :
-                                       nx_event.button.y;
+                    cur_y = m_flip_y ? m_rbuf_window.height() - nx_event.button.y : nx_event.button.y;
 
                     if(flags & mouse_left)
                     {
@@ -791,12 +769,11 @@ printf("hwframebuffer %d\n", m_specific->m_hwframebuffer);
                     flags = 0;
                     if(nx_event.mouse.buttons & GR_BUTTON_L) flags |= mouse_left;
                     if(nx_event.mouse.buttons & GR_BUTTON_R) flags |= mouse_right;
-                    if(nx_event.mouse.modifiers & MWKMOD_SHIFT)   flags |= kbd_shift;
+                    if(nx_event.mouse.modifiers & MWKMOD_SHIFT) flags |= kbd_shift;
                     if(nx_event.mouse.modifiers & MWKMOD_CTRL) flags |= kbd_ctrl;
 
                     cur_x = nx_event.mouse.x;
-                    cur_y = m_flip_y ? m_rbuf_window.height() - nx_event.mouse.y :
-                                       nx_event.mouse.y;
+                    cur_y = m_flip_y ? m_rbuf_window.height() - nx_event.mouse.y : nx_event.mouse.y;
 
                     if(m_ctrls.on_mouse_move(cur_x, cur_y, (flags & mouse_left) != 0))
                     {
@@ -818,12 +795,11 @@ printf("hwframebuffer %d\n", m_specific->m_hwframebuffer);
                     flags = 0;
                     if(nx_event.button.changebuttons & GR_BUTTON_L) flags |= mouse_left;
                     if(nx_event.button.changebuttons & GR_BUTTON_R) flags |= mouse_right;
-                    if(nx_event.button.modifiers & MWKMOD_SHIFT)   flags |= kbd_shift;
+                    if(nx_event.button.modifiers & MWKMOD_SHIFT) flags |= kbd_shift;
                     if(nx_event.button.modifiers & MWKMOD_CTRL) flags |= kbd_ctrl;
 
                     cur_x = nx_event.button.x;
-                    cur_y = m_flip_y ? m_rbuf_window.height() - nx_event.button.y :
-                                       nx_event.button.y;
+                    cur_y = m_flip_y ? m_rbuf_window.height() - nx_event.button.y : nx_event.button.y;
 
                     if(flags & mouse_left)
                     {
@@ -858,7 +834,7 @@ printf("hwframebuffer %d\n", m_specific->m_hwframebuffer);
         }
 
         delete [] m_specific->m_buf_window;
-	GrCloseClientFramebuffer();
+	GrCloseClientFramebuffer(m_specific->m_window);
         GrDestroyGC(m_specific->m_gc);
         GrDestroyWindow(m_specific->m_window);
         GrClose();
@@ -1161,3 +1137,5 @@ int main(int argc, char* argv[])
 {
     return agg_main(argc, argv);
 }
+
+/* vim: set ts=8: */
