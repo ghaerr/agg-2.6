@@ -1,0 +1,8 @@
+AGGLIBS= -lagg -lnano-X
+AGGCXXFLAGS = -O3 -I/Users/greg/net/microwindows/src/include -L/Users/greg/net/microwindows/src/lib
+CXX = g++
+C = gcc
+#CXX = icc
+LIB = ar cr
+
+.PHONY : clean

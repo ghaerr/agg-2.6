@@ -31,7 +31,7 @@ Anti-Grain Geometry (AGG) is an Open Source, free of charge graphic library, wri
 - Boolean polygon operations (and, or, xor, sub) based on Alan Murta's **General Polygon Clipper**.
 
 Anti-Grain Geometry contains many interactive Demo examples that are platform independent too,
-and use a simple platform_support class currently implemented for Win32, X11, SDL, MacOS, AmigaOS and BeOS.
+and use a simple platform_support class currently implemented for Win32, X11, SDL, Nano-X, MacOS, AmigaOS and BeOS.
 One of the examples is an SVG Viewer.
 
 ###
@@ -42,7 +42,7 @@ https://svn.code.sf.net/p/agg/svn.
 
 The library examples show the amazing capabilities of the AGG C++ template library. There are scripts
 for autogen and configure in the source directory, but haven't found these to work well, and
-they're not needed to build the demos anyways. X11, SDL2 and Win32 are supported
+they're not needed to build the demos anyways. X11, SDL2, Nano-X and Win32 are supported
 for the demo builds, which visually show various complex rendering pipelines in the library.
 These should build on OSX and Linux (OSX is currently tested).
 There is additional untested platform support for MacOS Carbon, BeOS and AmigaOS.
@@ -66,13 +66,24 @@ cd agg-2.6/agg-src/examples/SDL2
 make
 ```
 
+To build the demos for Nano-X, first check the Makefile in
+`agg-2.6/agg-src/Makefile.in.$(uname).nano-X` corresponding to your system's
+`uname` and set the location of the nano-X -Iinclude and -Llib paths.
+For instance, `/path/to/microwindows/src/include` for include, and
+`/path/to/microwindows/src/lib` for the lib directory.
+Then:
+
+```
+cd agg-2.6/agg-src/examples/nano-X
+make
+(if have Freetype2 installed, 'make all' will build further examples)
+```
 ## Roadmap
 
-The official AGG site remains on Sourceforge, but doesn't see much activity. With www.antigrain.com recently
-disappeared, I thought a GitHub repo was in order, as the project demos stopped building with the site down.
+The official AGG site remains on Sourceforge, but doesn't see much activity.
+With www.antigrain.com recently inoperational, I thought a GitHub repo was in order,
+as the project demos stopped building with the site down. The demos now build without
+the website.
 
-Plans are to add support for SDL2 and Nano-X into AGG, and then build a modern user interface into Microwindows
-using Nuklear immediate mode GUI with AGG as the drawing backend.
-
-I have created PDFs of all of Maxim's articles from the previous website and may put those up as well,
-as they greatly aid in understanding the library.
+I have created PDFs of all of Maxim's articles from the previous website and may put
+those up as well, as they greatly aid in understanding the library.
