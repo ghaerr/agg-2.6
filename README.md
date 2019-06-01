@@ -77,6 +77,7 @@ Then:
 cd agg-2.6/agg-src/examples/nano-X
 make
 (if have Freetype2 installed, 'make all' will build further examples)
+./runapp line_patterns (to run demo app and nano-X server)
 ```
 ## Roadmap
 
