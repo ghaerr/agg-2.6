@@ -20,6 +20,7 @@
 #define AGG_WIN32_BMP_INCLUDED
 
 
+#include <stdio.h>
 #include <windows.h>
 
 
