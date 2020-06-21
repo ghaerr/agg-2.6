@@ -1447,7 +1447,7 @@ namespace agg
     //-----------------------------------------------------------------------
     inline int tokenizer::check_chr(const char *str, char chr)
     {
-        return int(strchr(str, chr));
+        return (strchr(str, chr)) ? 1 : 0;
     }
 
 
