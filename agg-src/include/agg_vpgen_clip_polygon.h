@@ -63,7 +63,7 @@ namespace agg
         unsigned vertex(double* x, double* y);
 
     private:
-        unsigned clipping_flags(double x, double y);
+      unsigned clipping_flags(double x, double y) const;
 
     private:
         rect_d        m_clip_box;

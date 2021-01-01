@@ -76,7 +76,7 @@ namespace agg
 
         // Vertex source interface
         unsigned num_paths() { return 7; };
-        void     rewind(unsigned path_id);
+        void rewind(unsigned idx);
         unsigned vertex(double* x, double* y);
 
 
@@ -152,7 +152,7 @@ namespace agg
 
         // Vertex source interface
         unsigned num_paths() { return 6; };
-        void     rewind(unsigned path_id);
+        void rewind(unsigned idx);
         unsigned vertex(double* x, double* y);
 
 

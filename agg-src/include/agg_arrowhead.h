@@ -71,8 +71,8 @@ namespace agg
         double   m_tail_d4;
         bool     m_head_flag;
         bool     m_tail_flag;
-        double   m_coord[16];
-        unsigned m_cmd[8];
+        double m_coord[16]{};
+        unsigned m_cmd[8]{};
         unsigned m_curr_id;
         unsigned m_curr_coord;
     };

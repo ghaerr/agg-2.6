@@ -61,7 +61,7 @@ namespace agg
 
         // Vertex source interface
         unsigned num_paths() { return 6; };
-        void     rewind(unsigned path_id);
+        void rewind(unsigned idx);
         unsigned vertex(double* x, double* y);
 
     private:
@@ -77,20 +77,20 @@ namespace agg
         double   m_max;
         unsigned m_num_steps;
         bool     m_descending;
-        char     m_label[64];
-        double   m_xs1;
-        double   m_ys1;
-        double   m_xs2;
-        double   m_ys2;
+        char m_label[64]{};
+        double m_xs1{};
+        double m_ys1{};
+        double m_xs2{};
+        double m_ys2{};
         double   m_pdx;
         bool     m_mouse_move;
-        double   m_vx[32];
-        double   m_vy[32];
+        double m_vx[32]{};
+        double m_vy[32]{};
 
         ellipse  m_ellipse;
 
-        unsigned m_idx;
-        unsigned m_vertex;
+        unsigned m_idx{};
+        unsigned m_vertex{};
 
         gsv_text              m_text;
         conv_stroke<gsv_text> m_text_poly;

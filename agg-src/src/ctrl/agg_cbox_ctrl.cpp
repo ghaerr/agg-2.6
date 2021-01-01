@@ -17,7 +17,8 @@
 //
 //----------------------------------------------------------------------------
 
-#include <string.h>
+#include <cmath>
+#include <cstring>
 #include "ctrl/agg_cbox_ctrl.h"
 
 
@@ -50,7 +51,9 @@ namespace agg
     void cbox_ctrl_impl::label(const char* l)
     {
         unsigned len = strlen(l);
-        if(len > 127) len = 127;
+        if (len > 127) {
+          len = 127;
+        }
         memcpy(m_label, l, len);
         m_label[len] = 0;
     }
@@ -70,7 +73,7 @@ namespace agg
 
 
     //------------------------------------------------------------------------
-    bool cbox_ctrl_impl::on_mouse_move(double, double, bool)
+    bool cbox_ctrl_impl::on_mouse_move(double /*x*/, double /*y*/, bool /*button_flag*/)
     {
         return false;
     }
@@ -83,13 +86,13 @@ namespace agg
     }
 
     //------------------------------------------------------------------------
-    bool cbox_ctrl_impl::on_mouse_button_up(double, double)
+    bool cbox_ctrl_impl::on_mouse_button_up(double /*x*/, double /*y*/)
     {
         return false;
     }
 
     //------------------------------------------------------------------------
-    bool cbox_ctrl_impl::on_arrow_keys(bool, bool, bool, bool)
+    bool cbox_ctrl_impl::on_arrow_keys(bool /*left*/, bool /*right*/, bool /*down*/, bool /*up*/)
     {
         return false;
     }
@@ -100,8 +103,8 @@ namespace agg
     {
         m_idx = idx;
 
-        double d2;
-        double t;
+        double d2 = NAN;
+        double t = NAN;
 
         switch(idx)
         {
@@ -171,8 +174,12 @@ namespace agg
         switch(m_idx)
         {
         case 0:
-            if(m_vertex == 0 || m_vertex == 4) cmd = path_cmd_move_to;
-            if(m_vertex >= 8) cmd = path_cmd_stop;
+          if (m_vertex == 0 || m_vertex == 4) {
+            cmd = path_cmd_move_to;
+          }
+          if (m_vertex >= 8) {
+            cmd = path_cmd_stop;
+          }
             *x = m_vx[m_vertex];
             *y = m_vy[m_vertex];
             m_vertex++;
@@ -185,8 +192,12 @@ namespace agg
         case 2:
             if(m_status)
             {
-                if(m_vertex == 0) cmd = path_cmd_move_to;
-                if(m_vertex >= 8) cmd = path_cmd_stop;
+              if (m_vertex == 0) {
+                cmd = path_cmd_move_to;
+              }
+              if (m_vertex >= 8) {
+                cmd = path_cmd_stop;
+              }
                 *x = m_vx[m_vertex];
                 *y = m_vy[m_vertex];
                 m_vertex++;

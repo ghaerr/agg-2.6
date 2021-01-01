@@ -67,7 +67,7 @@ namespace agg
 
         // Vertex soutce interface
         unsigned num_paths() { return 5; };
-        void     rewind(unsigned path_id);
+        void rewind(unsigned idx);
         unsigned vertex(double* x, double* y);
 
     private:
@@ -78,21 +78,20 @@ namespace agg
         double   m_value1;
         double   m_value2;
         double   m_min_d;
-        double   m_xs1;
-        double   m_ys1;
-        double   m_xs2;
-        double   m_ys2;
+        double m_xs1{};
+        double m_ys1{};
+        double m_xs2{};
+        double m_ys2{};
         double   m_pdx;
         double   m_pdy;
         move_e   m_move_what;
-        double   m_vx[32];
-        double   m_vy[32];
+        double m_vx[32]{};
+        double m_vy[32]{};
 
         ellipse  m_ellipse;
 
-        unsigned m_idx;
-        unsigned m_vertex;
-
+        unsigned m_idx{};
+        unsigned m_vertex{};
     };
 
 

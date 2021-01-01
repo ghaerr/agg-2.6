@@ -269,10 +269,10 @@ namespace fman {
         font_engine_freetype_base(const font_engine_freetype_base&);
         const font_engine_freetype_base& operator = (const font_engine_freetype_base&);
 
-        bool            m_flag32;
-        int             m_last_error;
+        bool m_flag32{};
+        int m_last_error{};
         bool            m_library_initialized;
-		FT_Library      m_library;    // handle to library    
+        FT_Library m_library{};// handle to library
 
         path_storage_integer<int16, 6>              m_path16;
         path_storage_integer<int32, 6>              m_path32;

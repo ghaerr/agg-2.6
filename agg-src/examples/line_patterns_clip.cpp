@@ -1,6 +1,6 @@
-#include <math.h>
-#include <stdio.h>
-#include <time.h>
+#include <cmath>
+#include <cstdio>
+#include <ctime>
 #include "agg_math.h"
 #include "agg_rendering_buffer.h"
 #include "agg_conv_transform.h"
@@ -23,7 +23,7 @@
 //#define AGG_BGRA128
 #include "pixel_formats.h"
 
-enum flip_y_e { flip_y = true };
+enum flip_y_e { flip_y = static_cast<unsigned int>(true) };
 
 
 static agg::int8u brightness_to_alpha[256 * 3] = 
@@ -82,20 +82,19 @@ static agg::int8u brightness_to_alpha[256 * 3] =
 class pattern_src_brightness_to_alpha
 {
 public:
-    pattern_src_brightness_to_alpha(agg::rendering_buffer& rb) : 
-        m_rb(&rb), m_pf(*m_rb) {}
+  explicit pattern_src_brightness_to_alpha(agg::rendering_buffer &rb) : m_rb(&rb), m_pf(*m_rb) {}
 
-    unsigned width()  const { return m_pf.width();  }
-    unsigned height() const { return m_pf.height(); }
-    color_type pixel(int x, int y) const
-    {
-        color_type c = m_pf.pixel(x, y);
-        // It's a bit of a hack, but we can treat the 8-bit alpha value as a cover.
-        color_type::calc_type sum = c.r + c.g + c.b;
-        int i = int(sum * sizeof(brightness_to_alpha) / (3 * color_type::full_value()));
-        agg::cover_type cover = brightness_to_alpha[i];
-        c.a = color_type::mult_cover(color_type::full_value(), cover);
-        return c;
+  unsigned width() const { return m_pf.width(); }
+  unsigned height() const { return m_pf.height(); }
+  color_type pixel(int x, int y) const
+  {
+    color_type c = m_pf.pixel(x, y);
+    // It's a bit of a hack, but we can treat the 8-bit alpha value as a cover.
+    color_type::calc_type sum = c.r + c.g + c.b;
+    int i = int(sum * sizeof(brightness_to_alpha) / (3 * color_type::full_value()));
+    agg::cover_type cover = brightness_to_alpha[i];
+    c.a = color_type::mult_cover(color_type::full_value(), cover);
+    return c;
     }
 
 private:
@@ -113,54 +112,53 @@ class the_application : public agg::platform_support
     agg::trans_affine             m_scale;
 
 public:
-    typedef agg::renderer_base<pixfmt> renderer_base;
-    typedef agg::renderer_scanline_aa_solid<renderer_base> renderer_scanline;
-    typedef agg::rasterizer_scanline_aa<agg::rasterizer_sl_clip_int_sat> rasterizer_scanline;
-    typedef agg::scanline_p8 scanline;
+  using renderer_base = agg::renderer_base<pixfmt>;
+  using renderer_scanline = agg::renderer_scanline_aa_solid<renderer_base>;
+  using rasterizer_scanline = agg::rasterizer_scanline_aa<agg::rasterizer_sl_clip_int_sat>;
+  using scanline = agg::scanline_p8;
 
 
-    the_application(agg::pix_format_e format, bool flip_y) :
-        agg::platform_support(format, flip_y),
-        m_ctrl_color(agg::rgba(0, 0.3, 0.5, 0.3)),
-        m_line1(5),
-        m_scale_x(5.0,   5.0, 240.0, 12.0, !flip_y),
-        m_start_x(250.0, 5.0, 495.0, 12.0, !flip_y)
-    {
-        m_line1.line_color(m_ctrl_color);
-        m_line1.xn(0) = 20;
-        m_line1.yn(0) = 20;
-        m_line1.xn(1) = 500-20;
-        m_line1.yn(1) = 500-20;
-        m_line1.xn(2) = 500-60;
-        m_line1.yn(2) = 20;
-        m_line1.xn(3) = 40;
-        m_line1.yn(3) = 500-40;
-        m_line1.xn(4) = 100;
-        m_line1.yn(4) = 300;
-        m_line1.close(false);
+  the_application(agg::pix_format_e format, bool flip_y) : agg::platform_support(format, flip_y),
+                                                           m_ctrl_color(agg::rgba(0, 0.3, 0.5, 0.3)),
+                                                           m_line1(5),
+                                                           m_scale_x(5.0, 5.0, 240.0, 12.0, !flip_y),
+                                                           m_start_x(250.0, 5.0, 495.0, 12.0, !flip_y)
+  {
+    m_line1.line_color(m_ctrl_color);
+    m_line1.xn(0) = 20;
+    m_line1.yn(0) = 20;
+    m_line1.xn(1) = 500 - 20;
+    m_line1.yn(1) = 500 - 20;
+    m_line1.xn(2) = 500 - 60;
+    m_line1.yn(2) = 20;
+    m_line1.xn(3) = 40;
+    m_line1.yn(3) = 500 - 40;
+    m_line1.xn(4) = 100;
+    m_line1.yn(4) = 300;
+    m_line1.close(false);
 
-        add_ctrl(m_line1);
-        m_line1.transform(m_scale);
+    add_ctrl(m_line1);
+    m_line1.transform(m_scale);
 
-        m_scale_x.label("Scale X=%.2f");
-        m_scale_x.range(0.2, 3.0);
-        m_scale_x.value(1.0);
-        add_ctrl(m_scale_x);
-        m_scale_x.no_transform();
+    m_scale_x.label("Scale X=%.2f");
+    m_scale_x.range(0.2, 3.0);
+    m_scale_x.value(1.0);
+    add_ctrl(m_scale_x);
+    m_scale_x.no_transform();
 
-        m_start_x.label("Start X=%.2f");
-        m_start_x.range(0.0, 10.0);
-        m_start_x.value(0.0);
-        add_ctrl(m_start_x);
-        m_start_x.no_transform();
+    m_start_x.label("Start X=%.2f");
+    m_start_x.range(0.0, 10.0);
+    m_start_x.value(0.0);
+    add_ctrl(m_start_x);
+    m_start_x.no_transform();
     }
 
 
     template<class Rasterizer, class Renderer>
-    void draw_polyline(Rasterizer& ras, 
-                       Renderer& ren, 
-                       const double* polyline, 
-                       int num_points)
+    void draw_polyline(Rasterizer &ras,
+      Renderer & /*ren*/,
+      const double *polyline,
+      int num_points)
     {
         agg::poly_plain_adaptor<double> vs(polyline, num_points, m_line1.close());
         agg::conv_transform<agg::poly_plain_adaptor<double> > trans(vs, m_scale);
@@ -168,7 +166,7 @@ public:
     }
 
 
-    virtual void on_draw()
+    void on_draw() override
     {
         pixfmt pf(rbuf_window());
         renderer_base ren_base(pf);
@@ -197,14 +195,14 @@ public:
         // width of the pattern is power of 2, it's better to use the modified
         // version agg::line_image_pattern_pow2 because it works about 15-25 percent
         // faster than agg::line_image_pattern (because of using simple masking instead 
-        // of expensive '%' operation). 
-        typedef agg::line_image_pattern<agg::pattern_filter_bilinear_rgba<color_type> > pattern_type;
-        typedef agg::renderer_base<pixfmt> base_ren_type;
-        typedef agg::renderer_outline_image<base_ren_type, pattern_type> renderer_img_type;
-        typedef agg::rasterizer_outline_aa<renderer_img_type, agg::line_coord_sat> rasterizer_img_type;
+        // of expensive '%' operation).
+        using pattern_type = agg::line_image_pattern<agg::pattern_filter_bilinear_rgba<color_type>>;
+        using base_ren_type = agg::renderer_base<pixfmt>;
+        using renderer_img_type = agg::renderer_outline_image<base_ren_type, pattern_type>;
+        using rasterizer_img_type = agg::rasterizer_outline_aa<renderer_img_type, agg::line_coord_sat>;
 
-        typedef agg::renderer_outline_aa<base_ren_type> renderer_line_type;
-        typedef agg::rasterizer_outline_aa<renderer_line_type, agg::line_coord_sat> rasterizer_line_type;
+        using renderer_line_type = agg::renderer_outline_aa<base_ren_type>;
+        using rasterizer_line_type = agg::rasterizer_outline_aa<renderer_line_type, agg::line_coord_sat>;
 
 
         //-- Create with specifying the source
@@ -304,7 +302,7 @@ public:
     }
 
 
-    virtual void on_key(int x, int y, unsigned key, unsigned flags)
+    void on_key(int x, int y, unsigned key, unsigned /*flags*/) override
     {
         if(key == '+' || key == agg::key_kp_plus)
         {
@@ -323,23 +321,22 @@ public:
         }
     }
 
-    virtual void on_ctrl_change()
+    void on_ctrl_change() override
     {
     }
 };
 
 
-int agg_main(int argc, char* argv[])
+int agg_main(int /*argc*/, char * /*argv*/[])
 {
-    the_application app(pix_format, flip_y);
-    app.caption("AGG Example. Clipping Lines with Image Patterns");
+  the_application app(pix_format, flip_y != 0u);
+  app.caption("AGG Example. Clipping Lines with Image Patterns");
 
-    if(!app.load_img(0, "1"))
-    {
-        char buf[256];
-        sprintf(buf, "There must be file 1%s\n", app.img_ext());
-        app.message(buf);
-        return 1;
+  if (!app.load_img(0, "1")) {
+    char buf[256];
+    sprintf(buf, "There must be file 1%s\n", the_application::img_ext());
+    the_application::message(buf);
+    return 1;
     }
 
     if(app.init(500, 500, agg::window_resize))

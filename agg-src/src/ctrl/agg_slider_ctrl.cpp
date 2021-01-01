@@ -17,9 +17,8 @@
 //
 //----------------------------------------------------------------------------
 
-#include <string.h>
-#include <stdio.h>
 #include "ctrl/agg_slider_ctrl.h"
+#include <cstdio>
 
 namespace agg
 {
@@ -60,15 +59,12 @@ namespace agg
     bool slider_ctrl_impl::normalize_value(bool preview_value_flag)
     {
         bool ret = true;
-        if(m_num_steps)
-        {
-            int step = int(m_preview_value * m_num_steps + 0.5);
-            ret = m_value != step / double(m_num_steps);
-            m_value = step / double(m_num_steps);
-        }
-        else
-        {
-            m_value = m_preview_value;
+        if (m_num_steps != 0U) {
+          int step = int(m_preview_value * m_num_steps + 0.5);
+          ret = m_value != step / double(m_num_steps);
+          m_value = step / double(m_num_steps);
+        } else {
+          m_value = m_preview_value;
         }
 
         if(preview_value_flag)
@@ -91,9 +87,13 @@ namespace agg
     //------------------------------------------------------------------------
     void slider_ctrl_impl::value(double value) 
     { 
-        m_preview_value = (value - m_min) / (m_max - m_min); 
-        if(m_preview_value > 1.0) m_preview_value = 1.0;
-        if(m_preview_value < 0.0) m_preview_value = 0.0;
+        m_preview_value = (value - m_min) / (m_max - m_min);
+        if (m_preview_value > 1.0) {
+          m_preview_value = 1.0;
+        }
+        if (m_preview_value < 0.0) {
+          m_preview_value = 0.0;
+        }
         normalize_value(true);
     }
 
@@ -101,12 +101,13 @@ namespace agg
     void slider_ctrl_impl::label(const char* fmt)
     {
         m_label[0] = 0;
-        if(fmt)
-        {
-            unsigned len = strlen(fmt);
-            if(len > 63) len = 63;
-            memcpy(m_label, fmt, len);
-            m_label[len] = 0;
+        if (fmt != nullptr) {
+          unsigned len = strlen(fmt);
+          if (len > 63) {
+            len = 63;
+          }
+          memcpy(m_label, fmt, len);
+          m_label[len] = 0;
         }
     }
 
@@ -159,11 +160,10 @@ namespace agg
 
         case 2:
             m_text.text(m_label);
-            if(m_label[0])
-            {
-                char buf[256];
-                sprintf(buf, m_label, value());
-                m_text.text(buf);
+            if (m_label[0] != 0) {
+              char buf[256];
+              printf(buf, m_label, value());
+              m_text.text(buf);
             }
             m_text.start_point(m_x1, m_y1);
             m_text.size((m_y2 - m_y1) * 1.2, m_y2 - m_y1);
@@ -194,18 +194,18 @@ namespace agg
 
         case 5:
             m_storage.remove_all();
-            if(m_num_steps)
-            {
-                unsigned i;
-                double d = (m_xs2 - m_xs1) / m_num_steps;
-                if(d > 0.004) d = 0.004;
-                for(i = 0; i < m_num_steps + 1; i++)
-                {
-                    double x = m_xs1 + (m_xs2 - m_xs1) * i / m_num_steps;
-                    m_storage.move_to(x, m_y1);
-                    m_storage.line_to(x - d * (m_x2 - m_x1), m_y1 - m_border_extra);
-                    m_storage.line_to(x + d * (m_x2 - m_x1), m_y1 - m_border_extra);
-                }
+            if (m_num_steps != 0U) {
+              unsigned i = 0;
+              double d = (m_xs2 - m_xs1) / m_num_steps;
+              if (d > 0.004) {
+                d = 0.004;
+              }
+              for (i = 0; i < m_num_steps + 1; i++) {
+                double x = m_xs1 + (m_xs2 - m_xs1) * i / m_num_steps;
+                m_storage.move_to(x, m_y1);
+                m_storage.line_to(x - d * (m_x2 - m_x1), m_y1 - m_border_extra);
+                m_storage.line_to(x + d * (m_x2 - m_x1), m_y1 - m_border_extra);
+              }
             }
         }
     }
@@ -218,16 +218,24 @@ namespace agg
         switch(m_idx)
         {
         case 0:
-            if(m_vertex == 0) cmd = path_cmd_move_to;
-            if(m_vertex >= 4) cmd = path_cmd_stop;
+          if (m_vertex == 0) {
+            cmd = path_cmd_move_to;
+          }
+          if (m_vertex >= 4) {
+            cmd = path_cmd_stop;
+          }
             *x = m_vx[m_vertex];
             *y = m_vy[m_vertex];
             m_vertex++;
             break;
 
         case 1:
-            if(m_vertex == 0) cmd = path_cmd_move_to;
-            if(m_vertex >= 4) cmd = path_cmd_stop;
+          if (m_vertex == 0) {
+            cmd = path_cmd_move_to;
+          }
+          if (m_vertex >= 4) {
+            cmd = path_cmd_stop;
+          }
             *x = m_vx[m_vertex];
             *y = m_vy[m_vertex];
              m_vertex++;
@@ -301,8 +309,12 @@ namespace agg
         {
             double xp = x + m_pdx;
             m_preview_value = (xp - m_xs1) / (m_xs2 - m_xs1);
-            if(m_preview_value < 0.0) m_preview_value = 0.0;
-            if(m_preview_value > 1.0) m_preview_value = 1.0;
+            if (m_preview_value < 0.0) {
+              m_preview_value = 0.0;
+            }
+            if (m_preview_value > 1.0) {
+              m_preview_value = 1.0;
+            }
             return true;
         }
         return false;
@@ -310,7 +322,7 @@ namespace agg
 
 
     //------------------------------------------------------------------------
-    bool slider_ctrl_impl::on_mouse_button_up(double, double)
+    bool slider_ctrl_impl::on_mouse_button_up(double /*x*/, double /*y*/)
     {
         m_mouse_move = false;
         normalize_value(true);
@@ -322,15 +334,16 @@ namespace agg
     bool slider_ctrl_impl::on_arrow_keys(bool left, bool right, bool down, bool up)
     {
         double d = 0.005;
-        if(m_num_steps)
-        {
-            d = 1.0 / m_num_steps;
+        if (m_num_steps != 0U) {
+          d = 1.0 / m_num_steps;
         }
-        
+
         if(right || up)
         {
             m_preview_value += d;
-            if(m_preview_value > 1.0) m_preview_value = 1.0;
+            if (m_preview_value > 1.0) {
+              m_preview_value = 1.0;
+            }
             normalize_value(true);
             return true;
         }
@@ -338,7 +351,9 @@ namespace agg
         if(left || down)
         {
             m_preview_value -= d;
-            if(m_preview_value < 0.0) m_preview_value = 0.0;
+            if (m_preview_value < 0.0) {
+              m_preview_value = 0.0;
+            }
             normalize_value(true);
             return true;
         }

@@ -14,9 +14,9 @@
 //#define AGG_BGR96
 #include "pixel_formats.h"
 
-typedef agg::blender_gray<gray_type> gray_blender;
+using gray_blender = agg::blender_gray<gray_type>;
 
-enum flip_y_e { flip_y = true };
+enum flip_y_e { flip_y = static_cast<unsigned int>(true) };
 
 
 class the_application : public agg::platform_support
@@ -34,13 +34,13 @@ public:
         add_ctrl(m_alpha);
     }
 
-    virtual void on_draw()
+    void on_draw() override
     {
         pixfmt pf(rbuf_window());
 
-        typedef agg::pixfmt_alpha_blend_gray<gray_blender, agg::rendering_buffer, 3, 2> pixfmt_r;
-        typedef agg::pixfmt_alpha_blend_gray<gray_blender, agg::rendering_buffer, 3, 1> pixfmt_g;
-        typedef agg::pixfmt_alpha_blend_gray<gray_blender, agg::rendering_buffer, 3, 0> pixfmt_b;
+        using pixfmt_r = agg::pixfmt_alpha_blend_gray<gray_blender, agg::rendering_buffer, 3, 2>;
+        using pixfmt_g = agg::pixfmt_alpha_blend_gray<gray_blender, agg::rendering_buffer, 3, 1>;
+        using pixfmt_b = agg::pixfmt_alpha_blend_gray<gray_blender, agg::rendering_buffer, 3, 0>;
 
         pixfmt_r pfr(rbuf_window());
         pixfmt_g pfg(rbuf_window());
@@ -77,15 +77,13 @@ public:
 };
 
 
-
-int agg_main(int argc, char* argv[])
+int agg_main(int /*argc*/, char * /*argv*/[])
 {
-    the_application app(pix_format, flip_y);
-    app.caption("AGG Example. Component Rendering");
+  the_application app(pix_format, flip_y != 0u);
+  app.caption("AGG Example. Component Rendering");
 
-    if(app.init(320, 320, 0))
-    {
-        return app.run();
+  if (app.init(320, 320, 0)) {
+    return app.run();
     }
     return 1;
 }

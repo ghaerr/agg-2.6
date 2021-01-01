@@ -1,6 +1,6 @@
-#include <stdlib.h>
-#include <ctype.h>
-#include <stdio.h>
+#include <cstdlib>
+#include <cctype>
+#include <cstdio>
 #include "agg_color_rgba.h"
 #include "agg_path_storage.h"
 #include "agg_bounding_rect.h"
@@ -162,52 +162,60 @@ unsigned parse_lion(agg::path_storage& path, agg::srgba8* colors, unsigned* path
     const char* ptr = g_lion;
     unsigned npaths = 0;
 
-    while(*ptr)
-    {
-        if(*ptr != 'M' && isalnum(*ptr))
-        {
-            unsigned c = 0;
-            sscanf(ptr, "%x", &c);
+    while (*ptr != 0) {
+      if (*ptr != 'M' && (isalnum(*ptr) != 0)) {
+        unsigned c = 0;
+        sscanf(ptr, "%x", &c);
 
-            // New color. Every new color creates new path in the path object.
+        // New color. Every new color creates new path in the path object.
+        path.close_polygon();
+        colors[npaths] = agg::rgb8_packed(c);
+        path_idx[npaths] = path.start_new_path();
+        npaths++;
+        while ((*ptr != 0) && *ptr != '\n') {
+          ptr++;
+        }
+        if (*ptr == '\n') {
+          ptr++;
+        }
+      } else {
+        double x = 0.0;
+        double y = 0.0;
+
+        while ((*ptr != 0) && *ptr != '\n') {
+          int c = *ptr;
+
+          while ((*ptr != 0) && (isdigit(*ptr) == 0)) {
+            ptr++;
+          }
+          x = atof(ptr);
+
+          while ((*ptr != 0) && (isdigit(*ptr) != 0)) {
+            ptr++;
+          }
+          while ((*ptr != 0) && (isdigit(*ptr) == 0)) {
+            ptr++;
+          }
+          y = atof(ptr);
+
+          if (c == 'M') {
             path.close_polygon();
-            colors[npaths] = agg::rgb8_packed(c);
-            path_idx[npaths] = path.start_new_path();
-            npaths++;
-            while(*ptr && *ptr != '\n') ptr++;
-            if(*ptr == '\n') ptr++;
+            path.move_to(x, y);
+          } else {
+            path.line_to(x, y);
+          }
+
+          while ((*ptr != 0) && (isdigit(*ptr) != 0)) {
+            ptr++;
+          }
+          while ((*ptr != 0) && *ptr != '\n' && (isalpha(*ptr) == 0)) {
+            ptr++;
+          }
         }
-        else
-        {
-            double x = 0.0;
-            double y = 0.0;
-
-            while(*ptr && *ptr != '\n')
-            {
-                int c = *ptr;
-
-                while(*ptr && !isdigit(*ptr)) ptr++;
-                x = atof(ptr);
-
-                while(*ptr &&  isdigit(*ptr)) ptr++;
-                while(*ptr && !isdigit(*ptr)) ptr++;
-                y = atof(ptr);
-
-                if(c == 'M')
-                {
-                    path.close_polygon();
-                    path.move_to(x, y);
-                }
-                else
-                {
-                    path.line_to(x, y);
-                }
-
-                while(*ptr &&  isdigit(*ptr)) ptr++;
-                while(*ptr && *ptr != '\n' && !isalpha(*ptr)) ptr++;
-            }
-            if(*ptr == '\n') ptr++;
+        if (*ptr == '\n') {
+          ptr++;
         }
+      }
     }
     path.arrange_orientations_all_paths(agg::path_flags_cw);
     return npaths;

@@ -17,8 +17,8 @@
 //
 //----------------------------------------------------------------------------
 
-#include <string.h>
-#include <stdio.h>
+#include <cstring>
+#include <cstdio>
 #include "ctrl/agg_bezier_ctrl.h"
 
 namespace agg
@@ -161,7 +161,7 @@ namespace agg
 
 
     //------------------------------------------------------------------------
-    bool bezier_ctrl_impl::in_rect(double, double) const
+    bool bezier_ctrl_impl::in_rect(double /*x*/, double /*y*/) const
     {
         return false;
     }
@@ -320,7 +320,7 @@ namespace agg
 
 
     //------------------------------------------------------------------------
-    bool curve3_ctrl_impl::in_rect(double, double) const
+    bool curve3_ctrl_impl::in_rect(double /*x*/, double /*y*/) const
     {
         return false;
     }

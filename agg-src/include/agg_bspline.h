@@ -44,7 +44,7 @@ namespace agg
         bspline(int num);
         bspline(int num, const double* x, const double* y);
 
-        void   init(int num);
+        void init(int max);
         void   add_point(double x, double y);
         void   prepare();
 

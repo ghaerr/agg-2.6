@@ -1,6 +1,6 @@
-#include <stdlib.h>
-#include <ctype.h>
-#include <stdio.h>
+#include <cstdlib>
+#include <cctype>
+#include <cstdio>
 #include "agg_basics.h"
 #include "agg_rendering_buffer.h"
 #include "agg_rasterizer_scanline_aa.h"
@@ -24,7 +24,7 @@
 #define AGG_BGR24
 #include "pixel_formats.h"
 
-enum flip_y_e { flip_y = true };
+enum flip_y_e { flip_y = static_cast<unsigned int>(true) };
 
 agg::path_storage g_path;
 agg::srgba8        g_colors[100];
@@ -60,68 +60,59 @@ template<class Order> class span_simple_blur_rgb24
 {
 public:
     //--------------------------------------------------------------------
-    span_simple_blur_rgb24() : m_source_image(0) {}
+  span_simple_blur_rgb24() = default;
 
-    //--------------------------------------------------------------------
-    span_simple_blur_rgb24(const agg::rendering_buffer& src) : 
-        m_source_image(&src) {}
+  //--------------------------------------------------------------------
+  explicit span_simple_blur_rgb24(const agg::rendering_buffer &src) : m_source_image(&src) {}
 
-    //--------------------------------------------------------------------
-    void source_image(const agg::rendering_buffer& src) { m_source_image = &src; }
-    const agg::rendering_buffer& source_image() const { return *m_source_image; }
+  //--------------------------------------------------------------------
+  void source_image(const agg::rendering_buffer &src) { m_source_image = &src; }
+  const agg::rendering_buffer &source_image() const { return *m_source_image; }
 
-    //--------------------------------------------------------------------
-    void prepare() {}
+  //--------------------------------------------------------------------
+  void prepare() {}
 
-    //--------------------------------------------------------------------
-    void generate(color_type* span, int x, int y, int len)
-    {
-        if(y < 1 || y >= int(m_source_image->height() - 1))
-        {
-            do
-            {
-                *span++ = color_type::no_color();
-            }
-            while(--len);
-            return;
-        }
+  //--------------------------------------------------------------------
+  void generate(color_type *span, int x, int y, int len)
+  {
+    if (y < 1 || y >= int(m_source_image->height() - 1)) {
+      do {
+        *span++ = color_type::no_color();
+      } while (--len != 0);
+      return;
+    }
 
-        do
-        {
-            color_type::calc_type color[3];
-            color[0] = color[1] = color[2] = 0;
-            if(x > 0 && x < int(m_source_image->width()-1))
-            {
-                int i = 3;
-                do
-                {
-                    const agg::int8u* ptr = m_source_image->row_ptr(y - i + 2) + (x - 1) * 3;
+    do {
+      color_type::calc_type color[3];
+      color[0] = color[1] = color[2] = 0;
+      if (x > 0 && x < int(m_source_image->width() - 1)) {
+        int i = 3;
+        do {
+          const agg::int8u *ptr = m_source_image->row_ptr(y - i + 2) + (x - 1) * 3;
 
-                    color[0] += *ptr++;
-                    color[1] += *ptr++;
-                    color[2] += *ptr++;
+          color[0] += *ptr++;
+          color[1] += *ptr++;
+          color[2] += *ptr++;
 
-                    color[0] += *ptr++;
-                    color[1] += *ptr++;
-                    color[2] += *ptr++;
+          color[0] += *ptr++;
+          color[1] += *ptr++;
+          color[2] += *ptr++;
 
-                    color[0] += *ptr++;
-                    color[1] += *ptr++;
-                    color[2] += *ptr++;
-                }
-                while(--i);
-                color[0] /= 9;
-                color[1] /= 9;
-                color[2] /= 9;
-            }
-            *span++ = color_type(color[Order::R], color[Order::G], color[Order::B]);
-            ++x;
-        }
-        while(--len);
+          color[0] += *ptr++;
+          color[1] += *ptr++;
+          color[2] += *ptr++;
+        } while (--i != 0);
+        color[0] /= 9;
+        color[1] /= 9;
+        color[2] /= 9;
+      }
+      *span++ = color_type(color[Order::R], color[Order::G], color[Order::B]);
+      ++x;
+    } while (--len != 0);
     }
 
 private:
-    const agg::rendering_buffer* m_source_image;
+  const agg::rendering_buffer *m_source_image{ nullptr };
 };
 
 
@@ -131,105 +122,101 @@ class the_application : public agg::platform_support
     double m_cy;
 
 public:
-    virtual ~the_application() 
+  ~the_application() override = default;
+
+  the_application(agg::pix_format_e format, bool flip_y) : agg::platform_support(format, flip_y),
+                                                           m_cx(100),
+                                                           m_cy(102)
+  {
+    parse_lion();
+    }
+
+    void on_resize(int cx, int cy) override
     {
     }
 
-    the_application(agg::pix_format_e format, bool flip_y) :
-        agg::platform_support(format, flip_y),
-        m_cx(100),
-        m_cy(102)
+    void on_draw() override
     {
-        parse_lion();
-    }
+      using renderer_base = agg::renderer_base<pixfmt>;
+      using renderer_solid = agg::renderer_scanline_aa_solid<renderer_base>;
 
-    virtual void on_resize(int cx, int cy)
-    {
-    }
+      pixfmt pixf(rbuf_window());
+      renderer_base rb(pixf);
+      renderer_solid rs(rb);
 
-    virtual void on_draw()
-    {
-        typedef agg::renderer_base<pixfmt> renderer_base;
-        typedef agg::renderer_scanline_aa_solid<renderer_base> renderer_solid;
-        
-        pixfmt pixf(rbuf_window());
-        renderer_base rb(pixf);
-        renderer_solid rs(rb);
-        
-        rb.clear(agg::rgba(1, 1, 1));
+      rb.clear(agg::rgba(1, 1, 1));
 
-        agg::trans_affine mtx;
-        agg::conv_transform<agg::path_storage, agg::trans_affine> trans(g_path, mtx);
+      agg::trans_affine mtx;
+      agg::conv_transform<agg::path_storage, agg::trans_affine> trans(g_path, mtx);
 
-        mtx *= agg::trans_affine_translation(-g_base_dx, -g_base_dy);
-        mtx *= agg::trans_affine_scaling(g_scale, g_scale);
-        mtx *= agg::trans_affine_rotation(g_angle + agg::pi);
-        mtx *= agg::trans_affine_skewing(g_skew_x/1000.0, g_skew_y/1000.0);
-        mtx *= agg::trans_affine_translation(initial_width()/4, initial_height()/2);
-        mtx *= trans_affine_resizing();
+      mtx *= agg::trans_affine_translation(-g_base_dx, -g_base_dy);
+      mtx *= agg::trans_affine_scaling(g_scale, g_scale);
+      mtx *= agg::trans_affine_rotation(g_angle + agg::pi);
+      mtx *= agg::trans_affine_skewing(g_skew_x / 1000.0, g_skew_y / 1000.0);
+      mtx *= agg::trans_affine_translation(initial_width() / 4, initial_height() / 2);
+      mtx *= trans_affine_resizing();
 
-        agg::rasterizer_scanline_aa<> ras2;
-        agg::scanline_p8 sl;
-        agg::scanline_u8 sl2;
+      agg::rasterizer_scanline_aa<> ras2;
+      agg::scanline_p8 sl;
+      agg::scanline_u8 sl2;
 
-        agg::render_all_paths(ras2, sl, rs, trans, g_colors, g_path_idx, g_npaths);
+      agg::render_all_paths(ras2, sl, rs, trans, g_colors, g_path_idx, g_npaths);
 
-        mtx *= ~trans_affine_resizing();
-        mtx *= agg::trans_affine_translation(initial_width()/2, 0);
-        mtx *= trans_affine_resizing();
+      mtx *= ~trans_affine_resizing();
+      mtx *= agg::trans_affine_translation(initial_width() / 2, 0);
+      mtx *= trans_affine_resizing();
 
-        agg::line_profile_aa profile;
-        profile.width(1.0);
-        agg::renderer_outline_aa<renderer_base> rp(rb, profile);
-        agg::rasterizer_outline_aa<agg::renderer_outline_aa<renderer_base> > ras(rp);
-        ras.round_cap(true);
+      agg::line_profile_aa profile;
+      profile.width(1.0);
+      agg::renderer_outline_aa<renderer_base> rp(rb, profile);
+      agg::rasterizer_outline_aa<agg::renderer_outline_aa<renderer_base>> ras(rp);
+      ras.round_cap(true);
 
-        ras.render_all_paths(trans, g_colors, g_path_idx, g_npaths);
+      ras.render_all_paths(trans, g_colors, g_path_idx, g_npaths);
 
-        agg::ellipse ell(m_cx, m_cy, 100.0, 100.0, 100);
-        agg::conv_stroke<agg::ellipse> ell_stroke1(ell);
-        ell_stroke1.width(6.0);
-        agg::conv_stroke<agg::conv_stroke<agg::ellipse> > ell_stroke2(ell_stroke1);
+      agg::ellipse ell(m_cx, m_cy, 100.0, 100.0, 100);
+      agg::conv_stroke<agg::ellipse> ell_stroke1(ell);
+      ell_stroke1.width(6.0);
+      agg::conv_stroke<agg::conv_stroke<agg::ellipse>> ell_stroke2(ell_stroke1);
 
-        ell_stroke2.width(2.0);
-        rs.color(agg::rgba(0,0.2,0));
-        ras2.add_path(ell_stroke2);
-        agg::render_scanlines(ras2, sl, rs);
+      ell_stroke2.width(2.0);
+      rs.color(agg::rgba(0, 0.2, 0));
+      ras2.add_path(ell_stroke2);
+      agg::render_scanlines(ras2, sl, rs);
 
-        typedef span_simple_blur_rgb24<component_order> span_blur_gen;
-        typedef agg::span_allocator<color_type> span_blur_alloc;
+      using span_blur_gen = span_simple_blur_rgb24<component_order>;
+      using span_blur_alloc = agg::span_allocator<color_type>;
 
-        span_blur_alloc sa;
-        span_blur_gen sg;
+      span_blur_alloc sa;
+      span_blur_gen sg;
 
-        sg.source_image(rbuf_img(0));
-        ras2.add_path(ell);
+      sg.source_image(rbuf_img(0));
+      ras2.add_path(ell);
 
-        copy_window_to_img(0);
-        agg::render_scanlines_aa(ras2, sl2, rb, sa, sg);
+      copy_window_to_img(0);
+      agg::render_scanlines_aa(ras2, sl2, rb, sa, sg);
 
-        // More blur if desired :-)
-        //copy_window_to_img(0);
-        //agg::render_scanlines(ras2, sl2, rblur);
-        //copy_window_to_img(0);
-        //agg::render_scanlines(ras2, sl2, rblur);
-        //copy_window_to_img(0);
-        //agg::render_scanlines(ras2, sl2, rblur);
+      // More blur if desired :-)
+      //copy_window_to_img(0);
+      //agg::render_scanlines(ras2, sl2, rblur);
+      //copy_window_to_img(0);
+      //agg::render_scanlines(ras2, sl2, rblur);
+      //copy_window_to_img(0);
+      //agg::render_scanlines(ras2, sl2, rblur);
     }
 
 
-    virtual void on_mouse_button_down(int x, int y, unsigned flags)
+    void on_mouse_button_down(int x, int y, unsigned flags) override
     {
-        if(flags & agg::mouse_left)
-        {
-            m_cx = x;
-            m_cy = y;
-            force_redraw();
-        }
+      if ((flags & agg::mouse_left) != 0U) {
+        m_cx = x;
+        m_cy = y;
+        force_redraw();
+      }
     }
 
 
-    virtual void on_mouse_move(int x, int y, unsigned flags)
+    void on_mouse_move(int x, int y, unsigned flags) override
     {
         on_mouse_button_down(x, y, flags);
     }
@@ -237,18 +224,13 @@ public:
 };
 
 
-
-
-
-
-int agg_main(int argc, char* argv[])
+int agg_main(int /*argc*/, char * /*argv*/[])
 {
-    the_application app(pix_format, flip_y);
-    app.caption("AGG Example. Lion with Alpha-Masking");
+  the_application app(pix_format, flip_y != 0U);
+  app.caption("AGG Example. Lion with Alpha-Masking");
 
-    if(app.init(512, 400, agg::window_resize))
-    {
-        return app.run();
+  if (app.init(512, 400, agg::window_resize)) {
+    return app.run();
     }
     return 1;
 }

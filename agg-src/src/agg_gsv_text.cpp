@@ -483,34 +483,37 @@ namespace agg
     };
 
     //-------------------------------------------------------------------------
-    gsv_text::gsv_text() :
-      m_x(0.0),
-      m_y(0.0),
-      m_start_x(0.0),
-      m_width(10.0),
-      m_height(0.0),
-      m_space(0.0),
-      m_line_space(0.0),
-      m_text(m_chr),
-      m_text_buf(),
-      m_cur_chr(m_chr),
-      m_font(gsv_default_font),
-      m_loaded_font(),
-      m_status(initial),
-      m_big_endian(false),
-      m_flip(false)
+    gsv_text::gsv_text() : m_x(0.0),
+                           m_y(0.0),
+                           m_start_x(0.0),
+                           m_width(10.0),
+                           m_height(0.0),
+                           m_space(0.0),
+                           m_line_space(0.0),
+                           m_text(m_chr),
+
+                           m_cur_chr(m_chr),
+                           m_font(gsv_default_font),
+
+                           m_status(initial),
+                           m_big_endian(false),
+                           m_flip(false)
     {
         m_chr[0] = m_chr[1] = 0;
 
         int t = 1;
-        if(*(char*)&t == 0) m_big_endian = true;
+        if (*(char *)&t == 0) {
+          m_big_endian = true;
+        }
     }
 
     //-------------------------------------------------------------------------
     void gsv_text::font(const void* font)
     {
         m_font = font;
-        if(m_font == 0) m_font = &m_loaded_font[0];
+        if (m_font == nullptr) {
+          m_font = &m_loaded_font[0];
+        }
     }
 
     //-------------------------------------------------------------------------
@@ -544,35 +547,33 @@ namespace agg
     void gsv_text::load_font(const char* file)
     {
         m_loaded_font.resize(0);
-        FILE* fd = std::fopen(file, "rb");
-        if(fd)
-        {
-            unsigned len;
+        FILE *fd = std::fopen(file, "rbe");
+        if (fd != nullptr) {
+          unsigned len = 0;
 
-            std::fseek(fd, 0l, SEEK_END);
-            len = std::ftell(fd);
-            std::fseek(fd, 0l, SEEK_SET);
-            if(len > 0)
-            {
-                m_loaded_font.resize(len);
-                if (std::fread(&m_loaded_font[0], 1, len, fd) == len)
-                    m_font = &m_loaded_font[0];
-                else
-                    m_font = 0;
+          std::fseek(fd, 0L, SEEK_END);
+          len = std::ftell(fd);
+          std::fseek(fd, 0L, SEEK_SET);
+          if (len > 0) {
+            m_loaded_font.resize(len);
+            if (std::fread(&m_loaded_font[0], 1, len, fd) == len) {
+              m_font = &m_loaded_font[0];
+            } else {
+              m_font = nullptr;
             }
-            std::fclose(fd);
+          }
+          std::fclose(fd);
         }
     }
 
     //-------------------------------------------------------------------------
     void gsv_text::text(const char* text)
     {
-        if(text == 0)
-        {
-            m_chr[0] = 0;
-            m_text = m_chr;
-            return;
-        }
+      if (text == nullptr) {
+        m_chr[0] = 0;
+        m_text = m_chr;
+        return;
+      }
         unsigned new_size = std::strlen(text) + 1;
         if(new_size > m_text_buf.size())
         {
@@ -583,83 +584,83 @@ namespace agg
     }
 
     //-------------------------------------------------------------------------
-    void gsv_text::rewind(unsigned)
+    void gsv_text::rewind(unsigned /*unused*/)
     {
         m_status = initial;
-        if(m_font == 0) return;
-        
+        if (m_font == nullptr) {
+          return;
+        }
+
         m_indices = (int8u*)m_font;
         double base_height = value(m_indices + 4);
         m_indices += value(m_indices);
         m_glyphs = (int8*)(m_indices + 257*2);
         m_h = m_height / base_height;
         m_w = (m_width == 0.0) ? m_h : m_width / base_height;
-        if(m_flip) m_h = -m_h;
+        if (m_flip) {
+          m_h = -m_h;
+        }
         m_cur_chr = m_text;
     }
 
     //-------------------------------------------------------------------------
     unsigned gsv_text::vertex(double* x, double* y)
     {
-        unsigned idx;
-        int8 yc, yf;
-        int dx, dy;
-        bool quit = false;
-        
-        while(!quit)
-        {
-            switch(m_status)
-            {
-            case initial:
-                if(m_font == 0) 
-                {
-                    quit = true;
-                    break;
-                }
-                m_status = next_char;
+      unsigned idx = 0;
+      int8 yc;
+      int8 yf;
+      int dx;
+      int dy;
+      bool quit = false;
 
-            case next_char:
-                if(*m_cur_chr == 0) 
-                {
-                    quit = true;
-                    break;
-                }
-                idx = (*m_cur_chr++) & 0xFF;
-                if(idx == '\n')
-                {
-                    m_x = m_start_x;
-                    m_y -= m_flip ? -m_height - m_line_space : m_height + m_line_space;
-                    break;
-                }
-                idx <<= 1;
-                m_bglyph = m_glyphs + value(m_indices + idx);
-                m_eglyph = m_glyphs + value(m_indices + idx + 2);
-                m_status = start_glyph;
+      while (!quit) {
+        switch (m_status) {
+        case initial:
+          if (m_font == nullptr) {
+            quit = true;
+            break;
+          }
+          m_status = next_char;
 
-            case start_glyph:
-                *x = m_x;
-                *y = m_y;
-                m_status = glyph;
-                return path_cmd_move_to;
+        case next_char:
+          if (*m_cur_chr == 0) {
+            quit = true;
+            break;
+          }
+          idx = (*m_cur_chr++) & 0xFF;
+          if (idx == '\n') {
+            m_x = m_start_x;
+            m_y -= m_flip ? -m_height - m_line_space : m_height + m_line_space;
+            break;
+          }
+          idx <<= 1;
+          m_bglyph = m_glyphs + value(m_indices + idx);
+          m_eglyph = m_glyphs + value(m_indices + idx + 2);
+          m_status = start_glyph;
 
-            case glyph:
-                if(m_bglyph >= m_eglyph)
-                {
-                    m_status = next_char;
-                    m_x += m_space;
-                    break;
-                }
-                dx = int(*m_bglyph++);
-                yf = (yc = *m_bglyph++) & 0x80;
-                yc <<= 1; 
-                yc >>= 1;
-                dy = int(yc);
-                m_x += double(dx) * m_w;
-                m_y += double(dy) * m_h;
-                *x = m_x;
-                *y = m_y;
-                return yf ? path_cmd_move_to : path_cmd_line_to;
-            }
+        case start_glyph:
+          *x = m_x;
+          *y = m_y;
+          m_status = glyph;
+          return path_cmd_move_to;
+
+        case glyph:
+          if (m_bglyph >= m_eglyph) {
+            m_status = next_char;
+            m_x += m_space;
+            break;
+          }
+          dx = int(*m_bglyph++);
+          yf = (yc = *m_bglyph++) & 0x80;
+          yc <<= 1;
+          yc >>= 1;
+          dy = int(yc);
+          m_x += double(dx) * m_w;
+          m_y += double(dy) * m_h;
+          *x = m_x;
+          *y = m_y;
+          return yf != 0 ? path_cmd_move_to : path_cmd_line_to;
+        }
 
         }
         return path_cmd_stop;
@@ -668,9 +669,12 @@ namespace agg
     //-------------------------------------------------------------------------
     double gsv_text::text_width()
     {
-        double x1, y1, x2, y2;
-        bounding_rect_single(*this, 0, &x1, &y1, &x2, &y2);
-        return x2 - x1;
+      double x1;
+      double y1;
+      double x2;
+      double y2;
+      bounding_rect_single(*this, 0, &x1, &y1, &x2, &y2);
+      return x2 - x1;
     }
 
 

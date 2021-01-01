@@ -17,7 +17,7 @@
 //
 //----------------------------------------------------------------------------
 
-#include <string.h>
+#include <cstring>
 #include "ctrl/agg_rbox_ctrl.h"
 
 namespace agg
@@ -168,16 +168,24 @@ namespace agg
         switch(m_idx)
         {
         case 0:
-            if(m_vertex == 0) cmd = path_cmd_move_to;
-            if(m_vertex >= 4) cmd = path_cmd_stop;
+          if (m_vertex == 0) {
+            cmd = path_cmd_move_to;
+          }
+          if (m_vertex >= 4) {
+            cmd = path_cmd_stop;
+          }
             *x = m_vx[m_vertex];
             *y = m_vy[m_vertex];
             m_vertex++;
             break;
 
         case 1:
-            if(m_vertex == 0 || m_vertex == 4) cmd = path_cmd_move_to;
-            if(m_vertex >= 8) cmd = path_cmd_stop;
+          if (m_vertex == 0 || m_vertex == 4) {
+            cmd = path_cmd_move_to;
+          }
+          if (m_vertex >= 8) {
+            cmd = path_cmd_stop;
+          }
             *x = m_vx[m_vertex];
             *y = m_vy[m_vertex];
             m_vertex++;
@@ -192,15 +200,13 @@ namespace agg
                 {
                     break;
                 }
-                else
-                {
-                    m_text.text(&m_items[m_draw_item][0]);
-                    m_text.start_point(m_xs1 + m_dy * 1.5, 
-                                       m_ys1 + m_dy * (m_draw_item + 1) - m_dy / 2.0);
 
-                    m_text_poly.rewind(0);
-                    cmd = m_text_poly.vertex(x, y);
-                }
+                m_text.text(&m_items[m_draw_item][0]);
+                m_text.start_point(m_xs1 + m_dy * 1.5,
+                  m_ys1 + m_dy * (m_draw_item + 1) - m_dy / 2.0);
+
+                m_text_poly.rewind(0);
+                cmd = m_text_poly.vertex(x, y);
             }
             break;
 
@@ -213,15 +219,14 @@ namespace agg
                 {
                     break;
                 }
-                else
-                {
-                    m_ellipse.init(m_xs1 + m_dy / 1.3, 
-                                   m_ys1 + m_dy * m_draw_item + m_dy / 1.3,
-                                   m_text_height / 1.5, 
-                                   m_text_height / 1.5, 32);
-                    m_ellipse_poly.rewind(0);
-                    cmd = m_ellipse_poly.vertex(x, y);
-                }
+
+                m_ellipse.init(m_xs1 + m_dy / 1.3,
+                  m_ys1 + m_dy * m_draw_item + m_dy / 1.3,
+                  m_text_height / 1.5,
+                  m_text_height / 1.5,
+                  32);
+                m_ellipse_poly.rewind(0);
+                cmd = m_ellipse_poly.vertex(x, y);
             }
             break;
 
@@ -264,7 +269,7 @@ namespace agg
     bool rbox_ctrl_impl::on_mouse_button_down(double x, double y)
     {
         inverse_transform_xy(&x, &y);
-        unsigned i;
+        unsigned i = 0;
         for(i = 0; i < m_num_items; i++)  
         {
             double xp = m_xs1 + m_dy / 1.3;
@@ -280,13 +285,13 @@ namespace agg
 
 
     //------------------------------------------------------------------------
-    bool rbox_ctrl_impl::on_mouse_move(double, double, bool)
+    bool rbox_ctrl_impl::on_mouse_move(double /*x*/, double /*y*/, bool /*button_flag*/)
     {
         return false;
     }
 
     //------------------------------------------------------------------------
-    bool rbox_ctrl_impl::on_mouse_button_up(double, double)
+    bool rbox_ctrl_impl::on_mouse_button_up(double /*x*/, double /*y*/)
     {
         return false;
     }

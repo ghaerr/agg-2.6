@@ -1,6 +1,6 @@
-#include <stdlib.h>
-#include <ctype.h>
-#include <stdio.h>
+#include <cstdlib>
+#include <cctype>
+#include <cstdio>
 #include "agg_basics.h"
 #include "agg_rendering_buffer.h"
 #include "agg_rasterizer_scanline_aa.h"
@@ -27,7 +27,7 @@
 //#define AGG_RGB555
 #include "pixel_formats.h"
 
-enum flip_y_e { flip_y = true };
+enum flip_y_e { flip_y = static_cast<unsigned int>(true) };
 
 
 agg::rasterizer_scanline_aa<> g_rasterizer;
@@ -83,13 +83,13 @@ public:
     }
 
 
-    virtual void on_draw()
+    void on_draw() override
     {
         int width = rbuf_window().width();
         int height = rbuf_window().height();
 
-        typedef agg::renderer_base<pixfmt> renderer_base;
-        typedef agg::renderer_scanline_aa_solid<renderer_base> renderer_solid;
+        using renderer_base = agg::renderer_base<pixfmt>;
+        using renderer_solid = agg::renderer_scanline_aa_solid<renderer_base>;
 
         pixfmt pixf(rbuf_window());
         renderer_base rb(pixf);
@@ -113,18 +113,18 @@ public:
         }
         else
         {
-            typedef agg::renderer_outline_aa<renderer_base> renderer_type;
-            typedef agg::rasterizer_outline_aa<renderer_type> rasterizer_type;
+          using renderer_type = agg::renderer_outline_aa<renderer_base>;
+          using rasterizer_type = agg::rasterizer_outline_aa<renderer_type>;
 
-            double w = m_width_slider.value() * mtx.scale();
+          double w = m_width_slider.value() * mtx.scale();
 
-            agg::line_profile_aa profile(w, agg::gamma_none());
-            renderer_type ren(rb, profile);
-            rasterizer_type ras(ren);
+          agg::line_profile_aa profile(w, agg::gamma_none());
+          renderer_type ren(rb, profile);
+          rasterizer_type ras(ren);
 
-            agg::conv_transform<agg::path_storage> trans(g_path, mtx);
+          agg::conv_transform<agg::path_storage> trans(g_path, mtx);
 
-            ras.render_all_paths(trans, g_colors, g_path_idx, g_npaths);
+          ras.render_all_paths(trans, g_colors, g_path_idx, g_npaths);
         }
 
 
@@ -133,7 +133,7 @@ public:
     }
 
 
-    void transform(double width, double height, double x, double y)
+    static void transform(double width, double height, double x, double y)
     {
         x -= width / 2;
         y -= height / 2;
@@ -142,26 +142,24 @@ public:
     }
 
 
-    virtual void on_mouse_button_down(int x, int y, unsigned flags)
+    void on_mouse_button_down(int x, int y, unsigned flags) override
     {
-        if(flags & agg::mouse_left)
-        {
-            int width = rbuf_window().width();
-            int height = rbuf_window().height();
-            transform(width, height, x, y);
-            force_redraw();
-        }
+      if ((flags & agg::mouse_left) != 0u) {
+        int width = rbuf_window().width();
+        int height = rbuf_window().height();
+        transform(width, height, x, y);
+        force_redraw();
+      }
 
-        if(flags & agg::mouse_right)
-        {
-            g_skew_x = x;
-            g_skew_y = y;
-            force_redraw();
-        }
+      if ((flags & agg::mouse_right) != 0u) {
+        g_skew_x = x;
+        g_skew_y = y;
+        force_redraw();
+      }
     }
 
 
-    virtual void on_mouse_move(int x, int y, unsigned flags)
+    void on_mouse_move(int x, int y, unsigned flags) override
     {
         on_mouse_button_down(x, y, flags);
     }
@@ -169,18 +167,13 @@ public:
 };
 
 
-
-
-
-
-int agg_main(int argc, char* argv[])
+int agg_main(int /*argc*/, char * /*argv*/[])
 {
-    the_application app(pix_format, flip_y);
-    app.caption("AGG Example. Lion");
+  the_application app(pix_format, flip_y != 0u);
+  app.caption("AGG Example. Lion");
 
-    if(app.init(512, 512, agg::window_resize))
-    {
-        return app.run();
+  if (app.init(512, 512, agg::window_resize)) {
+    return app.run();
     }
     return 1;
 }

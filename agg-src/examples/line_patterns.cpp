@@ -1,6 +1,6 @@
-#include <math.h>
-#include <stdio.h>
-#include <time.h>
+#include <cmath>
+#include <cstdio>
+#include <ctime>
 #include "agg_basics.h"
 #include "agg_rendering_buffer.h"
 #include "agg_conv_transform.h"
@@ -24,7 +24,7 @@
 //#define AGG_BGRA128
 #include "pixel_formats.h"
 
-enum flip_y_e { flip_y = true };
+enum flip_y_e { flip_y = static_cast<unsigned int>(true) };
 
 
 static agg::int8u brightness_to_alpha[256 * 3] = 
@@ -83,20 +83,19 @@ static agg::int8u brightness_to_alpha[256 * 3] =
 class pattern_src_brightness_to_alpha
 {
 public:
-    pattern_src_brightness_to_alpha(agg::rendering_buffer& rb) : 
-        m_rb(&rb), m_pf(*m_rb) {}
+  explicit pattern_src_brightness_to_alpha(agg::rendering_buffer &rb) : m_rb(&rb), m_pf(*m_rb) {}
 
-    unsigned width()  const { return m_pf.width();  }
-    unsigned height() const { return m_pf.height(); }
-    color_type pixel(int x, int y) const
-    {
-        color_type c = m_pf.pixel(x, y);
-        // It's a bit of a hack, but we can treat the 8-bit alpha value as a cover.
-        color_type::calc_type sum = c.r + c.g + c.b;
-        int i = int(sum * sizeof(brightness_to_alpha) / (3 * color_type::full_value()));
-        agg::cover_type cover = brightness_to_alpha[i];
-        c.a = color_type::mult_cover(color_type::full_value(), cover);
-        return c;
+  unsigned width() const { return m_pf.width(); }
+  unsigned height() const { return m_pf.height(); }
+  color_type pixel(int x, int y) const
+  {
+    color_type c = m_pf.pixel(x, y);
+    // It's a bit of a hack, but we can treat the 8-bit alpha value as a cover.
+    color_type::calc_type sum = c.r + c.g + c.b;
+    int i = int(sum * sizeof(brightness_to_alpha) / (3 * color_type::full_value()));
+    agg::cover_type cover = brightness_to_alpha[i];
+    c.a = color_type::mult_cover(color_type::full_value(), cover);
+    return c;
     }
 
 private:
@@ -121,69 +120,68 @@ class the_application : public agg::platform_support
     agg::slider_ctrl<color_type> m_start_x;
 
 public:
-    typedef agg::renderer_base<pixfmt> renderer_base;
-    typedef agg::renderer_scanline_aa_solid<renderer_base> renderer_scanline;
-    typedef agg::rasterizer_scanline_aa<> rasterizer_scanline;
-    typedef agg::scanline_p8 scanline;
+  using renderer_base = agg::renderer_base<pixfmt>;
+  using renderer_scanline = agg::renderer_scanline_aa_solid<renderer_base>;
+  using rasterizer_scanline = agg::rasterizer_scanline_aa<>;
+  using scanline = agg::scanline_p8;
 
 
-    the_application(agg::pix_format_e format, bool flip_y) :
-        agg::platform_support(format, flip_y),
-        m_ctrl_color(agg::rgba(0, 0.3, 0.5, 0.3)),
-        m_scale_x(5.0,   5.0, 240.0, 12.0, !flip_y),
-        m_start_x(250.0, 5.0, 495.0, 12.0, !flip_y)
-    {
-        m_curve1.line_color(m_ctrl_color);
-        m_curve2.line_color(m_ctrl_color);
-        m_curve3.line_color(m_ctrl_color);
-        m_curve4.line_color(m_ctrl_color);
-        m_curve5.line_color(m_ctrl_color);
-        m_curve6.line_color(m_ctrl_color);
-        m_curve7.line_color(m_ctrl_color);
-        m_curve8.line_color(m_ctrl_color);
-        m_curve9.line_color(m_ctrl_color);
+  the_application(agg::pix_format_e format, bool flip_y) : agg::platform_support(format, flip_y),
+                                                           m_ctrl_color(agg::rgba(0, 0.3, 0.5, 0.3)),
+                                                           m_scale_x(5.0, 5.0, 240.0, 12.0, !flip_y),
+                                                           m_start_x(250.0, 5.0, 495.0, 12.0, !flip_y)
+  {
+    m_curve1.line_color(m_ctrl_color);
+    m_curve2.line_color(m_ctrl_color);
+    m_curve3.line_color(m_ctrl_color);
+    m_curve4.line_color(m_ctrl_color);
+    m_curve5.line_color(m_ctrl_color);
+    m_curve6.line_color(m_ctrl_color);
+    m_curve7.line_color(m_ctrl_color);
+    m_curve8.line_color(m_ctrl_color);
+    m_curve9.line_color(m_ctrl_color);
 
-        m_curve1.curve(64, 19, 14, 126, 118, 266, 19, 265);
-        m_curve2.curve(112, 113, 178, 32, 200, 132, 125, 438);
-        m_curve3.curve(401, 24, 326, 149, 285, 11, 177, 77);
-        m_curve4.curve(188, 427, 129, 295, 19, 283, 25, 410);
-        m_curve5.curve(451, 346, 302, 218, 265, 441, 459, 400);
-        m_curve6.curve(454, 198, 14, 13, 220, 291, 483, 283);
-        m_curve7.curve(301, 398, 355, 231, 209, 211, 170, 353);
-        m_curve8.curve(484, 101, 222, 33, 486, 435, 487, 138);
-        m_curve9.curve(143, 147, 11, 45, 83, 427, 132, 197);
+    m_curve1.curve(64, 19, 14, 126, 118, 266, 19, 265);
+    m_curve2.curve(112, 113, 178, 32, 200, 132, 125, 438);
+    m_curve3.curve(401, 24, 326, 149, 285, 11, 177, 77);
+    m_curve4.curve(188, 427, 129, 295, 19, 283, 25, 410);
+    m_curve5.curve(451, 346, 302, 218, 265, 441, 459, 400);
+    m_curve6.curve(454, 198, 14, 13, 220, 291, 483, 283);
+    m_curve7.curve(301, 398, 355, 231, 209, 211, 170, 353);
+    m_curve8.curve(484, 101, 222, 33, 486, 435, 487, 138);
+    m_curve9.curve(143, 147, 11, 45, 83, 427, 132, 197);
 
-        add_ctrl(m_curve1);
-        add_ctrl(m_curve2);
-        add_ctrl(m_curve3);
-        add_ctrl(m_curve4);
-        add_ctrl(m_curve5);
-        add_ctrl(m_curve6);
-        add_ctrl(m_curve7);
-        add_ctrl(m_curve8);
-        add_ctrl(m_curve9);
+    add_ctrl(m_curve1);
+    add_ctrl(m_curve2);
+    add_ctrl(m_curve3);
+    add_ctrl(m_curve4);
+    add_ctrl(m_curve5);
+    add_ctrl(m_curve6);
+    add_ctrl(m_curve7);
+    add_ctrl(m_curve8);
+    add_ctrl(m_curve9);
 
-        m_curve1.no_transform();
-        m_curve2.no_transform();
-        m_curve3.no_transform();
-        m_curve4.no_transform();
-        m_curve5.no_transform();
-        m_curve6.no_transform();
-        m_curve7.no_transform();
-        m_curve8.no_transform();
-        m_curve9.no_transform();
+    m_curve1.no_transform();
+    m_curve2.no_transform();
+    m_curve3.no_transform();
+    m_curve4.no_transform();
+    m_curve5.no_transform();
+    m_curve6.no_transform();
+    m_curve7.no_transform();
+    m_curve8.no_transform();
+    m_curve9.no_transform();
 
-        m_scale_x.label("Scale X=%.2f");
-        m_scale_x.range(0.2, 3.0);
-        m_scale_x.value(1.0);
-        m_scale_x.no_transform();
-        add_ctrl(m_scale_x);
+    m_scale_x.label("Scale X=%.2f");
+    m_scale_x.range(0.2, 3.0);
+    m_scale_x.value(1.0);
+    m_scale_x.no_transform();
+    add_ctrl(m_scale_x);
 
-        m_start_x.label("Start X=%.2f");
-        m_start_x.range(0.0, 10.0);
-        m_start_x.value(0.0);
-        m_start_x.no_transform();
-        add_ctrl(m_start_x);
+    m_start_x.label("Start X=%.2f");
+    m_start_x.range(0.0, 10.0);
+    m_start_x.value(0.0);
+    m_start_x.no_transform();
+    add_ctrl(m_start_x);
     }
 
 
@@ -205,7 +203,7 @@ public:
     }
 
 
-    virtual void on_draw()
+    void on_draw() override
     {
         pixfmt pf(rbuf_window());
         renderer_base ren_base(pf);
@@ -240,11 +238,11 @@ public:
         // width of the pattern is power of 2, it's better to use the modified
         // version agg::line_image_pattern_pow2 because it works about 15-25 percent
         // faster than agg::line_image_pattern (because of using simple masking instead 
-        // of expensive '%' operation). 
-        typedef agg::line_image_pattern<agg::pattern_filter_bilinear_rgba<color_type> > pattern_type;
-        typedef agg::renderer_base<pixfmt> base_ren_type;
-        typedef agg::renderer_outline_image<base_ren_type, pattern_type> renderer_type;
-        typedef agg::rasterizer_outline_aa<renderer_type>                rasterizer_type;
+        // of expensive '%' operation).
+        using pattern_type = agg::line_image_pattern<agg::pattern_filter_bilinear_rgba<color_type>>;
+        using base_ren_type = agg::renderer_base<pixfmt>;
+        using renderer_type = agg::renderer_outline_image<base_ren_type, pattern_type>;
+        using rasterizer_type = agg::rasterizer_outline_aa<renderer_type>;
 
         //-- Create with specifying the source
         //pattern_type patt(fltr, src);   
@@ -279,50 +277,39 @@ public:
     }
 
 
-    virtual void on_key(int x, int y, unsigned key, unsigned flags)
+    void on_key(int /*x*/, int /*y*/, unsigned key, unsigned /*flags*/) override
     {
         if(key == ' ')
         {
-            FILE* fd = fopen(full_file_name("coord"), "w");
-            fprintf(fd, "%.0f, %.0f, %.0f, %.0f, %.0f, %.0f, %.0f, %.0f", 
-                         m_curve1.x1(), m_curve1.y1(), 
-                         m_curve1.x2(), m_curve1.y2(), 
-                         m_curve1.x3(), m_curve1.y3(), 
-                         m_curve1.x4(), m_curve1.y4());
-            fclose(fd);
+          FILE *fd = fopen(full_file_name("coord"), "we");
+          fprintf(fd, "%.0f, %.0f, %.0f, %.0f, %.0f, %.0f, %.0f, %.0f", m_curve1.x1(), m_curve1.y1(), m_curve1.x2(), m_curve1.y2(), m_curve1.x3(), m_curve1.y3(), m_curve1.x4(), m_curve1.y4());
+          fclose(fd);
         }
     }
 
-    virtual void on_ctrl_change()
+    void on_ctrl_change() override
     {
     }
 };
 
 
-int agg_main(int argc, char* argv[])
+int agg_main(int /*argc*/, char * /*argv*/[])
 {
-    the_application app(pix_format, flip_y);
-    app.caption("AGG Example. Drawing Lines with Image Patterns");
+  the_application app(pix_format, flip_y != 0u);
+  app.caption("AGG Example. Drawing Lines with Image Patterns");
 
-    if(!app.load_img(0, "1") ||
-       !app.load_img(1, "2") ||
-       !app.load_img(2, "3") ||
-       !app.load_img(3, "4") ||
-       !app.load_img(4, "5") ||
-       !app.load_img(5, "6") ||
-       !app.load_img(6, "7") ||
-       !app.load_img(7, "8") ||
-       !app.load_img(8, "9"))
-    {
-        char buf[256];
-        sprintf(buf, "There must be files 1%s...9%s\n"
-                     "Download and unzip:\n"
-                     "http://www.antigrain.com/line_patterns.bmp.zip\n"
-                     "or\n"
-                     "http://www.antigrain.com/line_patterns.ppm.tar.gz\n", 
-                     app.img_ext(), app.img_ext());
-        app.message(buf);
-        return 1;
+  if (!app.load_img(0, "1") || !app.load_img(1, "2") || !app.load_img(2, "3") || !app.load_img(3, "4") || !app.load_img(4, "5") || !app.load_img(5, "6") || !app.load_img(6, "7") || !app.load_img(7, "8") || !app.load_img(8, "9")) {
+    char buf[256];
+    sprintf(buf,
+      "There must be files 1%s...9%s\n"
+      "Download and unzip:\n"
+      "http://www.antigrain.com/line_patterns.bmp.zip\n"
+      "or\n"
+      "http://www.antigrain.com/line_patterns.ppm.tar.gz\n",
+      the_application::img_ext(),
+      the_application::img_ext());
+    the_application::message(buf);
+    return 1;
     }
 
     if(app.init(500, 450, agg::window_resize))

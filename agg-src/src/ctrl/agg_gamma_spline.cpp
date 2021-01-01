@@ -32,12 +32,20 @@ namespace agg
 
     //------------------------------------------------------------------------
     double gamma_spline::y(double x) const 
-    { 
-        if(x < 0.0) x = 0.0;
-        if(x > 1.0) x = 1.0;
+    {
+      if (x < 0.0) {
+        x = 0.0;
+      }
+      if (x > 1.0) {
+        x = 1.0;
+      }
         double val = m_spline.get(x);
-        if(val < 0.0) val = 0.0;
-        if(val > 1.0) val = 1.0;
+        if (val < 0.0) {
+          val = 0.0;
+        }
+        if (val > 1.0) {
+          val = 1.0;
+        }
         return val;
     }
 
@@ -46,14 +54,30 @@ namespace agg
     //------------------------------------------------------------------------
     void gamma_spline::values(double kx1, double ky1, double kx2, double ky2)
     {
-        if(kx1 < 0.001) kx1 = 0.001;
-        if(kx1 > 1.999) kx1 = 1.999;
-        if(ky1 < 0.001) ky1 = 0.001;
-        if(ky1 > 1.999) ky1 = 1.999;
-        if(kx2 < 0.001) kx2 = 0.001;
-        if(kx2 > 1.999) kx2 = 1.999;
-        if(ky2 < 0.001) ky2 = 0.001;
-        if(ky2 > 1.999) ky2 = 1.999;
+      if (kx1 < 0.001) {
+        kx1 = 0.001;
+      }
+      if (kx1 > 1.999) {
+        kx1 = 1.999;
+      }
+      if (ky1 < 0.001) {
+        ky1 = 0.001;
+      }
+      if (ky1 > 1.999) {
+        ky1 = 1.999;
+      }
+      if (kx2 < 0.001) {
+        kx2 = 0.001;
+      }
+      if (kx2 > 1.999) {
+        kx2 = 1.999;
+      }
+      if (ky2 < 0.001) {
+        ky2 = 0.001;
+      }
+      if (ky2 > 1.999) {
+        ky2 = 1.999;
+      }
 
         m_x[0] = 0.0;
         m_y[0] = 0.0;
@@ -66,7 +90,7 @@ namespace agg
 
         m_spline.init(4, m_x, m_y);
 
-        int i;
+        int i = 0;
         for(i = 0; i < 256; i++)
         {
             m_gamma[i] = (unsigned char)(y(double(i) / 255.0) * 255.0);
@@ -95,7 +119,7 @@ namespace agg
 
 
     //------------------------------------------------------------------------
-    void gamma_spline::rewind(unsigned)
+    void gamma_spline::rewind(unsigned /*unused*/)
     {
         m_cur_x = 0.0;
     }

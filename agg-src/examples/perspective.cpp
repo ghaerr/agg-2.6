@@ -1,6 +1,6 @@
-#include <stdlib.h>
-#include <ctype.h>
-#include <stdio.h>
+#include <cstdlib>
+#include <cctype>
+#include <cstdio>
 #include "agg_basics.h"
 #include "agg_rendering_buffer.h"
 #include "agg_rasterizer_scanline_aa.h"
@@ -27,7 +27,7 @@
 //#define AGG_RGB555
 #include "pixel_formats.h"
 
-enum flip_y_e { flip_y = true };
+enum flip_y_e { flip_y = static_cast<unsigned int>(true) };
 
 agg::rasterizer_scanline_aa<> g_rasterizer;
 agg::scanline_p8  g_scanline;
@@ -75,35 +75,34 @@ namespace agg
 class the_application : public agg::platform_support
 {
 public:
-    typedef agg::renderer_base<pixfmt> renderer_base;
-    typedef agg::renderer_scanline_aa_solid<renderer_base> renderer_solid;
+  using renderer_base = agg::renderer_base<pixfmt>;
+  using renderer_solid = agg::renderer_scanline_aa_solid<renderer_base>;
 
-    agg::interactive_polygon   m_quad;
-    agg::rbox_ctrl<color_type> m_trans_type;
+  agg::interactive_polygon m_quad;
+  agg::rbox_ctrl<color_type> m_trans_type;
 
-    the_application(agg::pix_format_e format, bool flip_y) :
-        agg::platform_support(format, flip_y),
-        m_quad(4, 5.0),
-        m_trans_type(420, 5.0, 420+130.0, 55.0, !flip_y)
-    {
-        parse_lion();
-        m_quad.xn(0) = g_x1;
-        m_quad.yn(0) = g_y1;
-        m_quad.xn(1) = g_x2;
-        m_quad.yn(1) = g_y1;
-        m_quad.xn(2) = g_x2;
-        m_quad.yn(2) = g_y2;
-        m_quad.xn(3) = g_x1;
-        m_quad.yn(3) = g_y2;
+  the_application(agg::pix_format_e format, bool flip_y) : agg::platform_support(format, flip_y),
+                                                           m_quad(4, 5.0),
+                                                           m_trans_type(420, 5.0, 420 + 130.0, 55.0, !flip_y)
+  {
+    parse_lion();
+    m_quad.xn(0) = g_x1;
+    m_quad.yn(0) = g_y1;
+    m_quad.xn(1) = g_x2;
+    m_quad.yn(1) = g_y1;
+    m_quad.xn(2) = g_x2;
+    m_quad.yn(2) = g_y2;
+    m_quad.xn(3) = g_x1;
+    m_quad.yn(3) = g_y2;
 
-        m_trans_type.add_item("Bilinear");
-        m_trans_type.add_item("Perspective");
-        m_trans_type.cur_item(0);
-        add_ctrl(m_trans_type);
+    m_trans_type.add_item("Bilinear");
+    m_trans_type.add_item("Perspective");
+    m_trans_type.cur_item(0);
+    add_ctrl(m_trans_type);
     }
 
 
-    virtual void on_init()
+    void on_init() override
     {
         double dx = width()  / 2.0 - (m_quad.xn(1) - m_quad.xn(0)) / 2.0;
         double dy = height() / 2.0 - (m_quad.yn(2) - m_quad.yn(0)) / 2.0;
@@ -117,7 +116,7 @@ public:
         m_quad.yn(3) += dy;
     }
 
-    virtual void on_draw()
+    void on_draw() override
     {
         pixfmt pixf(rbuf_window());
         renderer_base rb(pixf);
@@ -248,28 +247,23 @@ public:
     }
 
 
-
-    virtual void on_mouse_button_down(int x, int y, unsigned flags)
+    void on_mouse_button_down(int x, int y, unsigned flags) override
     {
-        if(flags & agg::mouse_left)
-        {
-            if(m_quad.on_mouse_button_down(x, y))
-            {
-                force_redraw();
-            }
+      if ((flags & agg::mouse_left) != 0U) {
+        if (m_quad.on_mouse_button_down(x, y)) {
+          force_redraw();
         }
+      }
     }
 
 
-    virtual void on_mouse_move(int x, int y, unsigned flags)
+    void on_mouse_move(int x, int y, unsigned flags) override
     {
-        if(flags & agg::mouse_left)
-        {
-            if(m_quad.on_mouse_move(x, y))
-            {
-                force_redraw();
-            }
+      if ((flags & agg::mouse_left) != 0U) {
+        if (m_quad.on_mouse_move(x, y)) {
+          force_redraw();
         }
+      }
         if((flags & agg::mouse_left) == 0)
         {
             on_mouse_button_up(x, y, flags);
@@ -277,7 +271,7 @@ public:
     }
 
 
-    virtual void on_mouse_button_up(int x, int y, unsigned flags)
+    void on_mouse_button_up(int x, int y, unsigned /*flags*/) override
     {
         if(m_quad.on_mouse_button_up(x, y))
         {
@@ -288,18 +282,13 @@ public:
 };
 
 
-
-
-
-
-int agg_main(int argc, char* argv[])
+int agg_main(int /*argc*/, char * /*argv*/[])
 {
-    the_application app(pix_format, flip_y);
-    app.caption("AGG Example. Perspective Transformations");
+  the_application app(pix_format, flip_y != 0U);
+  app.caption("AGG Example. Perspective Transformations");
 
-    if(app.init(600, 600, agg::window_resize))
-    {
-        return app.run();
+  if (app.init(600, 600, agg::window_resize)) {
+    return app.run();
     }
     return 1;
 }

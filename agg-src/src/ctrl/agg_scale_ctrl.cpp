@@ -19,6 +19,8 @@
 
 #include "ctrl/agg_scale_ctrl.h"
 
+#include <cmath>
+
 namespace agg
 {
 
@@ -74,20 +76,32 @@ namespace agg
 
     //------------------------------------------------------------------------
     void scale_ctrl_impl::value1(double value) 
-    { 
-        if(value < 0.0) value = 0.0;
-        if(value > 1.0) value = 1.0;
-        if(m_value2 - value < m_min_d) value = m_value2 - m_min_d;
+    {
+      if (value < 0.0) {
+        value = 0.0;
+      }
+      if (value > 1.0) {
+        value = 1.0;
+      }
+      if (m_value2 - value < m_min_d) {
+        value = m_value2 - m_min_d;
+      }
         m_value1 = value; 
     }
 
 
     //------------------------------------------------------------------------
     void scale_ctrl_impl::value2(double value) 
-    { 
-        if(value < 0.0) value = 0.0;
-        if(value > 1.0) value = 1.0;
-        if(m_value1 + value < m_min_d) value = m_value1 + m_min_d;
+    {
+      if (value < 0.0) {
+        value = 0.0;
+      }
+      if (value > 1.0) {
+        value = 1.0;
+      }
+      if (m_value1 + value < m_min_d) {
+        value = m_value1 + m_min_d;
+      }
         m_value2 = value; 
     }
 
@@ -228,16 +242,24 @@ namespace agg
         {
         case 0:
         case 4:
-            if(m_vertex == 0) cmd = path_cmd_move_to;
-            if(m_vertex >= 4) cmd = path_cmd_stop;
+          if (m_vertex == 0) {
+            cmd = path_cmd_move_to;
+          }
+          if (m_vertex >= 4) {
+            cmd = path_cmd_stop;
+          }
             *x = m_vx[m_vertex];
             *y = m_vy[m_vertex];
             m_vertex++;
             break;
 
         case 1:
-            if(m_vertex == 0 || m_vertex == 4) cmd = path_cmd_move_to;
-            if(m_vertex >= 8) cmd = path_cmd_stop;
+          if (m_vertex == 0 || m_vertex == 4) {
+            cmd = path_cmd_move_to;
+          }
+          if (m_vertex >= 8) {
+            cmd = path_cmd_stop;
+          }
             *x = m_vx[m_vertex];
             *y = m_vy[m_vertex];
             m_vertex++;
@@ -276,12 +298,12 @@ namespace agg
     {
         inverse_transform_xy(&x, &y);
 
-        double xp1;
-        double xp2;
-        double ys1;
-        double ys2;
-        double xp;
-        double yp;
+        double xp1 = NAN;
+        double xp2 = NAN;
+        double ys1 = NAN;
+        double ys2 = NAN;
+        double xp = NAN;
+        double yp = NAN;
 
         if(fabs(m_x2 - m_x1) > fabs(m_y2 - m_y1))
         {
@@ -361,7 +383,7 @@ namespace agg
 
         double xp = x + m_pdx;
         double yp = y + m_pdy;
-        double dv;
+        double dv = NAN;
 
         switch(m_move_what)
         {
@@ -374,8 +396,12 @@ namespace agg
             {
                 m_value1 = (yp - m_ys1) / (m_ys2 - m_ys1);
             }
-            if(m_value1 < 0.0) m_value1 = 0.0;
-            if(m_value1 > m_value2 - m_min_d) m_value1 = m_value2 - m_min_d;
+            if (m_value1 < 0.0) {
+              m_value1 = 0.0;
+            }
+            if (m_value1 > m_value2 - m_min_d) {
+              m_value1 = m_value2 - m_min_d;
+            }
             return true;
 
         case move_value2:
@@ -387,8 +413,12 @@ namespace agg
             {
                 m_value2 = (yp - m_ys1) / (m_ys2 - m_ys1);
             }
-            if(m_value2 > 1.0) m_value2 = 1.0;
-            if(m_value2 < m_value1 + m_min_d) m_value2 = m_value1 + m_min_d;
+            if (m_value2 > 1.0) {
+              m_value2 = 1.0;
+            }
+            if (m_value2 < m_value1 + m_min_d) {
+              m_value2 = m_value1 + m_min_d;
+            }
             return true;
 
         case move_slider:
@@ -422,7 +452,7 @@ namespace agg
 
 
     //------------------------------------------------------------------------
-    bool scale_ctrl_impl::on_mouse_button_up(double, double)
+    bool scale_ctrl_impl::on_mouse_button_up(double /*x*/, double /*y*/)
     {
         m_move_what = move_nothing;
         return false;
