@@ -158,32 +158,34 @@ ADD_LIBRARY( antigrain
 )
 
 #controls code for interactive modifying samples
-SET( controls_HEADERS   
-    ${antigrain_SOURCE_DIR}/include/ctrl/agg_slider_ctrl.h
-    ${antigrain_SOURCE_DIR}/include/ctrl/agg_spline_ctrl.h
-    ${antigrain_SOURCE_DIR}/include/ctrl/agg_scale_ctrl.h
-    ${antigrain_SOURCE_DIR}/include/ctrl/agg_rbox_ctrl.h
-    ${antigrain_SOURCE_DIR}/include/ctrl/agg_polygon_ctrl.h
-    ${antigrain_SOURCE_DIR}/include/ctrl/agg_gamma_spline.h
-    ${antigrain_SOURCE_DIR}/include/ctrl/agg_gamma_ctrl.h
-    ${antigrain_SOURCE_DIR}/include/ctrl/agg_ctrl.h
-    ${antigrain_SOURCE_DIR}/include/ctrl/agg_cbox_ctrl.h
-    ${antigrain_SOURCE_DIR}/include/ctrl/agg_bezier_ctrl.h
-)
+IF( agg_BUILD_CONTROLS )
+    SET( controls_HEADERS
+	${antigrain_SOURCE_DIR}/include/ctrl/agg_slider_ctrl.h
+	${antigrain_SOURCE_DIR}/include/ctrl/agg_spline_ctrl.h
+	${antigrain_SOURCE_DIR}/include/ctrl/agg_scale_ctrl.h
+	${antigrain_SOURCE_DIR}/include/ctrl/agg_rbox_ctrl.h
+	${antigrain_SOURCE_DIR}/include/ctrl/agg_polygon_ctrl.h
+	${antigrain_SOURCE_DIR}/include/ctrl/agg_gamma_spline.h
+	${antigrain_SOURCE_DIR}/include/ctrl/agg_gamma_ctrl.h
+	${antigrain_SOURCE_DIR}/include/ctrl/agg_ctrl.h
+	${antigrain_SOURCE_DIR}/include/ctrl/agg_cbox_ctrl.h
+	${antigrain_SOURCE_DIR}/include/ctrl/agg_bezier_ctrl.h
+    )
 
-ADD_LIBRARY( controls    
-    ctrl/agg_spline_ctrl.cpp
-    ctrl/agg_slider_ctrl.cpp
-    ctrl/agg_scale_ctrl.cpp
-    ctrl/agg_rbox_ctrl.cpp
-    ctrl/agg_polygon_ctrl.cpp
-    ctrl/agg_gamma_spline.cpp
-    ctrl/agg_gamma_ctrl.cpp
-    ctrl/agg_cbox_ctrl.cpp
-    ctrl/agg_bezier_ctrl.cpp
+    ADD_LIBRARY( controls
+	ctrl/agg_spline_ctrl.cpp
+	ctrl/agg_slider_ctrl.cpp
+	ctrl/agg_scale_ctrl.cpp
+	ctrl/agg_rbox_ctrl.cpp
+	ctrl/agg_polygon_ctrl.cpp
+	ctrl/agg_gamma_spline.cpp
+	ctrl/agg_gamma_ctrl.cpp
+	ctrl/agg_cbox_ctrl.cpp
+	ctrl/agg_bezier_ctrl.cpp
 
-    ${controls_HEADERS}
-)
+	${controls_HEADERS}
+    )
+ENDIF( agg_BUILD_CONTROLS )
 
 #freetype library
 
@@ -201,47 +203,49 @@ IF ( agg_USE_FREETYPE )
 ENDIF ( agg_USE_FREETYPE )
 
 #platform stuff to ease sample use
-SET( platform_HEADERS   
-    ${antigrain_SOURCE_DIR}/include/platform/agg_platform_support.h
-)
-
-IF(WIN32)
-    INCLUDE_DIRECTORIES( ${antigrain_SOURCE_DIR}/font_win32_tt )
-
-    ADD_LIBRARY( platform
-        ../src/platform/win32/agg_win32_bmp.cpp
-        ../src/platform/win32/agg_platform_support.cpp
-        ../font_win32_tt/agg_font_win32_tt.cpp
-		
-		${platform_HEADERS}		
+IF( agg_BUILD_PLATFORM )
+    SET( platform_HEADERS
+	${antigrain_SOURCE_DIR}/include/platform/agg_platform_support.h
     )
-	INSTALL( FILES ../font_win32_tt/agg_font_win32_tt.h DESTINATION agg/font_win32_tt )	
-ENDIF(WIN32)
-IF(UNIX)
-    ADD_LIBRARY( platform
-        ../src/platform/X11/agg_platform_support.cpp
 
-		${platform_HEADERS}		
-    )
-ENDIF(UNIX)
-IF(APPLE)
-    ADD_LIBRARY( platform
-        ../src/platform/mac/agg_mac_pmap.cpp
-        ../src/platform/mac/agg_platform_support.cpp
+    IF(WIN32)
+        INCLUDE_DIRECTORIES( ${antigrain_SOURCE_DIR}/font_win32_tt )
 
-		${platform_HEADERS}		
-    )
-ENDIF(APPLE)
+	ADD_LIBRARY( platform
+	    ../src/platform/win32/agg_win32_bmp.cpp
+	    ../src/platform/win32/agg_platform_support.cpp
+	    ../font_win32_tt/agg_font_win32_tt.cpp
 
-IF( SDL_FOUND AND agg_USE_SDL_PLATFORM )
-    ADD_LIBRARY( sdlplatform
-        ../src/platform/sdl/agg_platform_support.cpp
-		
-		${platform_HEADERS}		
-    )
-    INSTALL( TARGETS sdlplatform DESTINATION lib )
-    SET_TARGET_PROPERTIES( sdlplatform  PROPERTIES OUTPUT_NAME aggsdlplatform${PFDEBUG} )
-ENDIF( SDL_FOUND AND agg_USE_SDL_PLATFORM )
+	            ${platform_HEADERS}
+	)
+            INSTALL( FILES ../font_win32_tt/agg_font_win32_tt.h DESTINATION agg/font_win32_tt )
+    ENDIF(WIN32)
+    IF(UNIX)
+        ADD_LIBRARY( platform
+	    ../src/platform/X11/agg_platform_support.cpp
+
+	            ${platform_HEADERS}
+	)
+    ENDIF(UNIX)
+    IF(APPLE)
+        ADD_LIBRARY( platform
+	    ../src/platform/mac/agg_mac_pmap.cpp
+	    ../src/platform/mac/agg_platform_support.cpp
+
+	            ${platform_HEADERS}
+	)
+    ENDIF(APPLE)
+
+    IF( SDL_FOUND AND agg_USE_SDL_PLATFORM )
+        ADD_LIBRARY( sdlplatform
+	    ../src/platform/sdl/agg_platform_support.cpp
+
+	            ${platform_HEADERS}
+	)
+        INSTALL( TARGETS sdlplatform DESTINATION lib )
+	SET_TARGET_PROPERTIES( sdlplatform  PROPERTIES OUTPUT_NAME aggsdlplatform${PFDEBUG} )
+    ENDIF( SDL_FOUND AND agg_USE_SDL_PLATFORM )
+ENDIF( agg_BUILD_PLATFORM )
 
 # boolean operations library GPC
 
@@ -270,10 +274,15 @@ IF ( agg_USE_AGG2D )
 ENDIF ( agg_USE_AGG2D )
 
 SET_TARGET_PROPERTIES( antigrain PROPERTIES OUTPUT_NAME agg${PFDEBUG} )
-SET_TARGET_PROPERTIES( controls  PROPERTIES OUTPUT_NAME aggctrl${PFDEBUG} )
-SET_TARGET_PROPERTIES( platform  PROPERTIES OUTPUT_NAME aggplatform${PFDEBUG} )
-
-INSTALL( FILES ${antigrain_HEADERS} DESTINATION agg/include )	
-INSTALL( FILES ${controls_HEADERS} DESTINATION agg/include/ctrl )	
-INSTALL( FILES ${platform_HEADERS} DESTINATION agg/include/platform )	
-INSTALL( TARGETS antigrain controls platform DESTINATION lib )
+INSTALL( FILES ${antigrain_HEADERS} DESTINATION agg/include )
+INSTALL( TARGETS antigrain DESTINATION lib )
+IF( agg_BUILD_PLATFORM )
+    SET_TARGET_PROPERTIES( platform  PROPERTIES OUTPUT_NAME aggplatform${PFDEBUG} )
+    INSTALL( FILES ${platform_HEADERS} DESTINATION agg/include/platform )
+    INSTALL( TARGETS platform DESTINATION lib )
+ENDIF( agg_BUILD_PLATFORM )
+IF( agg_BUILD_CONTROLS )
+    SET_TARGET_PROPERTIES( controls  PROPERTIES OUTPUT_NAME aggctrl${PFDEBUG} )
+    INSTALL( FILES ${controls_HEADERS} DESTINATION agg/include/ctrl )
+    INSTALL( TARGETS controls DESTINATION lib )
+ENDIF( agg_BUILD_CONTROLS )
