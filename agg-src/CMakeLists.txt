@@ -28,6 +28,16 @@ OPTION( agg_USE_SDL_PLATFORM "Use SDL as platform" OFF)
 OPTION( agg_USE_PACK "Package Agg" OFF)
 OPTION( agg_USE_AGG2D "Agg 2D graphical context" OFF)
 OPTION( agg_USE_DEBUG "For debug version" OFF)
+OPTION( agg_BUILD_EXAMPLES "Build the AGG examples" ON)
+OPTION( agg_BUILD_DEMO "Build the AGG demo" ON)
+OPTION( agg_BUILD_PLATFORM "Build the AGG platform helper" ON)
+OPTION( agg_BUILD_CONTROLS "Build the AGG controls" ON)
+
+IF( agg_BUILD_DEMO OR agg_BUILD_EXAMPLES )
+    MESSAGE(STATUS "Force enable the platform and controls helper due to Demo / Example being build.")
+    SET( agg_BUILD_PLATFORM ON CACHE BOOL "Build the AGG platform helper" FORCE)
+    SET( agg_BUILD_CONTROLS ON CACHE BOOL "Build the AGG controls" FORCE)
+ENDIF( agg_BUILD_DEMO OR agg_BUILD_EXAMPLES )
 
 IF( agg_USE_DEBUG )
     #SET( PFDEBUG "d" )
@@ -170,7 +180,7 @@ IF ( agg_USE_AGG2D_FREETYPE )
     SET( AGG_FLAGS ${AGG_FLAGS} -DAGG2D_USE_FREETYPE )    
 ENDIF ( agg_USE_AGG2D_FREETYPE )
 
-# sld as platform or os
+# sdl as platform or os
 IF( SDL_FOUND AND agg_USE_SDL_PLATFORM )
     LINK_LIBRARIES( controls sdlplatform antigrain )
     SET( AGG_LIBRARIES ${AGG_LIBRARIES} aggctrl${PFDEBUG} aggsdlplatform${PFDEBUG} agg${PFDEBUG} )
@@ -186,7 +196,9 @@ SET( AGG_LIBRARIES ${AGG_LIBRARIES} CACHE STRING "Agg package libraries" FORCE )
 
 ADD_SUBDIRECTORY( src )
 
-ADD_SUBDIRECTORY( examples )
+IF ( agg_BUILD_EXAMPLES )
+    ADD_SUBDIRECTORY( examples )
+ENDIF( agg_BUILD_EXAMPLES )
 
 CONFIGURE_FILE( ${antigrain_SOURCE_DIR}/bin/AggConfig.cmake.in
                 ${antigrain_BINARY_DIR}/bin/AggConfig.cmake
@@ -204,7 +216,9 @@ CONFIGURE_FILE( ${antigrain_SOURCE_DIR}/bin/UseAgg.cmake.in
                 ${antigrain_BINARY_DIR}/bin/UseAgg.cmake
                 @ONLY IMMEDIATE )
 
-ADD_SUBDIRECTORY( myapp )
+IF ( agg_BUILD_DEMO )
+    ADD_SUBDIRECTORY( myapp )
+ENDIF ( agg_BUILD_DEMO )
 
 INSTALL( FILES ${antigrain_BINARY_DIR}/bin/AggConfigOutBuild.cmake DESTINATION "bin" RENAME AggConfig.cmake )
 INSTALL( FILES ${antigrain_BINARY_DIR}/bin/AggConfig.cmake DESTINATION "bin" )
