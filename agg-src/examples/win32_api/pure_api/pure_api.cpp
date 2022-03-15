@@ -1,13 +1,13 @@
 // pure_api.cpp : Defines the entry point for the application.
 //
 
-#include "stdafx.h"
-#include "resource.h"
-
 #include "agg_scanline_p.h"
 #include "agg_renderer_scanline.h"
 #include "agg_pixfmt_rgba.h"
 #include "agg_rasterizer_scanline_aa.h"
+
+#include "stdafx.h"
+#include "resource.h"
 
 #define MAX_LOADSTRING 100
 

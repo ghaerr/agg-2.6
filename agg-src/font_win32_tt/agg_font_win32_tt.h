@@ -16,7 +16,6 @@
 #ifndef AGG_FONT_WIN32_TT_INCLUDED
 #define AGG_FONT_WIN32_TT_INCLUDED
 
-#include <windows.h>
 #include "agg_scanline_storage_aa.h"
 #include "agg_scanline_storage_bin.h"
 #include "agg_scanline_u.h"
@@ -26,6 +25,8 @@
 #include "agg_conv_curve.h"
 #include "agg_trans_affine.h"
 #include "agg_font_cache_manager.h"
+
+#include <windows.h>
 
 namespace agg
 {
