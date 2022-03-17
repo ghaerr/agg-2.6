@@ -1,5 +1,5 @@
-#include <math.h>
-#include <stdio.h>
+#include <cmath>
+#include <cstdio>
 #include "agg_basics.h"
 #include "agg_rendering_buffer.h"
 #include "agg_rasterizer_scanline_aa.h"
@@ -23,22 +23,21 @@
 //#define AGG_BGR96
 #include "pixel_formats.h"
 
-enum flip_y_e { flip_y = true };
-
+enum flip_y_e { flip_y = static_cast<unsigned int>(true) };
 
 
 class the_application : public agg::platform_support
 {
-    double m_x[3];
-    double m_y[3];
-    double m_dx;
-    double m_dy;
-    int    m_idx;
-    agg::rbox_ctrl<color_type>   m_cap;
-    agg::slider_ctrl<color_type> m_width;
-    agg::slider_ctrl<color_type> m_smooth;
-    agg::cbox_ctrl<color_type>   m_close;
-    agg::cbox_ctrl<color_type>   m_even_odd;
+  double m_x[3]{};
+  double m_y[3]{};
+  double m_dx{};
+  double m_dy{};
+  int m_idx;
+  agg::rbox_ctrl<color_type> m_cap;
+  agg::slider_ctrl<color_type> m_width;
+  agg::slider_ctrl<color_type> m_smooth;
+  agg::cbox_ctrl<color_type> m_close;
+  agg::cbox_ctrl<color_type> m_even_odd;
 
 
 public:
@@ -81,48 +80,55 @@ public:
         m_even_odd.no_transform();
     }
 
-    virtual void on_init()
+    void on_init() override
     {
     }
 
-    virtual void on_draw()
+    void on_draw() override
     {
-        typedef agg::renderer_base<pixfmt> ren_base;
+      using ren_base = agg::renderer_base<pixfmt>;
 
-        pixfmt pixf(rbuf_window());
-        ren_base renb(pixf);
-        renb.clear(agg::rgba(1, 1, 1));
+      pixfmt pixf(rbuf_window());
+      ren_base renb(pixf);
+      renb.clear(agg::rgba(1, 1, 1));
 
-        agg::rasterizer_scanline_aa<> ras;
-        agg::scanline_u8 sl;
+      agg::rasterizer_scanline_aa<> ras;
+      agg::scanline_u8 sl;
 
-        agg::line_cap_e           cap = agg::butt_cap;
-        if(m_cap.cur_item() == 1) cap = agg::square_cap;
-        if(m_cap.cur_item() == 2) cap = agg::round_cap;
+      agg::line_cap_e cap = agg::butt_cap;
+      if (m_cap.cur_item() == 1) {
+        cap = agg::square_cap;
+      }
+      if (m_cap.cur_item() == 2) {
+        cap = agg::round_cap;
+      }
 
         // Here we declare a very cheap-in-use path storage.
         // It allocates space for at most 20 vertices in stack and
         // never allocates memory. But be aware that adding more than
         // 20 vertices is fatal! 
         //------------------------
-        typedef agg::path_base<
-            agg::vertex_stl_storage<
-                agg::pod_auto_vector<
-                    agg::vertex_d, 20> > > path_storage_type;
+        using path_storage_type = agg::path_base<agg::vertex_stl_storage<agg::pod_auto_vector<agg::vertex_d, 20>>>;
         path_storage_type path;
 
         path.move_to(m_x[0], m_y[0]);
         path.line_to(m_x[1], m_y[1]);
         path.line_to((m_x[0]+m_x[1]+m_x[2]) / 3.0, (m_y[0]+m_y[1]+m_y[2]) / 3.0);
         path.line_to(m_x[2], m_y[2]);
-        if(m_close.status()) path.close_polygon();
+        if (m_close.status()) {
+          path.close_polygon();
+        }
 
         path.move_to((m_x[0] + m_x[1]) / 2, (m_y[0] + m_y[1]) / 2);
         path.line_to((m_x[1] + m_x[2]) / 2, (m_y[1] + m_y[2]) / 2);
         path.line_to((m_x[2] + m_x[0]) / 2, (m_y[2] + m_y[0]) / 2);
-        if(m_close.status()) path.close_polygon();
+        if (m_close.status()) {
+          path.close_polygon();
+        }
 
-        if(m_even_odd.status()) ras.filling_rule(agg::fill_even_odd);
+        if (m_even_odd.status()) {
+          ras.filling_rule(agg::fill_even_odd);
+        }
 
         // (1)
         ras.add_path(path);
@@ -156,7 +162,9 @@ public:
 
         agg::arrowhead ah;
                               ah.head(4 * k, 4   * k, 3 * k, 2 * k);
-        if(!m_close.status()) ah.tail(1 * k, 1.5 * k, 3 * k, 5 * k);
+                              if (!m_close.status()) {
+                                ah.tail(1 * k, 1.5 * k, 3 * k, 5 * k);
+                              }
 
         agg::conv_marker<agg::vcgen_markers_term, agg::arrowhead> arrow(dash.markers(), ah);
 
@@ -180,76 +188,62 @@ public:
     }
 
 
-    virtual void on_mouse_button_down(int x, int y, unsigned flags)
+    void on_mouse_button_down(int x, int y, unsigned flags) override
     {
-        if(flags & agg::mouse_left)
-        {
-            unsigned i;
-            for (i = 0; i < 3; i++)
-            {
-                if(sqrt( (x-m_x[i]) * (x-m_x[i]) + (y-m_y[i]) * (y-m_y[i]) ) < 20.0)
-                {
-                    m_dx = x - m_x[i];
-                    m_dy = y - m_y[i];
-                    m_idx = i;
-                    break;
-                }
-            }
-            if(i == 3)
-            {
-                if(agg::point_in_triangle(m_x[0], m_y[0], 
-                                          m_x[1], m_y[1],
-                                          m_x[2], m_y[2],
-                                          x, y))
-                {
-                    m_dx = x - m_x[0];
-                    m_dy = y - m_y[0];
-                    m_idx = 3;
-                }
-
-            }
+      if ((flags & agg::mouse_left) != 0u) {
+        unsigned i = 0;
+        for (i = 0; i < 3; i++) {
+          if (sqrt((x - m_x[i]) * (x - m_x[i]) + (y - m_y[i]) * (y - m_y[i])) < 20.0) {
+            m_dx = x - m_x[i];
+            m_dy = y - m_y[i];
+            m_idx = i;
+            break;
+          }
         }
+        if (i == 3) {
+          if (agg::point_in_triangle(m_x[0], m_y[0], m_x[1], m_y[1], m_x[2], m_y[2], x, y)) {
+            m_dx = x - m_x[0];
+            m_dy = y - m_y[0];
+            m_idx = 3;
+          }
+        }
+      }
     }
 
 
-    virtual void on_mouse_move(int x, int y, unsigned flags)
+    void on_mouse_move(int x, int y, unsigned flags) override
     {
-        if(flags & agg::mouse_left)
-        {
-            if(m_idx == 3)
-            {
-                double dx = x - m_dx;
-                double dy = y - m_dy;
-                m_x[1] -= m_x[0] - dx;
-                m_y[1] -= m_y[0] - dy;
-                m_x[2] -= m_x[0] - dx;
-                m_y[2] -= m_y[0] - dy;
-                m_x[0] = dx;
-                m_y[0] = dy;
-                force_redraw();
-                return;
-            }
+      if ((flags & agg::mouse_left) != 0u) {
+        if (m_idx == 3) {
+          double dx = x - m_dx;
+          double dy = y - m_dy;
+          m_x[1] -= m_x[0] - dx;
+          m_y[1] -= m_y[0] - dy;
+          m_x[2] -= m_x[0] - dx;
+          m_y[2] -= m_y[0] - dy;
+          m_x[0] = dx;
+          m_y[0] = dy;
+          force_redraw();
+          return;
+        }
 
-            if(m_idx >= 0)
-            {
-                m_x[m_idx] = x - m_dx;
-                m_y[m_idx] = y - m_dy;
-                force_redraw();
-            }
+        if (m_idx >= 0) {
+          m_x[m_idx] = x - m_dx;
+          m_y[m_idx] = y - m_dy;
+          force_redraw();
         }
-        else
-        {
-            on_mouse_button_up(x, y, flags);
-        }
+      } else {
+        on_mouse_button_up(x, y, flags);
+      }
     }
 
-    virtual void on_mouse_button_up(int x, int y, unsigned flags)
+    void on_mouse_button_up(int /*x*/, int /*y*/, unsigned /*flags*/) override
     {
         m_idx = -1;
     }
 
-    
-    virtual void on_key(int x, int y, unsigned key, unsigned flags)
+
+    void on_key(int /*x*/, int /*y*/, unsigned key, unsigned /*flags*/) override
     {
         double dx = 0;
         double dy = 0;
@@ -270,15 +264,13 @@ public:
 };
 
 
-
-int agg_main(int argc, char* argv[])
+int agg_main(int /*argc*/, char * /*argv*/[])
 {
-    the_application app(pix_format, flip_y);
-    app.caption("AGG Example. Line Join");
+  the_application app(pix_format, flip_y != 0u);
+  app.caption("AGG Example. Line Join");
 
-    if(app.init(500, 330, 0))
-    {
-        return app.run();
+  if (app.init(500, 330, 0)) {
+    return app.run();
     }
     return 1;
 }

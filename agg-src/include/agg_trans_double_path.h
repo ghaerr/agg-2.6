@@ -109,20 +109,22 @@ namespace agg
         void transform(double *x, double *y) const;
 
     private:
-        double finalize_path(vertex_storage& vertices);
-        void transform1(const vertex_storage& vertices, 
-                        double kindex, double kx,
-                        double *x, double* y) const;
+      static double finalize_path(vertex_storage &vertices);
+      void transform1(const vertex_storage &vertices,
+        double kindex,
+        double kx,
+        double *x,
+        double *y) const;
 
-        vertex_storage m_src_vertices1;
-        vertex_storage m_src_vertices2;
-        double         m_base_length;
-        double         m_base_height;
-        double         m_kindex1;
-        double         m_kindex2;
-        status_e       m_status1;
-        status_e       m_status2;
-        bool           m_preserve_x_scale;
+      vertex_storage m_src_vertices1;
+      vertex_storage m_src_vertices2;
+      double m_base_length;
+      double m_base_height;
+      double m_kindex1;
+      double m_kindex2;
+      status_e m_status1;
+      status_e m_status2;
+      bool m_preserve_x_scale;
     };
 
 }

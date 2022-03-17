@@ -656,8 +656,6 @@ namespace agg
         return rgba8(gamma.inv(c.r), gamma.inv(c.g), gamma.inv(c.b), c.a);
     }
 
-
-
     //==================================================================rgba16
     struct rgba16
     {

@@ -74,10 +74,10 @@ namespace agg
         unsigned       m_closed;
         status_e       m_status;
         unsigned       m_src_vertex;
-        double         m_ctrl1_x;
-        double         m_ctrl1_y;
-        double         m_ctrl2_x;
-        double         m_ctrl2_y;
+        double m_ctrl1_x{};
+        double m_ctrl1_y{};
+        double m_ctrl2_x{};
+        double m_ctrl2_y{};
     };
 
 }

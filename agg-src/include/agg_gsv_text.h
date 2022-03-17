@@ -88,7 +88,7 @@ namespace agg
         double          m_height;
         double          m_space;
         double          m_line_space;
-        char            m_chr[2];
+        char m_chr[2]{};
         char*           m_text;
         pod_array<char> m_text_buf;
         char*           m_cur_chr;
@@ -97,12 +97,12 @@ namespace agg
         status          m_status;
         bool            m_big_endian;
         bool            m_flip;
-        int8u*          m_indices;
-        int8*           m_glyphs;
-        int8*           m_bglyph;
-        int8*           m_eglyph;
-        double          m_w;
-        double          m_h;
+        int8u *m_indices{};
+        int8 *m_glyphs{};
+        int8 *m_bglyph{};
+        int8 *m_eglyph{};
+        double m_w{};
+        double m_h{};
     };
 
 

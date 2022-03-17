@@ -1871,7 +1871,7 @@ static double poly2[] =
 void make_gb_poly(agg::path_storage& ps)
 {
     ps.remove_all();
-    unsigned i;
+    unsigned i = 0;
     const double* p = poly1;
     ps.move_to(p[0], p[1]);
     p += 2;

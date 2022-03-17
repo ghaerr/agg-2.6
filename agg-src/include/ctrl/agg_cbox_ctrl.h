@@ -55,23 +55,23 @@ namespace agg
 
         // Vertex soutce interface
         unsigned num_paths() { return 3; };
-        void     rewind(unsigned path_id);
+        void rewind(unsigned idx);
         unsigned vertex(double* x, double* y);
 
     private:
         double   m_text_thickness;
         double   m_text_height;
         double   m_text_width;
-        char     m_label[128];
+        char m_label[128]{};
         bool     m_status;
-        double   m_vx[32];
-        double   m_vy[32];
+        double m_vx[32]{};
+        double m_vy[32]{};
 
         gsv_text              m_text;
         conv_stroke<gsv_text> m_text_poly;
 
-        unsigned m_idx;
-        unsigned m_vertex;
+        unsigned m_idx{};
+        unsigned m_vertex{};
     };
 
 

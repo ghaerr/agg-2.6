@@ -63,8 +63,8 @@ namespace agg
         unsigned       m_closed;
         status_e       m_status;
         unsigned       m_src_vertex;
-        double         m_cur_abscissa;
-        double         m_max_abscissa;
+        double m_cur_abscissa{};
+        double m_max_abscissa{};
     };
 
 }

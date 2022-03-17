@@ -1,5 +1,5 @@
-#include <math.h>
-#include <stdio.h>
+#include <cmath>
+#include <cstdio>
 #include "agg_basics.h"
 #include "agg_ellipse.h"
 #include "agg_rendering_buffer.h"
@@ -19,7 +19,7 @@
 #define AGG_BGRA32
 #include "pixel_formats.h"
 
-enum flip_y_e { flip_y = true };
+enum flip_y_e { flip_y = static_cast<unsigned int>(true) };
 
 
 //-------------------------------------------------
@@ -32,12 +32,13 @@ public:
         m_count(count)
     {}
 
-    bool is_solid(unsigned style) const { return true; }
+    static bool is_solid(unsigned /*style*/) { return true; }
 
     const color_type& color(unsigned style) const 
     {
-        if (style < m_count)
-            return m_styles[style];
+      if (style < m_count) {
+        return m_styles[style];
+      }
 
         return m_transparent;
     }
@@ -151,25 +152,22 @@ public:
     }
 
 
-
-    virtual void on_draw()
+    void on_draw() override
     {
-        typedef agg::renderer_base<pixfmt>     ren_base;
-        typedef agg::renderer_base<pixfmt_pre> ren_base_pre;
+      using ren_base = agg::renderer_base<pixfmt>;
+      using ren_base_pre = agg::renderer_base<pixfmt_pre>;
 
-        pixfmt pixf(rbuf_window());
-        ren_base renb(pixf);
+      pixfmt pixf(rbuf_window());
+      ren_base renb(pixf);
 
-        pixfmt_pre pixf_pre(rbuf_window());
-        ren_base_pre renb_pre(pixf_pre);
+      pixfmt_pre pixf_pre(rbuf_window());
+      ren_base_pre renb_pre(pixf_pre);
 
-        // Clear the window with a gradient
-        agg::pod_vector<color_type> gr(pixf_pre.width());
-        unsigned i;
-        for(i = 0; i < pixf.width(); i++)
-        {
-            gr.add(agg::srgba8(255, 255, 0).gradient(agg::srgba8(0, 255, 255), 
-                                                    double(i) / pixf.width()));
+      // Clear the window with a gradient
+      agg::pod_vector<color_type> gr(pixf_pre.width());
+      unsigned i = 0;
+      for (i = 0; i < pixf.width(); i++) {
+        gr.add(agg::srgba8(255, 255, 0).gradient(agg::srgba8(0, 255, 255), double(i) / pixf.width()));
         }
         for(i = 0; i < pixf.height(); i++)
         {
@@ -259,15 +257,13 @@ public:
 };
 
 
-
-int agg_main(int argc, char* argv[])
+int agg_main(int /*argc*/, char * /*argv*/[])
 {
-    the_application app(pix_format, flip_y);
-    app.caption("AGG Example. Compound Rasterizer -- Geometry Flattening");
+  the_application app(pix_format, flip_y != 0U);
+  app.caption("AGG Example. Compound Rasterizer -- Geometry Flattening");
 
-    if(app.init(440, 330, 0))
-    {
-        return app.run();
+  if (app.init(440, 330, 0)) {
+    return app.run();
     }
     return 1;
 }

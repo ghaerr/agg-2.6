@@ -1,6 +1,8 @@
 #include "agg_basics.h"
 #include "interactive_polygon.h"
 
+#include <cmath>
+
 namespace agg
 {
     interactive_polygon::interactive_polygon(unsigned np, double point_radius) :
@@ -19,7 +21,7 @@ namespace agg
     }
 
 
-    void interactive_polygon::rewind(unsigned)
+    void interactive_polygon::rewind(unsigned /*unused*/)
     {
         m_status = 0;
         m_stroke.rewind(0);
@@ -32,15 +34,25 @@ namespace agg
         if(m_status == 0)
         {
             cmd = m_stroke.vertex(x, y);
-            if(!is_stop(cmd)) return cmd;
-            if(m_node >= 0 && m_node == int(m_status)) r *= 1.2;
+            if (!is_stop(cmd)) {
+              return cmd;
+            }
+            if (m_node >= 0 && m_node == int(m_status)) {
+              r *= 1.2;
+            }
             m_ellipse.init(xn(m_status), yn(m_status), r, r, 32);
             ++m_status;
         }
         cmd = m_ellipse.vertex(x, y);
-        if(!is_stop(cmd)) return cmd;
-        if(m_status >= m_num_points) return path_cmd_stop;
-        if(m_node >= 0 && m_node == int(m_status)) r *= 1.2;
+        if (!is_stop(cmd)) {
+          return cmd;
+        }
+        if (m_status >= m_num_points) {
+          return path_cmd_stop;
+        }
+        if (m_node >= 0 && m_node == int(m_status)) {
+          r *= 1.2;
+        }
         m_ellipse.init(xn(m_status), yn(m_status), r, r, 32);
         ++m_status;
         return m_ellipse.vertex(x, y);
@@ -89,20 +101,18 @@ namespace agg
 
     bool interactive_polygon::on_mouse_button_down(double x, double y)
     {
-        unsigned i;
-        bool ret = false;
-        m_node = -1;
-        m_edge = -1;
-        for (i = 0; i < m_num_points; i++)
-        {
-            if(sqrt( (x-xn(i)) * (x-xn(i)) + (y-yn(i)) * (y-yn(i)) ) < m_point_radius)
-            {
-                m_dx = x - xn(i);
-                m_dy = y - yn(i);
-                m_node = int(i);
-                ret = true;
-                break;
-            }
+      unsigned i = 0;
+      bool ret = false;
+      m_node = -1;
+      m_edge = -1;
+      for (i = 0; i < m_num_points; i++) {
+        if (sqrt((x - xn(i)) * (x - xn(i)) + (y - yn(i)) * (y - yn(i))) < m_point_radius) {
+          m_dx = x - xn(i);
+          m_dy = y - yn(i);
+          m_node = int(i);
+          ret = true;
+          break;
+        }
         }
 
         if(!ret)
@@ -137,13 +147,13 @@ namespace agg
     bool interactive_polygon::on_mouse_move(double x, double y)
     {
         bool ret = false;
-        double dx;
-        double dy;
+        double dx = NAN;
+        double dy = NAN;
         if(m_node == int(m_num_points))
         {
             dx = x - m_dx;
             dy = y - m_dy;
-            unsigned i;
+            unsigned i = 0;
             for(i = 0; i < m_num_points; i++)
             {
                 xn(i) += dx;
@@ -182,7 +192,7 @@ namespace agg
         return ret;
     }
 
-    bool interactive_polygon::on_mouse_button_up(double x, double y)
+    bool interactive_polygon::on_mouse_button_up(double /*x*/, double /*y*/)
     {
         bool ret = (m_node >= 0) || (m_edge >= 0);
         m_node = -1;
@@ -225,58 +235,61 @@ namespace agg
     // _point_, returns 1 if inside, 0 if outside.
     bool interactive_polygon::point_in_polygon(double tx, double ty) const
     {
-        if(m_num_points < 3) return false;
+      if (m_num_points < 3) {
+        return false;
+      }
 
-        unsigned j;
-        int yflag0, yflag1, inside_flag;
-        double  vtx0, vty0, vtx1, vty1;
+      unsigned j = 0;
+      int yflag0 = 0;
+      int yflag1 = 0;
+      int inside_flag = 0;
+      double vtx0 = NAN;
+      double vty0 = NAN;
+      double vtx1 = NAN;
+      double vty1 = NAN;
 
-        vtx0 = xn(m_num_points - 1);
-        vty0 = yn(m_num_points - 1);
+      vtx0 = xn(m_num_points - 1);
+      vty0 = yn(m_num_points - 1);
 
-        // get test bit for above/below X axis
-        yflag0 = (vty0 >= ty);
+      // get test bit for above/below X axis
+      yflag0 = static_cast<int>(vty0 >= ty);
 
-        vtx1 = xn(0);
-        vty1 = yn(0);
+      vtx1 = xn(0);
+      vty1 = yn(0);
 
-        inside_flag = 0;
-        for (j = 1; j <= m_num_points; ++j) 
-        {
-            yflag1 = (vty1 >= ty);
-            // Check if endpoints straddle (are on opposite sides) of X axis
-            // (i.e. the Y's differ); if so, +X ray could intersect this edge.
-            // The old test also checked whether the endpoints are both to the
-            // right or to the left of the test point.  However, given the faster
-            // intersection point computation used below, this test was found to
-            // be a break-even proposition for most polygons and a loser for
-            // triangles (where 50% or more of the edges which survive this test
-            // will cross quadrants and so have to have the X intersection computed
-            // anyway).  I credit Joseph Samosky with inspiring me to try dropping
-            // the "both left or both right" part of my code.
-            if (yflag0 != yflag1) 
-            {
-                // Check intersection of pgon segment with +X ray.
-                // Note if >= point's X; if so, the ray hits it.
-                // The division operation is avoided for the ">=" test by checking
-                // the sign of the first vertex wrto the test point; idea inspired
-                // by Joseph Samosky's and Mark Haigh-Hutchinson's different
-                // polygon inclusion tests.
-                if ( ((vty1-ty) * (vtx0-vtx1) >=
-                      (vtx1-tx) * (vty0-vty1)) == yflag1 ) 
-                {
-                    inside_flag ^= 1;
-                }
-            }
+      inside_flag = 0;
+      for (j = 1; j <= m_num_points; ++j) {
+        yflag1 = static_cast<int>(vty1 >= ty);
+        // Check if endpoints straddle (are on opposite sides) of X axis
+        // (i.e. the Y's differ); if so, +X ray could intersect this edge.
+        // The old test also checked whether the endpoints are both to the
+        // right or to the left of the test point.  However, given the faster
+        // intersection point computation used below, this test was found to
+        // be a break-even proposition for most polygons and a loser for
+        // triangles (where 50% or more of the edges which survive this test
+        // will cross quadrants and so have to have the X intersection computed
+        // anyway).  I credit Joseph Samosky with inspiring me to try dropping
+        // the "both left or both right" part of my code.
+        if (yflag0 != yflag1) {
+          // Check intersection of pgon segment with +X ray.
+          // Note if >= point's X; if so, the ray hits it.
+          // The division operation is avoided for the ">=" test by checking
+          // the sign of the first vertex wrto the test point; idea inspired
+          // by Joseph Samosky's and Mark Haigh-Hutchinson's different
+          // polygon inclusion tests.
+          if (static_cast<int>((vty1 - ty) * (vtx0 - vtx1) >= (vtx1 - tx) * (vty0 - vty1)) == yflag1) {
+            inside_flag ^= 1;
+          }
+        }
 
-            // Move to the next pair of vertices, retaining info as possible.
-            yflag0 = yflag1;
-            vtx0 = vtx1;
-            vty0 = vty1;
+        // Move to the next pair of vertices, retaining info as possible.
+        yflag0 = yflag1;
+        vtx0 = vtx1;
+        vty0 = vty1;
 
-            unsigned k = (j >= m_num_points) ? j - m_num_points : j;
-            vtx1 = xn(k);
-            vty1 = yn(k);
+        unsigned k = (j >= m_num_points) ? j - m_num_points : j;
+        vtx1 = xn(k);
+        vty1 = yn(k);
         }
         return inside_flag != 0;
     }

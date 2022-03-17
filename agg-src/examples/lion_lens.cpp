@@ -1,6 +1,6 @@
-#include <stdlib.h>
-#include <ctype.h>
-#include <stdio.h>
+#include <cstdlib>
+#include <cctype>
+#include <cstdio>
 #include "agg_basics.h"
 #include "agg_rendering_buffer.h"
 #include "agg_rasterizer_scanline_aa.h"
@@ -28,7 +28,7 @@
 //#define AGG_RGB_AAA
 #include "pixel_formats.h"
 
-enum flip_y_e { flip_y = true };
+enum flip_y_e { flip_y = static_cast<unsigned int>(true) };
 
 agg::rasterizer_scanline_aa<> g_rasterizer;
 agg::scanline_p8  g_scanline;
@@ -65,42 +65,41 @@ class the_application : public agg::platform_support
     agg::slider_ctrl<color_type> m_radius_slider;
 
 public:
-    typedef agg::renderer_base<pixfmt> renderer_base;
-    typedef agg::renderer_scanline_aa_solid<renderer_base> renderer_solid;
+  using renderer_base = agg::renderer_base<pixfmt>;
+  using renderer_solid = agg::renderer_scanline_aa_solid<renderer_base>;
 
-    the_application(agg::pix_format_e format, bool flip_y) :
-        agg::platform_support(format, flip_y),
-        m_magn_slider  (5,   5, 495,  12, !flip_y),
-        m_radius_slider(5,  20, 495,  27, !flip_y)
-    {
-        parse_lion();
-        add_ctrl(m_magn_slider);
+  the_application(agg::pix_format_e format, bool flip_y) : agg::platform_support(format, flip_y),
+                                                           m_magn_slider(5, 5, 495, 12, !flip_y),
+                                                           m_radius_slider(5, 20, 495, 27, !flip_y)
+  {
+    parse_lion();
+    add_ctrl(m_magn_slider);
 
-        m_magn_slider.no_transform();
-        m_magn_slider.range(0.01, 4.0);
-        m_magn_slider.value(3.0);
-        m_magn_slider.label("Scale=%3.2f");
+    m_magn_slider.no_transform();
+    m_magn_slider.range(0.01, 4.0);
+    m_magn_slider.value(3.0);
+    m_magn_slider.label("Scale=%3.2f");
 
-        add_ctrl(m_radius_slider);
-        m_radius_slider.no_transform();
-        m_radius_slider.range(0.0, 100.0);
-        m_radius_slider.value(70.0);
-        m_radius_slider.label("Radius=%3.2f");
+    add_ctrl(m_radius_slider);
+    m_radius_slider.no_transform();
+    m_radius_slider.range(0.0, 100.0);
+    m_radius_slider.value(70.0);
+    m_radius_slider.label("Radius=%3.2f");
 
     }
 
 
-    virtual void on_init()
+    void on_init() override
     {
         g_x1 = 200;
         g_y1 = 150;
     }
 
-    virtual void on_resize(int cx, int cy)
+    void on_resize(int cx, int cy) override
     {
     }
 
-    virtual void on_draw()
+    void on_draw() override
     {
         pixfmt pixf(rbuf_window());
         renderer_base rb(pixf);
@@ -155,25 +154,22 @@ public:
     }
 
 
-
-    virtual void on_mouse_button_down(int x, int y, unsigned flags)
+    void on_mouse_button_down(int x, int y, unsigned flags) override
     {
-        if(flags & agg::mouse_left)
-        {
-            g_x1 = x;
-            g_y1 = y;
-            force_redraw();
-        }
-        if(flags & agg::mouse_right)
-        {
-            g_x2 = x;
-            g_y2 = y;
-            force_redraw();
-        }
+      if ((flags & agg::mouse_left) != 0u) {
+        g_x1 = x;
+        g_y1 = y;
+        force_redraw();
+      }
+      if ((flags & agg::mouse_right) != 0u) {
+        g_x2 = x;
+        g_y2 = y;
+        force_redraw();
+      }
     }
 
 
-    virtual void on_mouse_move(int x, int y, unsigned flags)
+    void on_mouse_move(int x, int y, unsigned flags) override
     {
         on_mouse_button_down(x, y, flags);
     }
@@ -181,18 +177,13 @@ public:
 };
 
 
-
-
-
-
-int agg_main(int argc, char* argv[])
+int agg_main(int /*argc*/, char * /*argv*/[])
 {
-    the_application app(pix_format, flip_y);
-    app.caption("AGG Example. Lion");
+  the_application app(pix_format, flip_y != 0u);
+  app.caption("AGG Example. Lion");
 
-    if(app.init(500, 600, agg::window_resize))
-    {
-        return app.run();
+  if (app.init(500, 600, agg::window_resize)) {
+    return app.run();
     }
     return 1;
 }

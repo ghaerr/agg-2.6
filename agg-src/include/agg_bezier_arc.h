@@ -116,12 +116,7 @@ namespace agg
         }
 
         //--------------------------------------------------------------------
-        void init(double x1, double y1, 
-                  double rx, double ry, 
-                  double angle,
-                  bool large_arc_flag,
-                  bool sweep_flag,
-                  double x2, double y2);
+        void init(double x0, double y0, double rx, double ry, double angle, bool large_arc_flag, bool sweep_flag, double x2, double y2);
 
         //--------------------------------------------------------------------
         bool radii_ok() const { return m_radii_ok; }

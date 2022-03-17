@@ -76,15 +76,15 @@ namespace agg
         unsigned vertex(double* x, double* y);
 
     private:
-        unsigned char m_gamma[256];
-        double        m_x[4];
-        double        m_y[4];
-        bspline       m_spline;
-        double        m_x1;
-        double        m_y1;
-        double        m_x2;
-        double        m_y2;
-        double        m_cur_x;
+      unsigned char m_gamma[256]{};
+      double m_x[4]{};
+      double m_y[4]{};
+      bspline m_spline;
+      double m_x1;
+      double m_y1;
+      double m_x2;
+      double m_y2;
+      double m_cur_x;
     };
 
 

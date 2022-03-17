@@ -71,7 +71,7 @@ namespace agg
 
         // Vertex soutce interface
         unsigned num_paths() { return 5; }
-        void     rewind(unsigned path_id);
+        void rewind(unsigned idx);
         unsigned vertex(double* x, double* y);
 
     private:
@@ -83,31 +83,31 @@ namespace agg
         void set_yp(unsigned idx, double val);
 
         unsigned m_num_pnt;
-        double   m_xp[32];
-        double   m_yp[32];
+        double m_xp[32]{};
+        double m_yp[32]{};
         bspline  m_spline;
-        double   m_spline_values[256];
-        int8u    m_spline_values8[256];
+        double m_spline_values[256]{};
+        int8u m_spline_values8[256]{};
         double   m_border_width;
         double   m_border_extra;
         double   m_curve_width;
         double   m_point_size;
-        double   m_xs1;
-        double   m_ys1;
-        double   m_xs2;
-        double   m_ys2;
+        double m_xs1{};
+        double m_ys1{};
+        double m_xs2{};
+        double m_ys2{};
         path_storage              m_curve_pnt;
         conv_stroke<path_storage> m_curve_poly;
         ellipse                   m_ellipse;
         unsigned m_idx;
         unsigned m_vertex;
-        double   m_vx[32];
-        double   m_vy[32];
+        double m_vx[32]{};
+        double m_vy[32]{};
         int      m_active_pnt;
         int      m_move_pnt;
         double   m_pdx;
         double   m_pdy;
-        const trans_affine* m_mtx;
+        const trans_affine *m_mtx{};
     };
 
 

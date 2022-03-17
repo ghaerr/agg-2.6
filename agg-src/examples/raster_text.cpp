@@ -1,4 +1,4 @@
-#include <stdio.h>
+#include <cstdio>
 #include "agg_basics.h"
 #include "agg_rendering_buffer.h"
 #include "agg_rasterizer_scanline_aa.h"
@@ -18,9 +18,7 @@
 //#define AGG_BGR96
 #include "pixel_formats.h"
 
-enum flip_y_e { flip_y = true };
-
-
+enum flip_y_e { flip_y = static_cast<unsigned int>(true) };
 
 
 //------------------------------------------------------------------------
@@ -48,64 +46,62 @@ private:
 class the_application : public agg::platform_support
 {
 public:
-    typedef agg::renderer_base<pixfmt> ren_base;
-    typedef agg::glyph_raster_bin<color_type> glyph_gen;
+  using ren_base = agg::renderer_base<pixfmt>;
+  using glyph_gen = agg::glyph_raster_bin<color_type>;
 
-    the_application(agg::pix_format_e format, bool flip_y) :
-        agg::platform_support(format, flip_y)
-    {
+  the_application(agg::pix_format_e format, bool flip_y) : agg::platform_support(format, flip_y)
+  {
     }
 
 
-    virtual void on_draw()
+    void on_draw() override
     {
         struct font_type
         {
             const agg::int8u* font;
             const char* name;
-        }
-        fonts[] = 
-        {
-            { agg::gse4x6,                  "gse4x6"               },
-            { agg::gse4x8,                  "gse4x8"               },
-            { agg::gse5x7,                  "gse5x7"               },
-            { agg::gse5x9,                  "gse5x9"               },
-            { agg::gse6x9,                  "gse6x9"               },
-            { agg::gse6x12,                 "gse6x12"              },
-            { agg::gse7x11,                 "gse7x11"              },
-            { agg::gse7x11_bold,            "gse7x11_bold"         },
-            { agg::gse7x15,                 "gse7x15"              },
-            { agg::gse7x15_bold,            "gse7x15_bold"         },
-            { agg::gse8x16,                 "gse8x16"              },
-            { agg::gse8x16_bold,            "gse8x16_bold"         },
-            { agg::mcs11_prop,              "mcs11_prop"           },
-            { agg::mcs11_prop_condensed,    "mcs11_prop_condensed" },
-            { agg::mcs12_prop,              "mcs12_prop"           },
-            { agg::mcs13_prop,              "mcs13_prop"           },
-            { agg::mcs5x10_mono,            "mcs5x10_mono"         },
-            { agg::mcs5x11_mono,            "mcs5x11_mono"         },
-            { agg::mcs6x10_mono,            "mcs6x10_mono"         },
-            { agg::mcs6x11_mono,            "mcs6x11_mono"         },
-            { agg::mcs7x12_mono_high,       "mcs7x12_mono_high"    },
-            { agg::mcs7x12_mono_low,        "mcs7x12_mono_low"     },
-            { agg::verdana12,               "verdana12"            },
-            { agg::verdana12_bold,          "verdana12_bold"       },
-            { agg::verdana13,               "verdana13"            },
-            { agg::verdana13_bold,          "verdana13_bold"       },
-            { agg::verdana14,               "verdana14"            },
-            { agg::verdana14_bold,          "verdana14_bold"       },
-            { agg::verdana16,               "verdana16"            },
-            { agg::verdana16_bold,          "verdana16_bold"       },
-            { agg::verdana17,               "verdana17"            },
-            { agg::verdana17_bold,          "verdana17_bold"       },
-            { agg::verdana18,               "verdana18"            },
-            { agg::verdana18_bold,          "verdana18_bold"       },
-            0, 0
+        } __attribute__((aligned(16)))
+        fonts[] = {
+          { agg::gse4x6, "gse4x6" },
+          { agg::gse4x8, "gse4x8" },
+          { agg::gse5x7, "gse5x7" },
+          { agg::gse5x9, "gse5x9" },
+          { agg::gse6x9, "gse6x9" },
+          { agg::gse6x12, "gse6x12" },
+          { agg::gse7x11, "gse7x11" },
+          { agg::gse7x11_bold, "gse7x11_bold" },
+          { agg::gse7x15, "gse7x15" },
+          { agg::gse7x15_bold, "gse7x15_bold" },
+          { agg::gse8x16, "gse8x16" },
+          { agg::gse8x16_bold, "gse8x16_bold" },
+          { agg::mcs11_prop, "mcs11_prop" },
+          { agg::mcs11_prop_condensed, "mcs11_prop_condensed" },
+          { agg::mcs12_prop, "mcs12_prop" },
+          { agg::mcs13_prop, "mcs13_prop" },
+          { agg::mcs5x10_mono, "mcs5x10_mono" },
+          { agg::mcs5x11_mono, "mcs5x11_mono" },
+          { agg::mcs6x10_mono, "mcs6x10_mono" },
+          { agg::mcs6x11_mono, "mcs6x11_mono" },
+          { agg::mcs7x12_mono_high, "mcs7x12_mono_high" },
+          { agg::mcs7x12_mono_low, "mcs7x12_mono_low" },
+          { agg::verdana12, "verdana12" },
+          { agg::verdana12_bold, "verdana12_bold" },
+          { agg::verdana13, "verdana13" },
+          { agg::verdana13_bold, "verdana13_bold" },
+          { agg::verdana14, "verdana14" },
+          { agg::verdana14_bold, "verdana14_bold" },
+          { agg::verdana16, "verdana16" },
+          { agg::verdana16_bold, "verdana16_bold" },
+          { agg::verdana17, "verdana17" },
+          { agg::verdana17_bold, "verdana17_bold" },
+          { agg::verdana18, "verdana18" },
+          { agg::verdana18_bold, "verdana18_bold" },
+          nullptr,
+          nullptr
         };
 
 
-
-        glyph_gen glyph(0);
+        glyph_gen glyph(nullptr);
         pixfmt pixf(rbuf_window());
         ren_base rb(pixf);
         rb.clear(agg::rgba(1,1,1));
@@ -113,39 +109,35 @@ public:
 
         agg::renderer_raster_htext_solid<ren_base, glyph_gen> rt(rb, glyph);
 
-        int i;
+        int i = 0;
         double y = 5;
         rt.color(agg::rgba(0,0,0));
-        for(i = 0; fonts[i].font; i++)
-        {
-            char buf[100];
-            strcpy(buf, "A quick brown fox jumps over the lazy dog 0123456789: ");
-            strcat(buf, fonts[i].name);
+        for (i = 0; fonts[i].font != nullptr; i++) {
+          char buf[100];
+          strcpy(buf, "A quick brown fox jumps over the lazy dog 0123456789: ");
+          strcat(buf, fonts[i].name);
 
-            // Testing "wide-char"
-            unsigned wbuf[100];
-            unsigned* wp = wbuf;
-            const char* p = buf;
-            while(*p) *wp++ = *(unsigned char*)p++;
-            *wp++ = 0;
+          // Testing "wide-char"
+          unsigned wbuf[100];
+          unsigned *wp = wbuf;
+          const char *p = buf;
+          while (*p != 0) {
+            *wp++ = *(unsigned char *)p++;
+          }
+          *wp++ = 0;
 
-            glyph.font(fonts[i].font);
-            rt.render_text(5, y, wbuf, !flip_y());
-            y += glyph.height() + 1;
+          glyph.font(fonts[i].font);
+          rt.render_text(5, y, wbuf, !flip_y());
+          y += glyph.height() + 1;
         }
 
 
         // Rendering raster text with a custom span generator, gradient
 
-        typedef agg::span_interpolator_linear<> interpolator_type;
-        typedef agg::span_allocator<color_type> span_alloc_type;
-        typedef agg::span_gradient<color_type, 
-                                   interpolator_type, 
-                                   gradient_sine_repeat_adaptor<agg::gradient_circle>, 
-                                   agg::gradient_linear_color<color_type> > span_gen_type;
-        typedef agg::renderer_scanline_aa<ren_base, 
-                                          span_alloc_type,
-                                          span_gen_type> ren_type;
+        using interpolator_type = agg::span_interpolator_linear<>;
+        using span_alloc_type = agg::span_allocator<color_type>;
+        using span_gen_type = agg::span_gradient<color_type, interpolator_type, gradient_sine_repeat_adaptor<agg::gradient_circle>, agg::gradient_linear_color<color_type>>;
+        using ren_type = agg::renderer_scanline_aa<ren_base, span_alloc_type, span_gen_type>;
 
         agg::trans_affine mtx;
         gradient_sine_repeat_adaptor<agg::gradient_circle> grad_func;
@@ -164,14 +156,13 @@ public:
 };
 
 
-int agg_main(int argc, char* argv[])
+int agg_main(int /*argc*/, char * /*argv*/[])
 {
-    the_application app(pix_format, flip_y);
-    app.caption("AGG Example. Raster Text");
+  the_application app(pix_format, flip_y != 0U);
+  app.caption("AGG Example. Raster Text");
 
-    if(app.init(640, 480, agg::window_resize))
-    {
-        return app.run();
+  if (app.init(640, 480, agg::window_resize)) {
+    return app.run();
     }
     return 1;
 }

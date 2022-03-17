@@ -1,6 +1,6 @@
-#include <stdlib.h>
-#include <ctype.h>
-#include <stdio.h>
+#include <cstdlib>
+#include <cctype>
+#include <cstdio>
 #include "agg_basics.h"
 #include "agg_rendering_buffer.h"
 #include "agg_rasterizer_scanline_aa.h"
@@ -38,7 +38,7 @@
 //#define AGG_RGB555
 #include "pixel_formats.h"
 
-enum flip_y_e { flip_y = true };
+enum flip_y_e { flip_y = static_cast<unsigned int>(true) };
 
 agg::rasterizer_scanline_aa<> g_rasterizer;
 agg::scanline_u8  g_scanline;
@@ -78,21 +78,20 @@ namespace agg
     //========================================================================
     template<> struct gradient_linear_color<srgba8>
     {
-        typedef srgba8 color_type;
+      using color_type = srgba8;
 
-        gradient_linear_color() {}
-        gradient_linear_color(const color_type& c1, const color_type& c2) :
-            m_c1(c1), m_c2(c2) {}
+      gradient_linear_color() = default;
+      gradient_linear_color(const color_type &c1, const color_type &c2) : m_c1(c1), m_c2(c2) {}
 
-        static unsigned size() { return 256; }
-        color_type operator [] (unsigned v) const 
-        {
-            color_type c;
-            c.r = (int8u)((((m_c2.r - m_c1.r) * int(v)) + (m_c1.r << 8)) >> 8);
-            c.g = (int8u)((((m_c2.g - m_c1.g) * int(v)) + (m_c1.g << 8)) >> 8);
-            c.b = (int8u)((((m_c2.b - m_c1.b) * int(v)) + (m_c1.b << 8)) >> 8);
-            c.a = (int8u)((((m_c2.a - m_c1.a) * int(v)) + (m_c1.a << 8)) >> 8);
-            return c;
+      static unsigned size() { return 256; }
+      color_type operator[](unsigned v) const
+      {
+        color_type c;
+        c.r = (int8u)((((m_c2.r - m_c1.r) * int(v)) + (m_c1.r << 8)) >> 8);
+        c.g = (int8u)((((m_c2.g - m_c1.g) * int(v)) + (m_c1.g << 8)) >> 8);
+        c.b = (int8u)((((m_c2.b - m_c1.b) * int(v)) + (m_c1.b << 8)) >> 8);
+        c.a = (int8u)((((m_c2.a - m_c1.a) * int(v)) + (m_c1.a << 8)) >> 8);
+        return c;
         }
 
         void colors(const color_type& c1, const color_type& c2)
@@ -103,25 +102,24 @@ namespace agg
 
         color_type m_c1;
         color_type m_c2;
-    };
+    } __attribute__((aligned(8)));
 
 
     //========================================================================
     template<> struct gradient_linear_color<sgray8>
     {
-        typedef sgray8 color_type;
+      using color_type = sgray8;
 
-        gradient_linear_color() {}
-        gradient_linear_color(const color_type& c1, const color_type& c2) :
-            m_c1(c1), m_c2(c2) {}
+      gradient_linear_color() = default;
+      gradient_linear_color(const color_type &c1, const color_type &c2) : m_c1(c1), m_c2(c2) {}
 
-        static unsigned size() { return 256; }
-        color_type operator [] (unsigned v) const 
-        {
-            color_type c;
-            c.v = (int8u)((((m_c2.v - m_c1.v) * int(v)) + (m_c1.v << 8)) >> 8);
-            c.a = (int8u)((((m_c2.a - m_c1.a) * int(v)) + (m_c1.a << 8)) >> 8);
-            return c;
+      static unsigned size() { return 256; }
+      color_type operator[](unsigned v) const
+      {
+        color_type c;
+        c.v = (int8u)((((m_c2.v - m_c1.v) * int(v)) + (m_c1.v << 8)) >> 8);
+        c.a = (int8u)((((m_c2.a - m_c1.a) * int(v)) + (m_c1.a << 8)) >> 8);
+        return c;
         }
 
         void colors(const color_type& c1, const color_type& c2)
@@ -132,8 +130,7 @@ namespace agg
 
         color_type m_c1;
         color_type m_c2;
-    };
-
+    } __attribute__((aligned(4)));
 }
 
 
@@ -156,41 +153,40 @@ public:
         m_num_cb.no_transform();
     }
 
-    virtual void on_draw()
+    void on_draw() override
     {
-        unsigned i;
-        int width = rbuf_window().width();
-        int height = rbuf_window().height();
+      unsigned i = 0;
+      int width = rbuf_window().width();
+      int height = rbuf_window().height();
 
-        pixfmt pf(rbuf_window());
-        typedef agg::renderer_mclip<pixfmt> base_ren_type;
-        
-        base_ren_type r(pf);
-        agg::renderer_scanline_aa_solid<base_ren_type> rs(r);
+      pixfmt pf(rbuf_window());
+      using base_ren_type = agg::renderer_mclip<pixfmt>;
 
-        agg::trans_affine mtx;
-        mtx *= agg::trans_affine_translation(-g_base_dx, -g_base_dy);
-        mtx *= agg::trans_affine_scaling(g_scale, g_scale);
-        mtx *= agg::trans_affine_rotation(g_angle + agg::pi);
-        mtx *= agg::trans_affine_skewing(g_skew_x/1000.0, g_skew_y/1000.0);
-        mtx *= agg::trans_affine_translation(width/2, height/2);
+      base_ren_type r(pf);
+      agg::renderer_scanline_aa_solid<base_ren_type> rs(r);
 
-        r.clear(agg::rgba(1, 1, 1));
-        
+      agg::trans_affine mtx;
+      mtx *= agg::trans_affine_translation(-g_base_dx, -g_base_dy);
+      mtx *= agg::trans_affine_scaling(g_scale, g_scale);
+      mtx *= agg::trans_affine_rotation(g_angle + agg::pi);
+      mtx *= agg::trans_affine_skewing(g_skew_x / 1000.0, g_skew_y / 1000.0);
+      mtx *= agg::trans_affine_translation(width / 2, height / 2);
 
-        r.reset_clipping(false);  // Visibility: "false" means "no visible regions"
-        int x, y;
-        double n = m_num_cb.value();
-        for(x = 0; x < n; x++)
-        {
-            for(y = 0; y < n; y++)
-            {
-                int x1 = int(width  * x / n);
-                int y1 = int(height * y / n);
-                int x2 = int(width  * (x + 1) / n);
-                int y2 = int(height * (y + 1) / n);
-                r.add_clip_box(x1 + 5, y1 + 5, x2 - 5, y2 - 5);
-            }
+      r.clear(agg::rgba(1, 1, 1));
+
+
+      r.reset_clipping(false);// Visibility: "false" means "no visible regions"
+      int x;
+      int y;
+      double n = m_num_cb.value();
+      for (x = 0; x < n; x++) {
+        for (y = 0; y < n; y++) {
+          int x1 = int(width * x / n);
+          int y1 = int(height * y / n);
+          int x2 = int(width * (x + 1) / n);
+          int y2 = int(height * (y + 1) / n);
+          r.add_clip_box(x1 + 5, y1 + 5, x2 - 5, y2 - 5);
+        }
         }
 
 
@@ -242,8 +238,7 @@ public:
                                     rand() & 0x7F, 
                                     (rand() & 0x7F) + 0x7F));
 
-            m.line(m.coord(rand() % width), m.coord(rand() % height), 
-                   m.coord(rand() % width), m.coord(rand() % height));
+            m.line(agg::renderer_markers<base_ren_type>::coord(rand() % width), agg::renderer_markers<base_ren_type>::coord(rand() % height), agg::renderer_markers<base_ren_type>::coord(rand() % width), agg::renderer_markers<base_ren_type>::coord(rand() % height));
 
             m.marker(rand() % width, rand() % height, rand() % 10 + 5,
                      agg::marker_e(rand() % agg::end_of_markers));
@@ -255,10 +250,10 @@ public:
         agg::line_profile_aa profile;
         profile.width(w);
 
-        typedef agg::renderer_outline_aa<base_ren_type> renderer_type;
+        using renderer_type = agg::renderer_outline_aa<base_ren_type>;
         renderer_type ren(r, profile);
 
-        typedef agg::rasterizer_outline_aa<renderer_type> rasterizer_type;
+        using rasterizer_type = agg::rasterizer_outline_aa<renderer_type>;
         rasterizer_type ras(ren);
         ras.round_cap(true);
 
@@ -275,13 +270,10 @@ public:
 
 
         // Render random circles with gradient
-        typedef agg::gradient_linear_color<color_type> grad_color;
-        typedef agg::gradient_circle grad_func;
-        typedef agg::span_interpolator_linear<> interpolator_type;
-        typedef agg::span_gradient<color_type, 
-                                  interpolator_type, 
-                                  grad_func, 
-                                  grad_color> span_grad_type;
+        using grad_color = agg::gradient_linear_color<color_type>;
+        using grad_func = agg::gradient_circle;
+        using interpolator_type = agg::span_interpolator_linear<>;
+        using span_grad_type = agg::span_gradient<color_type, interpolator_type, grad_func, grad_color>;
 
         agg::trans_affine grm;
         grad_func grf;
@@ -315,7 +307,7 @@ public:
     }
 
 
-    void transform(double width, double height, double x, double y)
+    static void transform(double width, double height, double x, double y)
     {
         x -= width / 2;
         y -= height / 2;
@@ -324,26 +316,24 @@ public:
     }
 
 
-    virtual void on_mouse_button_down(int x, int y, unsigned flags)
+    void on_mouse_button_down(int x, int y, unsigned flags) override
     {
-        if(flags & agg::mouse_left)
-        {
-            int width = rbuf_window().width();
-            int height = rbuf_window().height();
-            transform(width, height, x, y);
-            force_redraw();
-        }
+      if ((flags & agg::mouse_left) != 0u) {
+        int width = rbuf_window().width();
+        int height = rbuf_window().height();
+        transform(width, height, x, y);
+        force_redraw();
+      }
 
-        if(flags & agg::mouse_right)
-        {
-            g_skew_x = x;
-            g_skew_y = y;
-            force_redraw();
-        }
+      if ((flags & agg::mouse_right) != 0u) {
+        g_skew_x = x;
+        g_skew_y = y;
+        force_redraw();
+      }
     }
 
 
-    virtual void on_mouse_move(int x, int y, unsigned flags)
+    void on_mouse_move(int x, int y, unsigned flags) override
     {
         on_mouse_button_down(x, y, flags);
     }
@@ -351,18 +341,13 @@ public:
 };
 
 
-
-
-
-
-int agg_main(int argc, char* argv[])
+int agg_main(int /*argc*/, char * /*argv*/[])
 {
-    the_application app(pix_format, flip_y);
-    app.caption("AGG Example. Clipping to multiple rectangle regions");
+  the_application app(pix_format, flip_y != 0u);
+  app.caption("AGG Example. Clipping to multiple rectangle regions");
 
-    if(app.init(512, 400, agg::window_resize))
-    {
-        return app.run();
+  if (app.init(512, 400, agg::window_resize)) {
+    return app.run();
     }
     return 1;
 }

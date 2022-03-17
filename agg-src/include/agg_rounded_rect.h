@@ -62,7 +62,7 @@ namespace agg
         double m_ry3;
         double m_rx4;
         double m_ry4;
-        unsigned m_status;
+        unsigned m_status{};
         arc      m_arc;
     };
 

@@ -15,6 +15,7 @@
 
 #include "agg_embedded_raster_fonts.h"
 
+
 namespace agg
 {
 

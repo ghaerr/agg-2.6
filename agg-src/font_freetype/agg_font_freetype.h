@@ -111,33 +111,33 @@ namespace agg
         void update_signature();
         int  find_face(const char* face_name) const;
 
-        bool            m_flag32;
-        int             m_change_stamp;
-        int             m_last_error;
-        char*           m_name;
-        unsigned        m_name_len;
-        unsigned        m_face_index;
+        bool m_flag32{};
+        int m_change_stamp{};
+        int m_last_error{};
+        char *m_name{};
+        unsigned m_name_len{};
+        unsigned m_face_index{};
         FT_Encoding     m_char_map;
-        char*           m_signature;
-        unsigned        m_height;
-        unsigned        m_width;
-        bool            m_hinting;
-        bool            m_flip_y;
+        char *m_signature{};
+        unsigned m_height{};
+        unsigned m_width{};
+        bool m_hinting{};
+        bool m_flip_y{};
         bool            m_library_initialized;
-        FT_Library      m_library;    // handle to library    
-        FT_Face*        m_faces;      // A pool of font faces
-        char**          m_face_names; 
-        unsigned        m_num_faces;
-        unsigned        m_max_faces;
-        FT_Face         m_cur_face;  // handle to the current face object
-        int             m_resolution;
+        FT_Library m_library{};// handle to library
+        FT_Face *m_faces{};// A pool of font faces
+        char **m_face_names{};
+        unsigned m_num_faces{};
+        unsigned m_max_faces{};
+        FT_Face m_cur_face{};// handle to the current face object
+        int m_resolution{};
         glyph_rendering m_glyph_rendering;
-        unsigned        m_glyph_index;
-        unsigned        m_data_size;
+        unsigned m_glyph_index{};
+        unsigned m_data_size{};
         glyph_data_type m_data_type;
         rect_i          m_bounds;
-        double          m_advance_x;
-        double          m_advance_y;
+        double m_advance_x{};
+        double m_advance_y{};
         trans_affine    m_affine;
 
         path_storage_integer<int16, 6>              m_path16;

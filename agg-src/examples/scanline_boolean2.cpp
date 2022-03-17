@@ -1,4 +1,4 @@
-#include <stdio.h>
+#include <cstdio>
 #include "agg_basics.h"
 #include "agg_rendering_buffer.h"
 #include "agg_rasterizer_scanline_aa.h"
@@ -24,9 +24,7 @@
 //#define AGG_BGR96
 #include "pixel_formats.h"
 
-enum flip_y_e { flip_y = true };
-
-
+enum flip_y_e { flip_y = static_cast<unsigned int>(true) };
 
 
 class spiral
@@ -45,7 +43,7 @@ public:
     {
     }
 
-    void rewind(unsigned) 
+    void rewind(unsigned /*unused*/)
     { 
         m_angle = m_start_angle; 
         m_curr_r = m_r1; 
@@ -54,7 +52,9 @@ public:
 
     unsigned vertex(double* x, double* y)
     {
-        if(m_curr_r > m_r2) return agg::path_cmd_stop;
+      if (m_curr_r > m_r2) {
+        return agg::path_cmd_stop;
+      }
 
         *x = m_x + cos(m_angle) * m_curr_r;
         *y = m_y + sin(m_angle) * m_curr_r;
@@ -77,10 +77,10 @@ private:
     double m_start_angle;
 
     double m_angle;
-    double m_curr_r;
+    double m_curr_r{};
     double m_da;
     double m_dr;
-    bool   m_start;
+    bool m_start{};
 };
 
 
@@ -112,10 +112,10 @@ class the_application : public agg::platform_support
     agg::rbox_ctrl<color_type> m_fill_rule;
     agg::rbox_ctrl<color_type> m_scanline_type;
     agg::rbox_ctrl<color_type> m_operation;
-    double m_x;
-    double m_y;
+    double m_x{};
+    double m_y{};
 
-public:
+  public:
     the_application(agg::pix_format_e format, bool flip_y) :
         agg::platform_support(format, flip_y),
         m_polygons     (5.0,     5.0, 5.0+205.0,   110.0,  !flip_y),
@@ -165,18 +165,29 @@ public:
     {
         if(m_operation.cur_item() > 0)
         {
-            agg::sbool_op_e op;
-            switch(m_operation.cur_item())
-            {
-                case 1: op = agg::sbool_or;        break;
-                case 2: op = agg::sbool_and;       break;
-                case 3: op = agg::sbool_xor;       break;
-                case 4: op = agg::sbool_xor_saddle;break;
-                case 5: op = agg::sbool_a_minus_b; break;
-                case 6: op = agg::sbool_b_minus_a; break;
+          agg::sbool_op_e op = agg::sbool_op_e::sbool_or;
+          switch (m_operation.cur_item()) {
+          case 1:
+            op = agg::sbool_or;
+            break;
+          case 2:
+            op = agg::sbool_and;
+            break;
+          case 3:
+            op = agg::sbool_xor;
+            break;
+          case 4:
+            op = agg::sbool_xor_saddle;
+            break;
+          case 5:
+            op = agg::sbool_a_minus_b;
+            break;
+          case 6:
+            op = agg::sbool_b_minus_a;
+            break;
             }
 
-            typedef agg::renderer_base<pixfmt> renderer_base;
+            using renderer_base = agg::renderer_base<pixfmt>;
             pixfmt pixf(rbuf_window());
             renderer_base rb(pixf);
 
@@ -188,32 +199,31 @@ public:
             {
                 case 0:
                 {
-                    typedef agg::renderer_scanline_aa_solid<renderer_base> renderer_solid;
-                    typedef agg::scanline_p8 scanline_type;
+                  using renderer_solid = agg::renderer_scanline_aa_solid<renderer_base>;
+                  using scanline_type = agg::scanline_p8;
 
-                    renderer_solid ren(rb);
+                  renderer_solid ren(rb);
 
-                    scanline_type sl;
-                    scanline_type sl1;
-                    scanline_type sl2;
+                  scanline_type sl;
+                  scanline_type sl1;
+                  scanline_type sl2;
 
-                    // The intermediate storage is used only to test the perfoprmance,
-                    // the short variant can be as follows:
-                    // ------------------------
-                    // ren.color(agg::rgba(0.5, 0.0, 0, 0.5));
-                    // agg::sbool_combine_shapes_aa(op, ras1, ras2, sl1, sl2, sl, ren);
+                  // The intermediate storage is used only to test the perfoprmance,
+                  // the short variant can be as follows:
+                  // ------------------------
+                  // ren.color(agg::rgba(0.5, 0.0, 0, 0.5));
+                  // agg::sbool_combine_shapes_aa(op, ras1, ras2, sl1, sl2, sl, ren);
 
-                    agg::scanline_storage_aa8 storage;
-                    agg::scanline_storage_aa8 storage1;
-                    agg::scanline_storage_aa8 storage2;
+                  agg::scanline_storage_aa8 storage;
+                  agg::scanline_storage_aa8 storage1;
+                  agg::scanline_storage_aa8 storage2;
 
-                    agg::render_scanlines(ras1, sl, storage1);
-                    agg::render_scanlines(ras2, sl, storage2);
-    
-                    start_timer();
-                    for(int i = 0; i < 10; i++)
-                    {
-                        agg::sbool_combine_shapes_aa(op, storage1, storage2, sl1, sl2, sl, storage);
+                  agg::render_scanlines(ras1, sl, storage1);
+                  agg::render_scanlines(ras2, sl, storage2);
+
+                  start_timer();
+                  for (int i = 0; i < 10; i++) {
+                    agg::sbool_combine_shapes_aa(op, storage1, storage2, sl1, sl2, sl, storage);
                     }
                     t1 = elapsed_time() / 10.0;
 
@@ -228,25 +238,24 @@ public:
 
                 case 1:
                 {
-                    typedef agg::renderer_scanline_aa_solid<renderer_base> renderer_solid;
-                    typedef agg::scanline_u8 scanline_type;
+                  using renderer_solid = agg::renderer_scanline_aa_solid<renderer_base>;
+                  using scanline_type = agg::scanline_u8;
 
-                    renderer_solid ren(rb);
+                  renderer_solid ren(rb);
 
-                    scanline_type sl;
-                    scanline_type sl1;
-                    scanline_type sl2;
-                    agg::scanline_storage_aa8 storage;
-                    agg::scanline_storage_aa8 storage1;
-                    agg::scanline_storage_aa8 storage2;
+                  scanline_type sl;
+                  scanline_type sl1;
+                  scanline_type sl2;
+                  agg::scanline_storage_aa8 storage;
+                  agg::scanline_storage_aa8 storage1;
+                  agg::scanline_storage_aa8 storage2;
 
-                    agg::render_scanlines(ras1, sl, storage1);
-                    agg::render_scanlines(ras2, sl, storage2);
-    
-                    start_timer();
-                    for(int i = 0; i < 10; i++)
-                    {
-                        agg::sbool_combine_shapes_aa(op, storage1, storage2, sl1, sl2, sl, storage);
+                  agg::render_scanlines(ras1, sl, storage1);
+                  agg::render_scanlines(ras2, sl, storage2);
+
+                  start_timer();
+                  for (int i = 0; i < 10; i++) {
+                    agg::sbool_combine_shapes_aa(op, storage1, storage2, sl1, sl2, sl, storage);
                     }
                     t1 = elapsed_time() / 10.0;
 
@@ -262,26 +271,25 @@ public:
 
                 case 2:
                 {
-                    typedef agg::renderer_scanline_bin_solid<renderer_base> renderer_solid;
-                    typedef agg::scanline_bin scanline_type;
+                  using renderer_solid = agg::renderer_scanline_bin_solid<renderer_base>;
+                  using scanline_type = agg::scanline_bin;
 
-                    renderer_solid ren(rb);
+                  renderer_solid ren(rb);
 
-                    scanline_type sl;
-                    scanline_type sl1;
-                    scanline_type sl2;
+                  scanline_type sl;
+                  scanline_type sl1;
+                  scanline_type sl2;
 
-                    agg::scanline_storage_bin storage;
-                    agg::scanline_storage_bin storage1;
-                    agg::scanline_storage_bin storage2;
+                  agg::scanline_storage_bin storage;
+                  agg::scanline_storage_bin storage1;
+                  agg::scanline_storage_bin storage2;
 
-                    agg::render_scanlines(ras1, sl, storage1);
-                    agg::render_scanlines(ras2, sl, storage2);
-    
-                    start_timer();
-                    for(int i = 0; i < 10; i++)
-                    {
-                        agg::sbool_combine_shapes_bin(op, storage1, storage2, sl1, sl2, sl, storage);
+                  agg::render_scanlines(ras1, sl, storage1);
+                  agg::render_scanlines(ras2, sl, storage2);
+
+                  start_timer();
+                  for (int i = 0; i < 10; i++) {
+                    agg::sbool_combine_shapes_bin(op, storage1, storage2, sl1, sl2, sl, storage);
                     }
                     t1 = elapsed_time() / 10.0;
 
@@ -594,64 +602,59 @@ public:
     }
 
 
-    virtual void on_init()
+    void on_init() override
     {
         m_x = width() / 2.0;
         m_y = height() / 2.0;
     }
 
-    virtual void on_draw()
+    void on_draw() override
     {
-        typedef agg::renderer_base<pixfmt> base_ren_type;
-        typedef agg::renderer_scanline_aa_solid<base_ren_type> renderer_solid;
+      using base_ren_type = agg::renderer_base<pixfmt>;
+      using renderer_solid = agg::renderer_scanline_aa_solid<base_ren_type>;
 
-        pixfmt pf(rbuf_window());
-        base_ren_type ren_base(pf);
-        renderer_solid ren_solid(ren_base);
-        ren_base.clear(agg::rgba(1,1,1));
+      pixfmt pf(rbuf_window());
+      base_ren_type ren_base(pf);
+      renderer_solid ren_solid(ren_base);
+      ren_base.clear(agg::rgba(1, 1, 1));
 
-        agg::scanline_u8 sl;
-        agg::rasterizer_scanline_aa<> ras;
-        agg::rasterizer_scanline_aa<> ras2;
+      agg::scanline_u8 sl;
+      agg::rasterizer_scanline_aa<> ras;
+      agg::rasterizer_scanline_aa<> ras2;
 
-        agg::render_ctrl(ras, sl, ren_base, m_polygons);
-        agg::render_ctrl(ras, sl, ren_base, m_fill_rule);
-        agg::render_ctrl(ras, sl, ren_base, m_scanline_type);
-        agg::render_ctrl(ras, sl, ren_base, m_operation);
+      agg::render_ctrl(ras, sl, ren_base, m_polygons);
+      agg::render_ctrl(ras, sl, ren_base, m_fill_rule);
+      agg::render_ctrl(ras, sl, ren_base, m_scanline_type);
+      agg::render_ctrl(ras, sl, ren_base, m_operation);
 
-        render_sbool(ras, ras2);
+      render_sbool(ras, ras2);
 
     }
 
 
-
-
-    virtual void on_mouse_button_down(int x, int y, unsigned flags)
+    void on_mouse_button_down(int x, int y, unsigned flags) override
     {
-        if(flags & agg::mouse_left)
-        {
-            m_x = x;
-            m_y = y;
-            force_redraw();
-        }
+      if ((flags & agg::mouse_left) != 0u) {
+        m_x = x;
+        m_y = y;
+        force_redraw();
+      }
 
-        if(flags & agg::mouse_right)
-        {
-            char buf[100];
-            sprintf(buf, "%d %d", x, y);
-            message(buf);
-        }
+      if ((flags & agg::mouse_right) != 0u) {
+        char buf[100];
+        sprintf(buf, "%d %d", x, y);
+        message(buf);
+      }
     }
 
 
-    virtual void on_mouse_move(int x, int y, unsigned flags)
+    void on_mouse_move(int x, int y, unsigned flags) override
     {
-        if(flags & agg::mouse_left)
-        {
-            m_x = x;
-            m_y = y;
-            force_redraw();
-        }
+      if ((flags & agg::mouse_left) != 0u) {
+        m_x = x;
+        m_y = y;
+        force_redraw();
+      }
     }
 
 
@@ -659,15 +662,13 @@ public:
 };
 
 
-
-int agg_main(int argc, char* argv[])
+int agg_main(int /*argc*/, char * /*argv*/[])
 {
-    the_application app(pix_format, flip_y);
-    app.caption("AGG Example. Scanline Boolean");
+  the_application app(pix_format, flip_y != 0u);
+  app.caption("AGG Example. Scanline Boolean");
 
-    if(app.init(655, 520, agg::window_resize))
-    {
-        return app.run();
+  if (app.init(655, 520, agg::window_resize)) {
+    return app.run();
     }
     return 1;
 }

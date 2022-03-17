@@ -485,7 +485,7 @@ namespace agg
         // update_window() results in just putting immediately the content 
         // of the currently rendered buffer to the window without calling
         // on_draw().
-        void force_redraw();
+        void force_redraw() const;
         void update_window();
 
         //--------------------------------------------------------------------
@@ -504,7 +504,7 @@ namespace agg
         //--------------------------------------------------------------------
         // Returns file extension used in the implementation for the particular
         // system.
-        const char* img_ext() const;
+        static const char *img_ext();
 
         //--------------------------------------------------------------------
         void copy_img_to_window(unsigned idx)
@@ -627,14 +627,14 @@ namespace agg
         //--------------------------------------------------------------------
         // display message box or print the message to the console 
         // (depending on implementation)
-        void message(const char* msg);
+        static void message(const char *msg);
 
         //--------------------------------------------------------------------
         // Stopwatch functions. Function elapsed_time() returns time elapsed 
         // since the latest start_timer() invocation in millisecods. 
         // The resolutoin depends on the implementation. 
         // In Win32 it uses QueryPerformanceFrequency() / QueryPerformanceCounter().
-        void   start_timer();
+        void start_timer() const;
         double elapsed_time() const;
 
         //--------------------------------------------------------------------
@@ -650,10 +650,10 @@ namespace agg
         // So, it's a good idea to use in the demos the following:
         // FILE* fd = fopen(full_file_name("some.file"), "r"); 
         // instead of
-        // FILE* fd = fopen("some.file", "r"); 
-        const char* full_file_name(const char* file_name);
+        // FILE* fd = fopen("some.file", "r");
+        static const char *full_file_name(const char *file_name);
 
-    public:
+      public:
         platform_specific* m_specific;
         ctrl_container m_ctrls;
 
@@ -671,7 +671,7 @@ namespace agg
         unsigned         m_window_flags;
         bool             m_wait_mode;
         bool             m_flip_y;
-        char             m_caption[256];
+        char m_caption[256]{};
         int              m_initial_width;
         int              m_initial_height;
         trans_affine     m_resize_mtx;
