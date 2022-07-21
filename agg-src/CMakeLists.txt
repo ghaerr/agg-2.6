@@ -204,11 +204,21 @@ CONFIGURE_FILE( ${antigrain_SOURCE_DIR}/bin/UseAgg.cmake.in
                 ${antigrain_BINARY_DIR}/bin/UseAgg.cmake
                 @ONLY IMMEDIATE )
 
+SET( prefix ${CMAKE_INSTALL_PREFIX} )
+SET( exec_prefix ${CMAKE_INSTALL_PREFIX}/bin )
+SET( libdir ${CMAKE_INSTALL_PREFIX}/lib )
+SET( includedir ${CMAKE_INSTALL_PREFIX}/include )
+
+CONFIGURE_FILE( ${antigrain_SOURCE_DIR}/libagg.pc.in libagg.pc
+                @ONLY )
+
+
 ADD_SUBDIRECTORY( myapp )
 
 INSTALL( FILES ${antigrain_BINARY_DIR}/bin/AggConfigOutBuild.cmake DESTINATION "bin" RENAME AggConfig.cmake )
 INSTALL( FILES ${antigrain_BINARY_DIR}/bin/AggConfig.cmake DESTINATION "bin" )
 INSTALL( FILES ${antigrain_BINARY_DIR}/bin/UseAgg.cmake DESTINATION "bin" )
+INSTALL( FILES ${antigrain_BINARY_DIR}/libagg.pc DESTINATION "lib/pkgconfig" )
 
 #-------------------------------------------------------------------
 # Build a CPack installer if CPack is available and this is a build 
